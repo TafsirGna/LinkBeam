@@ -6,8 +6,17 @@
           <h1 class="modal-title fs-5" id="aboutModalLabel">About LinkBeam</h1>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          ...
+        <div class="modal-body text-center">
+          <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          <p class="fw-bold mt-2">
+            {{ settings.APP_NAME }}
+          </p>
+          <p class="fw-light mt-2">
+            {{ settings.APP_NAME }} is a light app designed to vizualize in a different way all publicly available linkedin profiles.
+          </p>
+          <p class="mt-2 small">
+            Designed by {{ settings.APP_AUTHOR }}.
+          </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">OK</button>

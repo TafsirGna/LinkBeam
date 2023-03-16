@@ -7,6 +7,9 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 # from django.template import loader
+from django.conf import settings
+from django.shortcuts import redirect
+from django.urls import reverse
 
 # Create your views here.
 
@@ -14,9 +17,10 @@ def index(request):
     """
     """
 
-    context = {}
+    context = {
+        "settings": settings
+    }
     return render(request, "profileviewer/index.html", context)
-    # return HttpResponse("")
 
 def profileViewer(request):
     """
@@ -28,8 +32,15 @@ def profileViewer(request):
     # soup = BeautifulSoup(page.content, "html.parser")
     # print(soup.prettify())
 
-    driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
-    driver.get("www.google.com")
+    # prevent access to this resource directly
+    if request.method == "GET":
+        return redirect('index')t
 
-    context = {}
+    # driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
+    driver = webdriver.Chrome("/usr/bin/chromedriver")
+    driver.get("https://www.google.com")
+
+    context = {
+        "settings": settings
+    }
     return render(request, "profileviewer/viewer.html", context)
