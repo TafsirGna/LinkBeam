@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
+import time
 
 # Create your views here.
 
@@ -34,11 +35,46 @@ def profileViewer(request):
 
     # prevent access to this resource directly
     if request.method == "GET":
-        return redirect('index')t
+        return redirect('/')
+
+    # if the request's method is post 
+    params = request.POST
+    linkURL = params.get("linkURL")
 
     # driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
     driver = webdriver.Chrome("/usr/bin/chromedriver")
-    driver.get("https://www.google.com")
+    driver.get(linkURL)
+
+    # waiting for the entire page to load
+    # time.sleep(7)
+
+    start = time.time()
+     
+    # will be used in the while loop
+    initialScroll = 0
+    finalScroll = 1000
+     
+    while True:
+        driver.execute_script(f"window.scrollTo({initialScroll},{finalScroll})")
+        # this command scrolls the window starting from
+        # the pixel value stored in the initialScroll
+        # variable to the pixel value stored at the
+        # finalScroll variable
+        initialScroll = finalScroll
+        finalScroll += 1000
+     
+        # we will stop the script for 3 seconds so that
+        # the data can load
+        time.sleep(3)
+        # You can change it as per your needs and internet speed
+     
+        end = time.time()
+     
+        # We will scroll for 20 seconds.
+        # You can change it as per your needs and internet speed
+        if round(end - start) > 20:
+            break
+    
 
     context = {
         "settings": settings
