@@ -9,24 +9,17 @@
 
       <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
         <a class="me-3 py-2 text-dark text-decoration-none" href="{% url 'profileviewer:index' %}#product-features">Features</a>
-        <!-- <a class="me-3 py-2 text-dark text-decoration-none" href="#">Enterprise</a>
-        <a class="me-3 py-2 text-dark text-decoration-none" href="#">Support</a>
+        <a class="me-3 py-2 text-dark text-decoration-none btn btn-outline-info" href="https://github.com/TafsirGna/LinkBeam">Github</a>
+        <!-- <a class="me-3 py-2 text-dark text-decoration-none" href="#">Support</a>
         <a class="py-2 text-dark text-decoration-none" href="#">Pricing</a> -->
       </nav>
     </div>
 
-    <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
-      <h1 class="display-4 fw-normal">Hello !</h1>
-      <p class="fs-5 text-muted">Quickly build an effective pricing table for your potential customers with this Bootstrap example. It’s built with default Bootstrap components and utilities with little customization.</p>
+    {% block header_text %}
+      <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+        <h1 class="display-4 fw-normal">Hello !</h1>
+        <p class="fs-5 text-muted">Linkbeam is a very light web application that proposes a different UX design for publicly available linkedIn profiles. Get started by inputting the profile URL in the form below</p>
+      </div>
+    {% endblock %}
 
-      <!-- Count of all the request made so far -->
-      <button type="button" class="btn btn-primary position-relative mt-2" data-bs-toggle="tooltip" data-bs-title="More than 100 visualizations have been processed by us !">
-        Visuals
-        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-          99+
-          <span class="visually-hidden">unread messages</span>
-        </span>
-      </button>
-
-    </div>
   </header>

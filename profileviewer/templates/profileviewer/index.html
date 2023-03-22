@@ -1,6 +1,19 @@
 {% extends "profileviewer/base.html" %}
 
-{% block display_field %}
+{% block body_content %}
+
+    <!-- Count of all the request made so far -->
+    <div class="text-center mb-3">
+        <button type="button" class="btn btn-primary position-relative mt-2" data-bs-toggle="tooltip" data-bs-title="More than 100 visualizations have been processed by us !">
+          Visuals
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            99+
+            <span class="visually-hidden">unread messages</span>
+          </span>
+        </button>
+    </div>
+
+    {% include "profileviewer/input_form.html" %}
 
     {% include "profileviewer/index_features.html" %}
 

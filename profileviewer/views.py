@@ -23,6 +23,19 @@ def index(request):
     }
     return render(request, "profileviewer/index.html", context)
 
+
+def throwError404(request):
+    """
+    """
+    
+    context = {
+        "settings": settings,
+        "params": request.POST
+    }
+
+    return render(request, "profileviewer/error_pages/error_404.html", context)
+
+
 def profileViewer(request):
     """
     """
@@ -40,40 +53,46 @@ def profileViewer(request):
     # if the request's method is post 
     params = request.POST
     linkURL = params.get("linkURL")
+    linkRootURL = "linkedin.com/in/"
 
-    # driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
-    driver = webdriver.Chrome("/usr/bin/chromedriver")
-    driver.get(linkURL)
+    # throwing an error 404 when it's not a linkedin page
+    if linkRootURL not in linkURL:
+        return throwError404(request)
 
-    # waiting for the entire page to load
-    # time.sleep(7)
 
-    start = time.time()
+    # # driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
+    # driver = webdriver.Chrome("/usr/bin/chromedriver")
+    # driver.get(linkURL)
+
+    # # waiting for the entire page to load
+    # # time.sleep(7)
+
+    # start = time.time()
      
-    # will be used in the while loop
-    initialScroll = 0
-    finalScroll = 1000
+    # # will be used in the while loop
+    # initialScroll = 0
+    # finalScroll = 1000
      
-    while True:
-        driver.execute_script(f"window.scrollTo({initialScroll},{finalScroll})")
-        # this command scrolls the window starting from
-        # the pixel value stored in the initialScroll
-        # variable to the pixel value stored at the
-        # finalScroll variable
-        initialScroll = finalScroll
-        finalScroll += 1000
+    # while True:
+    #     driver.execute_script(f"window.scrollTo({initialScroll},{finalScroll})")
+    #     # this command scrolls the window starting from
+    #     # the pixel value stored in the initialScroll
+    #     # variable to the pixel value stored at the
+    #     # finalScroll variable
+    #     initialScroll = finalScroll
+    #     finalScroll += 1000
      
-        # we will stop the script for 3 seconds so that
-        # the data can load
-        time.sleep(3)
-        # You can change it as per your needs and internet speed
+    #     # we will stop the script for 3 seconds so that
+    #     # the data can load
+    #     time.sleep(3)
+    #     # You can change it as per your needs and internet speed
      
-        end = time.time()
+    #     end = time.time()
      
-        # We will scroll for 20 seconds.
-        # You can change it as per your needs and internet speed
-        if round(end - start) > 20:
-            break
+    #     # We will scroll for 20 seconds.
+    #     # You can change it as per your needs and internet speed
+    #     if round(end - start) > 20:
+    #         break
     
 
     context = {
