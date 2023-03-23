@@ -7,11 +7,11 @@
 	<div class="text-center">
 		<img src="{% static 'linkbeam/img/error_404.png' %}" alt="error 404">
 		<p class="mt-2 fst-italic">
-			<a href="#">{{ params.linkURL }}</a> is not a URL targeting a linkedIn resource. Try another link!
+			<a href="#">{{ params.linkURL }}</a> is not a URL targeting a linkedIn resource. Try another link! Thanks!
 		</p>
 	</div>
 
 
-	{% include "profileviewer/index_features.html" %}
+	{% include "profileviewer/index_sections/index_features.html" %}
 
 {% endblock %}

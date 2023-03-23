@@ -80,7 +80,7 @@
     </svg>
 
     <div class="container py-3">
-      {% include "profileviewer/header.html" %}
+      {% include "profileviewer/index_sections/header.html" %}
 
       <main>
 
@@ -91,11 +91,13 @@
       </main>
 
       <!-- Footer -->
-      {% include "profileviewer/footer.html" %}
+      {% include "profileviewer/index_sections/footer.html" %}
     </div>
     
     <!-- About modal -->
-    {% include "profileviewer/about_modal.html" %}
+    {% include "profileviewer/modals/about_modal.html" %}
+
+    {% include "profileviewer/modals/feedback_modal.html" %}
 
     {% block javascripts %}
 
