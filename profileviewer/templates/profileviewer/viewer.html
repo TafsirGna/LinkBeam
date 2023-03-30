@@ -1,27 +1,16 @@
 {% extends "profileviewer/base.html" %}
 
+{% load static %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" type="text/css" href="{% static 'linkbeam/css/user_card.css' %}">
+{% endblock %}
 
 {% block body_content %}
 
-	<div class="text-center">
+	{% include "profileviewer/page_sections/viewer/group_button.html" %}
 
-		<div class="mb-5">
-			<span class="badge text-bg-primary">{{ params.linkURL }}</span>
-		</div>
-
-		<div class="btn-group btn-group-sm">
-		  <a href="#" class="btn btn-secondary active" aria-current="page">User</a>
-		  <a href="#" class="btn btn-outline-secondary" > 
-		  	<svg data-bs-toggle="tooltip" data-bs-title="Default tooltip" viewBox="0 0 24 24" width="15" height="15" stroke="red" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> 
-		  	Education
-		  </a>
-		  <a href="#" class="btn btn-outline-secondary">
-			Jobs
-			<span class="badge text-bg-primary">4</span>
-		  </a>
-		  <a href="#" class="btn btn-outline-secondary">Certifications</a>
-		  <a href="#" class="btn btn-outline-secondary">Activity</a>
-		</div>
-	</div>
+	<!-- user card -->
+	{% include "profileviewer/page_sections/viewer/user_card.html" %}
 
 {% endblock %}
