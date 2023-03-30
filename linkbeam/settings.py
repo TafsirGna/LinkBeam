@@ -134,4 +134,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 APP_NAME = "LinkBeam"
 APP_AUTHOR = "Tafsir GNA"
 APP_CORPORATION_NAME = "Zemini"
+APP_VERSION = "Beta"
 # APP_LOGO = '/linkbeam/app_logo.svg'

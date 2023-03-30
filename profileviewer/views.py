@@ -96,6 +96,7 @@ def profileViewer(request):
     
 
     context = {
-        "settings": settings
+        "settings": settings,
+        "params": request.POST
     }
     return render(request, "profileviewer/viewer.html", context)
