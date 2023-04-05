@@ -8,9 +8,22 @@
 
 {% block body_content %}
 
-	{% include "profileviewer/page_sections/viewer/group_button.html" %}
+	<div class="mb-3 text-center">
+		<span class="badge text-bg-primary"><a href="{{ params.linkURL }}" class="text-light">{{ params.linkURL }}</a></span>
+	</div>
 
-	<!-- user card -->
-	{% include "profileviewer/page_sections/viewer/user_card.html" %}
+	<div class="py-3">
+
+		{% include "profileviewer/page_sections/viewer/group_button.html" %}
+
+		<div class="mb-5">
+			
+			<!-- user card -->
+			{# {% include "profileviewer/page_sections/viewer/user_card.html" %} #}
+
+			{% include "profileviewer/page_sections/viewer/education.html" %}
+
+		</div>
+	</div>
 
 {% endblock %}

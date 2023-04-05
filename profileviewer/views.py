@@ -40,7 +40,7 @@ def profileViewer(request):
     """
     """
 
-    # url = "https://bj.linkedin.com/in/c%C3%A9dric-amoussou-97a901143"
+    # url = "https://bj.linkedin.com/in/c%C3%A9dric-amoussou-97a901143" / 
     # page = requests.get(url)
     # # html = page.read().decode("utf-8")
     # soup = BeautifulSoup(page.content, "html.parser")

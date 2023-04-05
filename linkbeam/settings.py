@@ -31,13 +31,14 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'profileviewer.apps.ProfileviewerConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_vite',
+    'profileviewer.apps.ProfileviewerConfig',
 ]
 
 MIDDLEWARE = [
@@ -120,8 +121,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Where ViteJS production assets are built.
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "dist"
+
+# use HMR or not.
+DJANGO_VITE_DEV_MODE = DEBUG
+
 STATICFILES_DIRS = [
     BASE_DIR / "static",
+    DJANGO_VITE_ASSETS_PATH,
     # '/var/www/static/',
 ]
 
