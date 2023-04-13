@@ -1,4 +1,4 @@
-import "../css/app.css"
+/*import "../css/app.css"*/
 
 /* enabling popovers */
 // const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
