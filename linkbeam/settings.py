@@ -26,8 +26,7 @@ SECRET_KEY = 'django-insecure-pgpl8n0kk(nin8s!jthsikf85j9*7b&_g&yat*u%_9t0=6t$mr
 # DEBUG = True
 DEBUG = False
 
-# ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -121,9 +121,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 
-STATIC_ROOT = BASE_DIR / "static" / "prod"
+STATIC_ROOT = BASE_DIR / "assets"
 
 DEBUG_PROPAGATE_EXCEPTIONS = True
 
@@ -134,7 +134,7 @@ DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "dist"
 DJANGO_VITE_DEV_MODE = DEBUG
 
 STATICFILES_DIRS = [
-    # BASE_DIR / "static",
+    BASE_DIR / "static",
     DJANGO_VITE_ASSETS_PATH,
     # '/var/www/static/',
 ]
