@@ -23,8 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-pgpl8n0kk(nin8s!jthsikf85j9*7b&_g&yat*u%_9t0=6t$mr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
@@ -125,13 +125,13 @@ STATIC_URL = 'static/'
 
 STATIC_ROOT = BASE_DIR / "assets"
 
-DEBUG_PROPAGATE_EXCEPTIONS = True
+# DEBUG_PROPAGATE_EXCEPTIONS = True
 
 # Where ViteJS production assets are built.
 DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "dist"
 
 # use HMR or not.
-DJANGO_VITE_DEV_MODE = DEBUG
+DJANGO_VITE_DEV_MODE = False # DEBUG
 
 STATICFILES_DIRS = [
     BASE_DIR / "static",
