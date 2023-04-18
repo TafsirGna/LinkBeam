@@ -1,6 +1,6 @@
-export default function EducationItems(){
+export default function EducationItems({active}){
 	return (
-		<div class="list-group list-group-checkable d-grid gap-2 border-0 col-6 offset-3 ">
+		<div className={"list-group list-group-checkable d-grid gap-2 border-0 col-6 offset-3 "+(active ? "" : "d-none")}>
 		    <label class="list-group-item rounded-3 py-3 shadow" for="listGroupCheckableRadios1" >
 		      First radio
 		      <span class="d-block small opacity-50">With support text underneath to add more detail</span>

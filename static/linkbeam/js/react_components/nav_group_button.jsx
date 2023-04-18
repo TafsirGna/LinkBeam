@@ -1,7 +1,7 @@
 import 'vite/modulepreload-polyfill';
 import NavButton from "./nav_button" 
 
-export default function NavGroupButton(){
+export default function NavGroupButton({onItemPick, activeItemIndex}){
 
 	const items = [
 		{title: "User Infos", content: "User"},
@@ -12,7 +12,7 @@ export default function NavGroupButton(){
 	];
 
 	const listItems = items.map((item, index) =>
-		<NavButton item={item} active={index == 0 ? true : false} />
+		<NavButton item={item} active={index == activeItemIndex ? true : false} onClick={() => onItemPick(index)}/>
 	);
 
 	return(
