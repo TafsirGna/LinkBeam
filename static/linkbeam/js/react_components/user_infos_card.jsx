@@ -1,6 +1,6 @@
-export default function UserInfosCard({active}){
+export default function UserInfosCard(props){
   return(
-    <div className={""+(active ? "" : "d-none")}>
+    <div className={""+(props.active ? "" : "d-none")}>
       <div class="container d-flex justify-content-center align-items-center">
        <div class="user-card shadow ">
         <div class="upper">

@@ -1,16 +1,16 @@
-from django import template
+# from django import template
 from django.shortcuts import render
 from django.http import HttpResponse
-from selenium import webdriver
+# from selenium import webdriver
 # from urllib.request import urlopen
-import requests
-import pandas as pd
-from bs4 import BeautifulSoup
+# import requests
+# import pandas as pd
+# from bs4 import BeautifulSoup
 # from django.template import loader
 from django.conf import settings
 from django.shortcuts import redirect
-from django.urls import reverse
-import time
+# from django.urls import reverse
+from django.http import JsonResponse
 
 # Create your views here.
 
@@ -24,7 +24,7 @@ def index(request):
     return render(request, "profileviewer/index.html", context)
 
 
-def throwError404(request):
+def throwError(request, codeError):
     """
     """
     
@@ -33,18 +33,28 @@ def throwError404(request):
         "params": request.POST
     }
 
-    return render(request, "profileviewer/error_pages/error_404.html", context)
+    if codeError is None:
+        error_page = "profileviewer/error_pages/error.html"
+    else:
+        error_page = "profileviewer/error_pages/error_404.html"
+
+    return render(request, error_page, context)
 
 
-def profileViewer(request):
+def checkInputURL(request, linkURL):
     """
     """
 
-    # url = "https://bj.linkedin.com/in/c%C3%A9dric-amoussou-97a901143" / 
-    # page = requests.get(url)
-    # # html = page.read().decode("utf-8")
-    # soup = BeautifulSoup(page.content, "html.parser")
-    # print(soup.prettify())
+    linkRootURL = "linkedin.com/in/"
+
+    # throwing an error 404 when it's not a linkedin page
+    if linkRootURL not in linkURL:
+        return throwError(request, 404)
+
+
+def profileViewerPage(request):
+    """
+    """
 
     # prevent access to this resource directly
     if request.method == "GET":
@@ -53,50 +63,30 @@ def profileViewer(request):
     # if the request's method is post 
     params = request.POST
     linkURL = params.get("linkURL")
-    linkRootURL = "linkedin.com/in/"
 
-    # throwing an error 404 when it's not a linkedin page
-    if linkRootURL not in linkURL:
-        return throwError404(request)
+    checkResult = checkInputURL(request, linkURL)
+    if checkResult is not None:
+        return checkResult
 
-
-    # # driver = webdriver.Chrome("/snap/bin/chromium.chromedriver")
-    # driver = webdriver.Chrome("/usr/bin/chromedriver")
-    # driver.get(linkURL)
-
-    # # waiting for the entire page to load
-    # # time.sleep(7)
-
-    # start = time.time()
-     
-    # # will be used in the while loop
-    # initialScroll = 0
-    # finalScroll = 1000
-     
-    # while True:
-    #     driver.execute_script(f"window.scrollTo({initialScroll},{finalScroll})")
-    #     # this command scrolls the window starting from
-    #     # the pixel value stored in the initialScroll
-    #     # variable to the pixel value stored at the
-    #     # finalScroll variable
-    #     initialScroll = finalScroll
-    #     finalScroll += 1000
-     
-    #     # we will stop the script for 3 seconds so that
-    #     # the data can load
-    #     time.sleep(3)
-    #     # You can change it as per your needs and internet speed
-     
-    #     end = time.time()
-     
-    #     # We will scroll for 20 seconds.
-    #     # You can change it as per your needs and internet speed
-    #     if round(end - start) > 20:
-    #         break
-    
+    # using the session framework to store data
+    request.session["profileURL"] = linkURL
 
     context = {
         "settings": settings,
         "params": request.POST
     }
     return render(request, "profileviewer/viewer.html", context)
+
+
+def profileViewerApi(request):
+    """
+    """
+
+    linkURL = request.session.get("profileURL", None)
+
+    if linkURL is None:
+        throwError(request)
+
+    profileData = {}
+
+    return JsonResponse(profileData, safe=False)
