@@ -4,7 +4,6 @@
   "description": "LinkBeam chrome extension ",
   "version": "1.0",
   "action": {
-    "default_popup": "popup/popup.html",
-    "default_icon": "images/app_logo_white.png"
+    "default_popup": "index.html"
   }
 }
