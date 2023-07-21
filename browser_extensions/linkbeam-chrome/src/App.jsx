@@ -1,5 +1,6 @@
 import React from 'react'
 import './App.css'
+import app_logo_white from '/app_logo_white.png'
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
 import Settings from "./react_components/Settings";

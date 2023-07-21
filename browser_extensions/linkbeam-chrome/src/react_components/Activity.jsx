@@ -6,15 +6,16 @@ function Activity(props) {
   return (
     <>
       <div class="clearfix">
-        <small class="float-start shadow d-inline-flex m-2 px-2 py-1 fst-italic fw-semibold text-success-emphasis bg-secondary-subtle border border-success-subtle rounded-2">Viewed Profiles <span class="badge text-bg-primary ms-1 rounded-pill">3</span></small>
+        {/*<small class="float-start shadow d-inline-flex m-2 px-2 py-1 fst-italic fw-semibold text-success-emphasis bg-secondary-subtle border border-success-subtle rounded-2">Viewed Profiles <span class="badge text-bg-primary ms-1 rounded-pill">3</span></small>*/}
 
         {/*setting icon*/}
         <div class="dropdown float-end m-3 mt-2 bd-gray">
-          <div class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+          <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
             <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
           </div>
           <ul class="dropdown-menu shadow-lg">
-            <li><a class="dropdown-item small" href="#">Calendar</a></li>
+            <li><a class="dropdown-item small" href="#">Bookmarks</a></li>
+            <li><a class="dropdown-item small" href="#">Statistics</a></li>
             <li><a class="dropdown-item small" href="#">Settings</a></li>
             <li><a class="dropdown-item small" href="#" onClick={() => {props.switchOnDisplay("About");}} >About</a></li>
           </ul>
