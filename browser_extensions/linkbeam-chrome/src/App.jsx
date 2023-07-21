@@ -4,6 +4,7 @@ import app_logo_white from '/app_logo_white.png'
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
 import Settings from "./react_components/Settings";
+import Statistics from "./react_components/Statistics";
 
 
 export default class App extends React.Component{
@@ -31,9 +32,12 @@ export default class App extends React.Component{
               (<About switchOnDisplay={this.switchOnDisplay} />)
             :
               this.state.onDisplay == "Settings" ? 
-              (<Settings/>)
+              (<Settings switchOnDisplay={this.switchOnDisplay} />)
               :
-                <p>Unexpected error</p>
+                this.state.onDisplay == "Statistics" ? 
+                (<Statistics/>)
+                :
+                  <p>Unexpected error</p>
         }
       </>
     );
