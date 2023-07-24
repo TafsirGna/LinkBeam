@@ -5,6 +5,7 @@ import About from "./react_components/About";
 import Activity from "./react_components/Activity";
 import Settings from "./react_components/Settings";
 import Statistics from "./react_components/Statistics";
+import Keywords from "./react_components/Keywords";
 
 
 export default class App extends React.Component{
@@ -16,6 +17,9 @@ export default class App extends React.Component{
     };
   }
 
+  componentDidMount() {
+  }
+
   switchOnDisplay = (newValue) => {
     this.setState({onDisplay: newValue});
   }
@@ -24,21 +28,16 @@ export default class App extends React.Component{
 
     return(
       <>
-        {
-          this.state.onDisplay == "Activity" ?
-            (<Activity switchOnDisplay={this.switchOnDisplay} />)           
-          :
-            this.state.onDisplay == "About" ? 
-              (<About switchOnDisplay={this.switchOnDisplay} />)
-            :
-              this.state.onDisplay == "Settings" ? 
-              (<Settings switchOnDisplay={this.switchOnDisplay} />)
-              :
-                this.state.onDisplay == "Statistics" ? 
-                (<Statistics/>)
-                :
-                  <p>Unexpected error</p>
-        }
+        {this.state.onDisplay == "Activity" && <Activity className="d-none" switchOnDisplay={this.switchOnDisplay} />}
+
+        {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} />}
+
+        {this.state.onDisplay == "Settings" && <Settings switchOnDisplay={this.switchOnDisplay} />}
+
+        {this.state.onDisplay == "Statistics" && <Statistics switchOnDisplay={this.switchOnDisplay} />}
+
+        {this.state.onDisplay == "Keywords" && <Keywords switchOnDisplay={this.switchOnDisplay} />}
+
       </>
     );
   }
