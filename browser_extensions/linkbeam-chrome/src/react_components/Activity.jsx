@@ -11,13 +11,22 @@ export default class Activity extends React.Component{
 
   componentDidMount() {
 
-    // console.log("Activity component mounted")
     chrome.runtime.sendMessage({header: 'get-search-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
-      console.log('received search list data', response);
-      if (response.status == "SUCCESS"){
-        this.setState({searchList: response.data});
+      console.log('Search list request sent', response);
+    });
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      console.log("Message received : ", message);
+      if (message.header == "search-list"){
+        // sending a response
+        sendResponse({
+            status: "ACK"
+        });
+        // setting the new value
+        this.setState({searchList: message.data});
       }
+
     });
 
   }

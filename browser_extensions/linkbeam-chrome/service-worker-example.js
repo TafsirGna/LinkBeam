@@ -7,7 +7,7 @@ const keywordObjectStoreName = "keywords";
 function createDatabase() {
 
     const dbName = "LinkBeamDB"
-    const request = indexedDB.open(dbName);
+    const request = indexedDB.open(dbName, 1);
 
     request.onerror = function (event) {
         console.log("An error occured when opening the database");
@@ -43,78 +43,56 @@ function createDatabase() {
     }
 }
 
+createDatabase();
+
 // Extension installation script
 
-chrome.runtime.onInstalled.addListener(details => {
+/*chrome.runtime.onInstalled.addListener(details => {
     createDatabase()
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-        /*chrome.runtime.setUninstallURL('https://example.com/extension-survey');*/
+        // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
     }
-});
+});*/
 
 // Script for getting all saved searches
 
-function getSearchList() {
+function provideSearchList() {
     if (db) {
-        if (db.objectStoreNames.contains(searchObjectStoreName)){
-            const objectStore = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName);
-
-            return new Promise((resolve, reject) => {
-                get_transaction.oncomplete = function () {
-                    console.log("Getting all transactions completed");
-                }
-
-                get_transaction.onerror = function () {
-                    console.log("An error occured when retrieving the data");
-                }
-
-                let request = objectStore.getAll();
-
-                request.onsuccess = function (event) {
-                    resolve(event.target.result);
-                }
-            });
-        }
-        else{
-            console.log("ObjectStore 'Search' empty")
-            return null;
-        }
+        db
+            .transaction(searchObjectStoreName, "readonly")
+            .objectStore(searchObjectStoreName)
+            .getAll()
+            .onsuccess = (event) => {
+                console.log('Got all searches:', event.target.result);
+                // Sending the retrieved data
+                chrome.runtime.sendMessage({header: 'search-list', data: event.target.result}, (response) => {
+                  console.log('Search list response sent', response);
+                });
+            };
     }
     else{
-        console.log("Database not initialized for data retrieving");
+        console.log("Database not found");
     }
 }
 
 // Script for getting all saved searches
 
-function getKeywordList() {
+function provideKeywordList() {
     if (db) {
-        if (db.objectStoreNames.contains(keywordObjectStoreName)){
-            const objectStore = db.transaction(keywordObjectStoreName, "readonly").objectStore(keywordObjectStoreName);
-
-            return new Promise((resolve, reject) => {
-                get_transaction.oncomplete = function () {
-                    console.log("Getting all transactions completed");
-                }
-
-                get_transaction.onerror = function () {
-                    console.log("An error occured when retrieving the data");
-                }
-
-                let request = objectStore.getAll();
-
-                request.onsuccess = function (event) {
-                    resolve(event.target.result);
-                }
-            });
-        }
-        else{
-            console.log("ObjectStore 'Keyword' empty")
-            return null;
-        }
+        db
+            .transaction(keywordObjectStoreName, "readonly")
+            .objectStore(keywordObjectStoreName)
+            .getAll()
+            .onsuccess = (event) => {
+                console.log('Got all keywords:', event.target.result);
+                // Sending the retrieved data
+                chrome.runtime.sendMessage({header: 'keyword-list', data: event.target.result}, (response) => {
+                  console.log('Keyword list response sent', response);
+                });
+            };
     }
     else{
-        console.log("Database not initialized for data retrieving");
+        console.log("Database not found");
     }
 }
 
@@ -122,26 +100,14 @@ function getKeywordList() {
 
 function add_keyword(keywordData) {
     if (db) {
-        const objectStore = db.transaction("keywords", "readwrite").objectStore("keywords");
-
-        return new Promise((resolve, reject) => {
-            insert_transaction.oncomplete = function () {
-                console.log("Getting all insert transactions completed");
-                resolve(true);
-            }
-
-            insert_transaction.onerror = function () {
-                console.log("An error occured when adding a new keyword")
-                resolve(false);
-            }
-
-            keywordData.forEach(keyword => {
-                let request = objectStore.add(keyword);
-
-                request.onsuccess = function () {
-                    console.log("Added: ", keyword);
-                }
-            });
+        const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
+        keywordData.forEach((keyword) => {
+          const request = objectStore.add(keyword);
+          request.onsuccess = (event) => {
+            // console.log("New keyword added")
+            // Sending the new list
+            provideKeywordList() 
+          };
         });
     }
     else{
@@ -152,66 +118,35 @@ function add_keyword(keywordData) {
 // Script for listening to the events
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log("Message received : ", message)
+  console.log("Message received : ", message)
   // Script for getting all the searches done so far
-  if (message.header === 'get-search-list') {
-    let request = getSearchList()
-
-    if (request){
-        request.then(result => {
-            let responseObject = {
-                status: "SUCCESS",
-                data: result
-            };
-            sendResponse(responseObject);
+  switch(message.header){
+    case 'get-search-list':{
+        // sending a response
+        sendResponse({
+            status: "ACK"
         });
+        // providing the result
+        provideSearchList();
+        break;
     }
-    else{
-        let responseObject = {
-            status: "SUCCESS",
-            data: []
-        };
-        sendResponse(responseObject);
-    }
-  }
-  else if (message.header === 'get-keyword-list'){
-    let request = getKeywordList()
-
-    if (request){
-        request.then(result => {
-            let responseObject = {
-                status: "SUCCESS",
-                data: result
-            };
-            sendResponse(responseObject);
+    case 'get-keyword-list':{
+        // sending a response
+        sendResponse({
+            status: "ACK"
         });
+        // providing the result
+        provideKeywordList();
+        break;
     }
-    else{
-        let responseObject = {
-            status: "SUCCESS",
-            data: []
-        };
-        sendResponse(responseObject);
-    }
-  }
-  else if (message.header === 'add-keyword'){
-    let request = add_keyword(message.data)
-
-    if (request){
-        request.then(result => {
-            let responseObject = {
-                status: "SUCCESS",
-                data: result
-            };
-            sendResponse(responseObject);
+    case 'add-keyword':{
+        // sending a response
+        sendResponse({
+            status: "ACK"
         });
-    }
-    else{
-        let responseObject = {
-            status: "ERROR",
-            data: []
-        };
-        sendResponse(responseObject);
+        // Adding the new keyword
+        add_keyword(message.data)       
+        break;
     }
   }
 });

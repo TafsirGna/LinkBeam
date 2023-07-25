@@ -20,10 +20,20 @@ export default class Keywords extends React.Component{
 
     chrome.runtime.sendMessage({header: 'get-keyword-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
-      console.log('received keyword list data', response);
-      if (response.status == "SUCCESS"){
-        this.setState({keywordList: response.data});
+      console.log('Keyword list request sent', response);
+    });
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      console.log("Message received : ", message);
+      if (message.header == "keyword-list"){
+        // sending a response
+        sendResponse({
+            status: "ACK"
+        });
+        // setting the new value
+        this.setState({keywordList: message.data});
       }
+
     });
 
   }
@@ -38,10 +48,7 @@ export default class Keywords extends React.Component{
 
       chrome.runtime.sendMessage({header: 'add-keyword', data:[{uid: uid(), name: this.state.keyword}]}, (response) => {
         // Got an asynchronous response with the data from the service worker
-        console.log('new keyword added', response);
-        if (response.status == "SUCCESS"){
-          // this.setState({keywordList: response.data});
-        }
+        console.log('new keyword request sent', response);
       });
     }
   }
@@ -80,11 +87,6 @@ export default class Keywords extends React.Component{
                   <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={this.deleteKeyword}>
                     <span class="d-inline-block bg-success rounded-circle p-1"></span>
                     Action
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                  </a></li>
-                  <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#">
-                    <span class="d-inline-block bg-primary rounded-circle p-1"></span>
-                    Another action
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                   </a></li>
                 </ul>}
