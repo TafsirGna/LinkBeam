@@ -13,7 +13,7 @@ function About(props) {
         <div class="text-center">
           <img src={app_logo}  alt=""/>
           <p class="fw-bold mt-2">
-            LinkBeam <span class="badge text-bg-primary">1.0</span>
+            LinkBeam <span class="badge text-bg-primary">0.1.0</span>
           </p>
           <p class="fw-light mt-2">
             LinkBeam is a light app designed to vizualize in a different way all publicly available linkedin profiles.

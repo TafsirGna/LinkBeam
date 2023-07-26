@@ -9,7 +9,8 @@ export default class Keywords extends React.Component{
     super(props);
     this.state = {
       keyword: "",
-      keywordList: null
+      keywordList: null,
+      keywordListTags: null,
     };
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
@@ -18,30 +19,59 @@ export default class Keywords extends React.Component{
 
   componentDidMount() {
 
+    // setting the local variable with the global data
+    this.setState({keywordList: this.props.globalData.keywordList})
+
     chrome.runtime.sendMessage({header: 'get-keyword-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Keyword list request sent', response);
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log("Message received : ", message);
-      if (message.header == "keyword-list"){
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
-        // setting the new value
-        this.setState({keywordList: message.data});
+      switch(message.header){
+        case "keyword-list":{
+          console.log("Message received : ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          // setting the new value
+          this.setState({
+            keywordList: message.data,
+            keywordListTags: message.data.map(keyword =>
+                                <li key={keyword.uid}>
+                                  <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.deleteKeyword(keyword)}}>
+                                    <span class="d-inline-block bg-success rounded-circle p-1"></span>
+                                    {keyword.name}
+                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                  </a>
+                                </li>
+                              ),
+          });
+
+          // setting the global variable with the local data
+          this.props.globalData.keywordList = message.data;
+          break;
+        }
       }
 
     });
 
   }
 
-  deleteKeyword(){
-    confirm("Do you confirm the deletion of this keyword ?");
+  // Function for initiating the deletion of a keyword
+  deleteKeyword(keyword){
+    const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
+    if (response){
+      chrome.runtime.sendMessage({header: 'delete-keyword', data:keyword.uid}, (response) => {
+        // Got an asynchronous response with the data from the service worker
+        console.log('keyword deletion request sent', response);
+      });
+    }
   }
 
+  // Function for initiating the insertion of a keyword
   addKeyword(){
     if (this.state.keyword != ""){
       console.log("Adding keyword", this.state.keyword);
@@ -49,6 +79,9 @@ export default class Keywords extends React.Component{
       chrome.runtime.sendMessage({header: 'add-keyword', data:[{uid: uid(), name: this.state.keyword}]}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('new keyword request sent', response);
+
+        // cleaning the keyword input
+        this.setState({keyword: ""})
       });
     }
   }
@@ -84,11 +117,7 @@ export default class Keywords extends React.Component{
                     </div>}
 
             {this.state.keywordList != null && this.state.keywordList.length != 0 && <ul class="list-unstyled mb-0 rounded shadow p-2">
-                  <li><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={this.deleteKeyword}>
-                    <span class="d-inline-block bg-success rounded-circle p-1"></span>
-                    Action
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                  </a></li>
+                  {this.state.keywordListTags}
                 </ul>}
           </div>
         </div>

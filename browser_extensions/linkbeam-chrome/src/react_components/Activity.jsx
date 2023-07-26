@@ -5,11 +5,14 @@ export default class Activity extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      searchList: null,
+      searchList: null
     };
   }
 
   componentDidMount() {
+
+    // setting the local variable with the global data
+    this.setState({searchList: this.props.globalData.searchList})
 
     chrome.runtime.sendMessage({header: 'get-search-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
@@ -17,14 +20,17 @@ export default class Activity extends React.Component{
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log("Message received : ", message);
       if (message.header == "search-list"){
+        console.log("Message received : ", message);
         // sending a response
         sendResponse({
             status: "ACK"
         });
         // setting the new value
         this.setState({searchList: message.data});
+
+        // setting the global variable with the local data
+        this.props.globalData.searchList = message.data;
       }
 
     });

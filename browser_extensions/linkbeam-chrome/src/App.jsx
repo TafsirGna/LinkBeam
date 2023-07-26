@@ -13,7 +13,11 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      onDisplay: "Activity"
+      onDisplay: "Activity",
+      globalData: {
+        keywordList: null,
+        searchList: null,
+      }
     };
   }
 
@@ -28,15 +32,15 @@ export default class App extends React.Component{
 
     return(
       <>
-        {this.state.onDisplay == "Activity" && <Activity className="d-none" switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
         {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Settings" && <Settings switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Statistics" && <Statistics switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Statistics" && <Statistics globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Keywords" && <Keywords switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
       </>
     );
