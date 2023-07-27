@@ -138,6 +138,25 @@ function delete_keyword(keywordData) {
     }
 }
 
+// Script for clearing an objectStore
+
+function clearObjectStores(objectStoreNames){
+    if (objectStoreNames.length == 0){
+        // Notifiying the end of the erasing process
+        chrome.runtime.sendMessage({header: 'all-data-erased', data: null}, (response) => {
+          console.log('erase all data response sent', response);
+        });
+        return;
+    }
+
+    const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
+    objectStore.clear().onsuccess = (event) => {
+        // Clearing the next objectStore
+        objectStoreNames.shift()
+        clearObjectStores(objectStoreNames)
+    }
+}
+
 // Script handling the message execution
 
 function processMessageEvent(message, sender, sendResponse){
@@ -190,13 +209,29 @@ function processMessageEvent(message, sender, sendResponse){
             delete_keyword(message.data)       
             break;
         }
-    case 'get-keyword-count':{
+        case 'get-keyword-count':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Adding the new keyword
             provideKeywordCount()       
+            break;
+        }
+        case 'erase-all-data':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Erasing all data
+            const data = db.objectStoreNames;
+            let objectStoreNames = [];
+            for (var key in data){
+                if (typeof data[key] === "string"){
+                    objectStoreNames.push(data[key]);
+                }
+            }
+            clearObjectStores(objectStoreNames);
             break;
         }
         default:{

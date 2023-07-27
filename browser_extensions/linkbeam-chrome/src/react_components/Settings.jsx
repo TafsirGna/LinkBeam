@@ -24,14 +24,24 @@ export default class Settings extends React.Component{
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.header == "keyword-count"){
-        console.log("Message received : ", message);
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
-        // setting the new value
-        this.setState({keywordCount: message.data});
+      switch(message.header){
+        case "keyword-count": {
+          console.log("Message received : ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+          // setting the new value
+          this.setState({keywordCount: message.data});
+          break;
+        }
+        case "all-data-erased": {
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+          break;
+        }
       }
 
     });
@@ -41,6 +51,11 @@ export default class Settings extends React.Component{
     const response = confirm("Do you confirm the erase of all your data ?");
     if (response){
       // Initiate data removal
+
+      chrome.runtime.sendMessage({header: 'erase-all-data', data: null}, (response) => {
+        // Got an asynchronous response with the data from the service worker
+        console.log('Erase all data request sent', response);
+      });
     }
   }
 

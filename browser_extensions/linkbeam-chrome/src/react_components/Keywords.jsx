@@ -11,6 +11,11 @@ export default class Keywords extends React.Component{
       keyword: "",
       keywordList: null,
       keywordListTags: null,
+      processingState:{
+        status: "NO",
+        info: ""
+      },
+      alertBadgeContent: ""
     };
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
@@ -52,6 +57,30 @@ export default class Keywords extends React.Component{
 
           // setting the global variable with the local data
           this.props.globalData.keywordList = message.data;
+
+          // Displaying the alertBadge
+          if (this.state.processingState.status == "YES"){
+            switch(this.state.processingState.info){
+              case "ADDING":{
+                this.setState({alertBadgeContent: "Added !"});
+                break
+              }
+            case "DELETING":{
+                this.setState({alertBadgeContent: "Deleted !"});
+                break
+              }
+            }
+          }
+
+          // Setting a timeout for the alertBadge to disappear
+          setTimeout(() => {
+            this.setState({alertBadgeContent: ""});
+          }
+          , 3000);
+
+          // vanishing the spinner
+          this.setState({processingState: {status: "NO", info: ""}});
+
           break;
         }
       }
@@ -63,6 +92,9 @@ export default class Keywords extends React.Component{
   // Function for initiating the deletion of a keyword
   deleteKeyword(keyword){
     const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
+    // Displaying the spinner
+    this.setState({processingState: {status: "YES", info: "DELETING"}});
+
     if (response){
       chrome.runtime.sendMessage({header: 'delete-keyword', data:keyword.uid}, (response) => {
         // Got an asynchronous response with the data from the service worker
@@ -74,6 +106,9 @@ export default class Keywords extends React.Component{
   // Function for initiating the insertion of a keyword
   addKeyword(){
     if (this.state.keyword != ""){
+      // Displaying the spinner
+      this.setState({processingState: {status: "YES", info: "ADDING"}});
+
       console.log("Adding keyword", this.state.keyword);
 
       chrome.runtime.sendMessage({header: 'add-keyword', data:[{uid: uid(), name: this.state.keyword}]}, (response) => {
@@ -97,6 +132,14 @@ export default class Keywords extends React.Component{
 
         <div class="p-3">
           <BackToPrev onClick={() => this.props.switchOnDisplay("Settings")}/>
+          <div class="clearfix">
+            <div class={"spinner-grow float-end spinner-grow-sm text-danger " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <div class={"float-end " + (this.state.alertBadgeContent == "" ? "d-none" : "")}>
+              <span class="badge text-bg-success fst-italic shadow-sm">{this.state.alertBadgeContent}</span>
+            </div>
+          </div>
           <div class="mt-3">
             <div class="input-group mb-3">
               <input type="text" class="form-control" placeholder="New keyword" aria-describedby="basic-addon2" value={this.state.keyword} onChange={this.handleKeywordInputChange}/>
