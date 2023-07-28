@@ -56,7 +56,7 @@ export default class Keywords extends React.Component{
           });
 
           // setting the global variable with the local data
-          this.props.globalData.keywordList = message.data;
+          this.props.onGlobalDataUpdate("KEYWORD", message.data)
 
           // Displaying the alertBadge
           if (this.state.processingState.status == "YES"){
@@ -137,7 +137,10 @@ export default class Keywords extends React.Component{
               <span class="visually-hidden">Loading...</span>
             </div>
             <div class={"float-end " + (this.state.alertBadgeContent == "" ? "d-none" : "")}>
-              <span class="badge text-bg-success fst-italic shadow-sm">{this.state.alertBadgeContent}</span>
+              <span class="badge text-bg-success fst-italic shadow-sm">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                {this.state.alertBadgeContent}
+              </span>
             </div>
           </div>
           <div class="mt-3">

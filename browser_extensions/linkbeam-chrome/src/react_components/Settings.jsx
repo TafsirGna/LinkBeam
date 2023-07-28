@@ -8,7 +8,13 @@ export default class Settings extends React.Component{
     super(props);
     this.state = {
       keywordCount: 0,
+      processingState: {
+        status: "NO",
+        info: ""
+      }
     };
+
+    this.deleteAll = this.deleteAll.bind(this);
   }
 
   componentDidMount() {
@@ -40,6 +46,21 @@ export default class Settings extends React.Component{
           sendResponse({
               status: "ACK"
           });
+
+          // Displaying the validation sign
+          this.setState({processingState: {status: "NO", info: "ERASING"}});
+
+          // Updating the global data
+          this.props.onGlobalDataUpdate("ALL", "");
+
+          // updating local value
+          this.setState({keywordCount: 0});
+
+          // Setting a timer to reset all of this
+          setTimeout(() => {
+            this.setState({processingState: {status: "NO", info: ""}});
+          }, 3000);
+
           break;
         }
       }
@@ -50,8 +71,10 @@ export default class Settings extends React.Component{
   deleteAll(){
     const response = confirm("Do you confirm the erase of all your data ?");
     if (response){
-      // Initiate data removal
+      // Displaying the spinner
+      this.setState({processingState: {status: "YES", info: "ERASING"}});
 
+      // Initiate data removal
       chrome.runtime.sendMessage({header: 'erase-all-data', data: null}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('Erase all data request sent', response);
@@ -90,7 +113,11 @@ export default class Settings extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Erase all data</strong>
-                  <a href="#" class="text-danger badge" onClick={this.deleteAll}>Delete</a>
+                  <a href="#" class={"text-danger badge " + (this.state.processingState.status == "NO" && this.state.processingState.info == ""  ? "" : "d-none")} onClick={this.deleteAll}>Delete</a>
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={"css-i6dzq1 " + (this.state.processingState.status == "NO" && this.state.processingState.info != "" ? "" : "d-none")}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  <div class={"spinner-border spinner-border-sm " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

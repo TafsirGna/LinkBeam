@@ -19,6 +19,7 @@ export default class App extends React.Component{
         searchList: null,
       }
     };
+    this.updateGlobalData = this.updateGlobalData.bind(this);
   }
 
   componentDidMount() {
@@ -28,19 +29,50 @@ export default class App extends React.Component{
     this.setState({onDisplay: newValue});
   }
 
+  updateGlobalData(propName, propValue){
+    switch(propName){
+      case "ALL":{
+        this.setState({globalData: {keywordList: [], searchList: []}});
+        // this.setState({globalData: {keywordList: [], searchList: []}}, () => { console.log("All : ", this.state.globalData); });
+        
+        break;
+      }
+
+      case "KEYWORD": {
+        this.setState((prevState) => ({
+          globalData: {
+            keywordList: propValue,
+            searchList: prevState.globalData.searchList
+          }
+        }), () => {console.log("Rooo : ", this.state.globalData)});
+        break;
+      }
+
+      case "SEARCH": {
+        this.setState((prevState) => ({
+          globalData: {
+            keywordList: prevState.globalData.keywordList,
+            searchList: propValue
+          }
+        }));
+        break;
+      }
+    }
+  }
+
   render(){
 
     return(
       <>
-        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
 
         {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
 
         {this.state.onDisplay == "Statistics" && <Statistics globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
 
       </>
     );
