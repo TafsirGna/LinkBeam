@@ -163,7 +163,7 @@ export default class Settings extends React.Component{
         <div class="p-3">
           <BackToPrev onClick={() => this.props.switchOnDisplay("Activity")}/>
 
-          <div id="carouselExample" class="carousel slide carousel-dark carousel-fade">
+          <div id="carouselExample" class="carousel slide carousel-dark">
             <div class="carousel-inner">
               <div class="carousel-item active">
                 {this.state.lineData && <Line options={lineOptions} data={this.state.lineData} />}
