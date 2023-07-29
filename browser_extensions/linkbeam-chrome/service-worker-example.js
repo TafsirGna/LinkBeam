@@ -16,16 +16,11 @@ function createDatabase(context) {
     request.onupgradeneeded = function (event) {
         db = event.target.result;
 
-        let searchObjectStore = db.createObjectStore(searchObjectStoreName, {
-            keyPath: 'uid'
-        });
+        let searchObjectStore = db.createObjectStore(searchObjectStoreName, { autoIncrement: true });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
         }
-
-        // creating an index on this objectStore
-        searchObjectStore.createIndex("uid", "uid", { unique: true });
 
         let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, {
             keyPath: 'uid'
@@ -45,8 +40,11 @@ function createDatabase(context) {
         console.log("Database successfully initialized and opened");
 
         // once, the database obtained, execute the sent request in a runtime context
-        if (context.status == "RUNTIME"){
+        if (context.status == "RUNTIME-MESSAGE-EVENT"){
             processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
+        }
+        else if (context.status == "RUNTIME-TAB-EVENT"){
+            processTabEvent(context.params.tabId, context.params.changeInfo, context.params.tab);
         }
 
         db.onerror = function (event) {
@@ -111,6 +109,20 @@ function provideKeywordList() {
           console.log('Keyword list response sent', response);
         });
     };
+}
+
+// Script for adding a new search
+
+function add_search(searchData) {
+    const objectStore = db.transaction(searchObjectStoreName, "readwrite").objectStore(searchObjectStoreName);
+    searchData.forEach((search) => {
+      const request = objectStore.add(search);
+      request.onsuccess = (event) => {
+        // console.log("New keyword added")
+        // Sending the new list
+        provideSearchList() 
+      };
+    });
 }
 
 // Script for adding a new keyword
@@ -238,22 +250,61 @@ function processMessageEvent(message, sender, sendResponse){
             // TODO
         }
     }
-}
+};
 
-// Script for listening to the events
+// Script for processing tab event
+function processTabEvent(tabId, changeInfo, tab){
+    if (changeInfo.url) {
+        searches = [
+            {
+                fullName: "John Doe",
+                title: "Software Engineer",
+                info: "About",
+                imageUrl: "ok",
+                coverImageUrl: "ok",
+                date: new Date().toISOString(),
+                nFollowers: 0,
+                nConnections: 0, 
+                location: "",
+                bookmarked: true,
+                education: {},
+                experience: {},
+                certifications: {},
+                newsFeed: {},
+                languages: {}
+            }
+        ];
+        add_search(searches);
+    }
+};
+
+// Script for listening to all events related to the content scripts
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
-    // making the database is up and running
+    // making sure the database is up and running
     if (!db){
         // sending a response
         sendResponse({
             status: "ACK"
         });
-        createDatabase({status: "RUNTIME", params: {message: message, sender: sender, sendResponse: sendResponse}});
+        createDatabase({status: "RUNTIME-MESSAGE-EVENT", params: {message: message, sender: sender, sendResponse: sendResponse}});
         return;
     }
 
     processMessageEvent(message, sender, sendResponse)    
 });
 
+// Script for linstening to all tab updates
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+
+    // making the database is up and running
+    if (!db){
+        createDatabase({status: "RUNTIME-TAB-EVENT", params: {tabId: tabId, changeInfo: changeInfo, tab: tab}});
+        return;
+    }
+
+    processTabEvent(tabId, changeInfo, tab);
+  }
+);

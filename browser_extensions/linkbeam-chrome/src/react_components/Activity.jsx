@@ -1,19 +1,27 @@
 import React from 'react'
 import HomeMenu from "./widgets/HomeMenu"
+import user_icon from '../assets/user_icon.png'
+import moment from 'moment';
 
 export default class Activity extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      searchList: null
+      searchList: null,
+      searchListTags: null,
     };
+
+    this.setListData = this.setListData.bind(this);
+
   }
 
   componentDidMount() {
 
     // setting the local variable with the global data
-    this.setState({searchList: this.props.globalData.searchList})
+    if (this.props.globalData.searchList){
+      this.setListData(this.props.globalData.searchList);
+    }
 
     chrome.runtime.sendMessage({header: 'get-search-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
@@ -28,7 +36,7 @@ export default class Activity extends React.Component{
             status: "ACK"
         });
         // setting the new value
-        this.setState({searchList: message.data});
+        this.setListData(message.data);
 
         // setting the global variable with the local data
         this.props.globalData.searchList = message.data;
@@ -38,15 +46,36 @@ export default class Activity extends React.Component{
 
   }
 
+  setListData(listData){
+    this.setState({
+      searchList: listData,
+      searchListTags: listData.map((search) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                              <img src={user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
+                              <div class="d-flex gap-2 w-100 justify-content-between">
+                                <div>
+                                  <h6 class="mb-0">{search.fullName}</h6>
+                                  <p class="mb-0 opacity-75">{search.title}</p>
+                                  <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">0 followers · 0 connections</p>
+                                </div>
+                                <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
+                              </div>
+                            </a>)),
+    });
+  }
+
   render(){
 
     return (
       <>
         <div class="clearfix">
-
           {/*setting icon*/}
           <HomeMenu switchOnDisplay={this.props.switchOnDisplay} />
-
+        </div>
+        <div class="text-center">
+          <div class="btn-group btn-group-sm mb-2" role="group" aria-label="Small button group">
+            <button type="button" class="btn btn-primary badge">All</button>
+            <button type="button" class="btn btn-secondary badge">Bookmarks</button>
+          </div>
         </div>
         <div>
           {this.state.searchList == null && <div class="text-center"><div class="mb-5"><div class="spinner-border text-primary" role="status">
@@ -61,27 +90,8 @@ export default class Activity extends React.Component{
                       <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles yet</span></p>
                     </div>}
 
-          {this.state.searchList != null && this.state.searchList.length != 0 && <div class="list-group m-1 shadow">
-            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-              <img src="https://github.com/twbs.png" alt="twbs" width="32" height="32" class="rounded-circle flex-shrink-0"/>
-              <div class="d-flex gap-2 w-100 justify-content-between">
-                <div>
-                  <h6 class="mb-0">List group item heading</h6>
-                  <p class="mb-0 opacity-75">Some placeholder content in a paragraph.</p>
-                </div>
-                <small class="opacity-50 text-nowrap">now</small>
-              </div>
-            </a>
-            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-              <img src="https://github.com/twbs.png" alt="twbs" width="32" height="32" class="rounded-circle flex-shrink-0"/>
-              <div class="d-flex gap-2 w-100 justify-content-between">
-                <div>
-                  <h6 class="mb-0">Another title here</h6>
-                  <p class="mb-0 opacity-75">Some placeholder content in a paragraph that goes a little longer so it wraps to a new line.</p>
-                </div>
-                <small class="opacity-50 text-nowrap">3d</small>
-              </div>
-            </a>
+          {this.state.searchList != null && this.state.searchList.length != 0 && <div class="list-group m-1 shadow small">
+            {this.state.searchListTags}
           </div>}
         </div>
       </>

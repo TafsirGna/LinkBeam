@@ -20,12 +20,15 @@ export default class Keywords extends React.Component{
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
+    this.setListData = this.setListData.bind(this);
   }
 
   componentDidMount() {
 
     // setting the local variable with the global data
-    this.setState({keywordList: this.props.globalData.keywordList})
+    if (this.props.globalData.keywordList){
+      this.setListData(this.props.globalData.keywordList);
+    }
 
     chrome.runtime.sendMessage({header: 'get-keyword-list', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
@@ -42,18 +45,7 @@ export default class Keywords extends React.Component{
           });
 
           // setting the new value
-          this.setState({
-            keywordList: message.data,
-            keywordListTags: message.data.map(keyword =>
-                                <li key={keyword.uid}>
-                                  <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.deleteKeyword(keyword)}}>
-                                    <span class="d-inline-block bg-success rounded-circle p-1"></span>
-                                    {keyword.name}
-                                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                                  </a>
-                                </li>
-                              ),
-          });
+          this.setListData(message.data)
 
           // setting the global variable with the local data
           this.props.onGlobalDataUpdate("KEYWORD", message.data)
@@ -87,6 +79,21 @@ export default class Keywords extends React.Component{
 
     });
 
+  }
+
+  setListData(listData){
+    this.setState({
+      keywordList: listData,
+      keywordListTags: listData.map((keyword) =>
+                          (<li key={keyword.uid}>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.deleteKeyword(keyword)}}>
+                              <span class="d-inline-block bg-success rounded-circle p-1"></span>
+                              {keyword.name}
+                              <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                            </a>
+                          </li>)
+                        ),
+    });
   }
 
   // Function for initiating the deletion of a keyword
