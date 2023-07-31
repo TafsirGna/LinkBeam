@@ -15,15 +15,22 @@ export default class Keywords extends React.Component{
         status: "NO",
         info: ""
       },
-      alertBadgeContent: ""
+      alertBadgeContent: "",
+      keywordCountLimit: 0,
     };
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
     this.setListData = this.setListData.bind(this);
+    this.checkInputKeyword = this.checkInputKeyword.bind(this);
   }
 
   componentDidMount() {
+
+    // setting the keyword count limit
+    this.setState({
+      keywordCountLimit: this.props.globalData.appParams.keywordCountLimit
+    }); 
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
@@ -37,6 +44,11 @@ export default class Keywords extends React.Component{
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
+        case "add-keyword-error":{
+          alert(message.data);
+          break;
+        }
+
         case "keyword-list":{
           console.log("Message received : ", message);
           // sending a response
@@ -57,7 +69,7 @@ export default class Keywords extends React.Component{
                 this.setState({alertBadgeContent: "Added !"});
                 break
               }
-            case "DELETING":{
+              case "DELETING":{
                 this.setState({alertBadgeContent: "Deleted !"});
                 break
               }
@@ -70,12 +82,12 @@ export default class Keywords extends React.Component{
           }
           , 3000);
 
-          // vanishing the spinner
-          this.setState({processingState: {status: "NO", info: ""}});
-
           break;
         }
       }
+
+      // vanishing the spinner
+      this.setState({processingState: {status: "NO", info: ""}});
 
     });
 
@@ -113,6 +125,12 @@ export default class Keywords extends React.Component{
   // Function for initiating the insertion of a keyword
   addKeyword(){
     if (this.state.keyword != ""){
+
+      if (this.checkInputKeyword() == false){
+        console.log("exiting function ");
+        return;
+      }
+
       // Displaying the spinner
       this.setState({processingState: {status: "YES", info: "ADDING"}});
 
@@ -128,6 +146,27 @@ export default class Keywords extends React.Component{
     }
   }
 
+  checkInputKeyword(){
+
+    // Enforcing the limit constraint on the list length
+    if (this.state.keywordList.length == this.state.keywordCountLimit){
+      alert("You can not add more than "+this.state.keywordCountLimit+" keywords !");
+      return false;
+    }
+
+    // Making sure that there's no duplicates
+    for (let i = 0; i < this.state.keywordList.length; i++){
+      let keyword = this.state.keywordList[i];
+      if (keyword.name === this.state.keyword){
+        alert("Duplicated keywords are not allowed !");
+        return false;
+      }
+    }
+
+    console.log("returning true");
+    return true;
+  }
+
   handleKeywordInputChange(event) {
     this.setState({keyword: event.target.value});
   }
@@ -136,11 +175,10 @@ export default class Keywords extends React.Component{
 
     return(
       <>
-
         <div class="p-3">
           <BackToPrev onClick={() => this.props.switchOnDisplay("Settings")}/>
           <div class="clearfix">
-            <div class={"spinner-grow float-end spinner-grow-sm text-danger " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
+            <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <div class={"float-end " + (this.state.alertBadgeContent == "" ? "d-none" : "")}>
@@ -151,7 +189,7 @@ export default class Keywords extends React.Component{
             </div>
           </div>
           <div class="mt-3">
-            <div class="input-group mb-3">
+            <div class="input-group mb-3 shadow-sm">
               <input type="text" class="form-control" placeholder="New keyword" aria-describedby="basic-addon2" value={this.state.keyword} onChange={this.handleKeywordInputChange}/>
               <span class="input-group-text handy-cursor" id="basic-addon2" onClick={this.addKeyword}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="#0d6efd" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>

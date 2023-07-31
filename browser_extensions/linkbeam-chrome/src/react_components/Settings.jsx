@@ -93,7 +93,7 @@ export default class Settings extends React.Component{
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Activate notifications</strong>
                   <div class="form-check form-switch">
-                    <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked />
+                    <input class="form-check-input shadow" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked />
                     <label class="form-check-label" for="flexSwitchCheckChecked"></label>
                   </div>
                 </div>
@@ -103,7 +103,7 @@ export default class Settings extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1">{this.state.keywordCount}</span></strong>
+                  <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
                   <a href="#" class="text-primary badge" title="Add new keyword" onClick={() => this.props.switchOnDisplay("Keywords")}>Add</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}

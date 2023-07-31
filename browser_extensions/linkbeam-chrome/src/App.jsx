@@ -17,12 +17,39 @@ export default class App extends React.Component{
       globalData: {
         keywordList: null,
         searchList: null,
+        appParams: null,
       }
     };
     this.updateGlobalData = this.updateGlobalData.bind(this);
   }
 
   componentDidMount() {
+
+    chrome.runtime.sendMessage({header: 'get-app-params', data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('App params list request sent', response);
+    });
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.header == "app-params-list"){
+        console.log("Message received : ", message);
+        // sending a response
+        sendResponse({
+            status: "ACK"
+        });
+
+        // setting the new value
+        this.setState((prevState) => ({
+          globalData: {
+            keywordList: prevState.globalData.keywordList,
+            searchList: prevState.globalData.searchList,
+            appParams: message.data,
+          }
+        }));
+      }
+
+    });
+
   }
 
   switchOnDisplay = (newValue) => {
@@ -66,7 +93,7 @@ export default class App extends React.Component{
       <>
         {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} globalData={this.state.globalData} />}
 
         {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
 

@@ -3,6 +3,11 @@
 let db = null;
 const searchObjectStoreName = "searches";
 const keywordObjectStoreName = "keywords";
+const settingObjectStoreName = "settings";
+const appParams = {appVersion: "0.1.0", keywordCountLimit: 5};
+const settingData = [{
+    notifications: true,
+}];
 
 function createDatabase(context) {
 
@@ -33,6 +38,12 @@ function createDatabase(context) {
         keywordObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Keyword' created.");
         }
+
+        let settingObjectStoreName = db.createObjectStore(settingObjectStoreName, { autoIncrement: true });
+
+        searchObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Setting' created.");
+        }
     }
 
     request.onsuccess = function (event) {
@@ -40,6 +51,9 @@ function createDatabase(context) {
         console.log("Database successfully initialized and opened");
 
         // once, the database obtained, execute the sent request in a runtime context
+        if (context.status == "INSTALL"){
+            initializeDatabase();
+        }
         if (context.status == "RUNTIME-MESSAGE-EVENT"){
             processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
         }
@@ -55,12 +69,36 @@ function createDatabase(context) {
 
 // Extension installation script
 
-/*chrome.runtime.onInstalled.addListener(details => {
+chrome.runtime.onInstalled.addListener(details => {
     createDatabase({status: "INSTALL"})
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
         // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
     }
-});*/
+});
+
+// Script for initializing the database
+
+function initializeDatabase(){
+
+    // initialize settings
+    initSettings();
+}
+
+// Script for intializing the "Setting" object store
+
+function initSettings(){
+
+    // Checking first that the settings are already set 
+
+    // if nothing is set then proceed to set it up
+    const objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
+    settingData.forEach((setting) => {
+      const request = objectStore.add(setting);
+      request.onsuccess = (event) => {
+        console.log("Setting data set");
+      };
+    });
+}
 
 // Script for getting all saved searches
 
@@ -70,9 +108,12 @@ function provideSearchList() {
     .objectStore(searchObjectStoreName)
     .getAll()
     .onsuccess = (event) => {
-        console.log('Got all searches:', event.target.result);
+        let results = event.target.result;
+        results.reverse();
+
+        console.log('Got all searches:', results);
         // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'search-list', data: event.target.result}, (response) => {
+        chrome.runtime.sendMessage({header: 'search-list', data: results}, (response) => {
           console.log('Search list response sent', response);
         });
     };
@@ -111,6 +152,14 @@ function provideKeywordList() {
     };
 }
 
+// Script for providing all the app parameters
+
+function provideAppParams() {
+    chrome.runtime.sendMessage({header: 'app-params-list', data: appParams}, (response) => {
+      console.log('App params list response sent', response);
+    });
+}
+
 // Script for adding a new search
 
 function add_search(searchData) {
@@ -119,7 +168,7 @@ function add_search(searchData) {
       const request = objectStore.add(search);
       request.onsuccess = (event) => {
         // console.log("New keyword added")
-        // Sending the new list
+        // Sending the new list immediately 'cause it's a one-item list
         provideSearchList() 
       };
     });
@@ -130,12 +179,22 @@ function add_search(searchData) {
 function add_keyword(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
     keywordData.forEach((keyword) => {
-      const request = objectStore.add(keyword);
-      request.onsuccess = (event) => {
-        // console.log("New keyword added")
-        // Sending the new list
-        provideKeywordList() 
-      };
+        // setting the date of insertion
+        keyword.date = new Date().toISOString();
+        const request = objectStore.add(keyword);
+        request.onsuccess = (event) => {
+            // console.log("New keyword added")
+            // Sending the new list
+            provideKeywordList() 
+        };
+
+        request.onerror = function (event) {
+            console.log("An error when inserting the new keyword", event);
+            let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
+            chrome.runtime.sendMessage({header: 'add-keyword-error', data: errorData}, (response) => {
+              console.log('Add keyword error message sent', response);
+            });
+        }
     });
 }
 
@@ -230,6 +289,15 @@ function processMessageEvent(message, sender, sendResponse){
             provideKeywordCount()       
             break;
         }
+        case 'get-app-params':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Adding the new keyword
+            provideAppParams()       
+            break;
+        }
         case 'erase-all-data':{
             // sending a response
             sendResponse({
@@ -254,7 +322,9 @@ function processMessageEvent(message, sender, sendResponse){
 
 // Script for processing tab event
 function processTabEvent(tabId, changeInfo, tab){
-    if (changeInfo.url) {
+    const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
+    if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
+    {
         searches = [
             {
                 fullName: "John Doe",
@@ -263,8 +333,8 @@ function processTabEvent(tabId, changeInfo, tab){
                 imageUrl: "ok",
                 coverImageUrl: "ok",
                 date: new Date().toISOString(),
-                nFollowers: 0,
-                nConnections: 0, 
+                nFollowers: 1,
+                nConnections: 1, 
                 location: "",
                 bookmarked: true,
                 education: {},

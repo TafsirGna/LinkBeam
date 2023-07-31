@@ -26,7 +26,7 @@ export default class About extends React.Component{
             <img src={app_logo}  alt=""/>
             <p class="fw-bold mt-2">
               LinkBeam 
-              <span class="badge text-bg-primary ms-1">0.1.0</span>
+              <span class="badge text-bg-primary ms-1 shadow">{this.props.globalData.appParams.appVersion}</span>
               <OverlayTrigger
                 placement="bottom"
                 overlay={<Tooltip id="tooltip1">All data are stored locally</Tooltip>}
