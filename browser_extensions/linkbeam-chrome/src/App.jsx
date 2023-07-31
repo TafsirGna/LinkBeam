@@ -18,9 +18,9 @@ export default class App extends React.Component{
         keywordList: null,
         searchList: null,
         appParams: null,
+        lastDataResetDate: null
       }
     };
-    this.updateGlobalData = this.updateGlobalData.bind(this);
   }
 
   componentDidMount() {
@@ -31,21 +31,68 @@ export default class App extends React.Component{
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.header == "app-params-list"){
-        console.log("Message received : ", message);
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
+      switch(message.header){
+        case "app-params-list":{
+          console.log("App Message received App Params List: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
-        // setting the new value
-        this.setState((prevState) => ({
-          globalData: {
-            keywordList: prevState.globalData.keywordList,
-            searchList: prevState.globalData.searchList,
-            appParams: message.data,
-          }
-        }));
+          // setting the new value
+          this.setState((prevState) => ({
+            globalData: {
+              keywordList: prevState.globalData.keywordList,
+              searchList: prevState.globalData.searchList,
+              appParams: message.data,
+              lastDataResetDate: prevState.globalData.lastDataResetDate,
+            }
+          }));
+          break;
+        }
+        case "search-list":{
+          console.log("App Message received Search List: ", message);
+
+          // Setting the search list here too
+          this.setState((prevState) => ({
+            globalData: {
+              keywordList: prevState.globalData.keywordList,
+              searchList: message.data,
+              appParams: prevState.globalData.appParams,
+              lastDataResetDate: prevState.globalData.lastDataResetDate,
+            }
+          }));
+          break;
+        }
+
+      case "keyword-list":{
+          console.log("App Message received Keyword List: ", message);
+
+          // Setting the search list here too
+          this.setState((prevState) => ({
+            globalData: {
+              keywordList: message.data,
+              searchList: prevState.globalData.searchList,
+              appParams: prevState.globalData.appParams,
+              lastDataResetDate: prevState.globalData.lastDataResetDate,
+            }
+          }));
+          break;
+        }
+      case "last-reset-date":{
+          console.log("App Message received last Reset date: ", message);
+
+          // Setting the search list here too
+          this.setState((prevState) => ({
+            globalData: {
+              keywordList: prevState.globalData.keywordList,
+              searchList: prevState.globalData.searchList,
+              appParams: prevState.globalData.appParams,
+              lastDataResetDate: message.data,
+            }
+          }));
+          break;
+        }
       }
 
     });
@@ -56,50 +103,19 @@ export default class App extends React.Component{
     this.setState({onDisplay: newValue});
   }
 
-  updateGlobalData(propName, propValue){
-    switch(propName){
-      case "ALL":{
-        this.setState({globalData: {keywordList: [], searchList: []}});
-        // this.setState({globalData: {keywordList: [], searchList: []}}, () => { console.log("All : ", this.state.globalData); });
-        
-        break;
-      }
-
-      case "KEYWORD": {
-        this.setState((prevState) => ({
-          globalData: {
-            keywordList: propValue,
-            searchList: prevState.globalData.searchList
-          }
-        }), () => {console.log("Rooo : ", this.state.globalData)});
-        break;
-      }
-
-      case "SEARCH": {
-        this.setState((prevState) => ({
-          globalData: {
-            keywordList: prevState.globalData.keywordList,
-            searchList: propValue
-          }
-        }));
-        break;
-      }
-    }
-  }
-
   render(){
 
     return(
       <>
-        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
         {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} globalData={this.state.globalData} />}
 
-        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
         {this.state.onDisplay == "Statistics" && <Statistics globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
-        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} onGlobalDataUpdate={this.updateGlobalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
 
       </>
     );

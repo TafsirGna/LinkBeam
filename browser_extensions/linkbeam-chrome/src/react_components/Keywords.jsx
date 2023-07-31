@@ -1,6 +1,6 @@
 import React from 'react'
 import BackToPrev from "./widgets/BackToPrev"
-import { uid } from 'uid';
+// import { uid } from 'uid';
 
 
 export default class Keywords extends React.Component{
@@ -50,7 +50,7 @@ export default class Keywords extends React.Component{
         }
 
         case "keyword-list":{
-          console.log("Message received : ", message);
+          console.log("Keyword Message received Keyword list: ", message);
           // sending a response
           sendResponse({
               status: "ACK"
@@ -58,9 +58,6 @@ export default class Keywords extends React.Component{
 
           // setting the new value
           this.setListData(message.data)
-
-          // setting the global variable with the local data
-          this.props.onGlobalDataUpdate("KEYWORD", message.data)
 
           // Displaying the alertBadge
           if (this.state.processingState.status == "YES"){
@@ -96,8 +93,8 @@ export default class Keywords extends React.Component{
   setListData(listData){
     this.setState({
       keywordList: listData,
-      keywordListTags: listData.map((keyword) =>
-                          (<li key={keyword.uid}>
+      keywordListTags: listData.map((keyword, index) =>
+                          (<li key={index}>
                             <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.deleteKeyword(keyword)}}>
                               <span class="d-inline-block bg-success rounded-circle p-1"></span>
                               {keyword.name}
@@ -115,7 +112,7 @@ export default class Keywords extends React.Component{
     this.setState({processingState: {status: "YES", info: "DELETING"}});
 
     if (response){
-      chrome.runtime.sendMessage({header: 'delete-keyword', data:keyword.uid}, (response) => {
+      chrome.runtime.sendMessage({header: 'delete-keyword', data:keyword.name}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('keyword deletion request sent', response);
       });
@@ -136,7 +133,7 @@ export default class Keywords extends React.Component{
 
       console.log("Adding keyword", this.state.keyword);
 
-      chrome.runtime.sendMessage({header: 'add-keyword', data:[{uid: uid(), name: this.state.keyword}]}, (response) => {
+      chrome.runtime.sendMessage({header: 'add-keyword', data:[{name: this.state.keyword}]}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('new keyword request sent', response);
 

@@ -6,7 +6,9 @@ const keywordObjectStoreName = "keywords";
 const settingObjectStoreName = "settings";
 const appParams = {appVersion: "0.1.0", keywordCountLimit: 5};
 const settingData = [{
+    id: 1,
     notifications: true,
+    lastDataResetDate: new Date().toISOString(),
 }];
 
 function createDatabase(context) {
@@ -27,21 +29,18 @@ function createDatabase(context) {
             console.log("ObjectStore 'Search' created.");
         }
 
-        let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, {
-            keyPath: 'uid'
-        });
+        let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, { keyPath: "name" });
 
         // creating indices on this objectStore
-        keywordObjectStore.createIndex("name", "name", { unique: true });
-        keywordObjectStore.createIndex("uid", "uid", { unique: true });
+        //keywordObjectStore.createIndex("name", "name", { unique: true });
 
         keywordObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Keyword' created.");
         }
 
-        let settingObjectStoreName = db.createObjectStore(settingObjectStoreName, { autoIncrement: true });
+        let settingObjectStore = db.createObjectStore(settingObjectStoreName, { keyPath: "id" });
 
-        searchObjectStore.transaction.oncomplete = function (event) {
+        settingObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Setting' created.");
         }
     }
@@ -202,12 +201,52 @@ function add_keyword(keywordData) {
 
 function delete_keyword(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
-    objectStore.delete(keywordData).onsuccess = (event) => {
-        // console.log("Keyword deleted")
+    let request = objectStore.delete(keywordData);
+    request.onsuccess = (event) => {
+        console.log("Keyword deleted")
         // Sending the new list
         provideKeywordList() 
     }
+
+    request.onerror = function (event) {
+        console.log("An error when deleting the keyword", event);
+        let errorData = "An error occured !";
+        chrome.runtime.sendMessage({header: 'delete-keyword-error', data: errorData}, (response) => {
+          console.log('Delete keyword error message sent', response);
+        });
+    }
 }
+
+// Script for setting the new date of data reset
+
+function setNewDataResetDate(){
+    // Retrieving the data first for later update
+    let objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
+    let request = objectStore.get(1);
+
+    request.onsuccess = (event) => {
+        console.log('Got settings:', event.target.result);
+        // then, update the property
+        let settings = event.target.result;
+        settings.lastDataResetDate = new Date().toISOString();
+
+        let requestUpdate = objectStore.put(settings);
+        requestUpdate.onerror = (event) => {
+            // Do something with the error
+            console.log("An error occured when update the last reset date !");
+        };
+        requestUpdate.onsuccess = (event) => {
+            // Success - the data is updated!
+            console.log("Last reset date update processed successfully !");
+        };
+    };
+
+    request.onerror = (event) => {
+        // Handle errors!
+        console.log("An error occured when retrieving the settings for later update")
+    };
+}
+
 
 // Script for clearing an objectStore
 
@@ -217,6 +256,8 @@ function clearObjectStores(objectStoreNames){
         chrome.runtime.sendMessage({header: 'all-data-erased', data: null}, (response) => {
           console.log('erase all data response sent', response);
         });
+
+        setNewDataResetDate();
         return;
     }
 
@@ -226,6 +267,22 @@ function clearObjectStores(objectStoreNames){
         objectStoreNames.shift()
         clearObjectStores(objectStoreNames)
     }
+}
+
+// Script for providing the last reset date
+
+function provideLastResetDate(){
+    db
+    .transaction(settingObjectStoreName, "readonly")
+    .objectStore(settingObjectStoreName)
+    .get(1)
+    .onsuccess = (event) => {
+        console.log('Got settings:', event.target.result);
+        // Sending the retrieved data
+        chrome.runtime.sendMessage({header: 'last-reset-date', data: event.target.result.lastDataResetDate}, (response) => {
+          console.log('Last reset date response sent', response);
+        });
+    };
 }
 
 // Script handling the message execution
@@ -267,16 +324,7 @@ function processMessageEvent(message, sender, sendResponse){
             sendResponse({
                 status: "ACK"
             });
-            // Adding the new keyword
-            delete_keyword(message.data)       
-            break;
-        }
-        case 'delete-keyword':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Adding the new keyword
+            // Deleting a keyword
             delete_keyword(message.data)       
             break;
         }
@@ -285,7 +333,7 @@ function processMessageEvent(message, sender, sendResponse){
             sendResponse({
                 status: "ACK"
             });
-            // Adding the new keyword
+            // Providing the keyword count to the front 
             provideKeywordCount()       
             break;
         }
@@ -294,8 +342,17 @@ function processMessageEvent(message, sender, sendResponse){
             sendResponse({
                 status: "ACK"
             });
-            // Adding the new keyword
-            provideAppParams()       
+            // Providing the app parameters to the front 
+            provideAppParams();       
+            break;
+        }
+        case 'get-last-reset-date':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            provideLastResetDate();       
             break;
         }
         case 'erase-all-data':{
@@ -307,7 +364,7 @@ function processMessageEvent(message, sender, sendResponse){
             const data = db.objectStoreNames;
             let objectStoreNames = [];
             for (var key in data){
-                if (typeof data[key] === "string"){
+                if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
                     objectStoreNames.push(data[key]);
                 }
             }

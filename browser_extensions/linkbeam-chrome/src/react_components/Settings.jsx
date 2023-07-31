@@ -32,7 +32,7 @@ export default class Settings extends React.Component{
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
         case "keyword-count": {
-          console.log("Message received : ", message);
+          console.log("Settings Message received keyword count: ", message);
           // sending a response
           sendResponse({
               status: "ACK"
@@ -49,9 +49,6 @@ export default class Settings extends React.Component{
 
           // Displaying the validation sign
           this.setState({processingState: {status: "NO", info: "ERASING"}});
-
-          // Updating the global data
-          this.props.onGlobalDataUpdate("ALL", "");
 
           // updating local value
           this.setState({keywordCount: 0});

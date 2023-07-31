@@ -23,6 +23,8 @@ export default class Activity extends React.Component{
 
   componentDidMount() {
 
+    console.log("Mounting Activity page");
+
     // setting the local variable with the global data
     if (this.props.globalData.searchList){
       this.setListData(this.props.globalData.searchList);
@@ -35,7 +37,7 @@ export default class Activity extends React.Component{
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.header == "search-list"){
-        console.log("Message received : ", message);
+        console.log("Activity Message received Search List: ", message);
         // sending a response
         sendResponse({
             status: "ACK"
@@ -98,8 +100,10 @@ export default class Activity extends React.Component{
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
-            <button type="button" class="btn btn-primary badge">All</button>
-            <button type="button" class="btn btn-secondary badge">Bookmarks</button>
+            <button type="button" class="btn btn-primary badge">
+              All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
+            </button>
+            <button type="button" class="btn btn-secondary badge" title="See Bookmarks">Bookmarks</button>
           </div>
         </div>
         {this.state.searchList == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">

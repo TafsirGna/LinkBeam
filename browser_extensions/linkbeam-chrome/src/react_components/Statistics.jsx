@@ -1,4 +1,5 @@
 import React from 'react'
+import moment from 'moment';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -62,7 +63,8 @@ export default class Settings extends React.Component{
       lineLabels: null,
       barLabels: null,
       barData: null,
-      lineData: null
+      lineData: null,
+      lastDataResetDate: null,
     };
 
     this.setKeywordChartData = this.setKeywordChartData.bind(this);
@@ -74,22 +76,41 @@ export default class Settings extends React.Component{
 
   componentDidMount() {
 
+    // Setting the local data
+    this.setState({lastDataResetDate: this.props.globalData.lastDataResetDate});
+
     // Starting the listener
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.header == "keyword-list"){
-        console.log("Message received : ", message);
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
+      switch(message.header){
+        case "keyword-list":{
+          console.log("Statistics Message received keyword-list: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
-        let labels = [];
-        message.data.forEach((keyword) => {
-          labels.push(keyword.name);
-        });
-        
-        // setting the new value
-        this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
+          let labels = [];
+          message.data.forEach((keyword) => {
+            labels.push(keyword.name);
+          });
+          
+          // setting the new value
+          this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
+          break;
+        }
+
+        case "last-reset-date":{
+          console.log("Statistics Message received last reset date: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          // setting the new value
+          this.setState({lastDataResetDate: message.data});
+
+          break;
+        }
       }
 
     });
@@ -98,6 +119,11 @@ export default class Settings extends React.Component{
 
     this.setSearchChartLabels();
     
+    // Requesting the last reset date
+    chrome.runtime.sendMessage({header: 'get-last-reset-date', data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Last reset date request sent', response);
+    });
   }
 
   setKeywordChartLabels(){
@@ -183,6 +209,10 @@ export default class Settings extends React.Component{
               <span class="carousel-control-next-icon" aria-hidden="true"></span>
               <span class="visually-hidden">Next</span>
             </button>
+          </div>
+
+          <div class="clearfix">
+            <span class="text-muted small float-end fst-italic mt-2 badge">Data recorded since {moment(this.state.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a')}</span>
           </div>
         </div>
       </>
