@@ -10,6 +10,8 @@ export default class Activity extends React.Component{
     this.state = {
       searchList: null,
       searchListTags: null,
+      lastBatchList: [],
+      offset: 0,
       processingState: {
         status: "NO", 
         info: "",
@@ -18,6 +20,7 @@ export default class Activity extends React.Component{
 
     this.setListData = this.setListData.bind(this);
     this.requestNextSearchBatch = this.requestNextSearchBatch.bind(this);
+    this.getSearchList = this.getSearchList.bind(this);
 
   }
 
@@ -30,10 +33,7 @@ export default class Activity extends React.Component{
       this.setListData(this.props.globalData.searchList);
     }
 
-    chrome.runtime.sendMessage({header: 'get-search-list', data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Search list request sent', response);
-    });
+    this.getSearchList();
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.header == "search-list"){
@@ -46,12 +46,24 @@ export default class Activity extends React.Component{
         // setting the new value
         this.setListData(message.data);
 
-        // setting the global variable with the local data
-        // this.props.globalData.searchList = message.data;
+        // setting that the process stopped
+        this.setState({
+          processingState: {
+            status: "NO",
+            info: ""
+          }
+        });
       }
 
     });
 
+  }
+
+  getSearchList(){
+    chrome.runtime.sendMessage({header: 'get-search-list', data: this.state.offset}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Search list request sent', response);
+    });
   }
 
   requestNextSearchBatch(){
@@ -62,31 +74,41 @@ export default class Activity extends React.Component{
       }
     });
 
-    setTimeout(() => {
-      this.setState({
-        processingState: {
-          status: "NO",
-          info: ""
-        }
-      });
-    }, 3000);
+    // requesting the next batch
+    this.getSearchList()
   }
 
   setListData(listData){
 
-    this.setState({
-      searchList: listData,
-      searchListTags: listData.map((search) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                              <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                              <div class="d-flex gap-2 w-100 justify-content-between">
-                                <div>
-                                  <h6 class="mb-0">{search.fullName}</h6>
-                                  <p class="mb-0 opacity-75">{search.title}</p>
-                                  <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.nFollowers} followers · {search.nConnections} connections</p>
+    if (this.state.searchList == null){
+      this.setState({searchList: []}, () => {
+        this.setListData(listData);
+      });
+      return;
+    }
+
+    this.setState({lastBatchList: listData}, () => {
+
+      listData = this.state.searchList.concat(listData);
+
+      this.setState({
+        searchList: listData,
+        searchListTags: listData.map((search) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                <div class="d-flex gap-2 w-100 justify-content-between">
+                                  <div>
+                                    <h6 class="mb-0">{search.fullName}</h6>
+                                    <p class="mb-0 opacity-75">{search.title}</p>
+                                    <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.nFollowers} followers · {search.nConnections} connections</p>
+                                  </div>
+                                  <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
                                 </div>
-                                <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
-                              </div>
-                            </a>)),
+                              </a>)),
+      }, () => {
+        // Setting the new offset
+        this.setState((prevState) => ({offset: prevState.offset + listData.length}));
+      });
+
     });
   }
 
@@ -123,8 +145,8 @@ export default class Activity extends React.Component{
                   {this.state.searchListTags}
                 </div>
                 <div class="text-center my-2 ">
-                    <button class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm " + (this.state.processingState.status == "YES" && this.state.processingState.info ==  "NEXT-BATCH" ? "d-none" : "")} onClick={this.requestNextSearchBatch} type="button">See more</button>
-                    <div class={"spinner-border spinner-border-sm text-secondary " + (this.state.processingState.status == "YES" && this.state.processingState.info ==  "NEXT-BATCH" ? "" : "d-none")} role="status">
+                    <button class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm " + (((this.state.processingState.status == "YES" && this.state.processingState.info ==  "NEXT-BATCH") || (this.state.processingState.status == "NO" && this.state.lastBatchList.length < this.props.globalData.appParams.searchPageLimit)) ? "d-none" : "")} onClick={this.requestNextSearchBatch} type="button">See more</button>
+                    <div class={"spinner-border spinner-border-sm text-secondary " + ((this.state.processingState.status == "YES" && this.state.processingState.info ==  "NEXT-BATCH") ? "" : "d-none")} role="status">
                       <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>

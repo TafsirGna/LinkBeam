@@ -65,7 +65,7 @@ export default class App extends React.Component{
           break;
         }
 
-      case "keyword-list":{
+        case "keyword-list":{
           console.log("App Message received Keyword List: ", message);
 
           // Setting the search list here too
@@ -79,7 +79,7 @@ export default class App extends React.Component{
           }));
           break;
         }
-      case "last-reset-date":{
+        case "last-reset-date":{
           console.log("App Message received last Reset date: ", message);
 
           // Setting the search list here too

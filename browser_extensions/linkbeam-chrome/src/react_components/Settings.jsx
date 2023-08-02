@@ -1,6 +1,7 @@
 import React from 'react'
 /*import './Settings.css'*/
 import BackToPrev from "./widgets/BackToPrev"
+import Form from 'react-bootstrap/Form';
 
 export default class Settings extends React.Component{
   
@@ -8,6 +9,7 @@ export default class Settings extends React.Component{
     super(props);
     this.state = {
       keywordCount: 0,
+      notifSettingCheckBoxValue: true,
       processingState: {
         status: "NO",
         info: ""
@@ -15,6 +17,7 @@ export default class Settings extends React.Component{
     };
 
     this.deleteAll = this.deleteAll.bind(this);
+    this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
   }
 
   componentDidMount() {
@@ -41,27 +44,51 @@ export default class Settings extends React.Component{
           this.setState({keywordCount: message.data});
           break;
         }
-        case "all-data-erased": {
+
+        case "settings-data": {
+          console.log("Settings Message received Settings data: ", message);
           // sending a response
           sendResponse({
               status: "ACK"
           });
 
-          // Displaying the validation sign
-          this.setState({processingState: {status: "NO", info: "ERASING"}});
+          // setting the new value
+          switch(message.data.property){
+            case "notifications": {
+              this.setState({notifSettingCheckBoxValue: message.data.value});
+              break;
+            }
 
-          // updating local value
-          this.setState({keywordCount: 0});
+            case "lastDataResetDate": {
 
-          // Setting a timer to reset all of this
-          setTimeout(() => {
-            this.setState({processingState: {status: "NO", info: ""}});
-          }, 3000);
+              // Displaying the validation sign
+              this.setState({processingState: {status: "NO", info: "ERASING"}});
 
+              // updating local value
+              this.setState({keywordCount: 0});
+
+              // Setting a timer to reset all of this
+              setTimeout(() => {
+                this.setState({processingState: {status: "NO", info: ""}});
+              }, 3000);
+
+              break;
+            }
+            
+          }
           break;
         }
       }
 
+    });
+  }
+
+  saveCheckBoxNewState(event){
+
+    // Initiating the recording of the new state
+    chrome.runtime.sendMessage({header: 'save-notification-checkbox-setting', data: event.target.checked}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Notification checkbox request sent', response);
     });
   }
 
@@ -89,10 +116,13 @@ export default class Settings extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Activate notifications</strong>
-                  <div class="form-check form-switch">
-                    <input class="form-check-input shadow" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked />
-                    <label class="form-check-label" for="flexSwitchCheckChecked"></label>
-                  </div>
+                  <Form.Check // prettier-ignore
+                    type="switch"
+                    id="custom-switch"
+                    label=""
+                    checked={this.state.notifSettingCheckBoxValue}
+                    onChange={this.saveCheckBoxNewState}
+                  />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

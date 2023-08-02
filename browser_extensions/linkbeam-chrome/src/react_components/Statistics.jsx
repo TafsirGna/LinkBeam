@@ -99,16 +99,16 @@ export default class Settings extends React.Component{
           break;
         }
 
-        case "last-reset-date":{
-          console.log("Statistics Message received last reset date: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+        case "settings-data":{
+          if (message.data.property == "lastDataResetDate"){
+            console.log("Statistics Message received last reset date: ", message);
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
 
-          // setting the new value
-          this.setState({lastDataResetDate: message.data});
-
+            this.setState({lastDataResetDate: message.data.value});
+          }
           break;
         }
       }

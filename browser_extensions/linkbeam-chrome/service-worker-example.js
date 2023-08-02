@@ -4,7 +4,7 @@ let db = null;
 const searchObjectStoreName = "searches";
 const keywordObjectStoreName = "keywords";
 const settingObjectStoreName = "settings";
-const appParams = {appVersion: "0.1.0", keywordCountLimit: 5};
+const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2};
 const settingData = [{
     id: 1,
     notifications: true,
@@ -101,8 +101,8 @@ function initSettings(){
 
 // Script for getting all saved searches
 
-function provideSearchList() {
-    db
+function provideSearchList(offset=0) {
+    /*db
     .transaction(searchObjectStoreName, "readonly")
     .objectStore(searchObjectStoreName)
     .getAll()
@@ -115,7 +115,47 @@ function provideSearchList() {
         chrome.runtime.sendMessage({header: 'search-list', data: results}, (response) => {
           console.log('Search list response sent', response);
         });
-    };
+    };*/
+
+    let counter = 0; let searches = [];
+    var offsetApplied = false;
+    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
+    cursor.onsuccess = function(event) {
+        var cursor = event.target.result;
+
+        if(!cursor) {
+            // searches.reverse();
+            sendSearchList(searches);
+            return;
+        }
+
+        if(offset != 0 && !offsetApplied) {
+          offsetApplied = true;
+          cursor.advance(offset);
+          return;
+        }
+
+        searches.push(cursor.value);
+        // console.log(value);
+
+        counter++;
+        if(counter < appParams.searchPageLimit) {
+            // only continue if under limit
+            cursor.continue();
+        }
+        else{
+            sendSearchList(searches);
+            return;
+        }
+    }
+}
+
+// Script for sending the retrieved search list
+
+function sendSearchList(searches){
+    chrome.runtime.sendMessage({header: 'search-list', data: searches}, (response) => {
+      console.log('Search list response sent', response);
+    });
 }
 
 // Script for getting keyword count
@@ -219,7 +259,10 @@ function delete_keyword(keywordData) {
 
 // Script for setting the new date of data reset
 
-function setNewDataResetDate(){
+function updateSettingObjectStore(propKey, propValue){
+
+
+
     // Retrieving the data first for later update
     let objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
     let request = objectStore.get(1);
@@ -228,16 +271,19 @@ function setNewDataResetDate(){
         console.log('Got settings:', event.target.result);
         // then, update the property
         let settings = event.target.result;
-        settings.lastDataResetDate = new Date().toISOString();
+
+        settings[propKey] = propValue;
 
         let requestUpdate = objectStore.put(settings);
         requestUpdate.onerror = (event) => {
             // Do something with the error
-            console.log("An error occured when update the last reset date !");
+            console.log("An error occured when updating "+propKey+" !");
         };
         requestUpdate.onsuccess = (event) => {
             // Success - the data is updated!
-            console.log("Last reset date update processed successfully !");
+            console.log(propKey+" update processed successfully !");
+
+            provideSettingsData(propKey);
         };
     };
 
@@ -245,19 +291,14 @@ function setNewDataResetDate(){
         // Handle errors!
         console.log("An error occured when retrieving the settings for later update")
     };
-}
-
+} 
 
 // Script for clearing an objectStore
 
 function clearObjectStores(objectStoreNames){
     if (objectStoreNames.length == 0){
-        // Notifiying the end of the erasing process
-        chrome.runtime.sendMessage({header: 'all-data-erased', data: null}, (response) => {
-          console.log('erase all data response sent', response);
-        });
-
-        setNewDataResetDate();
+        // updating the last reset date before notifying the content script
+        updateSettingObjectStore("lastDataResetDate", (new Date().toISOString()));
         return;
     }
 
@@ -269,9 +310,9 @@ function clearObjectStores(objectStoreNames){
     }
 }
 
-// Script for providing the last reset date
+// Script for providing setting data
 
-function provideLastResetDate(){
+function provideSettingsData(property){
     db
     .transaction(settingObjectStoreName, "readonly")
     .objectStore(settingObjectStoreName)
@@ -279,8 +320,9 @@ function provideLastResetDate(){
     .onsuccess = (event) => {
         console.log('Got settings:', event.target.result);
         // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'last-reset-date', data: event.target.result.lastDataResetDate}, (response) => {
-          console.log('Last reset date response sent', response);
+        let settings = event.target.result;
+        chrome.runtime.sendMessage({header: 'settings-data', data: {property: property, value: settings[property]}}, (response) => {
+          console.log('Settings data response sent', response);
         });
     };
 }
@@ -298,7 +340,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            provideSearchList();
+            provideSearchList(message.data);
             break;
         }
         case 'get-keyword-list':{
@@ -352,7 +394,16 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            provideLastResetDate();       
+            provideSettingsData("lastDataResetDate")
+            break;
+        }
+        case 'save-notification-checkbox-setting':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Saving the new notification setting state
+            updateSettingObjectStore("notifications", message.data)
             break;
         }
         case 'erase-all-data':{
