@@ -98,7 +98,29 @@ export default class Settings extends React.Component{
           this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
           break;
         }
+        case "search-chart-data":{
+          console.log("Statistics Message received search-chart-data: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
+          let labels = this.state.lineLabels;
+
+          this.setState({lineData: {
+            labels,
+            datasets: [
+              {
+                label: 'Dataset',
+                data: message.data,
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+              },
+            ],
+          }});
+
+          break;
+        }
         case "settings-data":{
           if (message.data.property == "lastDataResetDate"){
             console.log("Statistics Message received last reset date: ", message);
@@ -167,19 +189,17 @@ export default class Settings extends React.Component{
 
   setSearchChartData(){
 
-    let labels = this.state.lineLabels;
+    let dateDataList = [];
+    for (let i = 0; i < 7; i++){
+      dateDataList.push(moment().subtract(i, 'days').format().split("T")[0]);
+    }
 
-    this.setState({lineData: {
-      labels,
-      datasets: [
-        {
-          label: 'Dataset',
-          data: labels.map(() => faker.number.int({ min: -1000, max: 1000 })),
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        },
-      ],
-    }});
+    // Requesting search chart data
+    chrome.runtime.sendMessage({header: 'get-search-chart-data', data: dateDataList}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Search chart data request sent', response);
+    });
+
   }
 
   render(){

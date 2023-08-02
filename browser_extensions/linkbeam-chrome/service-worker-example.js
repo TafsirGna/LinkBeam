@@ -102,6 +102,7 @@ function initSettings(){
 // Script for getting all saved searches
 
 function provideSearchList(offset=0) {
+
     /*db
     .transaction(searchObjectStoreName, "readonly")
     .objectStore(searchObjectStoreName)
@@ -327,6 +328,45 @@ function provideSettingsData(property){
     };
 }
 
+// Script for sending search chart data
+
+function sendSearchChartData(chartData){
+    chrome.runtime.sendMessage({header: 'search-chart-data', data: chartData}, (response) => {
+      console.log('Search chart data response sent', response);
+    });
+}
+
+// Script for providing search chart data
+
+function provideSearchChartData(chartData){
+
+    let results = [];
+
+    // populating the chart data Array
+    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
+    cursor.onsuccess = function(event) {
+        var cursor = event.target.result;
+
+        if(!cursor) {
+            sendSearchChartData(results);
+            return;
+        }
+
+        let searchDate = cursor.value.date.split("T")[0];
+        let index = chartData.indexOf(searchDate);
+        if (index != -1){
+            chartData[searchDate]++;
+        }
+        else{
+            sendSearchChartData(results);
+            return;
+        }
+
+        cursor.continue();        
+    }
+
+}
+
 // Script handling the message execution
 
 function processMessageEvent(message, sender, sendResponse){
@@ -404,6 +444,15 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // Saving the new notification setting state
             updateSettingObjectStore("notifications", message.data)
+            break;
+        }
+        case 'get-search-chart-data':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Saving the new notification setting state
+            provideSearchChartData(message.data);
             break;
         }
         case 'erase-all-data':{
