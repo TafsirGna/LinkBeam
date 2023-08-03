@@ -52,6 +52,10 @@ export default class App extends React.Component{
         }
         case "search-list":{
           console.log("App Message received Search List: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
           // Setting the search list here too
           this.setState((prevState) => ({
@@ -65,8 +69,33 @@ export default class App extends React.Component{
           break;
         }
 
+        case "settings-data":{
+          console.log("App Message received settings-data: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          if (message.data.property == "lastDataResetDate"){
+              // Setting the search list here too
+              this.setState((prevState) => ({
+                globalData: {
+                  keywordList: prevState.globalData.keywordList,
+                  searchList: [],
+                  appParams: prevState.globalData.appParams,
+                  lastDataResetDate: prevState.globalData.lastDataResetDate,
+                }
+              }));
+          }
+          break;
+        }
+
         case "keyword-list":{
           console.log("App Message received Keyword List: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
           // Setting the search list here too
           this.setState((prevState) => ({
@@ -81,6 +110,10 @@ export default class App extends React.Component{
         }
         case "last-reset-date":{
           console.log("App Message received last Reset date: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
 
           // Setting the search list here too
           this.setState((prevState) => ({

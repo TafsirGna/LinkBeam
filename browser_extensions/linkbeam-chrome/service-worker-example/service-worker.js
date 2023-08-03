@@ -4,6 +4,7 @@ let db = null;
 const searchObjectStoreName = "searches";
 const keywordObjectStoreName = "keywords";
 const settingObjectStoreName = "settings";
+const profileObjectStoreName = "profiles";
 const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2};
 const settingData = [{
     id: 1,
@@ -23,21 +24,30 @@ function createDatabase(context) {
     request.onupgradeneeded = function (event) {
         db = event.target.result;
 
+        // Search object store
         let searchObjectStore = db.createObjectStore(searchObjectStoreName, { autoIncrement: true });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
         }
 
-        let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, { keyPath: "name" });
+        // Profile Object store
+        let profileObjectStore = db.createObjectStore(profileObjectStoreName, { keyPath: "url" });
 
-        // creating indices on this objectStore
-        //keywordObjectStore.createIndex("name", "name", { unique: true });
+        // profileObjectStore.createIndex("url", "url", { unique: true });
+
+        profileObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Profile' created.");
+        }
+
+        // keyword Object store
+        let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, { keyPath: "name" });
 
         keywordObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Keyword' created.");
         }
 
+        // setting object store
         let settingObjectStore = db.createObjectStore(settingObjectStoreName, { keyPath: "id" });
 
         settingObjectStore.transaction.oncomplete = function (event) {
@@ -99,34 +109,56 @@ function initSettings(){
     });
 }
 
+function provideSearchProfiles(searches){
+
+    if (searches.length == 0){
+        sendSearchList([]);
+        return;
+    }
+
+    // For each url, create a request to retrieve the corresponding profile
+    let objectStore = db
+                        .transaction(profileObjectStoreName, "readonly")
+                        .objectStore(profileObjectStoreName);
+    let results = [];
+
+    searches.forEach((search) => {
+        
+        let profileRequest = objectStore.get(search.url);
+        profileRequest.onsuccess = (event) => {
+            let profile = event.target.result;
+            console.log('Got corresponding profile: ', profile);
+            
+            search.profile = profile;
+            results.push(search);
+
+            // keep going to the next search
+            if(results.length == searches.length) {
+                // only continue if under limit
+                sendSearchList(results);
+            }
+
+        };
+
+        profileRequest.onerror = (event) => {
+            console.log('An error occured when requesting the corresponding profile : ', event);
+        };
+
+    });
+}
+
 // Script for getting all saved searches
 
 function provideSearchList(offset=0) {
 
-    /*db
-    .transaction(searchObjectStoreName, "readonly")
-    .objectStore(searchObjectStoreName)
-    .getAll()
-    .onsuccess = (event) => {
-        let results = event.target.result;
-        results.reverse();
-
-        console.log('Got all searches:', results);
-        // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'search-list', data: results}, (response) => {
-          console.log('Search list response sent', response);
-        });
-    };*/
-
-    let counter = 0; let searches = [];
+    let searches = [];
     var offsetApplied = false;
     let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
     cursor.onsuccess = function(event) {
-        var cursor = event.target.result;
-
+        let cursor = event.target.result;
+        
         if(!cursor) {
-            // searches.reverse();
-            sendSearchList(searches);
+            provideSearchProfiles(searches);
             return;
         }
 
@@ -136,24 +168,31 @@ function provideSearchList(offset=0) {
           return;
         }
 
-        searches.push(cursor.value);
-        // console.log(value);
+        let search = cursor.value;
+        searches.push(search);
 
-        counter++;
-        if(counter < appParams.searchPageLimit) {
-            // only continue if under limit
+        if(searches.length < appParams.searchPageLimit) {
             cursor.continue();
         }
         else{
-            sendSearchList(searches);
+            provideSearchProfiles(searches);
             return;
         }
     }
+
+    cursor.onerror = (event) => {
+        console.log("Failed to acquire the cursor !");
+    };
 }
 
 // Script for sending the retrieved search list
 
 function sendSearchList(searches){
+
+    // Sorting the list before sending it
+    searches.sort((a,b) => a.date - b.date);
+    // searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
+
     chrome.runtime.sendMessage({header: 'search-list', data: searches}, (response) => {
       console.log('Search list response sent', response);
     });
@@ -202,16 +241,45 @@ function provideAppParams() {
 
 // Script for adding a new search
 
-function add_search(searchData) {
+function add_search(search) {
+
+    console.log("Initiating insertion");
+
+    add_profile(search.profile, search);
+
+}
+
+function add_search_data(searchData){
+
+    delete searchData.profile;
+
     const objectStore = db.transaction(searchObjectStoreName, "readwrite").objectStore(searchObjectStoreName);
-    searchData.forEach((search) => {
-      const request = objectStore.add(search);
-      request.onsuccess = (event) => {
-        // console.log("New keyword added")
-        // Sending the new list immediately 'cause it's a one-item list
-        provideSearchList() 
-      };
-    });
+    const request = objectStore.add(searchData);
+    request.onsuccess = (event) => {
+        console.log("New search data added");
+        provideSearchList();
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when adding search data");
+    };
+
+}
+
+// Script for adding the new profile
+
+function add_profile(profile, search){
+
+    const objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    const request = objectStore.add(profile);
+    request.onsuccess = (event) => {
+        console.log("New profile added");
+        add_search_data(search);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when adding a new profile");
+    };
 }
 
 // Script for adding a new keyword
@@ -331,6 +399,8 @@ function provideSettingsData(property){
 // Script for sending search chart data
 
 function sendSearchChartData(chartData){
+    chartData.reverse();
+    
     chrome.runtime.sendMessage({header: 'search-chart-data', data: chartData}, (response) => {
       console.log('Search chart data response sent', response);
     });
@@ -341,6 +411,9 @@ function sendSearchChartData(chartData){
 function provideSearchChartData(chartData){
 
     let results = [];
+    for (let i = 0; i < chartData.length; i++){
+        results.push(0);
+    }
 
     // populating the chart data Array
     let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
@@ -355,7 +428,7 @@ function provideSearchChartData(chartData){
         let searchDate = cursor.value.date.split("T")[0];
         let index = chartData.indexOf(searchDate);
         if (index != -1){
-            chartData[searchDate]++;
+            results[index]++;
         }
         else{
             sendSearchChartData(results);
@@ -479,11 +552,18 @@ function processMessageEvent(message, sender, sendResponse){
 
 // Script for processing tab event
 function processTabEvent(tabId, changeInfo, tab){
+
+    console.log("in processTabEvent function !");
+
     const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
     if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
     {
-        searches = [
-            {
+        let datetime = new Date().toISOString();
+        let search = {
+            date: datetime,
+            url: datetime,
+            profile: {
+                url: datetime,
                 fullName: "John Doe",
                 title: "Software Engineer",
                 info: "About",
@@ -498,10 +578,10 @@ function processTabEvent(tabId, changeInfo, tab){
                 experience: {},
                 certifications: {},
                 newsFeed: {},
-                languages: {}
-            }
-        ];
-        add_search(searches);
+                languages: {},
+            },
+        };
+        add_search(search);
     }
 };
 
