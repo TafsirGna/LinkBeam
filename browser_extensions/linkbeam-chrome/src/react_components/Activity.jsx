@@ -93,7 +93,7 @@ export default class Activity extends React.Component{
 
       this.setState({
         searchList: listData,
-        searchListTags: listData.map((search) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+        searchListTags: listData.map((search) => (<a href="/profile.html" target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                 <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>

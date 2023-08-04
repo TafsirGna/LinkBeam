@@ -440,6 +440,15 @@ function provideSearchChartData(chartData){
 
 }
 
+// Script for processing linkedin data
+
+function processLinkedInData(linkedInData){
+    if (linkedInData == null){
+        console.log("Not a valid linkedin page");
+        return;
+    }
+}
+
 // Script handling the message execution
 
 function processMessageEvent(message, sender, sendResponse){
@@ -528,6 +537,15 @@ function processMessageEvent(message, sender, sendResponse){
             provideSearchChartData(message.data);
             break;
         }
+        case 'linkedin-data':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Saving the new notification setting state
+            processLinkedInData(message.data);
+            break;
+        }
         case 'erase-all-data':{
             // sending a response
             sendResponse({
@@ -553,12 +571,12 @@ function processMessageEvent(message, sender, sendResponse){
 // Script for processing tab event
 function processTabEvent(tabId, changeInfo, tab){
 
-    console.log("in processTabEvent function !");
+    // console.log("in processTabEvent function !");
 
     const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
     if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
     {
-        let datetime = new Date().toISOString();
+        /*let datetime = new Date().toISOString();
         let search = {
             date: datetime,
             url: datetime,
@@ -581,7 +599,12 @@ function processTabEvent(tabId, changeInfo, tab){
                 languages: {},
             },
         };
-        add_search(search);
+        add_search(search);*/
+
+        // Sending a signal to the content script for confirmation and data extraction
+        chrome.runtime.sendMessage({header: 'check-linkedin-page', data: null}, (response) => {
+          console.log('check-linkedin-page request sent', response);
+        });
     }
 };
 
