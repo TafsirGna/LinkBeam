@@ -207,7 +207,7 @@ export default class Settings extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev onClick={() => this.props.switchOnDisplay("Activity")}/>
+          <BackToPrev prevPageTitle="Activity"/>
 
           <div id="carouselExample" class="carousel slide carousel-dark shadow rounded p-2 border mt-3">
             <div class="carousel-inner">

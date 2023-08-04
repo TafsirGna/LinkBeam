@@ -2,6 +2,7 @@ import React from 'react'
 /*import './Settings.css'*/
 import BackToPrev from "./widgets/BackToPrev"
 import Form from 'react-bootstrap/Form';
+import { Link } from 'react-router-dom';
 
 export default class Settings extends React.Component{
   
@@ -110,7 +111,7 @@ export default class Settings extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev onClick={() => this.props.switchOnDisplay("Activity")}/>
+          <BackToPrev prevPageTitle="Activity"/>
           <div>
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
@@ -131,7 +132,7 @@ export default class Settings extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
-                  <a href="#" class="text-primary badge" title="Add new keyword" onClick={() => this.props.switchOnDisplay("Keywords")}>Add</a>
+                  <Link to="/index.html/Keywords" class="text-primary badge" title="Add new keyword">Add</Link>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

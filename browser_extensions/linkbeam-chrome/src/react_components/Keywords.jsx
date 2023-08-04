@@ -173,7 +173,7 @@ export default class Keywords extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev onClick={() => this.props.switchOnDisplay("Settings")}/>
+          <BackToPrev prevPageTitle="Settings"/>
           <div class="clearfix">
             <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
               <span class="visually-hidden">Loading...</span>

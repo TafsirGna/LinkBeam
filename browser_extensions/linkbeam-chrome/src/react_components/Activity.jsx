@@ -118,7 +118,7 @@ export default class Activity extends React.Component{
       <>
         <div class="clearfix">
           {/*setting icon*/}
-          <HomeMenu switchOnDisplay={this.props.switchOnDisplay} />
+          <HomeMenu />
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">

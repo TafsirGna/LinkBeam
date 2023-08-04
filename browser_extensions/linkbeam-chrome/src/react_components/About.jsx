@@ -21,7 +21,7 @@ export default class About extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev onClick={() => this.props.switchOnDisplay("Activity")}/>
+          <BackToPrev prevPageTitle="Activity"/>
           <div class="text-center">
             <img src={app_logo}  alt=""/>
             <p class="fw-bold mt-2">

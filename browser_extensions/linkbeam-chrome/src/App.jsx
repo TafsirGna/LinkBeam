@@ -1,11 +1,14 @@
 import React from 'react'
 import './App.css'
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import app_logo_white from '/app_logo_white.png'
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
 import Settings from "./react_components/Settings";
 import Statistics from "./react_components/Statistics";
 import Keywords from "./react_components/Keywords";
+import Profile from "./react_components/Profile";
 
 
 export default class App extends React.Component{
@@ -13,7 +16,6 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      onDisplay: "Activity",
       globalData: {
         keywordList: null,
         searchList: null,
@@ -132,23 +134,29 @@ export default class App extends React.Component{
 
   }
 
-  switchOnDisplay = (newValue) => {
-    this.setState({onDisplay: newValue});
-  }
-
   render(){
 
     return(
       <>
-        {this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
-
+        {/*{this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
         {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} globalData={this.state.globalData} />}
-
         {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
-
         {this.state.onDisplay == "Statistics" && <Statistics globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
+        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}*/}
 
-        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
+        <BrowserRouter>
+          <Routes>
+            {/*<Route path="/index.html/" element={<Activity globalData={this.state.globalData} />}>*/}
+              <Route exact path="/index.html/" element={<Activity globalData={this.state.globalData} />} />
+              <Route exact path="/index.html/About" element={<About globalData={this.state.globalData} />} />
+              <Route exact path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
+              <Route exact path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
+              <Route exact path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
+              <Route exact path="/index.html/Profile" element={<Profile />} />
+              {/*<Route path="*" element={<NoPage />} />*/}
+            {/*</Route>*/}
+          </Routes>
+        </BrowserRouter>
 
       </>
     );
