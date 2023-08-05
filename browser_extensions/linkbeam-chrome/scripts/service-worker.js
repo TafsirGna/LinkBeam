@@ -10,6 +10,8 @@ const settingData = [{
     id: 1,
     notifications: true,
     lastDataResetDate: new Date().toISOString(),
+    installedOn: new Date().toISOString(),
+    productID: null, 
 }];
 
 function createDatabase(context) {
@@ -330,8 +332,6 @@ function delete_keyword(keywordData) {
 
 function updateSettingObjectStore(propKey, propValue){
 
-
-
     // Retrieving the data first for later update
     let objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
     let request = objectStore.get(1);
@@ -352,7 +352,7 @@ function updateSettingObjectStore(propKey, propValue){
             // Success - the data is updated!
             console.log(propKey+" update processed successfully !");
 
-            provideSettingsData(propKey);
+            provideSettingsData([propKey]);
         };
     };
 
@@ -381,7 +381,7 @@ function clearObjectStores(objectStoreNames){
 
 // Script for providing setting data
 
-function provideSettingsData(property){
+function provideSettingsData(properties){
     db
     .transaction(settingObjectStoreName, "readonly")
     .objectStore(settingObjectStoreName)
@@ -390,8 +390,10 @@ function provideSettingsData(property){
         console.log('Got settings:', event.target.result);
         // Sending the retrieved data
         let settings = event.target.result;
-        chrome.runtime.sendMessage({header: 'settings-data', data: {property: property, value: settings[property]}}, (response) => {
-          console.log('Settings data response sent', response);
+        properties.forEach((property) => {
+            chrome.runtime.sendMessage({header: 'settings-data', data: {property: property, value: settings[property]}}, (response) => {
+              console.log('Settings data response sent', response);
+            });
         });
     };
 }
@@ -516,9 +518,29 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            provideSettingsData("lastDataResetDate")
+            provideSettingsData(["lastDataResetDate"])
             break;
         }
+        case 'get-product-info':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            provideSettingsData(["installedOn", "productID"]);
+            break;
+        }
+
+        case 'set-product-id':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            updateSettingObjectStore("productID", message.data)
+            break;
+        }
+
         case 'save-notification-checkbox-setting':{
             // sending a response
             sendResponse({

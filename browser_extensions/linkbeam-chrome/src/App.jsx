@@ -1,7 +1,7 @@
 import React from 'react'
 import './App.css'
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import app_logo_white from '/app_logo_white.png'
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
@@ -9,6 +9,7 @@ import Settings from "./react_components/Settings";
 import Statistics from "./react_components/Statistics";
 import Keywords from "./react_components/Keywords";
 import Profile from "./react_components/Profile";
+import MyAccount from "./react_components/MyAccount";
 
 
 export default class App extends React.Component{
@@ -16,16 +17,24 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      profileUrlValue: null,
       globalData: {
         keywordList: null,
         searchList: null,
         appParams: null,
-        lastDataResetDate: null
+        lastDataResetDate: null,
+        installedOn: null,
+        productID: null,
       }
     };
   }
 
   componentDidMount() {
+
+    // Getting the window url params
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileUrlValue = urlParams.get("profile-url");
+    this.setState({profileUrlValue: profileUrlValue});
 
     chrome.runtime.sendMessage({header: 'get-app-params', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
@@ -146,15 +155,20 @@ export default class App extends React.Component{
 
         <BrowserRouter>
           <Routes>
-            {/*<Route path="/index.html/" element={<Activity globalData={this.state.globalData} />}>*/}
-              <Route exact path="/index.html/" element={<Activity globalData={this.state.globalData} />} />
-              <Route exact path="/index.html/About" element={<About globalData={this.state.globalData} />} />
-              <Route exact path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
-              <Route exact path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
-              <Route exact path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
-              <Route exact path="/index.html/Profile" element={<Profile />} />
-              {/*<Route path="*" element={<NoPage />} />*/}
-            {/*</Route>*/}
+            <Route path="/index.html" element={
+              this.state.profileUrlValue ? (
+                <Navigate replace to="/index.html/Profile" />
+              ) : (
+                <Activity globalData={this.state.globalData}/>
+              )
+            }/>
+            <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
+            <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
+            <Route path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
+            <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
+            <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
+            <Route path="/index.html/Profile" element={<Profile />} />
+            {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>
 
