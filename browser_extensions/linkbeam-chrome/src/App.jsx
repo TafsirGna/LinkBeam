@@ -22,6 +22,8 @@ export default class App extends React.Component{
       globalData: {
         keywordList: null,
         searchList: null,
+        searchListOffset: 0,
+        lastSearchBatchList: null,
         appParams: null,
         lastDataResetDate: null,
         installedOn: null,
@@ -37,6 +39,8 @@ export default class App extends React.Component{
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrlValue = urlParams.get("profile-url");
+    const origin = urlParams.get("origin");
+
     this.setState({profileUrlValue: profileUrlValue});
 
     // Getting the app parameters
@@ -46,10 +50,12 @@ export default class App extends React.Component{
     });
 
     // Getting the current page title in order to switch to it
-    chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Get current page title request sent', response);
-    });
+    if (origin == null){
+      chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
+        // Got an asynchronous response with the data from the service worker
+        console.log('Get current page title request sent', response);
+      });
+    }
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -61,14 +67,11 @@ export default class App extends React.Component{
           });
 
           // setting the new value
-          this.setState((prevState) => ({
-            globalData: {
-              keywordList: prevState.globalData.keywordList,
-              searchList: prevState.globalData.searchList,
-              appParams: message.data,
-              lastDataResetDate: prevState.globalData.lastDataResetDate,
-            }
-          }));
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.appParams = message.data;
+            return { globalData };
+          });
           break;
         }
         case "search-list":{
@@ -78,15 +81,8 @@ export default class App extends React.Component{
               status: "ACK"
           });
 
-          // Setting the search list here too
-          this.setState((prevState) => ({
-            globalData: {
-              keywordList: prevState.globalData.keywordList,
-              searchList: message.data,
-              appParams: prevState.globalData.appParams,
-              lastDataResetDate: prevState.globalData.lastDataResetDate,
-            }
-          }));
+          this.setSearchList(message.data);
+
           break;
         }
 
@@ -100,14 +96,12 @@ export default class App extends React.Component{
           switch(message.data.property){
             case "lastDataResetDate":{
               
-              this.setState((prevState) => ({
-                globalData: {
-                  keywordList: prevState.globalData.keywordList,
-                  searchList: [],
-                  appParams: prevState.globalData.appParams,
-                  lastDataResetDate: prevState.globalData.lastDataResetDate,
-                }
-              }));
+              this.setState(prevState => {
+                let globalData = Object.assign({}, prevState.globalData);
+                globalData.searchList = [];
+                globalData.searchListOffset = 0;
+                return { globalData };
+              });
               break;
             }
             case "currentPageTitle":{
@@ -127,14 +121,11 @@ export default class App extends React.Component{
           });
 
           // Setting the search list here too
-          this.setState((prevState) => ({
-            globalData: {
-              keywordList: message.data,
-              searchList: prevState.globalData.searchList,
-              appParams: prevState.globalData.appParams,
-              lastDataResetDate: prevState.globalData.lastDataResetDate,
-            }
-          }));
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.keywordList = message.data;
+            return { globalData };
+          });
           break;
         }
         case "last-reset-date":{
@@ -145,20 +136,49 @@ export default class App extends React.Component{
           });
 
           // Setting the search list here too
-          this.setState((prevState) => ({
-            globalData: {
-              keywordList: prevState.globalData.keywordList,
-              searchList: prevState.globalData.searchList,
-              appParams: prevState.globalData.appParams,
-              lastDataResetDate: message.data,
-            }
-          }));
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.lastDataResetDate = message.data;
+            return { globalData };
+          });
           break;
         }
       }
 
     });
 
+  }
+
+  setSearchList(listData){
+
+    if (this.state.globalData.searchList == null){
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.searchList = [];
+        globalData.searchListOffset = 0;
+        return { globalData };
+      }, () => {
+        this.setSearchList(listData);
+      });
+      return;
+    }
+
+    this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.lastSearchBatchList = listData;
+        return { globalData };
+      }, () => {
+
+        listData = this.state.globalData.searchList.concat(listData);
+
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.searchList = listData;
+          globalData.searchListOffset = prevState.offset + listData.length
+          return { globalData };
+        });
+
+    });
   }
 
   render(){

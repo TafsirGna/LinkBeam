@@ -26,13 +26,18 @@ export default class Activity extends React.Component{
 
   componentDidMount() {
 
-    // setting the local variable with the global data
-    if (this.props.globalData.searchList){
-      this.setListData(this.props.globalData.searchList);
-    }
+    // resetting before starting over
+    this.setState({searchList: null, offset: 0}, () => {
 
-    // Getting the search list
-    this.getSearchList();
+      // setting the local variable with the global data
+      if (this.props.globalData.searchList){
+        this.setListData("INIT",this.props.globalData.searchList);
+      }
+      else{
+        this.getSearchList();
+      }
+
+    });
 
     // Listening for messages from the service worker
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -47,7 +52,7 @@ export default class Activity extends React.Component{
           });
 
           // setting the new value
-          this.setListData(message.data);
+          this.setListData("ADD", message.data);
 
           // setting that the process stopped
           this.setState({
@@ -89,11 +94,11 @@ export default class Activity extends React.Component{
     this.getSearchList()
   }
 
-  setListData(listData){
+  setListData(context, listData){
 
     if (this.state.searchList == null){
       this.setState({searchList: []}, () => {
-        this.setListData(listData);
+        this.setListData(context, listData);
       });
       return;
     }
@@ -102,7 +107,7 @@ export default class Activity extends React.Component{
 
       listData = this.state.searchList.concat(listData);
 
-      this.setState({
+      this.setState((prevState) => ({
         searchList: listData,
         searchListTags: listData.map((search) => (<a href={"index.html?profile-url=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                 <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
@@ -115,9 +120,12 @@ export default class Activity extends React.Component{
                                   <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
                                 </div>
                               </a>)),
-      }, () => {
-        // Setting the new offset
-        this.setState((prevState) => ({offset: prevState.offset + listData.length}));
+        offset: prevState.offset + listData.length,
+      }), () => {
+        if (context == "INIT"){
+          // Getting the search list
+          this.getSearchList();
+        }
       });
 
     });
