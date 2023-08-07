@@ -34,44 +34,50 @@ export default class MyAccount extends React.Component{
   	}
 
   	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	    switch(message.header){
-	        case "settings-data": {
-	        	switch(message.data.property){
-	        		case "installedOn":{
-	        			// sending a response
-						sendResponse({
-							status: "ACK"
-						});
+		    switch(message.header){
+		        case "settings-data": {
+		        	switch(message.data.property){
+		        		case "installedOn":{
+		        			// sending a response
+							sendResponse({
+								status: "ACK"
+							});
 
-						// setting the value
-						let installedOn = message.data.value;
-						this.setState({installedOn: installedOn});
-	        			break;
-	        		}
-	        		case "productID":{
-	        			// sending a response
-						sendResponse({
-							status: "ACK"
-						});
+							// setting the value
+							let installedOn = message.data.value;
+							this.setState({installedOn: installedOn});
+		        			break;
+		        		}
+		        		case "productID":{
+		        			// sending a response
+							sendResponse({
+								status: "ACK"
+							});
 
-						let productID = message.data.value;
-						if (productID){
-							this.setState({productID: productID});
-						}
-						else{
-							// setting the new product ID
-							chrome.runtime.sendMessage({header: 'set-product-id', data: uuidv4()}, (response) => {
-						      // Got an asynchronous response with the data from the service worker
-						      console.log('Product ID Setting request sent', response);
-						    });
-						}
-	        			break;
-	        		}
-	        	}
-	        	break;
-	        }
-	    }
-	});
+							let productID = message.data.value;
+							if (productID){
+								this.setState({productID: productID});
+							}
+							else{
+								// setting the new product ID
+								chrome.runtime.sendMessage({header: 'set-product-id', data: uuidv4()}, (response) => {
+							      // Got an asynchronous response with the data from the service worker
+							      console.log('Product ID Setting request sent', response);
+							    });
+							}
+		        			break;
+		        		}
+		        	}
+		        	break;
+		        }
+		    }
+		});
+
+		// Saving the current page title
+    chrome.runtime.sendMessage({header: 'save-page-title', data: "MyAccount"}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save page title request sent', response);
+    });
 
 
   }
@@ -90,8 +96,8 @@ export default class MyAccount extends React.Component{
 				  <span class="input-group-text" id="basic-addon1">ID</span>
 				  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID}/>
 				</div>
-            	<hr class="mb-1"/>
-            	<p class="badge text-muted fst-italic"> Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
+            	<hr/>
+            	<p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
             </div>
           </div>
         </div>

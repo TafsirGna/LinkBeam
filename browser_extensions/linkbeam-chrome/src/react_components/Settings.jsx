@@ -80,7 +80,12 @@ export default class Settings extends React.Component{
           break;
         }
       }
+    });
 
+    // Saving the current page title
+    chrome.runtime.sendMessage({header: 'save-page-title', data: "Settings"}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save page title request sent', response);
     });
   }
 

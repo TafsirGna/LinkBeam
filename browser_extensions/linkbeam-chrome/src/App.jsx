@@ -18,6 +18,7 @@ export default class App extends React.Component{
     super(props);
     this.state = {
       profileUrlValue: null,
+      currentPageTitle: null,
       globalData: {
         keywordList: null,
         searchList: null,
@@ -31,14 +32,23 @@ export default class App extends React.Component{
 
   componentDidMount() {
 
+    console.log("Mounting App -----------------------------------");
+
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrlValue = urlParams.get("profile-url");
     this.setState({profileUrlValue: profileUrlValue});
 
+    // Getting the app parameters
     chrome.runtime.sendMessage({header: 'get-app-params', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('App params list request sent', response);
+    });
+
+    // Getting the current page title in order to switch to it
+    chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Get current page title request sent', response);
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -87,8 +97,9 @@ export default class App extends React.Component{
               status: "ACK"
           });
 
-          if (message.data.property == "lastDataResetDate"){
-              // Setting the search list here too
+          switch(message.data.property){
+            case "lastDataResetDate":{
+              
               this.setState((prevState) => ({
                 globalData: {
                   keywordList: prevState.globalData.keywordList,
@@ -97,6 +108,13 @@ export default class App extends React.Component{
                   lastDataResetDate: prevState.globalData.lastDataResetDate,
                 }
               }));
+              break;
+            }
+            case "currentPageTitle":{
+              
+              this.setState((prevState) => ({currentPageTitle: message.data.value}));
+              break;
+            }
           }
           break;
         }
@@ -156,11 +174,19 @@ export default class App extends React.Component{
         <BrowserRouter>
           <Routes>
             <Route path="/index.html" element={
-              this.state.profileUrlValue ? (
+              this.state.profileUrlValue ? 
                 <Navigate replace to="/index.html/Profile" />
-              ) : (
-                <Activity globalData={this.state.globalData}/>
-              )
+                /*: this.state.currentPageTitle == "About" ? 
+                  <Navigate replace to="/index.html/About" />
+                  : this.state.currentPageTitle == "Settings" ? 
+                    <Navigate replace to="/index.html/Settings" />
+                    : this.state.currentPageTitle == "Statistics" ? 
+                      <Navigate replace to="/index.html/Statistics" />
+                        : this.state.currentPageTitle == "Keywords" ?
+                          <Navigate replace to="/index.html/Keywords" />
+                          : this.state.currentPageTitle == "MyAccount" ?
+                            <Navigate replace to="/index.html/MyAccount" />*/
+                            : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />

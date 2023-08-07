@@ -12,6 +12,7 @@ const settingData = [{
     lastDataResetDate: new Date().toISOString(),
     installedOn: new Date().toISOString(),
     productID: null, 
+    currentPageTitle: "Activity",
 }];
 
 function createDatabase(context) {
@@ -482,7 +483,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Adding the new keyword
-            add_keyword(message.data)       
+            add_keyword(message.data);
             break;
         }
         case 'delete-keyword':{
@@ -500,7 +501,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the keyword count to the front 
-            provideKeywordCount()       
+            provideKeywordCount();
             break;
         }
         case 'get-app-params':{
@@ -518,7 +519,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            provideSettingsData(["lastDataResetDate"])
+            provideSettingsData(["lastDataResetDate"]);
             break;
         }
         case 'get-product-info':{
@@ -537,7 +538,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            updateSettingObjectStore("productID", message.data)
+            updateSettingObjectStore("productID", message.data);
             break;
         }
 
@@ -547,7 +548,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Saving the new notification setting state
-            updateSettingObjectStore("notifications", message.data)
+            updateSettingObjectStore("notifications", message.data);
             break;
         }
         case 'get-search-chart-data':{
@@ -566,6 +567,24 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // Saving the new notification setting state
             processLinkedInData(message.data);
+            break;
+        }
+        case 'get-current-page-title':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Saving the new notification setting state
+            provideSettingsData(["currentPageTitle"]);
+            break;
+        }
+        case 'save-page-title':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Saving the new notification setting state
+            updateSettingObjectStore("currentPageTitle", message.data);
             break;
         }
         case 'erase-all-data':{

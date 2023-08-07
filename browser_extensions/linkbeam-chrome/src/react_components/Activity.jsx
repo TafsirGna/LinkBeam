@@ -26,35 +26,46 @@ export default class Activity extends React.Component{
 
   componentDidMount() {
 
-    console.log("Mounting Activity page");
-
     // setting the local variable with the global data
     if (this.props.globalData.searchList){
       this.setListData(this.props.globalData.searchList);
     }
 
+    // Getting the search list
     this.getSearchList();
 
+    // Listening for messages from the service worker
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.header == "search-list"){
-        console.log("Activity Message received Search List: ", message);
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
 
-        // setting the new value
-        this.setListData(message.data);
+      switch(message.header){
+        case "search-list":{
 
-        // setting that the process stopped
-        this.setState({
-          processingState: {
-            status: "NO",
-            info: ""
-          }
-        });
+          console.log("Activity Message received Search List: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          // setting the new value
+          this.setListData(message.data);
+
+          // setting that the process stopped
+          this.setState({
+            processingState: {
+              status: "NO",
+              info: ""
+            }
+          });
+          break;
+        }
       }
 
+    });
+
+    // Saving the current page title
+    chrome.runtime.sendMessage({header: 'save-page-title', data: "Activity"}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save page title request sent', response);
     });
 
   }

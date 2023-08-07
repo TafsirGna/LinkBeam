@@ -146,6 +146,12 @@ export default class Settings extends React.Component{
       // Got an asynchronous response with the data from the service worker
       console.log('Last reset date request sent', response);
     });
+
+    // Saving the current page title
+    chrome.runtime.sendMessage({header: 'save-page-title', data: "Statistics"}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save page title request sent', response);
+    });
   }
 
   setKeywordChartLabels(){
