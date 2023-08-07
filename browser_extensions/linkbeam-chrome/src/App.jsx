@@ -18,7 +18,6 @@ export default class App extends React.Component{
     super(props);
     this.state = {
       profileUrlValue: null,
-      currentPageTitle: null,
       globalData: {
         keywordList: null,
         searchList: null,
@@ -34,12 +33,9 @@ export default class App extends React.Component{
 
   componentDidMount() {
 
-    console.log("Mounting App -----------------------------------");
-
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrlValue = urlParams.get("profile-url");
-    const origin = urlParams.get("origin");
 
     this.setState({profileUrlValue: profileUrlValue});
 
@@ -48,14 +44,6 @@ export default class App extends React.Component{
       // Got an asynchronous response with the data from the service worker
       console.log('App params list request sent', response);
     });
-
-    // Getting the current page title in order to switch to it
-    if (origin == null){
-      chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
-        // Got an asynchronous response with the data from the service worker
-        console.log('Get current page title request sent', response);
-      });
-    }
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -102,11 +90,6 @@ export default class App extends React.Component{
                 globalData.searchListOffset = 0;
                 return { globalData };
               });
-              break;
-            }
-            case "currentPageTitle":{
-              
-              this.setState((prevState) => ({currentPageTitle: message.data.value}));
               break;
             }
           }

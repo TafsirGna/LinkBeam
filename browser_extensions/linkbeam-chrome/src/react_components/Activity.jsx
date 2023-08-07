@@ -1,6 +1,7 @@
 import React from 'react'
 import HomeMenu from "./widgets/HomeMenu"
 import user_icon from '../assets/user_icon.png'
+import { Navigate } from "react-router-dom";
 import moment from 'moment';
 
 export default class Activity extends React.Component{
@@ -10,6 +11,7 @@ export default class Activity extends React.Component{
     this.state = {
       searchList: null,
       searchListTags: null,
+      currentPageTitle: "Activity",
       lastBatchList: [],
       offset: 0,
       processingState: {
@@ -25,6 +27,18 @@ export default class Activity extends React.Component{
   }
 
   componentDidMount() {
+
+    // Getting the window url params
+    const urlParams = new URLSearchParams(window.location.search);
+    const origin = urlParams.get("origin");
+
+    // Getting the current page title in order to switch to it
+    if (origin == null){
+      chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
+        // Got an asynchronous response with the data from the service worker
+        console.log('Get current page title request sent', response);
+      });
+    }
 
     // resetting before starting over
     this.setState({searchList: null, offset: 0}, () => {
@@ -61,6 +75,26 @@ export default class Activity extends React.Component{
               info: ""
             }
           });
+          break;
+        }
+        case "settings-data":{
+          console.log("Activity Message received settings-data: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          switch(message.data.property){
+            /*case "lastDataResetDate":{
+
+              break;
+            }*/
+            case "currentPageTitle":{
+              
+              this.setState({currentPageTitle: message.data.value});
+              break;
+            }
+          }
           break;
         }
       }
@@ -132,6 +166,11 @@ export default class Activity extends React.Component{
   }
 
   render(){
+
+    // Redirecting to a different interface depending on the url params
+    if (this.state.currentPageTitle != "Activity"){
+      return <Navigate replace to={"/index.html/" + this.state.currentPageTitle} />;
+    }
 
     return (
       <>
