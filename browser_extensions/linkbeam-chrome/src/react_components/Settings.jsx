@@ -28,9 +28,16 @@ export default class Settings extends React.Component{
       this.setState({keywordCount: this.props.globalData.keywordList.length});
     }
 
+    // Getting the keyword count
     chrome.runtime.sendMessage({header: 'get-keyword-count', data: null}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Keyword count request sent', response);
+    });
+
+    // Knowing the previous status of the notification checkbox
+    chrome.runtime.sendMessage({header: 'get-settings-data', data: ["notifications"]}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Settings data request sent', response);
     });
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -74,8 +81,7 @@ export default class Settings extends React.Component{
               }, 3000);
 
               break;
-            }
-            
+            }            
           }
           break;
         }
@@ -83,7 +89,7 @@ export default class Settings extends React.Component{
     });
 
     // Saving the current page title
-    chrome.runtime.sendMessage({header: 'save-page-title', data: "Settings"}, (response) => {
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Settings"}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });
@@ -92,7 +98,7 @@ export default class Settings extends React.Component{
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    chrome.runtime.sendMessage({header: 'save-notification-checkbox-setting', data: event.target.checked}, (response) => {
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "notifications", value: event.target.checked}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Notification checkbox request sent', response);
     });

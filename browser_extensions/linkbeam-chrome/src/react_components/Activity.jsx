@@ -34,7 +34,7 @@ export default class Activity extends React.Component{
 
     // Getting the current page title in order to switch to it
     if (origin == null){
-      chrome.runtime.sendMessage({header: 'get-current-page-title', data: null}, (response) => {
+      chrome.runtime.sendMessage({header: 'get-settings-data', data: ["currentPageTitle"]}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('Get current page title request sent', response);
       });
@@ -102,7 +102,7 @@ export default class Activity extends React.Component{
     });
 
     // Saving the current page title
-    chrome.runtime.sendMessage({header: 'save-page-title', data: "Activity"}, (response) => {
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Activity"}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });

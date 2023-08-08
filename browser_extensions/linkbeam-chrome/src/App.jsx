@@ -179,17 +179,7 @@ export default class App extends React.Component{
             <Route path="/index.html" element={
               this.state.profileUrlValue ? 
                 <Navigate replace to="/index.html/Profile" />
-                /*: this.state.currentPageTitle == "About" ? 
-                  <Navigate replace to="/index.html/About" />
-                  : this.state.currentPageTitle == "Settings" ? 
-                    <Navigate replace to="/index.html/Settings" />
-                    : this.state.currentPageTitle == "Statistics" ? 
-                      <Navigate replace to="/index.html/Statistics" />
-                        : this.state.currentPageTitle == "Keywords" ?
-                          <Navigate replace to="/index.html/Keywords" />
-                          : this.state.currentPageTitle == "MyAccount" ?
-                            <Navigate replace to="/index.html/MyAccount" />*/
-                            : <Activity globalData={this.state.globalData} />
+                : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />

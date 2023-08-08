@@ -89,7 +89,7 @@ export default class Keywords extends React.Component{
     });
 
     // Saving the current page title
-    chrome.runtime.sendMessage({header: 'save-page-title', data: "Keywords"}, (response) => {
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Keywords"}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });

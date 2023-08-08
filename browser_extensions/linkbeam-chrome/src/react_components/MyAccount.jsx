@@ -27,7 +27,7 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		chrome.runtime.sendMessage({header: 'get-product-info', data: null}, (response) => {
+  		chrome.runtime.sendMessage({header: 'get-settings-data', data: ["installedOn", "productID"]}, (response) => {
 	      // Got an asynchronous response with the data from the service worker
 	      console.log('Product Info request sent', response);
 	    });
@@ -60,7 +60,7 @@ export default class MyAccount extends React.Component{
 							}
 							else{
 								// setting the new product ID
-								chrome.runtime.sendMessage({header: 'set-product-id', data: uuidv4()}, (response) => {
+								chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "productID", value: uuidv4()}}, (response) => {
 							      // Got an asynchronous response with the data from the service worker
 							      console.log('Product ID Setting request sent', response);
 							    });
@@ -74,7 +74,7 @@ export default class MyAccount extends React.Component{
 		});
 
 		// Saving the current page title
-    chrome.runtime.sendMessage({header: 'save-page-title', data: "MyAccount"}, (response) => {
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "MyAccount"}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });

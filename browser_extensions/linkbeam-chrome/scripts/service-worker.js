@@ -513,44 +513,25 @@ function processMessageEvent(message, sender, sendResponse){
             provideAppParams();       
             break;
         }
-        case 'get-last-reset-date':{
+        case 'get-settings-data':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            provideSettingsData(["lastDataResetDate"]);
+            provideSettingsData(message.data);
             break;
         }
-        case 'get-product-info':{
+        case 'set-settings-data':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Providing the last reset date to the front 
-            provideSettingsData(["installedOn", "productID"]);
+            updateSettingObjectStore(message.data.property, message.data.value);
             break;
         }
 
-        case 'set-product-id':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Providing the last reset date to the front 
-            updateSettingObjectStore("productID", message.data);
-            break;
-        }
-
-        case 'save-notification-checkbox-setting':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Saving the new notification setting state
-            updateSettingObjectStore("notifications", message.data);
-            break;
-        }
         case 'get-search-chart-data':{
             // sending a response
             sendResponse({
@@ -569,24 +550,7 @@ function processMessageEvent(message, sender, sendResponse){
             processLinkedInData(message.data);
             break;
         }
-        case 'get-current-page-title':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Saving the new notification setting state
-            provideSettingsData(["currentPageTitle"]);
-            break;
-        }
-        case 'save-page-title':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Saving the new notification setting state
-            updateSettingObjectStore("currentPageTitle", message.data);
-            break;
-        }
+
         case 'erase-all-data':{
             // sending a response
             sendResponse({
