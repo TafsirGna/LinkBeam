@@ -11,6 +11,7 @@ export default class Settings extends React.Component{
     this.state = {
       keywordCount: 0,
       notifSettingCheckBoxValue: true,
+      darkThemeCheckBoxValue: false,
       processingState: {
         status: "NO",
         info: ""
@@ -19,6 +20,7 @@ export default class Settings extends React.Component{
 
     this.deleteAll = this.deleteAll.bind(this);
     this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
+    this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
   }
 
   componentDidMount() {
@@ -104,6 +106,10 @@ export default class Settings extends React.Component{
     });
   }
 
+  saveDarkThemeState(){
+
+  }
+
   deleteAll(){
     const response = confirm("Do you confirm the erase of all your data ?");
     if (response){
@@ -130,10 +136,25 @@ export default class Settings extends React.Component{
                   <strong class="text-gray-dark">Activate notifications</strong>
                   <Form.Check // prettier-ignore
                     type="switch"
-                    id="custom-switch"
+                    id="notif-custom-switch"
                     label=""
                     checked={this.state.notifSettingCheckBoxValue}
                     onChange={this.saveCheckBoxNewState}
+                  />
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Dark Theme</strong>
+                  <Form.Check // prettier-ignore
+                    type="switch"
+                    id="theme-custom-switch"
+                    label=""
+                    checked={this.state.darkThemeCheckBoxValue}
+                    onChange={this.saveDarkThemeState}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}

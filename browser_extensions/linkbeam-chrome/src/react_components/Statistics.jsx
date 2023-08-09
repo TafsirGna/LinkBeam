@@ -14,7 +14,7 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import BackToPrev from "./widgets/BackToPrev"
 import { faker } from '@faker-js/faker';
-/*import './Settings.css'*/
+/*import './Statistics.css'*/
 
 
 ChartJS.register(
@@ -28,7 +28,7 @@ ChartJS.register(
   Legend
 );
 
-export const lineOptions = {
+const lineOptions = {
   responsive: true,
   plugins: {
     legend: {
@@ -41,7 +41,7 @@ export const lineOptions = {
   },
 };
 
-export const barOptions = {
+const barOptions = {
   responsive: true,
   plugins: {
     legend: {

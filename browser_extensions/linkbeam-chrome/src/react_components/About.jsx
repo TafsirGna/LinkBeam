@@ -35,7 +35,7 @@ export default class About extends React.Component{
               <span class="badge text-bg-primary ms-1 shadow">{this.props.globalData.appParams.appVersion}</span>
               <OverlayTrigger
                 placement="bottom"
-                overlay={<Tooltip id="tooltip1">Privacy by design /*Incognito by design*/</Tooltip>}
+                overlay={<Tooltip id="tooltip1">Privacy by design {/*Incognito by design*/}</Tooltip>}
               >
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="#6c757d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ms-2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
               </OverlayTrigger>
