@@ -10,6 +10,7 @@ import Statistics from "./react_components/Statistics";
 import Keywords from "./react_components/Keywords";
 import Profile from "./react_components/Profile";
 import MyAccount from "./react_components/MyAccount";
+import Reminders from "./react_components/Reminders";
 
 
 export default class App extends React.Component{
@@ -187,6 +188,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
             <Route path="/index.html/Profile" element={<Profile />} />
+            <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>

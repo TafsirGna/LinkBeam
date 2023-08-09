@@ -273,15 +273,39 @@ function add_search_data(searchData){
 
 function add_profile(profile, search){
 
-    const objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
-    const request = objectStore.add(profile);
+    // checking first that a profile with the same id doesn't exist yet
+    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let request = objectStore.get(profile.url);
+
     request.onsuccess = (event) => {
-        console.log("New profile added");
-        add_search_data(search);
+        console.log('Got profile:', event.target.result);
+
+        if (event.target.result){
+            let dbProfile = event.target.result;
+            // then add the search object
+            add_search_data(search);
+        }
+        else{
+
+            // then adding the given profile into the database
+            const objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+            const request = objectStore.add(profile);
+            request.onsuccess = (event) => {
+                console.log("New profile added");
+                add_search_data(search);
+            };
+
+            request.onerror = (event) => {
+                console.log("An error occured when adding a new profile");
+            };
+
+        }
+        
     };
 
     request.onerror = (event) => {
-        console.log("An error occured when adding a new profile");
+        // Handle errors!
+        console.log("An error occured when retrieving the profile with url : ", profile.url);
     };
 }
 

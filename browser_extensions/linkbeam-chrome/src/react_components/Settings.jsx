@@ -145,7 +145,7 @@ export default class Settings extends React.Component{
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
-            <div class="d-flex text-body-secondary pt-3">
+            {/*<div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Dark Theme</strong>
@@ -157,14 +157,22 @@ export default class Settings extends React.Component{
                     onChange={this.saveDarkThemeState}
                   />
                 </div>
+              </div>
+            </div>*/}
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <Link to="/index.html/Keywords" class="text-primary badge" title="Add new keyword">Add</Link>
+                </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
-                  <Link to="/index.html/Keywords" class="text-primary badge" title="Add new keyword">Add</Link>
+                  <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <Link to="/index.html/Reminders" class="text-primary badge" title="View reminders">View</Link>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

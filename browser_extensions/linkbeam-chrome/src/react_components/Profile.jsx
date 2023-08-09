@@ -17,6 +17,7 @@ import BackToPrev from "./widgets/BackToPrev";
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
 import Button from 'react-bootstrap/Button';
+import Toast from 'react-bootstrap/Toast';
 import Modal from 'react-bootstrap/Modal';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { Line, Bar } from 'react-chartjs-2';
@@ -106,6 +107,7 @@ export default class Profile extends React.Component{
     super(props);
     this.state = {
       coverImageModalShow: false,
+      bookmarkToastShow: true,
     };
   }
 
@@ -117,12 +119,26 @@ export default class Profile extends React.Component{
   handleClose = () => this.setState({coverImageModalShow: false});
   handleShow = () => this.setState({coverImageModalShow: true});
 
+  toggleBookmarkToastShow = () => this.setState((prevState) => ({bookmarkToastShow: !prevState.bookmarkToastShow}));
+
   render(){
     return (
       <>
         <div class="col-8 offset-2">
 
-        <div class="card mb-3 shadow mt-5">
+        <div class="clearfix mt-5">
+          <div class="dropdown float-end m-3 mt-2 bd-gray">
+            <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+              <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </div>
+            <ul class="dropdown-menu shadow-lg">
+              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkToastShow}>Bookmark</a></li>
+              <li><a class="dropdown-item small" href="#">Add reminder</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
             <img src={user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4"/>
             <h5 class="card-title">Tafsir GNA</h5>
@@ -188,6 +204,55 @@ export default class Profile extends React.Component{
           </Modal.Header>
           <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
         </Modal>
+
+        {/*Reminder Modal*/}
+        {/*<Modal show={show} onHide={handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Modal heading</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
+                <Form.Label>Email address</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="name@example.com"
+                  autoFocus
+                />
+              </Form.Group>
+              <Form.Group
+                className="mb-3"
+                controlId="exampleForm.ControlTextarea1"
+              >
+                <Form.Label>Example textarea</Form.Label>
+                <Form.Control as="textarea" rows={3} />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={handleClose}>
+              Close
+            </Button>
+            <Button variant="primary" onClick={handleClose}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>*/}
+
+
+        {/*Bookmark Toast*/}
+        <Toast show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow}>
+          <Toast.Header>
+            <img
+              src="holder.js/20x20?text=%20"
+              className="rounded me-2"
+              alt=""
+            />
+            <strong className="me-auto">Bootstrap</strong>
+            <small>11 mins ago</small>
+          </Toast.Header>
+          <Toast.Body>Woohoo, you're reading this text in a Toast!</Toast.Body>
+        </Toast>
       </>
     );
   }

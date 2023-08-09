@@ -9,7 +9,6 @@ export default class About extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      tooltipRef: null,
     };
   }
 

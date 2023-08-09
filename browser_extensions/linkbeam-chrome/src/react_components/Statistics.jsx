@@ -218,6 +218,19 @@ export default class Settings extends React.Component{
           <div id="carouselExample" class="carousel slide carousel-dark shadow rounded p-2 border mt-3">
             <div class="carousel-inner">
               <div class="carousel-item active">
+                  {/*View dropdown*/}
+                  <div class="clearfix py-2">
+                    <div class="btn-group float-end">
+                      <button class="btn btn-primary btn-sm dropdown-toggle fst-italic badge" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        View
+                      </button>
+                      <ul class="dropdown-menu shadow">
+                        <li><a class="dropdown-item small" href="#">Day</a></li>
+                        <li><a class="dropdown-item small" href="#">Week</a></li>
+                        <li><a class="dropdown-item small" href="#">Month</a></li>
+                      </ul>
+                    </div>
+                  </div>
                 {this.state.lineData && <Line options={lineOptions} data={this.state.lineData} />}
               </div>
               <div class="carousel-item">
