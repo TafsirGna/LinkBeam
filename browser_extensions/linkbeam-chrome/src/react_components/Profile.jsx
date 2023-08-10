@@ -23,6 +23,9 @@ import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { Line, Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
+import ToastContainer from 'react-bootstrap/ToastContainer';
+import Form from 'react-bootstrap/Form';
+
 
 ChartJS.register(
   CategoryScale,
@@ -91,12 +94,12 @@ const barData = {
         {x: ["2022-04-01", "2022-12-01"], y: "ASSI"},  
         {x: ["2022-05-01", "2022-12-01"], y: "CELTIIS"},  
       ],
-      backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      backgroundColor: 'rgba(255, 99, 132, 1)',
       borderColor: 'rgba(255, 99, 132, 1)',
       borderWidth: 1,
       borderSkipped: false,
       borderRadius: 10,
-      barPercentage: .5,
+      barPercentage: .7,
     },
   ],
 };
@@ -107,17 +110,25 @@ export default class Profile extends React.Component{
     super(props);
     this.state = {
       coverImageModalShow: false,
-      bookmarkToastShow: true,
+      bookmarkToastShow: false,
+      reminderModalShow: false,
     };
+
+    this.bookmarkProfile = this.bookmarkProfile.bind(this);
   }
 
   componentDidMount() {
 
   }
 
+  bookmarkProfile(){
+    this.toggleBookmarkToastShow();
+  }
 
-  handleClose = () => this.setState({coverImageModalShow: false});
-  handleShow = () => this.setState({coverImageModalShow: true});
+  handleCoverImageModalClose = () => this.setState({coverImageModalShow: false});
+  handleCoverImageModalShow = () => this.setState({coverImageModalShow: true});
+  handleReminderModalClose = () => this.setState({reminderModalShow: false});
+  handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
   toggleBookmarkToastShow = () => this.setState((prevState) => ({bookmarkToastShow: !prevState.bookmarkToastShow}));
 
@@ -132,8 +143,8 @@ export default class Profile extends React.Component{
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
             </div>
             <ul class="dropdown-menu shadow-lg">
-              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkToastShow}>Bookmark</a></li>
-              <li><a class="dropdown-item small" href="#">Add reminder</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.bookmarkProfile}>Bookmark</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.handleReminderModalShow}>Add reminder</a></li>
             </ul>
           </div>
         </div>
@@ -157,8 +168,26 @@ export default class Profile extends React.Component{
                 placement="bottom"
                 overlay={<ReactTooltip id="tooltip1">View Cover Image</ReactTooltip>}
               >
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2" onClick={this.handleShow}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2" onClick={this.handleCoverImageModalShow}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
               </OverlayTrigger>
+              <span>
+                ·
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={<ReactTooltip id="tooltip1">Bookmarked Profile</ReactTooltip>}
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                </OverlayTrigger>
+              </span>
+              <span>
+                ·
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={<ReactTooltip id="tooltip1">Here the reminder text</ReactTooltip>}
+                >
+                  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                </OverlayTrigger>
+              </span>
             </p>
           </div>
         </div>
@@ -198,7 +227,7 @@ export default class Profile extends React.Component{
 
 
         {/* Cover Image Modal */}
-        <Modal size="lg" show={this.state.coverImageModalShow} onHide={this.handleClose}>
+        <Modal size="lg" show={this.state.coverImageModalShow} onHide={this.handleCoverImageModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Modal heading</Modal.Title>
           </Modal.Header>
@@ -206,53 +235,58 @@ export default class Profile extends React.Component{
         </Modal>
 
         {/*Reminder Modal*/}
-        {/*<Modal show={show} onHide={handleClose}>
+        <Modal show={this.state.reminderModalShow} onHide={this.handleReminderModalClose}>
           <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
+            <Modal.Title>Reminder</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             <Form>
-              <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
-                <Form.Label>Email address</Form.Label>
+              <Form.Group className="mb-3" controlId="reminderForm.scheduledForControlInput">
+                <Form.Label>Remind at</Form.Label>
                 <Form.Control
-                  type="email"
-                  placeholder="name@example.com"
+                  type="date"
                   autoFocus
                 />
               </Form.Group>
               <Form.Group
                 className="mb-3"
-                controlId="exampleForm.ControlTextarea1"
+                controlId="reminderForm.contentControlTextarea"
               >
-                <Form.Label>Example textarea</Form.Label>
+                <Form.Label>Content</Form.Label>
                 <Form.Control as="textarea" rows={3} />
               </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={handleClose}>
+            <Button variant="secondary" size="sm" onClick={this.handleCoverImageModalClose}>
               Close
             </Button>
-            <Button variant="primary" onClick={handleClose}>
-              Save Changes
+            <Button variant="primary" size="sm" onClick={this.handleCoverImageModalClose}>
+              Save 
             </Button>
           </Modal.Footer>
-        </Modal>*/}
+        </Modal>
 
 
         {/*Bookmark Toast*/}
-        <Toast show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow}>
-          <Toast.Header>
-            <img
-              src="holder.js/20x20?text=%20"
-              className="rounded me-2"
-              alt=""
-            />
-            <strong className="me-auto">Bootstrap</strong>
-            <small>11 mins ago</small>
-          </Toast.Header>
-          <Toast.Body>Woohoo, you're reading this text in a Toast!</Toast.Body>
-        </Toast>
+        <ToastContainer
+          className="p-3"
+          position="bottom-end"
+          style={{ zIndex: 1 }}
+        >
+          <Toast show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} delay={3000} autohide>
+            <Toast.Header>
+              <img
+                src="holder.js/20x20?text=%20"
+                className="rounded me-2"
+                alt=""
+              />
+              <strong className="me-auto">LinkBeam</strong>
+              <small>{/*11 mins ago*/}</small>
+            </Toast.Header>
+            <Toast.Body>Profile bookmarked !</Toast.Body>
+          </Toast>
+        </ToastContainer>
       </>
     );
   }

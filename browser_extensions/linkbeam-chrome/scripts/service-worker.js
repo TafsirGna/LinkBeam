@@ -5,6 +5,7 @@ const searchObjectStoreName = "searches";
 const keywordObjectStoreName = "keywords";
 const settingObjectStoreName = "settings";
 const profileObjectStoreName = "profiles";
+const reminderObjectStoreName = "reminders";
 const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2};
 const settingData = [{
     id: 1,
@@ -48,6 +49,13 @@ function createDatabase(context) {
 
         keywordObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Keyword' created.");
+        }
+
+        // Reminder Object store
+        let reminderObjectStore = db.createObjectStore(reminderObjectStoreName, { keyPath: "url" });
+
+        reminderObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Reminder' created.");
         }
 
         // setting object store
@@ -148,6 +156,28 @@ function provideSearchProfiles(searches){
         };
 
     });
+}
+
+// Script for providing all the bookmarked profiles
+
+function provideBookmarkedList(){
+
+    let request = db
+                    .transaction(profileObjectStoreName, "readonly")
+                    .objectStore(profileObjectStoreName)
+                    .index('bookmarked').openCursor(IDBKeyRange.only('true'))
+    request.onsuccess = (event) => {
+        console.log('Got all bookmarked:', event.target.result);
+        // Sending the retrieved data
+        chrome.runtime.sendMessage({header: 'bookmarked-list', data: event.target.result}, (response) => {
+          console.log('Bookmarked list response sent', response);
+        });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving the bookmarked");
+    };
+
 }
 
 // Script for getting all saved searches
@@ -490,6 +520,15 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // providing the result
             provideSearchList(message.data);
+            break;
+        }
+    case 'get-bookmarked-list':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // providing the result
+            provideBookmarkedList();
             break;
         }
         case 'get-keyword-list':{

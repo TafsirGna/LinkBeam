@@ -11,6 +11,7 @@ export default class Activity extends React.Component{
     this.state = {
       searchList: null,
       searchListTags: null,
+      bookmarkedList: null,
       currentPageTitle: "Activity",
       lastBatchList: [],
       offset: 0,
@@ -113,6 +114,13 @@ export default class Activity extends React.Component{
     chrome.runtime.sendMessage({header: 'get-search-list', data: this.state.offset}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Search list request sent', response);
+    });
+  }
+
+  getBookmarkedList(){
+    chrome.runtime.sendMessage({header: 'get-bookmarked-list', data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Bookmarked list request sent', response);
     });
   }
 
