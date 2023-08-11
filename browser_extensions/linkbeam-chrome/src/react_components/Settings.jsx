@@ -180,7 +180,7 @@ export default class Settings extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Myself</strong>
+                  <strong class="text-gray-dark">My identity</strong>
                   <Link to="/index.html/MyAccount" class="text-primary badge" title="View My ID">View</Link>
                 </div>
                 {/*<span class="d-block">@username</span>*/}

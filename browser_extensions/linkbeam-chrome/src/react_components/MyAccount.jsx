@@ -4,6 +4,7 @@ import BackToPrev from "./widgets/BackToPrev"
 import { v4 as uuidv4 } from 'uuid';
 import user_icon from '../assets/user_icon.png'
 import moment from 'moment';
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
 export default class MyAccount extends React.Component{
 
@@ -92,10 +93,15 @@ export default class MyAccount extends React.Component{
             	<img src={user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0"/>
             </div>
             <div class="mx-auto w-75 mt-4">
-            	<div class="input-group mb-3 shadow input-group-sm">
-				  <span class="input-group-text" id="basic-addon1">ID</span>
-				  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID}/>
-				</div>
+            	<OverlayTrigger
+                placement="bottom"
+                overlay={<Tooltip id="tooltip1">Your unique identifier</Tooltip>}
+              >
+                <div class="input-group mb-3 shadow input-group-sm">
+								  <span class="input-group-text" id="basic-addon1">ID</span>
+								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID}/>
+								</div>
+              </OverlayTrigger>
             	<hr/>
             	<p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
             </div>

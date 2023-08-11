@@ -299,6 +299,30 @@ function add_search_data(searchData){
 
 }
 
+// Script for providing a profile given its url
+
+function provideProfile(url){
+
+    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let request = objectStore.get(url);
+
+    request.onsuccess = (event) => {
+        console.log('Got profile:', event.target.result);
+
+        let profile = event.target.result;
+        chrome.runtime.sendMessage({header: 'profile-object', data: profile}, (response) => {
+          console.log('Profile object response sent', response);
+        });
+
+    };
+
+    request.onerror = (event) => {
+        // Handle errors!
+        console.log("An error occured when retrieving the profile with url : ", profile.url);
+    };
+
+}
+
 // Script for adding the new profile
 
 function add_profile(profile, search){
@@ -549,13 +573,25 @@ function processMessageEvent(message, sender, sendResponse){
             add_keyword(message.data);
             break;
         }
+
+        case 'get-profile':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Adding the new keyword
+            let profileUrl = message.data;
+            provideProfile(profileUrl);
+            break;
+        }
+
         case 'delete-keyword':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Deleting a keyword
-            delete_keyword(message.data)       
+            delete_keyword(message.data);     
             break;
         }
         case 'get-keyword-count':{

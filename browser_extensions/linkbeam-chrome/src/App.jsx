@@ -179,7 +179,7 @@ export default class App extends React.Component{
           <Routes>
             <Route path="/index.html" element={
               this.state.profileUrlValue ? 
-                <Navigate replace to="/index.html/Profile" />
+                <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.profileUrlValue} />
                 : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
