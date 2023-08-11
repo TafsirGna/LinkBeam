@@ -6,7 +6,8 @@ const keywordObjectStoreName = "keywords";
 const settingObjectStoreName = "settings";
 const profileObjectStoreName = "profiles";
 const reminderObjectStoreName = "reminders";
-const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2};
+const notificationObjectStoreName = "notifications";
+const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2, bookmarkCountLimit: 5};
 const settingData = [{
     id: 1,
     notifications: true,
@@ -38,7 +39,7 @@ function createDatabase(context) {
         // Profile Object store
         let profileObjectStore = db.createObjectStore(profileObjectStoreName, { keyPath: "url" });
 
-        // profileObjectStore.createIndex("url", "url", { unique: true });
+        profileObjectStore.createIndex("bookmarked", "bookmarked", { unique: false });
 
         profileObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Profile' created.");
@@ -63,6 +64,13 @@ function createDatabase(context) {
 
         settingObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Setting' created.");
+        }
+
+        // notification object store
+        let notificationObjectStore = db.createObjectStore(notificationObjectStoreName, { keyPath: "id" });
+
+        notificationObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Notification' created.");
         }
     }
 
@@ -423,6 +431,13 @@ function updateProfileObject(params){
             let value = params.values[i];
 
             profile[property] = value;
+
+            /*switch(property){
+                case "bookmarked": {
+                    profile.bookmarkedOn = (new Date()).toISOString();
+                    break;
+                }
+            };*/
         }
 
         let updateRequest = objectStore.put(profile);

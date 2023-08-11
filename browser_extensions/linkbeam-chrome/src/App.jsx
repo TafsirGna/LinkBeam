@@ -11,6 +11,8 @@ import Keywords from "./react_components/Keywords";
 import Profile from "./react_components/Profile";
 import MyAccount from "./react_components/MyAccount";
 import Reminders from "./react_components/Reminders";
+import Notifications from "./react_components/Notifications";
+import NewsFeed from "./react_components/NewsFeed";
 
 
 export default class App extends React.Component{
@@ -169,12 +171,6 @@ export default class App extends React.Component{
 
     return(
       <>
-        {/*{this.state.onDisplay == "Activity" && <Activity globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
-        {this.state.onDisplay == "About" && <About switchOnDisplay={this.switchOnDisplay} globalData={this.state.globalData} />}
-        {this.state.onDisplay == "Settings" && <Settings globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
-        {this.state.onDisplay == "Statistics" && <Statistics globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}
-        {this.state.onDisplay == "Keywords" && <Keywords globalData={this.state.globalData} switchOnDisplay={this.switchOnDisplay} />}*/}
-
         <BrowserRouter>
           <Routes>
             <Route path="/index.html" element={
@@ -189,6 +185,8 @@ export default class App extends React.Component{
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
             <Route path="/index.html/Profile" element={<Profile />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
+            <Route path="/index.html/Notifications" element={<Notifications globalData={this.state.globalData} />} />
+            <Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>

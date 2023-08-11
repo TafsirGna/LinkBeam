@@ -45,7 +45,7 @@ export default class ProfileView extends React.Component{
 
   toggleBookmarkStatus(){
 
-    chrome.runtime.sendMessage({header: 'update-profile', data: {url: this.props.profile.url, properties: ["bookmark"], values: [!this.props.profile.bookmarked]}}, (response) => {
+    chrome.runtime.sendMessage({header: 'update-profile', data: {url: this.props.profile.url, properties: ["bookmarked"], values: [!this.props.profile.bookmarked]}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Update Profile request sent', response);
     });

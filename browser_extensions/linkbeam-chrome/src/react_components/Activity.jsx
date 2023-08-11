@@ -12,9 +12,11 @@ export default class Activity extends React.Component{
       searchList: null,
       searchListTags: null,
       bookmarkedList: null,
+      bookmarkedListTags: null,
       currentPageTitle: "Activity",
       lastBatchList: [],
       offset: 0,
+      currentTabIndex: 0,
       processingState: {
         status: "NO", 
         info: "",
@@ -24,6 +26,7 @@ export default class Activity extends React.Component{
     this.setListData = this.setListData.bind(this);
     this.requestNextSearchBatch = this.requestNextSearchBatch.bind(this);
     this.getSearchList = this.getSearchList.bind(this);
+    this.switchCurrentTab = this.switchCurrentTab.bind(this);
 
   }
 
@@ -78,6 +81,40 @@ export default class Activity extends React.Component{
           });
           break;
         }
+      case "bookmarked-list":{
+
+          console.log("Activity Message received Bookmark List: ", message);
+          // sending a response
+          sendResponse({
+              status: "ACK"
+          });
+
+          // setting the new value
+          let listData = message.data;
+          this.setState({
+            bookmarkedList: listData,
+            bookmarkedListTags: listData.map((profile) => (<a href={"index.html?profile-url=" + profile.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                <div class="d-flex gap-2 w-100 justify-content-between">
+                                  <div>
+                                    <h6 class="mb-0">{profile.fullName}</h6>
+                                    <p class="mb-0 opacity-75">{profile.title}</p>
+                                    <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{profile.nFollowers} followers · {profile.nConnections} connections</p>
+                                  </div>
+                                  <small class="opacity-50 text-nowrap">{moment(profile.bookmarkedOn, moment.ISO_8601).fromNow()}</small>
+                                </div>
+                              </a>)),
+          });
+
+          // setting that the process stopped
+          this.setState({
+            processingState: {
+              status: "NO",
+              info: ""
+            }
+          });
+          break;
+        }
         case "settings-data":{
           console.log("Activity Message received settings-data: ", message);
           // sending a response
@@ -107,6 +144,16 @@ export default class Activity extends React.Component{
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });
+
+  }
+
+  switchCurrentTab(index){
+
+    this.setState({currentTabIndex: index});
+
+    if (index == 1){
+      this.getBookmarkedList();
+    }
 
   }
 
@@ -188,25 +235,31 @@ export default class Activity extends React.Component{
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
-            <button type="button" class="btn btn-primary badge">
+            <button type="button" class="btn btn-primary badge" onClick={() => {this.switchCurrentTab(0)}}>
               All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
             </button>
-            <button type="button" class="btn btn-secondary badge" title="See Bookmarks">Bookmarks</button>
+            <button type="button" class="btn btn-secondary badge" title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >Bookmarks {(this.state.bookmarkedList && this.state.bookmarkedList.length != 0) ? "("+this.state.bookmarkedList.length+")" : null}</button>
           </div>
         </div>
-        {this.state.searchList == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+
+
+
+
+        {/* Search List Tab */}
+
+        { this.state.currentTabIndex == 0 && this.state.searchList == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
                     {/*<span class="visually-hidden">Loading...</span>*/}
                   </div>
                   <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
                 </div>
-              </div>}
+              </div> }
 
-        {this.state.searchList != null && this.state.searchList.length == 0 && <div class="text-center m-5 mt-2">
+        { this.state.currentTabIndex == 0 && this.state.searchList != null && this.state.searchList.length == 0 && <div class="text-center m-5 mt-2">
                     <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles yet</span></p>
-                  </div>}
+                  </div> }
 
-        {this.state.searchList != null && this.state.searchList.length != 0 && <div>
+        { this.state.currentTabIndex == 0 && this.state.searchList != null && this.state.searchList.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {this.state.searchListTags}
                 </div>
@@ -216,7 +269,29 @@ export default class Activity extends React.Component{
                       <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-              </div>}
+              </div> }
+
+
+
+        {/* Bookmarked List Tab */}
+
+        { this.state.currentTabIndex == 1 && this.state.bookmarkedList == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                    {/*<span class="visually-hidden">Loading...</span>*/}
+                  </div>
+                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                </div>
+              </div> }
+
+        { this.state.currentTabIndex == 1 && this.state.bookmarkedList != null && this.state.bookmarkedList.length == 0 && <div class="text-center m-5 mt-2">
+                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p><span class="badge text-bg-primary fst-italic shadow">No bookmarks yet</span></p>
+                  </div> }
+
+        { this.state.currentTabIndex == 1 && this.state.bookmarkedList != null && this.state.bookmarkedList.length != 0 && <div>
+                <div class="list-group m-1 shadow-sm small">
+                  {this.state.bookmarkedListTags}
+                </div>
+              </div> }
       </>
     )
   }
