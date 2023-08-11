@@ -407,6 +407,51 @@ function delete_keyword(keywordData) {
     }
 }
 
+// Script for updating a profile object
+
+function updateProfileObject(params){
+
+    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let request = objectStore.get(params.url);
+
+    request.onsuccess = (event) => {
+        console.log('Got profile object:', event.target.result);
+
+        let profile = event.target.result;
+        for (var i = 0; i < params.properties.length; i++){
+            let property = params.properties[i];
+            let value = params.values[i];
+
+            profile[property] = value;
+        }
+
+        let updateRequest = objectStore.put(profile);
+        updateRequest.onsuccess = (event) => {
+
+            for (var i = 0; i < params.properties.length; i++){
+
+                let property = params.properties[i];
+                let value = params.values[i];
+                chrome.runtime.sendMessage({header: 'profile-updated', data: {url: params.url, property: property, value: value}}, (response) => {
+                  console.log('Update profile response sent', response);
+                });
+
+            }
+        };
+
+        updateRequest.onerror = (event) => {
+            console.log("An error occured when updating the profile with url : ", params.url);
+        };
+
+    };
+
+    request.onerror = (event) => {
+        // Handle errors!
+        console.log("An error occured when retrieving the profile with url : ", params.url);
+    };
+
+}
+
 // Script for setting the new date of data reset
 
 function updateSettingObjectStore(propKey, propValue){
@@ -628,6 +673,17 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // Providing the last reset date to the front 
             updateSettingObjectStore(message.data.property, message.data.value);
+            break;
+        }
+
+        case 'update-profile':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            let params = message.data;
+            updateProfileObject(params);
             break;
         }
 

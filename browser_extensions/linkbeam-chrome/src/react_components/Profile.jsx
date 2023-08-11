@@ -34,6 +34,23 @@ export default class Profile extends React.Component{
 
           break;
         }
+        case "profile-updated":{
+          switch(message.data.property){
+            case "bookmark":{
+              let bookmarkValue = message.data.value
+              if (this.state.profile){
+                this.setState(prevState => {
+                  let profile = Object.assign({}, prevState.profile);
+                  profile.bookmarked = bookmarkValue;
+                  return { profile };
+                });
+              }
+              break;
+            }
+          }
+          
+          break;
+        }
 
       }
     });
@@ -50,7 +67,7 @@ export default class Profile extends React.Component{
                   </div>
                 </div>}
 
-          {this.state.profile && <ProfileView />}
+          {this.state.profile && <ProfileView profile={this.state.profile}/>}
 
         </div>
       </>

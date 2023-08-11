@@ -25,10 +25,10 @@ export default class ProfileViewHeader extends React.Component{
         <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
             <img src={user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4"/>
-            <h5 class="card-title">Tafsir GNA</h5>
+            <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
-            <p class="card-text mb-1"><small class="text-body-secondary">Software Engineer</small></p>
-            <p class="card-text fst-italic opacity-50 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle"><small class="text-body-secondary">0 followers · 0 connections</small></p>
+            <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
+            <p class="card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-info-subtle"><small class="text-body-secondary">{this.props.profile.nFollowers} followers · {this.props.profile.nConnections} connections</small></p>
             <p class="card-text mb-1 text-center text-muted">
               <OverlayTrigger
                 placement="bottom"
@@ -43,15 +43,15 @@ export default class ProfileViewHeader extends React.Component{
               >
                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2" onClick={this.handleCoverImageModalShow}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
               </OverlayTrigger>
-              <span>
-                ·
-                <OverlayTrigger
-                  placement="bottom"
-                  overlay={<ReactTooltip id="tooltip1">Bookmarked Profile</ReactTooltip>}
-                >
-                  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                </OverlayTrigger>
-              </span>
+              { this.props.profile.bookmarked && <span>
+                  ·
+                  <OverlayTrigger
+                    placement="bottom"
+                    overlay={<ReactTooltip id="tooltip1">Bookmarked Profile</ReactTooltip>}
+                  >
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                  </OverlayTrigger>
+                </span>}
               <span>
                 ·
                 <OverlayTrigger
