@@ -34,20 +34,21 @@ export default class Profile extends React.Component{
 
           break;
         }
-        case "profile-updated":{
-          switch(message.data.property){
-            case "bookmark":{
-              let bookmarkValue = message.data.value
-              if (this.state.profile){
-                this.setState(prevState => {
-                  let profile = Object.assign({}, prevState.profile);
-                  profile.bookmarked = bookmarkValue;
-                  return { profile };
-                });
-              }
-              break;
-            }
-          }
+        case "bookmark-added":{
+          this.setState(prevState => {
+            let profile = Object.assign({}, prevState.profile);
+            profile.bookmark = bookmark;
+            return { profile };
+          });
+          
+          break;
+        }
+        case "bookmark-deleted":{
+          this.setState(prevState => {
+            let profile = Object.assign({}, prevState.profile);
+            profile.bookmark = null;
+            return { profile };
+          });
           
           break;
         }

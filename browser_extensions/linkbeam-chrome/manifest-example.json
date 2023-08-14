@@ -11,14 +11,8 @@
     "service_worker": "./service-worker.js"
   },
   "permissions": [
-    "tabs"
+    "tabs",
+    "scripting"
   ],
-  "content_scripts": [
-    {
-      "js": ["content.js"],
-      "matches": [
-        "*://*.linkedin.com/*"
-      ]
-    }
-  ]
+  "host_permissions": ["*://*/*"]
 }

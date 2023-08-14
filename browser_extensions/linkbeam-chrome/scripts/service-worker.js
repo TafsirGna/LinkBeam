@@ -7,6 +7,7 @@ const settingObjectStoreName = "settings";
 const profileObjectStoreName = "profiles";
 const reminderObjectStoreName = "reminders";
 const notificationObjectStoreName = "notifications";
+const bookmarkObjectStoreName = "bookmarks";
 const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2, bookmarkCountLimit: 5};
 const settingData = [{
     id: 1,
@@ -39,7 +40,7 @@ function createDatabase(context) {
         // Profile Object store
         let profileObjectStore = db.createObjectStore(profileObjectStoreName, { keyPath: "url" });
 
-        profileObjectStore.createIndex("bookmarked", "bookmarked", { unique: false });
+        // profileObjectStore.createIndex("bookmarked", "bookmarked", { unique: false });
 
         profileObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Profile' created.");
@@ -71,6 +72,13 @@ function createDatabase(context) {
 
         notificationObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Notification' created.");
+        }
+
+        // bookmarks object store
+        let bookmarkObjectStore = db.createObjectStore(bookmarkObjectStoreName, { keyPath: "url" });
+
+        bookmarkObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Bookmark' created.");
         }
     }
 
@@ -171,19 +179,41 @@ function provideSearchProfiles(searches){
 function provideBookmarkedList(){
 
     let request = db
-                    .transaction(profileObjectStoreName, "readonly")
-                    .objectStore(profileObjectStoreName)
-                    .index('bookmarked').openCursor(IDBKeyRange.only('true'))
+                    .transaction(bookmarkObjectStoreName, "readonly")
+                    .objectStore(bookmarkObjectStoreName)
+                    .getAll();
+    let results = [];
     request.onsuccess = (event) => {
         console.log('Got all bookmarked:', event.target.result);
         // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'bookmarked-list', data: event.target.result}, (response) => {
-          console.log('Bookmarked list response sent', response);
+        var bookmarks = event.target.result;
+
+        bookmarks.forEach((bookmark) => {
+            let profileRequest = db
+                    .transaction(bookmarkObjectStoreName, "readonly")
+                    .objectStore(bookmarkObjectStoreName)
+                    .get(bookmark.url);
+            profileRequest.onsuccess = (event) => {
+                var profile = event.target.result;
+                bookmark.profile = profile;
+
+                results.push(bookmark);
+
+                if (results.length == bookmarks.length){
+                    chrome.runtime.sendMessage({header: 'bookmarked-list', data: results}, (response) => {
+                      console.log('Bookmarked list response sent', response);
+                    });
+                }
+            };
+
+            profileRequest.onerror = (event) => {
+                console.log("An error occured when retrieving profile of url : ", bookmark.url);
+            };
         });
     };
 
     request.onerror = (event) => {
-        console.log("An error occured when retrieving the bookmarked");
+        console.log("An error occured when retrieving all bookmarks");
     };
 
 }
@@ -307,17 +337,78 @@ function add_search_data(searchData){
 
 }
 
+// Script for adding a bookmark
+
+function add_bookmark(url){
+
+    var bookmark = {url: url, createdOn: (new Date()).toISOString()};
+
+    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
+    const request = objectStore.add(bookmark);
+    request.onsuccess = (event) => {
+        console.log("New bookmark added");
+        chrome.runtime.sendMessage({header: 'add-delete', data: url}, (response) => {
+          console.log('Add bookmark response sent', response);
+        });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when adding a bookmark");
+    };
+
+}
+
+// Script for deleting a bookmark 
+
+function delete_bookmark(bookmarkData){
+
+    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
+    const request = objectStore.delete(bookmarkData);
+    request.onsuccess = (event) => {
+        console.log("New bookmark deleted");
+        chrome.runtime.sendMessage({header: 'bookmark-delete', data: bookmarkData}, (response) => {
+          console.log('Delete bookmark response sent', response);
+        });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when deleting a bookmark");
+    };
+
+}
+
 // Script for providing a profile given its url
 
 function provideProfile(url){
 
-    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let objectStore = db.transaction(profileObjectStoreName, "readonly").objectStore(profileObjectStoreName);
     let request = objectStore.get(url);
 
     request.onsuccess = (event) => {
         console.log('Got profile:', event.target.result);
 
         let profile = event.target.result;
+        profile.bookmark = null;
+
+        let bookmarkObjectStore = db.transaction(bookmarkObjectStoreName, "readonly").objectStore(bookmarkObjectStoreName);
+        let bookmarkRequest = bookmarkObjectStore.get(url);
+
+        bookmarkRequest.onsuccess = (event) => {
+            console.log('Got bookmark:', event.target.result);
+
+            let bookmark = event.target.result;
+            profile.bookmark = bookmark;
+            chrome.runtime.sendMessage({header: 'profile-object', data: profile}, (response) => {
+              console.log('Profile object response sent', response);
+            });
+
+        };
+
+        bookmarkRequest.onerror = (event) => {
+            // Handle errors!
+            console.log("An error occured when retrieving the bookmark with url : ", url);
+        };
+
         chrome.runtime.sendMessage({header: 'profile-object', data: profile}, (response) => {
           console.log('Profile object response sent', response);
         });
@@ -433,8 +524,7 @@ function updateProfileObject(params){
             profile[property] = value;
 
             /*switch(property){
-                case "bookmarked": {
-                    profile.bookmarkedOn = (new Date()).toISOString();
+                case "": {
                     break;
                 }
             };*/
@@ -588,6 +678,30 @@ function processLinkedInData(linkedInData){
         console.log("Not a valid linkedin page");
         return;
     }
+
+    let datetime = new Date().toISOString();
+    let search = {
+        date: datetime,
+        url: datetime,
+        profile: {
+            url: datetime,
+            fullName: "John Doe",
+            title: "Software Engineer",
+            info: "About",
+            imageUrl: "ok",
+            coverImageUrl: "ok",
+            date: new Date().toISOString(),
+            nFollowers: 1,
+            nConnections: 1, 
+            location: "",
+            education: {},
+            experience: {},
+            certifications: {},
+            newsFeed: {},
+            languages: {},
+        },
+    };
+    add_search(search);
 }
 
 // Script handling the message execution
@@ -702,6 +816,28 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case 'add-bookmark':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            let url = message.data;
+            add_bookmark(url);
+            break;
+        }
+
+    case 'delete-bookmark':{
+            // sending a response
+            sendResponse({
+                status: "ACK"
+            });
+            // Providing the last reset date to the front 
+            let url = message.data;
+            delete_bookmark(url);
+            break;
+        }
+
         case 'get-search-chart-data':{
             // sending a response
             sendResponse({
@@ -711,7 +847,7 @@ function processMessageEvent(message, sender, sendResponse){
             provideSearchChartData(message.data);
             break;
         }
-        case 'linkedin-data':{
+        /*case 'linkedin-data':{
             // sending a response
             sendResponse({
                 status: "ACK"
@@ -719,7 +855,7 @@ function processMessageEvent(message, sender, sendResponse){
             // Saving the new notification setting state
             processLinkedInData(message.data);
             break;
-        }
+        }*/
 
         case 'erase-all-data':{
             // sending a response
@@ -749,37 +885,19 @@ function processTabEvent(tabId, changeInfo, tab){
     // console.log("in processTabEvent function !");
 
     const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
-    if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
+    if (changeInfo.url /*&& linkedInPattern.test(changeInfo.url)*/) 
     {
-        /*let datetime = new Date().toISOString();
-        let search = {
-            date: datetime,
-            url: datetime,
-            profile: {
-                url: datetime,
-                fullName: "John Doe",
-                title: "Software Engineer",
-                info: "About",
-                imageUrl: "ok",
-                coverImageUrl: "ok",
-                date: new Date().toISOString(),
-                nFollowers: 1,
-                nConnections: 1, 
-                location: "",
-                bookmarked: true,
-                education: {},
-                experience: {},
-                certifications: {},
-                newsFeed: {},
-                languages: {},
-            },
-        };
-        add_search(search);*/
-
         // Sending a signal to the content script for confirmation and data extraction
-        chrome.runtime.sendMessage({header: 'check-linkedin-page', data: null}, (response) => {
+        /*chrome.runtime.sendMessage({header: 'check-linkedin-page', data: null}, (response) => {
           console.log('check-linkedin-page request sent', response);
-        });
+        });*/
+
+        /*chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["./assets/bootstrap.min.css", "./assets/bootstrap.min.js", "content.js"]
+        });*/
+
+        processLinkedInData({});
     }
 };
 

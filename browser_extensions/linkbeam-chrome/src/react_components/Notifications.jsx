@@ -26,7 +26,7 @@ export default class Notifications extends React.Component{
       <>
         <div class="p-3">
           <BackToPrev prevPageTitle="Activity"/>
-          <div class="list-group small mt-3">
+          <div class="list-group small mt-3 shadow-sm">
             <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
               <div class="d-flex gap-2 w-100 justify-content-between">
                 <div>
