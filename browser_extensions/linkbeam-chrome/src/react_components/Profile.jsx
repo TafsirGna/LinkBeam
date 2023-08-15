@@ -18,7 +18,7 @@ export default class Profile extends React.Component{
     const profileUrl = urlParams.get("profile-url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    let requestData = {name: "profiles", data: profileUrl};
+    let requestData = {objectStoreName: "profiles", data: profileUrl};
     chrome.runtime.sendMessage({header: 'get-object', data: requestData}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Get Profile request sent', response, requestData);

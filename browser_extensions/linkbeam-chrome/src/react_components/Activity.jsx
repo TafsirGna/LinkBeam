@@ -27,10 +27,14 @@ export default class Activity extends React.Component{
     this.requestNextSearchBatch = this.requestNextSearchBatch.bind(this);
     this.getSearchList = this.getSearchList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
+    this.startMessageListener = this.startMessageListener.bind(this);
 
   }
 
   componentDidMount() {
+
+    // Start the message listener
+    this.startMessageListener();
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
@@ -38,7 +42,7 @@ export default class Activity extends React.Component{
 
     // Getting the current page title in order to switch to it
     if (origin == null){
-      chrome.runtime.sendMessage({header: 'get-settings-data', data: ["currentPageTitle"]}, (response) => {
+      chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["currentPageTitle"]}}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('Get current page title request sent', response);
       });
@@ -57,6 +61,16 @@ export default class Activity extends React.Component{
 
     });
 
+    // Saving the current page title
+    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Activity"}}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save page title request sent', response);
+    });
+
+  }
+
+  startMessageListener(){
+
     // Listening for messages from the service worker
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
@@ -73,7 +87,7 @@ export default class Activity extends React.Component{
               });
 
               // setting the new value
-              this.setListData("ADD", message.data);
+              this.setListData("ADD", message.data.objectData);
 
               // setting that the process stopped
               this.setState({
@@ -85,72 +99,79 @@ export default class Activity extends React.Component{
               
               break;
             }
+            case "bookmarks": {
+              console.log("Activity Message received Bookmark List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              // setting the new value
+              let listData = message.data.objectData;
+              this.setState({
+                bookmarkList: listData,
+                bookmarkListTags: listData.map((bookmark) => (<a href={"index.html?profile-url=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                    <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                      <div>
+                                        <h6 class="mb-0">{bookmark.profile.fullName}</h6>
+                                        <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
+                                        <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{bookmark.profile.nFollowers} followers · {bookmark.profile.nConnections} connections</p>
+                                      </div>
+                                      <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
+                                    </div>
+                                  </a>)),
+              });
+
+              // setting that the process stopped
+              this.setState({
+                processingState: {
+                  status: "NO",
+                  info: ""
+                }
+              });
+              break;
+            }
           }
           
           break;
         }
-      case "bookmark-list":{
+        case "object-data":{
+          
+          switch(message.data.objectStoreName){
+            case "settings": {
 
-          console.log("Activity Message received Bookmark List: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+              console.log("Activity Message received settings-data: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
 
-          // setting the new value
-          let listData = message.data;
-          this.setState({
-            bookmarkList: listData,
-            bookmarkListTags: listData.map((bookmark) => (<a href={"index.html?profile-url=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                                <div class="d-flex gap-2 w-100 justify-content-between">
-                                  <div>
-                                    <h6 class="mb-0">{bookmark.profile.fullName}</h6>
-                                    <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
-                                    <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{bookmark.profile.nFollowers} followers · {bookmark.profile.nConnections} connections</p>
-                                  </div>
-                                  <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
-                                </div>
-                              </a>)),
-          });
+              switch(message.data.data.property){
+                /*case "lastDataResetDate":{
 
-          // setting that the process stopped
-          this.setState({
-            processingState: {
-              status: "NO",
-              info: ""
-            }
-          });
-          break;
-        }
-        case "settings-data":{
-          console.log("Activity Message received settings-data: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+                  break;
+                }*/
+                case "currentPageTitle":{
+                  
+                  var currentPageTitle = message.data.data.value;
+                  this.setState({currentPageTitle: currentPageTitle});
 
-          switch(message.data.property){
-            /*case "lastDataResetDate":{
+                  // if (currentPageTitle == "Activity"){
 
-              break;
-            }*/
-            case "currentPageTitle":{
-              
-              this.setState({currentPageTitle: message.data.value});
+                  // }
+                  break;
+                }
+              }
+
               break;
             }
           }
+
           break;
         }
       }
 
-    });
-
-    // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Activity"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
     });
 
   }
@@ -173,7 +194,7 @@ export default class Activity extends React.Component{
   }
 
   getBookmarkList(){
-    chrome.runtime.sendMessage({header: 'get-bookmark-list', data: null}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "bookmarks", data: null }}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Bookmark list request sent', response);
     });

@@ -28,7 +28,7 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		chrome.runtime.sendMessage({header: 'get-settings-data', data: ["installedOn", "productID"]}, (response) => {
+  		chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["installedOn", "productID"]}}, (response) => {
 	      // Got an asynchronous response with the data from the service worker
 	      console.log('Product Info request sent', response);
 	    });
@@ -36,39 +36,48 @@ export default class MyAccount extends React.Component{
 
   	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		    switch(message.header){
-		        case "settings-data": {
-		        	switch(message.data.property){
-		        		case "installedOn":{
-		        			// sending a response
-							sendResponse({
-								status: "ACK"
-							});
+		        case "object-data": {
+		        	
+		        	switch(message.data.objectStoreName){
+		        		case "settings":{
 
-							// setting the value
-							let installedOn = message.data.value;
-							this.setState({installedOn: installedOn});
-		        			break;
-		        		}
-		        		case "productID":{
-		        			// sending a response
-							sendResponse({
-								status: "ACK"
-							});
+		        			switch(message.data.data.property){
+				        		case "installedOn":{
+				        			// sending a response
+									sendResponse({
+										status: "ACK"
+									});
 
-							let productID = message.data.value;
-							if (productID){
-								this.setState({productID: productID});
-							}
-							else{
-								// setting the new product ID
-								chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "productID", value: uuidv4()}}, (response) => {
-							      // Got an asynchronous response with the data from the service worker
-							      console.log('Product ID Setting request sent', response);
-							    });
-							}
+									// setting the value
+									let installedOn = message.data.data.value;
+									this.setState({installedOn: installedOn});
+				        			break;
+				        		}
+				        		case "productID":{
+				        			// sending a response
+									sendResponse({
+										status: "ACK"
+									});
+
+									let productID = message.data.data.value;
+									if (productID){
+										this.setState({productID: productID});
+									}
+									else{
+										// setting the new product ID
+										chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "productID", value: uuidv4()}}, (response) => {
+									      // Got an asynchronous response with the data from the service worker
+									      console.log('Product ID Setting request sent', response);
+									    });
+									}
+				        			break;
+				        		}
+				        	}
+
 		        			break;
 		        		}
 		        	}
+
 		        	break;
 		        }
 		    }

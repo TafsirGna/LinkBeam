@@ -121,16 +121,25 @@ export default class Settings extends React.Component{
 
           break;
         }
-        case "settings-data":{
-          if (message.data.property == "lastDataResetDate"){
-            console.log("Statistics Message received last reset date: ", message);
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case "object-data":{
 
-            this.setState({lastDataResetDate: message.data.value});
+          switch(message.data.objectStoreName){
+            case "settings":{
+
+              if (message.data.data.property == "lastDataResetDate"){
+                console.log("Statistics Message received last reset date: ", message);
+                // sending a response
+                sendResponse({
+                    status: "ACK"
+                });
+
+                this.setState({lastDataResetDate: message.data.data.value});
+              }
+
+              break;
+            }
           }
+
           break;
         }
       }
@@ -142,7 +151,7 @@ export default class Settings extends React.Component{
     this.setSearchChartLabels();
     
     // Requesting the last reset date
-    chrome.runtime.sendMessage({header: 'get-settings-data', data: ["lastDataResetDate"]}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["lastDataResetDate"]}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Last reset date request sent', response);
     });

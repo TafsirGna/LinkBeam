@@ -37,7 +37,7 @@ export default class Settings extends React.Component{
     });
 
     // Knowing the previous status of the notification checkbox
-    chrome.runtime.sendMessage({header: 'get-settings-data', data: ["notifications"]}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["notifications"]}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Settings data request sent', response);
     });
@@ -55,36 +55,45 @@ export default class Settings extends React.Component{
           break;
         }
 
-        case "settings-data": {
-          console.log("Settings Message received Settings data: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+        case "object-data": {
+          
+          switch(message.data.objectStoreName){
+            case "settings":{
 
-          // setting the new value
-          switch(message.data.property){
-            case "notifications": {
-              this.setState({notifSettingCheckBoxValue: message.data.value});
+              console.log("Settings Message received Settings data: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              // setting the new value
+              switch(message.data.data.property){
+                case "notifications": {
+                  this.setState({notifSettingCheckBoxValue: message.data.data.value});
+                  break;
+                }
+
+                case "lastDataResetDate": {
+
+                  // Displaying the validation sign
+                  this.setState({processingState: {status: "NO", info: "ERASING"}});
+
+                  // updating local value
+                  this.setState({keywordCount: 0});
+
+                  // Setting a timer to reset all of this
+                  setTimeout(() => {
+                    this.setState({processingState: {status: "NO", info: ""}});
+                  }, 3000);
+
+                  break;
+                }            
+              }
+
               break;
             }
-
-            case "lastDataResetDate": {
-
-              // Displaying the validation sign
-              this.setState({processingState: {status: "NO", info: "ERASING"}});
-
-              // updating local value
-              this.setState({keywordCount: 0});
-
-              // Setting a timer to reset all of this
-              setTimeout(() => {
-                this.setState({processingState: {status: "NO", info: ""}});
-              }, 3000);
-
-              break;
-            }            
           }
+
           break;
         }
       }

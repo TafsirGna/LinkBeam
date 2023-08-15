@@ -176,7 +176,7 @@ function getSearchProfiles(searches){
 
 // Script for providing all the bookmarked profiles
 
-function provideBookmarkList(){
+function getBookmarkList(){
 
     let request = db
                     .transaction(bookmarkObjectStoreName, "readonly")
@@ -189,16 +189,14 @@ function provideBookmarkList(){
         var bookmarks = event.target.result;
 
         if (bookmarks.length == 0){
-            chrome.runtime.sendMessage({header: 'bookmark-list', data: results}, (response) => {
-              console.log('Bookmark list response sent', response);
-            });
+            sendBackResponse("OBJECT-LIST", bookmarkObjectStoreName, results);
             return;
         }
 
         bookmarks.forEach((bookmark) => {
             let profileRequest = db
-                    .transaction(bookmarkObjectStoreName, "readonly")
-                    .objectStore(bookmarkObjectStoreName)
+                    .transaction(profileObjectStoreName, "readonly")
+                    .objectStore(profileObjectStoreName)
                     .get(bookmark.url);
             profileRequest.onsuccess = (event) => {
                 var profile = event.target.result;
@@ -207,9 +205,7 @@ function provideBookmarkList(){
                 results.push(bookmark);
 
                 if (results.length == bookmarks.length){
-                    chrome.runtime.sendMessage({header: 'bookmark-list', data: results}, (response) => {
-                      console.log('Bookmark list response sent', response);
-                    });
+                    sendBackResponse("OBJECT-LIST", bookmarkObjectStoreName, results);
                 }
             };
 
@@ -410,8 +406,14 @@ function getList(objectStoreName, params){
             getSearchList(params);
             break;
         }
+
+        case bookmarkObjectStoreName:{
+            getBookmarkList();
+            break;
+        }
     }
 
+}
 
 
 // Script for getting any object instance
@@ -421,6 +423,11 @@ function getObject(objectStoreName, objectData){
     switch(objectStoreName){
         case profileObjectStoreName:{
             getProfileObject(objectData);
+            break;
+        }
+
+        case settingObjectStoreName:{
+            getSettingsData(objectData);
             break;
         }
     }
@@ -475,15 +482,15 @@ function sendBackResponse(action, objectStoreName, data){
             break;
         }
 
-    case "OBJECT-LIST": {
+        case "OBJECT-LIST": {
             header = 'object-list';
             break;
         }
-
-        chrome.runtime.sendMessage({header: header, data: responseData}, (response) => {
-          console.log(action + " " + objectStoreName + ' response sent', response, responseData);
-        });
     }
+
+    chrome.runtime.sendMessage({header: header, data: responseData}, (response) => {
+      console.log(action + " " + objectStoreName + ' response sent', response, responseData);
+    });
 }
 
 
@@ -688,7 +695,7 @@ function updateSettingObjectStore(propKey, propValue){
             // Success - the data is updated!
             console.log(propKey+" update processed successfully !");
 
-            provideSettingsData([propKey]);
+            getSettingsData([propKey]);
         };
     };
 
@@ -717,7 +724,7 @@ function clearObjectStores(objectStoreNames){
 
 // Script for providing setting data
 
-function provideSettingsData(properties){
+function getSettingsData(properties){
     db
     .transaction(settingObjectStoreName, "readonly")
     .objectStore(settingObjectStoreName)
@@ -825,7 +832,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            getList(message.data.name, message.data.data);
+            getList(message.data.objectStoreName, message.data.data);
             break;
         }
 
@@ -835,7 +842,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            getObject(message.data.name, message.data.data);
+            getObject(message.data.objectStoreName, message.data.data);
             break;
         }
 
@@ -904,15 +911,6 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // Providing the app parameters to the front 
             provideAppParams();       
-            break;
-        }
-        case 'get-settings-data':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Providing the last reset date to the front 
-            provideSettingsData(message.data);
             break;
         }
         case 'set-settings-data':{
