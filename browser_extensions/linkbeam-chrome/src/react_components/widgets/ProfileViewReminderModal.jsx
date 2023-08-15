@@ -9,7 +9,21 @@ export default class ProfileViewReminderModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      reminderDate: (new Date()),
+      reminderText: "",
     };
+
+    this.saveReminder = this.saveReminder.bind(this);
+  }
+
+  saveReminder(){
+
+    var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
+    chrome.runtime.sendMessage({header: "save-reminder", data: reminder}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Save reminder request sent', response);
+    });
+
   }
 
   componentDidMount() {
@@ -31,6 +45,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 <Form.Control
                   type="date"
                   autoFocus
+                  value={this.state.reminderDate}
                 />
               </Form.Group>
               <Form.Group
@@ -38,7 +53,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control as="textarea" rows={3} />
+                <Form.Control as="textarea" rows={3} value={this.state.reminderText} />
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -46,7 +61,7 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide}>
               Close
             </Button>
-            <Button variant="primary" size="sm" onClick={this.props.onHide}>
+            <Button variant="primary" size="sm" onClick={this.props.saveReminder}>
               Save 
             </Button>
           </Modal.Footer>

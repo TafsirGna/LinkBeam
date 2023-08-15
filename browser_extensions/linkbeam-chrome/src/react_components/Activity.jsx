@@ -61,24 +61,32 @@ export default class Activity extends React.Component{
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       switch(message.header){
-        case "search-list":{
+        case "object-list":{
 
-          console.log("Activity Message received Search List: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+          switch(message.data.objectStoreName){
+            case "searches":{
 
-          // setting the new value
-          this.setListData("ADD", message.data);
+              console.log("Activity Message received Search List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
 
-          // setting that the process stopped
-          this.setState({
-            processingState: {
-              status: "NO",
-              info: ""
+              // setting the new value
+              this.setListData("ADD", message.data);
+
+              // setting that the process stopped
+              this.setState({
+                processingState: {
+                  status: "NO",
+                  info: ""
+                }
+              });
+              
+              break;
             }
-          });
+          }
+          
           break;
         }
       case "bookmark-list":{
@@ -158,7 +166,7 @@ export default class Activity extends React.Component{
   }
 
   getSearchList(){
-    chrome.runtime.sendMessage({header: 'get-search-list', data: this.state.offset}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "searches", data: this.state.offset}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Search list request sent', response);
     });

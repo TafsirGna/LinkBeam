@@ -22,13 +22,41 @@ export default class ProfileView extends React.Component{
 
     // listening to events
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.header == "bookmark-added" || message.header == "bookmark-deleted"){
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
-        this.toggleBookmarkToastShow();
+      
+      switch(message.header){
+        case "object-added": {
+
+          switch(message.data.objectStoreName){
+            case "bookmarks": {
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              this.toggleBookmarkToastShow();
+              break;
+            }
+          }
+
+          break;
+        }
+
+        case "object-deleted": {
+
+          switch(message.data.objectStoreName){
+            case "bookmarks": {
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              this.toggleBookmarkToastShow();
+              break;
+            }
+          }
+          
+          break;
+        }
       }
+
     });
 
   }
@@ -37,19 +65,20 @@ export default class ProfileView extends React.Component{
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
   toggleBookmarkToastShow = () => this.setState((prevState) => ({bookmarkToastShow: !prevState.bookmarkToastShow}));
 
+
   toggleBookmarkStatus(){
 
     let action = null;
     if (this.props.profile.bookmark){
       //
-      action = "delete-bookmark";
+      action = "add-object";
     }
     else{
       //
-      action = "add-bookmark"
+      action = "delete-object"
     }
 
-    chrome.runtime.sendMessage({header: action, data: this.props.profile.url}, (response) => {
+    chrome.runtime.sendMessage({header: action, data: {objectStoreName: "bookmarks", data: this.props.profile.url}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log(action + ' bookmark request sent', response);
     });
@@ -75,7 +104,7 @@ export default class ProfileView extends React.Component{
 
         <ProfileViewBody profile={this.props.profile} />
 
-        <ProfileViewReminderModal show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
+        <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
 
         <CustomToast message={"Profile "+(this.props.profile.bookmark ? "" : "un" )+"bookmarked !"} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} />
 

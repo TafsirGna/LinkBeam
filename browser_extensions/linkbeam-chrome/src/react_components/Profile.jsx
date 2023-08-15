@@ -18,23 +18,35 @@ export default class Profile extends React.Component{
     const profileUrl = urlParams.get("profile-url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    chrome.runtime.sendMessage({header: 'get-profile', data: profileUrl}, (response) => {
+    let requestData = {name: "profiles", data: profileUrl};
+    chrome.runtime.sendMessage({header: 'get-object', data: requestData}, (response) => {
       // Got an asynchronous response with the data from the service worker
-      console.log('Get Profile request sent', response);
+      console.log('Get Profile request sent', response, requestData);
     });
 
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
-        case "profile-object":{
-          let profile = message.data;
+        case "object-data":{
+          
+          switch(message.data.objectStoreName){
+            case "profiles": {
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
 
-          // Setting the retrieved profile as a local variable
-          this.setState({profile: profile});
+              let profile = message.data.objectData;
 
+              // Setting the retrieved profile as a local variable
+              this.setState({profile: profile});
+            }
+          }
           break;
         }
         case "bookmark-added":{
+          var bookmark = message.data;
+
           this.setState(prevState => {
             let profile = Object.assign({}, prevState.profile);
             profile.bookmark = bookmark;
