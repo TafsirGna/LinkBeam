@@ -1,8 +1,9 @@
-import React from 'react'
+import React from 'react';
 /*import './Settings.css'*/
-import BackToPrev from "./widgets/BackToPrev"
+import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
+import { saveCurrentPageTitle } from "./Local_library";
 
 export default class Settings extends React.Component{
   
@@ -127,17 +128,13 @@ export default class Settings extends React.Component{
       }
     });
 
-    // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Settings"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
+    saveCurrentPageTitle("Settings");
   }
 
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "notifications", value: event.target.checked}}, (response) => {
+    chrome.runtime.sendMessage({header: 'update-object', data: {objectStoreName: "settings", objectData: {property: "notifications", value: event.target.checked}}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Notification checkbox request sent', response);
     });

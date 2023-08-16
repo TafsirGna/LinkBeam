@@ -1,8 +1,10 @@
-import React from 'react'
-import HomeMenu from "./widgets/HomeMenu"
-import user_icon from '../assets/user_icon.png'
+import React from 'react';
+import HomeMenu from "./widgets/HomeMenu";
+import user_icon from '../assets/user_icon.png';
 import { Navigate } from "react-router-dom";
+import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import moment from 'moment';
+import { saveCurrentPageTitle } from "./Local_library";
 
 export default class Activity extends React.Component{
 
@@ -61,11 +63,7 @@ export default class Activity extends React.Component{
 
     });
 
-    // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Activity"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
+    saveCurrentPageTitle("Activity");
 
   }
 
@@ -116,7 +114,14 @@ export default class Activity extends React.Component{
                                       <div>
                                         <h6 class="mb-0">{bookmark.profile.fullName}</h6>
                                         <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
-                                        <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{bookmark.profile.nFollowers} followers · {bookmark.profile.nConnections} connections</p>
+                                        <p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
+                                          <OverlayTrigger
+                                            placement="top"
+                                            overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
+                                          >
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                          </OverlayTrigger>
+                                        </p>
                                       </div>
                                       <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
                                     </div>

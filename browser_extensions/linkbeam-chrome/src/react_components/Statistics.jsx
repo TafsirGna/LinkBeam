@@ -14,6 +14,7 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import BackToPrev from "./widgets/BackToPrev"
 import { faker } from '@faker-js/faker';
+import { saveCurrentPageTitle } from "./Local_library"
 /*import './Statistics.css'*/
 
 
@@ -157,11 +158,7 @@ export default class Settings extends React.Component{
       console.log('Last reset date request sent', response);
     });
 
-    // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Statistics"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
+    saveCurrentPageTitle("Statistics");
   }
 
   setKeywordChartLabels(){

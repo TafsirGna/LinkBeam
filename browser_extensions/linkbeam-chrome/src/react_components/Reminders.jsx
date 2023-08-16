@@ -1,6 +1,7 @@
 /*import './Reminders.css'*/
-import React from 'react'
-import BackToPrev from "./widgets/BackToPrev"
+import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
+import { saveCurrentPageTitle } from "./Local_library";
 
 export default class Reminders extends React.Component{
 
@@ -15,10 +16,7 @@ export default class Reminders extends React.Component{
   componentDidMount() {
 
     // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "Reminders"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
+    saveCurrentPageTitle("Reminders");
 
   }
 

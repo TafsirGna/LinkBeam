@@ -3,6 +3,7 @@ import React from 'react'
 import app_logo from '../assets/app_logo.svg'
 import BackToPrev from "./widgets/BackToPrev"
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { saveCurrentPageTitle } from "./Local_library"
 
 export default class About extends React.Component{
 
@@ -14,11 +15,7 @@ export default class About extends React.Component{
 
   componentDidMount() {
 
-    // Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "About"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
+    saveCurrentPageTitle("About");
 
   }
 

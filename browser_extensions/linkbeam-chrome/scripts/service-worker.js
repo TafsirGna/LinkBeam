@@ -523,6 +523,19 @@ function deleteObject(objectStoreName, objectData){
 
 }
 
+// Script for updating any object instance
+
+function updateObject(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case settingObjectStoreName:{
+            updateSettingObjectStore(objectData.property, objectData.value);
+            break;
+        }
+    }
+
+}
+
 // Script for sending back responses
 
 function sendBackResponse(action, objectStoreName, data){
@@ -928,7 +941,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            updateObject(message.data);
+            updateObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
@@ -958,15 +971,6 @@ function processMessageEvent(message, sender, sendResponse){
             });
             // Providing the app parameters to the front 
             provideAppParams();       
-            break;
-        }
-        case 'set-settings-data':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Providing the last reset date to the front 
-            updateSettingObjectStore(message.data.property, message.data.value);
             break;
         }
 

@@ -1,10 +1,11 @@
 /*import './Profile.css'*/
-import React from 'react'
-import BackToPrev from "./widgets/BackToPrev"
+import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
 import { v4 as uuidv4 } from 'uuid';
-import user_icon from '../assets/user_icon.png'
+import user_icon from '../assets/user_icon.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { saveCurrentPageTitle } from "./Local_library";
 
 export default class MyAccount extends React.Component{
 
@@ -65,10 +66,7 @@ export default class MyAccount extends React.Component{
 									}
 									else{
 										// setting the new product ID
-										chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "productID", value: uuidv4()}}, (response) => {
-									      // Got an asynchronous response with the data from the service worker
-									      console.log('Product ID Setting request sent', response);
-									    });
+										saveCurrentPageTitle("MyAccount");
 									}
 				        			break;
 				        		}

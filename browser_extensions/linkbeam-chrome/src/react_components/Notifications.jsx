@@ -1,7 +1,8 @@
 /*import './About.css'*/
-import React from 'react'
-import BackToPrev from "./widgets/BackToPrev"
+import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { saveCurrentPageTitle } from "./Local_library";
 
 export default class Notifications extends React.Component{
 
@@ -13,11 +14,7 @@ export default class Notifications extends React.Component{
 
   componentDidMount() {
 
-    /*// Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "About"}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });*/
+    saveCurrentPageTitle("Notifications");
 
   }
 
