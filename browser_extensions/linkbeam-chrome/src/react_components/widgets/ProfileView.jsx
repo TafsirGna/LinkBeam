@@ -78,7 +78,7 @@ export default class ProfileView extends React.Component{
       action = "delete-object"
     }
 
-    chrome.runtime.sendMessage({header: action, data: {objectStoreName: "bookmarks", data: this.props.profile.url}}, (response) => {
+    chrome.runtime.sendMessage({header: action, data: {objectStoreName: "bookmarks", objectData: this.props.profile.url}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log(action + ' bookmark request sent', response);
     });

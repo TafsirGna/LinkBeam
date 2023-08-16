@@ -154,7 +154,7 @@ export default class Activity extends React.Component{
                 }*/
                 case "currentPageTitle":{
                   
-                  var currentPageTitle = message.data.data.value;
+                  var currentPageTitle = message.data.objectData.value;
                   this.setState({currentPageTitle: currentPageTitle});
 
                   // if (currentPageTitle == "Activity"){

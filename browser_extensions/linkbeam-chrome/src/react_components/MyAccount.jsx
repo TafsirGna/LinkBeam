@@ -41,7 +41,7 @@ export default class MyAccount extends React.Component{
 		        	switch(message.data.objectStoreName){
 		        		case "settings":{
 
-		        			switch(message.data.data.property){
+		        			switch(message.data.objectData.property){
 				        		case "installedOn":{
 				        			// sending a response
 									sendResponse({
@@ -49,7 +49,7 @@ export default class MyAccount extends React.Component{
 									});
 
 									// setting the value
-									let installedOn = message.data.data.value;
+									let installedOn = message.data.objectData.value;
 									this.setState({installedOn: installedOn});
 				        			break;
 				        		}
@@ -59,7 +59,7 @@ export default class MyAccount extends React.Component{
 										status: "ACK"
 									});
 
-									let productID = message.data.data.value;
+									let productID = message.data.objectData.value;
 									if (productID){
 										this.setState({productID: productID});
 									}

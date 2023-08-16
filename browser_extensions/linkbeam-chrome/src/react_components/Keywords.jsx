@@ -37,7 +37,7 @@ export default class Keywords extends React.Component{
       this.setListData(this.props.globalData.keywordList);
     }
 
-    chrome.runtime.sendMessage({header: 'get-keyword-list', data: null}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "keywords", objectData: null}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Keyword list request sent', response);
     });
@@ -49,35 +49,43 @@ export default class Keywords extends React.Component{
           break;
         }
 
-        case "keyword-list":{
-          console.log("Keyword Message received Keyword list: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+        case "object-list":{
+          
+          switch(message.data.objectStoreName){
+            case "keywords":{
 
-          // setting the new value
-          this.setListData(message.data)
+              console.log("Keyword Message received Keyword list: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
 
-          // Displaying the alertBadge
-          if (this.state.processingState.status == "YES"){
-            switch(this.state.processingState.info){
-              case "ADDING":{
-                this.setState({alertBadgeContent: "Added !"});
-                break
+              // setting the new value
+              this.setListData(message.data.objectData)
+
+              // Displaying the alertBadge
+              if (this.state.processingState.status == "YES"){
+                switch(this.state.processingState.info){
+                  case "ADDING":{
+                    this.setState({alertBadgeContent: "Added !"});
+                    break
+                  }
+                  case "DELETING":{
+                    this.setState({alertBadgeContent: "Deleted !"});
+                    break
+                  }
+                }
               }
-              case "DELETING":{
-                this.setState({alertBadgeContent: "Deleted !"});
-                break
+
+              // Setting a timeout for the alertBadge to disappear
+              setTimeout(() => {
+                this.setState({alertBadgeContent: ""});
               }
+              , 3000);
+
+              break;
             }
           }
-
-          // Setting a timeout for the alertBadge to disappear
-          setTimeout(() => {
-            this.setState({alertBadgeContent: ""});
-          }
-          , 3000);
 
           break;
         }
@@ -118,7 +126,7 @@ export default class Keywords extends React.Component{
     this.setState({processingState: {status: "YES", info: "DELETING"}});
 
     if (response){
-      chrome.runtime.sendMessage({header: 'delete-keyword', data:keyword.name}, (response) => {
+      chrome.runtime.sendMessage({header: 'delete-object', data: {objectStoreName: "keywords", objectData: keyword.name}}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('keyword deletion request sent', response);
       });
@@ -139,7 +147,7 @@ export default class Keywords extends React.Component{
 
       console.log("Adding keyword", this.state.keyword);
 
-      chrome.runtime.sendMessage({header: 'add-keyword', data:[{name: this.state.keyword}]}, (response) => {
+      chrome.runtime.sendMessage({header: 'add-object', data:{objectStoreName: "keywords", objectData: this.state.keyword}}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('new keyword request sent', response);
 

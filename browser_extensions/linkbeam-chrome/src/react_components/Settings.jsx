@@ -10,6 +10,7 @@ export default class Settings extends React.Component{
     super(props);
     this.state = {
       keywordCount: 0,
+      reminderCount: 0,
       notifSettingCheckBoxValue: true,
       darkThemeCheckBoxValue: false,
       processingState: {
@@ -31,9 +32,15 @@ export default class Settings extends React.Component{
     }
 
     // Getting the keyword count
-    chrome.runtime.sendMessage({header: 'get-keyword-count', data: null}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-count', data: {objectStoreName: "keywords", objectData: null}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Keyword count request sent', response);
+    });
+
+    // Getting the reminder count
+    chrome.runtime.sendMessage({header: 'get-count', data: {objectStoreName: "reminders", objectData: null}}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log('Reminder count request sent', response);
     });
 
     // Knowing the previous status of the notification checkbox
@@ -44,14 +51,35 @@ export default class Settings extends React.Component{
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
-        case "keyword-count": {
-          console.log("Settings Message received keyword count: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
-          // setting the new value
-          this.setState({keywordCount: message.data});
+        
+        case "object-count": {
+          
+          switch(message.data.objectStoreName){
+            case "keywords": {
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              // setting the new value
+              this.setState({keywordCount: message.data.objectData});
+
+              break;
+            }
+
+            case "reminders": {
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              // setting the new value
+              this.setState({reminderCount: message.data.objectData});
+
+              break;
+            }
+          }
+
           break;
         }
 
@@ -67,9 +95,9 @@ export default class Settings extends React.Component{
               });
 
               // setting the new value
-              switch(message.data.data.property){
+              switch(message.data.objectData.property){
                 case "notifications": {
-                  this.setState({notifSettingCheckBoxValue: message.data.data.value});
+                  this.setState({notifSettingCheckBoxValue: message.data.objectData.value});
                   break;
                 }
 
@@ -180,7 +208,7 @@ export default class Settings extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.reminderCount}</span></strong>
                   <Link to="/index.html/Reminders" class="text-primary badge" title="View reminders">View</Link>
                 </div>
                 {/*<span class="d-block">@username</span>*/}

@@ -270,36 +270,84 @@ function sendSearchList(searches){
     sendBackResponse("OBJECT-LIST", searchObjectStoreName, searches);
 }
 
+// Script for getting the count of any objectStore
+
+function getCount(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case keywordObjectStoreName:{
+            getKeywordCount(params);
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            getReminderCount(params);
+            break;
+        }
+    }
+
+}
+
+
+// Script for getting reminder count
+
+function getReminderCount() {
+
+    var request = db
+                    .transaction(reminderObjectStoreName, "readonly")
+                    .objectStore(reminderObjectStoreName)
+                    .count();
+    request.onsuccess = (event) => {
+        console.log('Got reminder count:', event.target.result);
+        // Sending the retrieved data
+        var result = event.target.result;
+        sendBackResponse("OBJECT-COUNT", reminderObjectStoreName, result);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when counting reminders : ", event);
+    };
+}
+
+
 // Script for getting keyword count
 
-function provideKeywordCount() {
+function getKeywordCount() {
 
-    db
-    .transaction(keywordObjectStoreName, "readonly")
-    .objectStore(keywordObjectStoreName)
-    .count()
-    .onsuccess = (event) => {
+    var request = db
+                    .transaction(keywordObjectStoreName, "readonly")
+                    .objectStore(keywordObjectStoreName)
+                    .count();
+    request.onsuccess = (event) => {
         console.log('Got keyword count:', event.target.result);
         // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'keyword-count', data: event.target.result}, (response) => {
-          console.log('Keyword count response sent', response);
-        });
+        var result = event.target.result;
+        sendBackResponse("OBJECT-COUNT", keywordObjectStoreName, result);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when counting keywords : ", event);
     };
 }
 
 // Script for getting all saved searches
 
-function provideKeywordList() {
-    db
-    .transaction(keywordObjectStoreName, "readonly")
-    .objectStore(keywordObjectStoreName)
-    .getAll()
-    .onsuccess = (event) => {
+function getKeywordList() {
+
+    let request = db
+                .transaction(keywordObjectStoreName, "readonly")
+                .objectStore(keywordObjectStoreName)
+                .getAll();
+
+    request.onsuccess = (event) => {
         console.log('Got all keywords:', event.target.result);
         // Sending the retrieved data
-        chrome.runtime.sendMessage({header: 'keyword-list', data: event.target.result}, (response) => {
-          console.log('Keyword list response sent', response);
-        });
+        let results = event.target.result;
+        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results)
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving keyword list : ", event);
     };
 }
 
@@ -411,6 +459,11 @@ function getList(objectStoreName, params){
             getBookmarkList();
             break;
         }
+
+        case keywordObjectStoreName:{
+            getKeywordList();
+            break;
+        }
     }
 
 }
@@ -443,6 +496,11 @@ function addObject(objectStoreName, objectData){
             addBookmarkObject(objectData);
             break;
         }
+
+        case keywordObjectStoreName:{
+            addKeyword(objectData);
+            break;
+        }
     }
 
 }
@@ -454,6 +512,11 @@ function deleteObject(objectStoreName, objectData){
     switch(objectStoreName){
         case bookmarkObjectStoreName:{
             deleteBookmarkObject(objectData);
+            break;
+        }
+
+        case keywordObjectStoreName:{
+            deleteKeyword(objectData);
             break;
         }
     }
@@ -484,6 +547,11 @@ function sendBackResponse(action, objectStoreName, data){
 
         case "OBJECT-LIST": {
             header = 'object-list';
+            break;
+        }
+
+    case "OBJECT-COUNT": {
+            header = 'object-count';
             break;
         }
     }
@@ -578,37 +646,37 @@ function add_profile(profile, search){
 
 // Script for adding a new keyword
 
-function add_keyword(keywordData) {
+function addKeyword(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
-    keywordData.forEach((keyword) => {
-        // setting the date of insertion
-        keyword.date = new Date().toISOString();
-        const request = objectStore.add(keyword);
-        request.onsuccess = (event) => {
-            // console.log("New keyword added")
-            // Sending the new list
-            provideKeywordList() 
-        };
+    
+    // setting the date of insertion
+    var keyword = {name: keywordData, createdOn: new Date().toISOString()}
+    const request = objectStore.add(keyword);
+    request.onsuccess = (event) => {
+        // console.log("New keyword added")
+        // Sending the new list
+        getKeywordList() 
+    };
 
-        request.onerror = function (event) {
-            console.log("An error when inserting the new keyword", event);
-            let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
-            chrome.runtime.sendMessage({header: 'add-keyword-error', data: errorData}, (response) => {
-              console.log('Add keyword error message sent', response);
-            });
-        }
-    });
+    request.onerror = function (event) {
+        console.log("An error when inserting the new keyword", event);
+        let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
+        chrome.runtime.sendMessage({header: 'add-keyword-error', data: errorData}, (response) => {
+          console.log('Add keyword error message sent', response);
+        });
+    };
+
 }
 
 // Script for deleting a keyword
 
-function delete_keyword(keywordData) {
+function deleteKeyword(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
     let request = objectStore.delete(keywordData);
     request.onsuccess = (event) => {
         console.log("Keyword deleted")
         // Sending the new list
-        provideKeywordList() 
+        getKeywordList() 
     }
 
     request.onerror = function (event) {
@@ -734,9 +802,7 @@ function getSettingsData(properties){
         // Sending the retrieved data
         let settings = event.target.result;
         properties.forEach((property) => {
-            chrome.runtime.sendMessage({header: 'settings-data', data: {property: property, value: settings[property]}}, (response) => {
-              console.log('Settings data response sent', response);
-            });
+            sendBackResponse("GET-OBJECT", settingObjectStoreName, {property: property, value: settings[property]});
         });
     };
 }
@@ -832,7 +898,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            getList(message.data.objectStoreName, message.data.data);
+            getList(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
@@ -842,7 +908,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            getObject(message.data.objectStoreName, message.data.data);
+            getObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
@@ -852,7 +918,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            addObject(message.data.name, message.data.data);
+            addObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
@@ -872,36 +938,17 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // providing the result
-            deleteObject(message.data.name, message.data.data);
+            deleteObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
-
-        case 'add-keyword':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Adding the new keyword
-            add_keyword(message.data);
-            break;
-        }
-
-        case 'delete-keyword':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Deleting a keyword
-            delete_keyword(message.data);     
-            break;
-        }
-        case 'get-keyword-count':{
+        
+        case 'get-count':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Providing the keyword count to the front 
-            provideKeywordCount();
+            deleteObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
         case 'get-app-params':{
@@ -931,17 +978,6 @@ function processMessageEvent(message, sender, sendResponse){
             // Providing the last reset date to the front 
             let params = message.data;
             updateProfileObject(params);
-            break;
-        }
-
-        case 'save-reminder':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Saving the new notification setting state
-            var reminder = message.data;
-            add_reminder(reminder);
             break;
         }
 
