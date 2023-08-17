@@ -45,7 +45,7 @@ export default class Settings extends React.Component{
     });
 
     // Knowing the previous status of the notification checkbox
-    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["notifications"]}}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["notifications"]}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Settings data request sent', response);
     });

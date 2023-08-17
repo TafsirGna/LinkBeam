@@ -19,7 +19,7 @@ export default class ProfileViewReminderModal extends React.Component{
   saveReminder(){
 
     var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
-    chrome.runtime.sendMessage({header: "save-reminder", data: reminder}, (response) => {
+    chrome.runtime.sendMessage({header: "add-object", data: {objectStoreName: "reminders", objectData: reminder}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save reminder request sent', response);
     });

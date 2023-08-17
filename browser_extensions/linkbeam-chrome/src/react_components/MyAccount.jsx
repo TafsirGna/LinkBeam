@@ -29,7 +29,7 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["installedOn", "productID"]}}, (response) => {
+  		chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["installedOn", "productID"]}}, (response) => {
 	      // Got an asynchronous response with the data from the service worker
 	      console.log('Product Info request sent', response);
 	    });
@@ -82,7 +82,7 @@ export default class MyAccount extends React.Component{
 		});
 
 		// Saving the current page title
-    chrome.runtime.sendMessage({header: 'set-settings-data', data: {property: "currentPageTitle", value: "MyAccount"}}, (response) => {
+    chrome.runtime.sendMessage({header: 'update-object', data: {objectStoreName: "settings", objectData: {property: "currentPageTitle", value: "MyAccount"}}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Save page title request sent', response);
     });

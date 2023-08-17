@@ -44,7 +44,7 @@ export default class Activity extends React.Component{
 
     // Getting the current page title in order to switch to it
     if (origin == null){
-      chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", data: ["currentPageTitle"]}}, (response) => {
+      chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["currentPageTitle"]}}, (response) => {
         // Got an asynchronous response with the data from the service worker
         console.log('Get current page title request sent', response);
       });
@@ -114,14 +114,14 @@ export default class Activity extends React.Component{
                                       <div>
                                         <h6 class="mb-0">{bookmark.profile.fullName}</h6>
                                         <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
-                                        <p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
+                                        {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
                                           <OverlayTrigger
                                             placement="top"
                                             overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
                                           >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                                           </OverlayTrigger>
-                                        </p>
+                                        </p>*/}
                                       </div>
                                       <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
                                     </div>
@@ -152,7 +152,7 @@ export default class Activity extends React.Component{
                   status: "ACK"
               });
 
-              switch(message.data.data.property){
+              switch(message.data.objectData.property){
                 /*case "lastDataResetDate":{
 
                   break;
@@ -192,14 +192,14 @@ export default class Activity extends React.Component{
   }
 
   getSearchList(){
-    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "searches", data: this.state.offset}}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "searches", objectData: this.state.offset}}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Search list request sent', response);
     });
   }
 
   getBookmarkList(){
-    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "bookmarks", data: null }}, (response) => {
+    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "bookmarks", objectData: null }}, (response) => {
       // Got an asynchronous response with the data from the service worker
       console.log('Bookmark list request sent', response);
     });

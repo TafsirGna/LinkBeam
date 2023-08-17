@@ -388,7 +388,7 @@ function add_search_data(searchData){
 
 // Script for adding a reminder
 
-function add_reminder(reminder){
+function addReminderObject(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
 
@@ -403,6 +403,23 @@ function add_reminder(reminder){
 
     request.onerror = (event) => {
         console.log("An error occured when adding a reminder ", event);
+    };
+
+}
+
+// Script for deleting a reminder
+
+function deleteReminderObject(reminderData){
+
+    const objectStore = db.transaction(reminderObjectStoreName, "readwrite").objectStore(reminderObjectStoreName);
+    const request = objectStore.delete(reminderData);
+    request.onsuccess = (event) => {
+        console.log("A reminder deleting");
+        sendBackResponse("DELETE", reminderObjectStoreName, reminderData);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when deleting a reminder ", event);
     };
 
 }
@@ -498,7 +515,7 @@ function addObject(objectStoreName, objectData){
         }
 
         case keywordObjectStoreName:{
-            addKeyword(objectData);
+            addKeywordObject(objectData);
             break;
         }
     }
@@ -516,7 +533,12 @@ function deleteObject(objectStoreName, objectData){
         }
 
         case keywordObjectStoreName:{
-            deleteKeyword(objectData);
+            deleteKeywordObject(objectData);
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            deleteReminderObject(objectData);
             break;
         }
     }
@@ -529,7 +551,7 @@ function updateObject(objectStoreName, objectData){
 
     switch(objectStoreName){
         case settingObjectStoreName:{
-            updateSettingObjectStore(objectData.property, objectData.value);
+            updateSettingObject(objectData.property, objectData.value);
             break;
         }
     }
@@ -595,7 +617,22 @@ function getProfileObject(url){
             let bookmark = event.target.result;
             profile.bookmark = bookmark;
 
-            sendBackResponse("GET-OBJECT", profileObjectStoreName, profile);
+            let reminderObjectStore = db.transaction(reminderObjectStoreName, "readonly").objectStore(reminderObjectStoreName);
+            let reminderRequest = reminderObjectStore.get(url);
+
+            reminderRequest.onsuccess = (event) => {
+
+                let reminder = event.target.result;
+                profile.reminder = reminder;
+
+                sendBackResponse("GET-OBJECT", reminderObjectStoreName, profile);
+
+            };
+
+            bookmarkRequest.onerror = (event) => {
+                // Handle errors!
+                console.log("An error occured when retrieving the reminder with url : ", url);
+            };
 
         };
 
@@ -659,7 +696,7 @@ function add_profile(profile, search){
 
 // Script for adding a new keyword
 
-function addKeyword(keywordData) {
+function addKeywordObject(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
     
     // setting the date of insertion
@@ -683,7 +720,7 @@ function addKeyword(keywordData) {
 
 // Script for deleting a keyword
 
-function deleteKeyword(keywordData) {
+function deleteKeywordObject(keywordData) {
     const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
     let request = objectStore.delete(keywordData);
     request.onsuccess = (event) => {
@@ -754,7 +791,7 @@ function updateProfileObject(params){
 
 // Script for setting the new date of data reset
 
-function updateSettingObjectStore(propKey, propValue){
+function updateSettingObject(propKey, propValue){
 
     // Retrieving the data first for later update
     let objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
@@ -791,7 +828,7 @@ function updateSettingObjectStore(propKey, propValue){
 function clearObjectStores(objectStoreNames){
     if (objectStoreNames.length == 0){
         // updating the last reset date before notifying the content script
-        updateSettingObjectStore("lastDataResetDate", (new Date().toISOString()));
+        updateSettingObject("lastDataResetDate", (new Date().toISOString()));
         return;
     }
 
@@ -806,17 +843,23 @@ function clearObjectStores(objectStoreNames){
 // Script for providing setting data
 
 function getSettingsData(properties){
-    db
-    .transaction(settingObjectStoreName, "readonly")
-    .objectStore(settingObjectStoreName)
-    .get(1)
-    .onsuccess = (event) => {
+    
+    var request = db
+                    .transaction(settingObjectStoreName, "readonly")
+                    .objectStore(settingObjectStoreName)
+                    .get(1);
+
+    request.onsuccess = (event) => {
         console.log('Got settings:', event.target.result);
         // Sending the retrieved data
         let settings = event.target.result;
         properties.forEach((property) => {
             sendBackResponse("GET-OBJECT", settingObjectStoreName, {property: property, value: settings[property]});
         });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when getting the settings data");
     };
 }
 

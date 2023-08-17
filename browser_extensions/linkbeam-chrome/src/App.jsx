@@ -13,6 +13,7 @@ import MyAccount from "./react_components/MyAccount";
 import Reminders from "./react_components/Reminders";
 import Notifications from "./react_components/Notifications";
 import NewsFeed from "./react_components/NewsFeed";
+import Calendar from "./react_components/Calendar";
 
 
 export default class App extends React.Component{
@@ -187,6 +188,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Notifications" element={<Notifications globalData={this.state.globalData} />} />
             <Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />
+            <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>
