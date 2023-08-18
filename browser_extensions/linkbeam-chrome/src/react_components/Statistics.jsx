@@ -14,7 +14,7 @@ import {
 import { Line, Bar } from 'react-chartjs-2';
 import BackToPrev from "./widgets/BackToPrev"
 import { faker } from '@faker-js/faker';
-import { saveCurrentPageTitle } from "./Local_library"
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library"
 /*import './Statistics.css'*/
 
 
@@ -83,20 +83,28 @@ export default class Settings extends React.Component{
     // Starting the listener
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
-        case "keyword-list":{
-          console.log("Statistics Message received keyword-list: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
-
-          let labels = [];
-          message.data.forEach((keyword) => {
-            labels.push(keyword.name);
-          });
+        case "object-list":{
           
-          // setting the new value
-          this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
+          switch(message.data.objectStoreName){
+            case "keywords":{
+              
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              let labels = [];
+              var results = message.data.objectData;
+              results.forEach((keyword) => {
+                labels.push(keyword.name);
+              });
+              
+              // setting the new value
+              this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
+              break;
+            }
+          }
+
           break;
         }
         case "search-chart-data":{
@@ -153,20 +161,14 @@ export default class Settings extends React.Component{
     this.setSearchChartLabels();
     
     // Requesting the last reset date
-    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["lastDataResetDate"]}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Last reset date request sent', response);
-    });
+    sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
 
     saveCurrentPageTitle("Statistics");
   }
 
   setKeywordChartLabels(){
 
-    chrome.runtime.sendMessage({header: 'get-keyword-list', data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Keyword list request sent', response);
-    });
+    sendDatabaseActionMessage("get-list", "keywords", null);
 
   }
 

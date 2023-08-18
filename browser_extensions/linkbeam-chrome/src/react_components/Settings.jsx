@@ -3,7 +3,7 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
-import { saveCurrentPageTitle } from "./Local_library";
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class Settings extends React.Component{
   
@@ -33,22 +33,13 @@ export default class Settings extends React.Component{
     }
 
     // Getting the keyword count
-    chrome.runtime.sendMessage({header: 'get-count', data: {objectStoreName: "keywords", objectData: null}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Keyword count request sent', response);
-    });
+    sendDatabaseActionMessage("get-count", "keywords", null);
 
     // Getting the reminder count
-    chrome.runtime.sendMessage({header: 'get-count', data: {objectStoreName: "reminders", objectData: null}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Reminder count request sent', response);
-    });
+    sendDatabaseActionMessage("get-count", "reminders", null);
 
     // Knowing the previous status of the notification checkbox
-    chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["notifications"]}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Settings data request sent', response);
-    });
+    sendDatabaseActionMessage("get-object", "settings", ["notifications"]);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -134,10 +125,7 @@ export default class Settings extends React.Component{
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    chrome.runtime.sendMessage({header: 'update-object', data: {objectStoreName: "settings", objectData: {property: "notifications", value: event.target.checked}}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Notification checkbox request sent', response);
-    });
+    sendDatabaseActionMessage("update-object", "settings", {property: "notifications", value: event.target.checked});
   }
 
   saveDarkThemeState(){

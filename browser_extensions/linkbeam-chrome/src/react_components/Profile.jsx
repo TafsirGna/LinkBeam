@@ -1,6 +1,7 @@
 /*import './Profile.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
+import { sendDatabaseActionMessage } from "./Local_library";
 
 export default class Profile extends React.Component{
 
@@ -18,12 +19,7 @@ export default class Profile extends React.Component{
     const profileUrl = urlParams.get("profile-url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    let requestData = {objectStoreName: "profiles", objectData: profileUrl};
-    chrome.runtime.sendMessage({header: 'get-object', data: requestData}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Get Profile request sent', response, requestData);
-    });
-
+    sendDatabaseActionMessage("get-object", "profiles", profileUrl);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -44,23 +40,83 @@ export default class Profile extends React.Component{
           }
           break;
         }
-        case "bookmark-added":{
-          var bookmark = message.data;
+        case "object-added":{
+          
+          switch(message.data.objectStoreName){
+            case "bookmarks":{ 
 
-          this.setState(prevState => {
-            let profile = Object.assign({}, prevState.profile);
-            profile.bookmark = bookmark;
-            return { profile };
-          });
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              var bookmark = message.data.objectData;
+              this.setState(prevState => {
+                let profile = Object.assign({}, prevState.profile);
+                profile.bookmark = bookmark;
+                return { profile };
+              });
+
+              break;
+            }
+
+            case "reminders":{ 
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              var reminder = message.data.objectData;
+              this.setState(prevState => {
+                let profile = Object.assign({}, prevState.profile);
+                profile.reminder = reminder;
+                return { profile };
+              });
+
+              break;
+            }
+          }
           
           break;
         }
-        case "bookmark-deleted":{
-          this.setState(prevState => {
-            let profile = Object.assign({}, prevState.profile);
-            profile.bookmark = null;
-            return { profile };
-          });
+        case "object-deleted":{
+          
+          switch(message.data.objectStoreName){
+            case "bookmarks": {
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              this.setState(prevState => {
+                let profile = Object.assign({}, prevState.profile);
+                profile.bookmark = null;
+                return { profile };
+              });
+
+              break;
+
+            }
+
+          case "reminders": {
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              this.setState(prevState => {
+                let profile = Object.assign({}, prevState.profile);
+                profile.reminder = null;
+                return { profile };
+              });
+
+              break;
+
+            }
+          }
           
           break;
         }

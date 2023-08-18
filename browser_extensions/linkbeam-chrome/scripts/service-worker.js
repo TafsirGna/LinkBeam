@@ -396,9 +396,7 @@ function addReminderObject(reminder){
     const request = objectStore.add(reminder);
     request.onsuccess = (event) => {
         console.log("New reminder added");
-        chrome.runtime.sendMessage({header: 'reminder-added', data: reminder}, (response) => {
-          console.log('Add bookmark response sent', response);
-        });
+        sendBackResponse("ADD", reminderObjectStoreName, reminder);
     };
 
     request.onerror = (event) => {
@@ -434,9 +432,7 @@ function addBookmarkObject(url){
     const request = objectStore.add(bookmark);
     request.onsuccess = (event) => {
         console.log("New bookmark added");
-        chrome.runtime.sendMessage({header: 'bookmark-added', data: bookmark}, (response) => {
-          console.log('Add bookmark response sent', response);
-        });
+        sendBackResponse("ADD", bookmarkObjectStoreName, bookmark);
     };
 
     request.onerror = (event) => {
@@ -518,6 +514,11 @@ function addObject(objectStoreName, objectData){
             addKeywordObject(objectData);
             break;
         }
+
+        case reminderObjectStoreName:{
+            addReminderObject(objectData);
+            break;
+        }
     }
 
 }
@@ -539,6 +540,25 @@ function deleteObject(objectStoreName, objectData){
 
         case reminderObjectStoreName:{
             deleteReminderObject(objectData);
+            break;
+        }
+    }
+
+}
+
+// Script for count any object store elements
+
+function getObjectCount(objectStoreName, objectData){
+
+    switch(objectStoreName){
+
+        case keywordObjectStoreName:{
+            getKeywordCount(objectData);
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            getReminderCount(objectData);
             break;
         }
     }
@@ -608,6 +628,7 @@ function getProfileObject(url){
 
         let profile = event.target.result;
         profile.bookmark = null;
+        profile.reminder = null;
 
         let bookmarkObjectStore = db.transaction(bookmarkObjectStoreName, "readonly").objectStore(bookmarkObjectStoreName);
         let bookmarkRequest = bookmarkObjectStore.get(url);
@@ -615,7 +636,10 @@ function getProfileObject(url){
         bookmarkRequest.onsuccess = (event) => {
 
             let bookmark = event.target.result;
-            profile.bookmark = bookmark;
+
+            if (bookmark != undefined){
+                profile.bookmark = bookmark;
+            }
 
             let reminderObjectStore = db.transaction(reminderObjectStoreName, "readonly").objectStore(reminderObjectStoreName);
             let reminderRequest = reminderObjectStore.get(url);
@@ -623,9 +647,10 @@ function getProfileObject(url){
             reminderRequest.onsuccess = (event) => {
 
                 let reminder = event.target.result;
-                profile.reminder = reminder;
-
-                sendBackResponse("GET-OBJECT", reminderObjectStoreName, profile);
+                if (reminder != undefined){
+                    profile.reminder = reminder;
+                }
+                sendBackResponse("GET-OBJECT", profileObjectStoreName, profile);
 
             };
 
@@ -640,11 +665,6 @@ function getProfileObject(url){
             // Handle errors!
             console.log("An error occured when retrieving the bookmark with url : ", url);
         };
-
-        chrome.runtime.sendMessage({header: 'profile-object', data: profile}, (response) => {
-          console.log('Profile object response sent', response);
-        });
-
     };
 
     request.onerror = (event) => {
@@ -1004,7 +1024,7 @@ function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
             // Providing the keyword count to the front 
-            deleteObject(message.data.objectStoreName, message.data.objectData);
+            getObjectCount(message.data.objectStoreName, message.data.objectData);
             break;
         }
         case 'get-app-params':{

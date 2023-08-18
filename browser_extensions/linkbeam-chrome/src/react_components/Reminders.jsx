@@ -1,7 +1,7 @@
 /*import './Reminders.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
-import { saveCurrentPageTitle } from "./Local_library";
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class Reminders extends React.Component{
 

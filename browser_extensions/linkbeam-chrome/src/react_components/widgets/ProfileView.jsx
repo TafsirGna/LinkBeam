@@ -1,9 +1,10 @@
 /*import './ProfileView.css'*/
 import React from 'react';
-import CustomToast from "./CustomToast"
-import ProfileViewHeader from "./ProfileViewHeader"
-import ProfileViewBody from "./ProfileViewBody"
-import ProfileViewReminderModal from "./ProfileViewReminderModal"
+import CustomToast from "./CustomToast";
+import ProfileViewHeader from "./ProfileViewHeader";
+import ProfileViewBody from "./ProfileViewBody";
+import ProfileViewReminderModal from "./ProfileViewReminderModal";
+import { sendDatabaseActionMessage } from "../Local_library";
 
 export default class ProfileView extends React.Component{
 
@@ -13,9 +14,11 @@ export default class ProfileView extends React.Component{
       coverImageModalShow: false,
       bookmarkToastShow: false,
       reminderModalShow: false,
+      toastMessage: "",
     };
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
+    this.onReminderMenuActionClick = this.onReminderMenuActionClick.bind(this);
   }
 
   componentDidMount() {
@@ -32,7 +35,17 @@ export default class ProfileView extends React.Component{
               sendResponse({
                   status: "ACK"
               });
-              this.toggleBookmarkToastShow();
+              this.toggleBookmarkToastShow("Profile bookmarked !");
+              break;
+            }
+
+          case "reminders": {
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              this.handleReminderModalClose();
+              this.toggleBookmarkToastShow("Reminder added !");
               break;
             }
           }
@@ -48,7 +61,17 @@ export default class ProfileView extends React.Component{
               sendResponse({
                   status: "ACK"
               });
-              this.toggleBookmarkToastShow();
+              this.toggleBookmarkToastShow("Profile unbookmarked !");
+              break;
+            }
+
+          case "reminders": {
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              this.handleReminderModalClose();
+              this.toggleBookmarkToastShow("Reminder deleted !");
               break;
             }
           }
@@ -63,25 +86,34 @@ export default class ProfileView extends React.Component{
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
-  toggleBookmarkToastShow = () => this.setState((prevState) => ({bookmarkToastShow: !prevState.bookmarkToastShow}));
+  toggleBookmarkToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, bookmarkToastShow: !prevState.bookmarkToastShow}));
 
+
+  onReminderMenuActionClick(){
+    if (this.props.profile.reminder){
+      var response = confirm("Do you confirm the deletion of the reminder ?");
+      if (response){
+        sendDatabaseActionMessage("delete-object", "reminders", this.props.profile.url);
+      }
+    } 
+    else{
+      this.handleReminderModalShow();
+    }
+  }
 
   toggleBookmarkStatus(){
 
     let action = null;
     if (this.props.profile.bookmark){
       //
-      action = "add-object";
+      action = "delete-object";
     }
     else{
       //
-      action = "delete-object"
+      action = "add-object"
     }
 
-    chrome.runtime.sendMessage({header: action, data: {objectStoreName: "bookmarks", objectData: this.props.profile.url}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log(action + ' bookmark request sent', response);
-    });
+    sendDatabaseActionMessage(action, "bookmarks", this.props.profile.url);
 
   }
 
@@ -95,7 +127,7 @@ export default class ProfileView extends React.Component{
             </div>
             <ul class="dropdown-menu shadow-lg">
               <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark" : "Bookmark" }</a></li>
-              <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.handleReminderModalShow}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
+              <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
             </ul>
           </div>
         </div>          
@@ -106,7 +138,7 @@ export default class ProfileView extends React.Component{
 
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
 
-        <CustomToast message={"Profile "+(this.props.profile.bookmark ? "" : "un" )+"bookmarked !"} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} />
+        <CustomToast message={this.state.toastMessage} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} />
 
       </>
     );  

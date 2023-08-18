@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import user_icon from '../assets/user_icon.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { saveCurrentPageTitle } from "./Local_library";
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class MyAccount extends React.Component{
 
@@ -29,10 +29,7 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["installedOn", "productID"]}}, (response) => {
-	      // Got an asynchronous response with the data from the service worker
-	      console.log('Product Info request sent', response);
-	    });
+  		sendDatabaseActionMessage("get-object", "settings", ["installedOn", "productID"]);
   	}
 
   	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -82,12 +79,7 @@ export default class MyAccount extends React.Component{
 		});
 
 		// Saving the current page title
-    chrome.runtime.sendMessage({header: 'update-object', data: {objectStoreName: "settings", objectData: {property: "currentPageTitle", value: "MyAccount"}}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save page title request sent', response);
-    });
-
-
+		sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: "MyAccount"});
   }
 
   render(){

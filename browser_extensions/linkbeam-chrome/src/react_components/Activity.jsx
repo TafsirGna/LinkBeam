@@ -4,7 +4,7 @@ import user_icon from '../assets/user_icon.png';
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import moment from 'moment';
-import { saveCurrentPageTitle } from "./Local_library";
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class Activity extends React.Component{
 
@@ -44,10 +44,7 @@ export default class Activity extends React.Component{
 
     // Getting the current page title in order to switch to it
     if (origin == null){
-      chrome.runtime.sendMessage({header: 'get-object', data: {objectStoreName: "settings", objectData: ["currentPageTitle"]}}, (response) => {
-        // Got an asynchronous response with the data from the service worker
-        console.log('Get current page title request sent', response);
-      });
+      sendDatabaseActionMessage("get-object", "settings", ["currentPageTitle"]);
     }
 
     // resetting before starting over
@@ -192,17 +189,11 @@ export default class Activity extends React.Component{
   }
 
   getSearchList(){
-    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "searches", objectData: this.state.offset}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Search list request sent', response);
-    });
+    sendDatabaseActionMessage("get-list", "searches", this.state.offset);
   }
 
   getBookmarkList(){
-    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "bookmarks", objectData: null }}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Bookmark list request sent', response);
-    });
+    sendDatabaseActionMessage("get-list", "bookmarks", null);
   }
 
   requestNextSearchBatch(){

@@ -30,10 +30,10 @@ export default class HomeMenu extends React.Component{
               </Link>
             </li>
             {/*<li><Link class="dropdown-item small" to="/index.html/NewsFeed">NewsFeed</Link></li>*/}
+            <li><Link class="dropdown-item small" to="/index.html/Calendar" >Calendar</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Statistics">Statistics</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Settings">Settings</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/About" >About</Link></li>
-            <li><Link class="dropdown-item small" to="/index.html/Calendar" >Calendar</Link></li>
           </ul>
         </div>
       </>

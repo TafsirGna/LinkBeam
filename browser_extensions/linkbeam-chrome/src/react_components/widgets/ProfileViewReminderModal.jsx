@@ -3,31 +3,60 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import { sendDatabaseActionMessage } from "../Local_library";
 
 export default class ProfileViewReminderModal extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      reminderDate: (new Date()),
+      reminderDate: (new Date()).toISOString().split("T")[0],
       reminderText: "",
     };
 
     this.saveReminder = this.saveReminder.bind(this);
+    this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
+    this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
   }
 
   saveReminder(){
 
     var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
-    chrome.runtime.sendMessage({header: "add-object", data: {objectStoreName: "reminders", objectData: reminder}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Save reminder request sent', response);
-    });
+    sendDatabaseActionMessage("add-object", "reminders", reminder);
 
   }
 
   componentDidMount() {
 
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      switch(message.header){
+
+        case "object-data":{
+          
+          switch(message.data.objectStoreName){
+            case "reminders":{
+
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+
+      // vanishing the spinner
+      this.setState({processingState: {status: "NO", info: ""}});
+
+    });
+
+  }
+
+  handleReminderTextAreaChange(event) {
+    this.setState({reminderText: event.target.value});
+  }
+
+  handleReminderDateInputChange(event) {
+    this.setState({reminderDate: event.target.value});
   }
 
   render(){
@@ -46,6 +75,7 @@ export default class ProfileViewReminderModal extends React.Component{
                   type="date"
                   autoFocus
                   value={this.state.reminderDate}
+                  onChange={this.handleReminderDateInputChange}
                 />
               </Form.Group>
               <Form.Group
@@ -53,7 +83,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control as="textarea" rows={3} value={this.state.reminderText} />
+                <Form.Control as="textarea" rows={3} value={this.state.reminderText} onChange={this.handleReminderTextAreaChange} />
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -61,7 +91,7 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide}>
               Close
             </Button>
-            <Button variant="primary" size="sm" onClick={this.props.saveReminder}>
+            <Button variant="primary" size="sm" onClick={this.saveReminder}>
               Save 
             </Button>
           </Modal.Footer>

@@ -1,7 +1,7 @@
-import React from 'react'
-import BackToPrev from "./widgets/BackToPrev"
+import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
 // import { uid } from 'uid';
-import { saveCurrentPageTitle } from "./Local_library"
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 
 export default class Keywords extends React.Component{
@@ -38,10 +38,7 @@ export default class Keywords extends React.Component{
       this.setListData(this.props.globalData.keywordList);
     }
 
-    chrome.runtime.sendMessage({header: 'get-list', data: {objectStoreName: "keywords", objectData: null}}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Keyword list request sent', response);
-    });
+    sendDatabaseActionMessage("get-list", "keywords", null);
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -123,10 +120,7 @@ export default class Keywords extends React.Component{
     this.setState({processingState: {status: "YES", info: "DELETING"}});
 
     if (response){
-      chrome.runtime.sendMessage({header: 'delete-object', data: {objectStoreName: "keywords", objectData: keyword.name}}, (response) => {
-        // Got an asynchronous response with the data from the service worker
-        console.log('keyword deletion request sent', response);
-      });
+      sendDatabaseActionMessage("delete-object", "keywords", keyword.name);
     }
   }
 
@@ -144,13 +138,10 @@ export default class Keywords extends React.Component{
 
       console.log("Adding keyword", this.state.keyword);
 
-      chrome.runtime.sendMessage({header: 'add-object', data:{objectStoreName: "keywords", objectData: this.state.keyword}}, (response) => {
-        // Got an asynchronous response with the data from the service worker
-        console.log('new keyword request sent', response);
-
-        // cleaning the keyword input
-        this.setState({keyword: ""})
-      });
+      // cleaning the keyword input
+      this.setState({keyword: ""});
+      
+      sendDatabaseActionMessage("add-object", "keywords", this.state.keyword)
     }
   }
 
