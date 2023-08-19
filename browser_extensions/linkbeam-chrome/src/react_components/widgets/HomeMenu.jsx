@@ -22,14 +22,13 @@ export default class HomeMenu extends React.Component{
           </div>
           <ul class="dropdown-menu shadow-lg">
             <li>
-              <Link class="dropdown-item small" to="/index.html/Notifications">
+              <Link class="dropdown-item small" to="/index.html/Feed">
                 Feed
                 {/*<div class={"spinner-grow spinner-grow-sm text-danger ms-2 "} role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>*/}
               </Link>
             </li>
-            {/*<li><Link class="dropdown-item small" to="/index.html/NewsFeed">NewsFeed</Link></li>*/}
             <li><Link class="dropdown-item small" to="/index.html/Calendar" >Calendar</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Statistics">Statistics</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Settings">Settings</Link></li>

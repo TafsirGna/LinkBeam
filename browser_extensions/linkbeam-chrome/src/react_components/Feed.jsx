@@ -4,17 +4,24 @@ import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCurrentPageTitle } from "./Local_library";
 
-export default class Notifications extends React.Component{
+export default class Feed extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      notifications: null,
+      newsList: null,
+      currentTabIndex: 0,
     };
   }
 
   componentDidMount() {
 
-    saveCurrentPageTitle("Notifications");
+    saveCurrentPageTitle("Feed");
+
+  }
+
+  switchCurrentTab(index){
 
   }
 
@@ -23,7 +30,19 @@ export default class Notifications extends React.Component{
       <>
         <div class="p-3">
           <BackToPrev prevPageTitle="Activity"/>
-          <div class="list-group small mt-3 shadow-sm">
+
+          <div class="text-center mt-3">
+            <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
+              <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "")} onClick={() => {this.switchCurrentTab(0)}}>
+                Notifs {(this.state.notifications && this.state.notifications.length != 0) ? "("+this.state.notifications.length+")" : null}
+              </button>
+              <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See News" onClick={() => {this.switchCurrentTab(1)}} >
+                News {(this.state.newsList && this.state.newsList.length != 0) ? "("+this.state.newsList.length+")" : null}
+              </button>
+            </div>
+          </div>
+
+          <div class="list-group small mt-1 shadow-sm">
             <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
               <div class="d-flex gap-2 w-100 justify-content-between">
                 <div>

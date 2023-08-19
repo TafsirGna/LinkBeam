@@ -2,6 +2,7 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import moment from 'moment';
 
 export default class Reminders extends React.Component{
 
@@ -15,8 +16,65 @@ export default class Reminders extends React.Component{
 
   componentDidMount() {
 
+    if (this.props.globalData.reminderList){
+      this.setReminderList(this.props.globalData.reminderList);
+    }
+
+    this.startMessageListener();
+
     // Saving the current page title
     saveCurrentPageTitle("Reminders");
+
+    sendDatabaseActionMessage("get-list", "reminders", null);
+
+  }
+
+  startMessageListener(){
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      switch(message.header){
+        case "object-list":{
+          
+          switch(message.data.objectStoreName){
+            case "reminders":{
+
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              var reminders = message.data.objectData;
+              this.setReminderList(reminders);
+
+              break;
+            }
+          }
+
+          break;
+        }
+      }
+    });
+
+
+  }
+
+
+  setReminderList(listData){
+
+    this.setState({
+      reminderList: listData,
+      reminderListTags: listData.map((reminder, index) =>
+                          (<a key={index} href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                              <div class="d-flex gap-2 w-100 justify-content-between">
+                                <div>
+                                  <h6 class="mb-0">{reminder.profile.fullName}</h6>
+                                  <p class="mb-0 opacity-75">{reminder.text}</p>
+                                </div>
+                                <small class="opacity-50 text-nowrap">{moment(reminder.createdOn, moment.ISO_8601).fromNow()}</small>
+                              </div>
+                            </a>)
+                        ),
+    });
 
   }
 
@@ -38,9 +96,9 @@ export default class Reminders extends React.Component{
                       <p><span class="badge text-bg-primary fst-italic shadow">No reminders yet</span></p>
                     </div>}
 
-            {this.state.reminderList != null && this.state.reminderList.length != 0 && <ul class="list-unstyled mb-0 rounded shadow p-2">
+            {this.state.reminderList != null && this.state.reminderList.length != 0 && <div class="list-group small mt-1 shadow-sm">
                   {this.state.reminderListTags}
-                </ul>}
+                </div>}
           </div>
         </div>
       </>

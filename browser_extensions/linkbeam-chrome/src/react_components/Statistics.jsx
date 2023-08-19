@@ -78,7 +78,7 @@ export default class Settings extends React.Component{
   componentDidMount() {
 
     // Setting the local data
-    this.setState({lastDataResetDate: this.props.globalData.lastDataResetDate});
+    this.setState({lastDataResetDate: this.props.globalData.settings.lastDataResetDate});
 
     // Starting the listener
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -136,14 +136,18 @@ export default class Settings extends React.Component{
           switch(message.data.objectStoreName){
             case "settings":{
 
-              if (message.data.objectData.property == "lastDataResetDate"){
-                console.log("Statistics Message received last reset date: ", message);
-                // sending a response
-                sendResponse({
-                    status: "ACK"
-                });
+              switch(message.data.objectData.property){
+                case "lastDataResetDate":{
 
-                this.setState({lastDataResetDate: message.data.objectData.value});
+                  console.log("Statistics Message received last reset date: ", message);
+                  // sending a response
+                  sendResponse({
+                      status: "ACK"
+                  });
+                  this.setState({lastDataResetDate: message.data.objectData.value});
+
+                  break;
+                }
               }
 
               break;

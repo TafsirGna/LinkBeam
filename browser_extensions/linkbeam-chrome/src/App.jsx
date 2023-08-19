@@ -1,8 +1,6 @@
 import React from 'react'
 import './App.css'
-import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import app_logo_white from '/app_logo_white.png'
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
 import Settings from "./react_components/Settings";
@@ -11,7 +9,7 @@ import Keywords from "./react_components/Keywords";
 import Profile from "./react_components/Profile";
 import MyAccount from "./react_components/MyAccount";
 import Reminders from "./react_components/Reminders";
-import Notifications from "./react_components/Notifications";
+import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 
@@ -24,13 +22,11 @@ export default class App extends React.Component{
       profileUrlValue: null,
       globalData: {
         keywordList: null,
+        bookmarkList: null,
+        reminderList: null,
         searchList: null,
-        searchListOffset: 0,
-        lastSearchBatchList: null,
         appParams: null,
-        lastDataResetDate: null,
-        installedOn: null,
-        productID: null,
+        settings: {},
       }
     };
   }
@@ -49,8 +45,15 @@ export default class App extends React.Component{
       console.log('App params list request sent', response);
     });
 
+    this.startMessageListener();
+
+  }
+
+  startMessageListener(){
+
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
+
         case "app-params-list":{
           console.log("App Message received App Params List: ", message);
           // sending a response
@@ -66,69 +69,111 @@ export default class App extends React.Component{
           });
           break;
         }
-        case "search-list":{
-          console.log("App Message received Search List: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
 
-          this.setSearchList(message.data);
+        case "object-list":{
 
-          break;
-        }
+          switch(message.data.objectStoreName){
+            case "searches":{
 
-        case "settings-data":{
-          console.log("App Message received settings-data: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+              console.log("App Message received Search List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+              this.setSearchList(message.data.objectData);
+              break;
 
-          switch(message.data.property){
-            case "lastDataResetDate":{
-              
+            }
+
+            case "keywords":{
+
+              console.log("App Message received Keyword List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              // Setting the search list here too
               this.setState(prevState => {
                 let globalData = Object.assign({}, prevState.globalData);
-                globalData.searchList = [];
-                globalData.searchListOffset = 0;
+                globalData.keywordList = message.data.objectData;
                 return { globalData };
               });
+
+              break;
+            }
+
+            case "bookmarks":{
+
+              console.log("App Message received Bookmarks List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              // Setting the search list here too
+              this.setState(prevState => {
+                let globalData = Object.assign({}, prevState.globalData);
+                globalData.bookmarkList = message.data.objectData;
+                return { globalData };
+              });
+
+              break;
+            }
+
+          case "reminders":{
+
+              console.log("App Message received Reminders List: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              // Setting the search list here too
+              this.setState(prevState => {
+                let globalData = Object.assign({}, prevState.globalData);
+                globalData.reminderList = message.data.objectData;
+                return { globalData };
+              });
+
               break;
             }
           }
+
           break;
         }
 
-        case "keyword-list":{
-          console.log("App Message received Keyword List: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+        case "object-data":{
 
-          // Setting the search list here too
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.keywordList = message.data;
-            return { globalData };
-          });
-          break;
-        }
-        case "last-reset-date":{
-          console.log("App Message received last Reset date: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+          switch(message.data.objectStoreName){
+            case "settings": {
 
-          // Setting the search list here too
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.lastDataResetDate = message.data;
-            return { globalData };
-          });
+              console.log("App Message received settings-data: ", message);
+              // sending a response
+              sendResponse({
+                  status: "ACK"
+              });
+
+              switch(message.data.objectData.property){
+                case "lastDataResetDate":{
+                  
+                  this.setState(prevState => {
+                    let globalData = Object.assign({}, prevState.globalData);
+                    globalData.searchList = [];
+                    globalData.settings.lastDataResetDate = message.data.objectData.value;
+                    return { globalData };
+                  });
+                  break;
+
+                }
+              }
+
+              break;
+            }
+          }
+
           break;
+
         }
       }
 
@@ -142,7 +187,6 @@ export default class App extends React.Component{
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.searchList = [];
-        globalData.searchListOffset = 0;
         return { globalData };
       }, () => {
         this.setSearchList(listData);
@@ -150,22 +194,13 @@ export default class App extends React.Component{
       return;
     }
 
+    listData = this.state.globalData.searchList.concat(listData);
     this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.lastSearchBatchList = listData;
-        return { globalData };
-      }, () => {
-
-        listData = this.state.globalData.searchList.concat(listData);
-
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.searchList = listData;
-          globalData.searchListOffset = prevState.offset + listData.length
-          return { globalData };
-        });
-
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.searchList = listData;
+      return { globalData };
     });
+
   }
 
   render(){
@@ -186,7 +221,7 @@ export default class App extends React.Component{
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
             <Route path="/index.html/Profile" element={<Profile />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
-            <Route path="/index.html/Notifications" element={<Notifications globalData={this.state.globalData} />} />
+            <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
             <Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}

@@ -30,10 +30,16 @@ export default class Activity extends React.Component{
     this.getSearchList = this.getSearchList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.startMessageListener = this.startMessageListener.bind(this);
+    this.setBookmarkList = this.setBookmarkList.bind(this);
 
   }
 
   componentDidMount() {
+
+    // Setting bookmark list if possible
+    if (this.props.globalData.bookmarkList){
+      this.setBookmarkList(this.props.globalData.bookmarkList);
+    }
 
     // Start the message listener
     this.startMessageListener();
@@ -103,27 +109,7 @@ export default class Activity extends React.Component{
 
               // setting the new value
               let listData = message.data.objectData;
-              this.setState({
-                bookmarkList: listData,
-                bookmarkListTags: listData.map((bookmark) => (<a href={"index.html?profile-url=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                    <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                                    <div class="d-flex gap-2 w-100 justify-content-between">
-                                      <div>
-                                        <h6 class="mb-0">{bookmark.profile.fullName}</h6>
-                                        <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
-                                        {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
-                                          <OverlayTrigger
-                                            placement="top"
-                                            overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
-                                          >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                                          </OverlayTrigger>
-                                        </p>*/}
-                                      </div>
-                                      <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
-                                    </div>
-                                  </a>)),
-              });
+              this.setBookmarkList(listData);
 
               // setting that the process stopped
               this.setState({
@@ -175,6 +161,32 @@ export default class Activity extends React.Component{
       }
 
     });
+
+  }
+
+  setBookmarkList(listData){
+
+    this.setState({
+                bookmarkList: listData,
+                bookmarkListTags: listData.map((bookmark) => (<a href={"index.html?profile-url=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                    <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                    <div class="d-flex gap-2 w-100 justify-content-between">
+                                      <div>
+                                        <h6 class="mb-0">{bookmark.profile.fullName}</h6>
+                                        <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
+                                        {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
+                                          <OverlayTrigger
+                                            placement="top"
+                                            overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
+                                          >
+                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                          </OverlayTrigger>
+                                        </p>*/}
+                                      </div>
+                                      <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
+                                    </div>
+                                  </a>)),
+              });
 
   }
 
@@ -263,12 +275,11 @@ export default class Activity extends React.Component{
             <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "")} onClick={() => {this.switchCurrentTab(0)}}>
               All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
             </button>
-            <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}</button>
+            <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
+              Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}
+            </button>
           </div>
         </div>
-
-
-
 
         {/* Search List Tab */}
 
@@ -295,7 +306,6 @@ export default class Activity extends React.Component{
                     </div>
                 </div>
               </div> }
-
 
 
         {/* Bookmark List Tab */}

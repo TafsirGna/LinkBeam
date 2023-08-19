@@ -139,7 +139,7 @@ function initSettings(){
 function getSearchProfiles(searches){
 
     if (searches.length == 0){
-        sendSearchList([]);
+        sendBackResponse("OBJECT-LIST", searchObjectStoreName, searches);
         return;
     }
 
@@ -162,7 +162,7 @@ function getSearchProfiles(searches){
             // keep going to the next search
             if(results.length == searches.length) {
                 // only continue if under limit
-                sendSearchList(results);
+                sendBackResponse("OBJECT-LIST", searchObjectStoreName, results);
             }
 
         };
@@ -205,6 +205,7 @@ function getBookmarkList(){
                 results.push(bookmark);
 
                 if (results.length == bookmarks.length){
+                    results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
                     sendBackResponse("OBJECT-LIST", bookmarkObjectStoreName, results);
                 }
             };
@@ -259,16 +260,9 @@ function getSearchList(offset=0) {
     };
 }
 
-// Script for sending the retrieved search list
-
-function sendSearchList(searches){
-
-    // Sorting the list before sending it
-    searches.sort((a,b) => a.date - b.date);
-    // searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
-
-    sendBackResponse("OBJECT-LIST", searchObjectStoreName, searches);
-}
+// Sorting the list before sending it
+// searches.sort((a,b) => a.date - b.date);
+// searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
 
 // Script for getting the count of any objectStore
 
@@ -343,11 +337,63 @@ function getKeywordList() {
         console.log('Got all keywords:', event.target.result);
         // Sending the retrieved data
         let results = event.target.result;
-        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results)
+        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results);
     };
 
     request.onerror = (event) => {
         console.log("An error occured when retrieving keyword list : ", event);
+    };
+}
+
+// Script for getting all saved searches
+
+function getReminderList() {
+
+    let results = [];
+    let request = db
+                .transaction(reminderObjectStoreName, "readonly")
+                .objectStore(reminderObjectStoreName)
+                .getAll();
+
+    request.onsuccess = (event) => {
+        console.log('Got all reminders:', event.target.result);
+        // Sending the retrieved data
+        let reminders = event.target.result;
+
+        if (reminders.length == 0){
+            sendBackResponse("OBJECT-LIST", reminderObjectStoreName, results);
+        }
+
+        reminders.forEach((reminder) => {
+
+            reminder.profile = null;
+
+            let profileRequest = db
+                .transaction(profileObjectStoreName, "readonly")
+                .objectStore(profileObjectStoreName)
+                .get(reminder.url);
+
+            profileRequest.onsuccess = (event) => {
+                // console.log('Got all reminders:', event.target.result);
+                // Sending the retrieved data
+                let profile = event.target.result;
+                if (profile != undefined){
+                    reminder.profile = profile;
+                }
+                results.push(reminder);
+
+                sendBackResponse("OBJECT-LIST", reminderObjectStoreName, results);
+            };
+
+            profileRequest.onerror = (event) => {
+                console.log("An error occured when retrieving profile with url : ", event);
+            };
+
+        });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving reminder list : ", event);
     };
 }
 
@@ -475,6 +521,11 @@ function getList(objectStoreName, params){
 
         case keywordObjectStoreName:{
             getKeywordList();
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            getReminderList();
             break;
         }
     }
