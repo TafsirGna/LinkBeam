@@ -17,6 +17,7 @@ export default class ProfileViewReminderModal extends React.Component{
     this.saveReminder = this.saveReminder.bind(this);
     this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   saveReminder(){
@@ -27,6 +28,11 @@ export default class ProfileViewReminderModal extends React.Component{
   }
 
   componentDidMount() {
+
+    this.startMessageListener();
+  }
+
+  startMessageListener(){
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -49,6 +55,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
     });
 
+    
   }
 
   handleReminderTextAreaChange(event) {

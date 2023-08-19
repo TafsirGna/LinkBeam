@@ -166,6 +166,17 @@ export default class App extends React.Component{
                   break;
 
                 }
+
+                case "notifications":{
+                  
+                  this.setState(prevState => {
+                    let globalData = Object.assign({}, prevState.globalData);
+                    globalData.settings.notifications = message.data.objectData.value;
+                    return { globalData };
+                  });
+                  break;
+
+                }
               }
 
               break;

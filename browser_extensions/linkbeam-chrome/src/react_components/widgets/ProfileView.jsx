@@ -19,9 +19,17 @@ export default class ProfileView extends React.Component{
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
     this.onReminderMenuActionClick = this.onReminderMenuActionClick.bind(this);
+    this.startMessageListener = this.startMessageListener.bind(this);
+
   }
 
   componentDidMount() {
+
+    this.startMessageListener();
+
+  }
+
+  startMessageListener(){
 
     // listening to events
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -81,7 +89,7 @@ export default class ProfileView extends React.Component{
       }
 
     });
-
+    
   }
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});

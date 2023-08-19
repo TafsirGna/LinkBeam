@@ -23,9 +23,14 @@ export default class Settings extends React.Component{
     this.deleteAll = this.deleteAll.bind(this);
     this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
     this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   componentDidMount() {
+
+    if (Object.hasOwn(this.props.globalData.settings, 'notifications')){
+      this.setState({notifSettingCheckBoxValue: this.props.globalData.settings.notifications});
+    }
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
@@ -40,6 +45,13 @@ export default class Settings extends React.Component{
 
     // Knowing the previous status of the notification checkbox
     sendDatabaseActionMessage("get-object", "settings", ["notifications"]);
+
+    this.startMessageListener();
+
+    saveCurrentPageTitle("Settings");
+  }
+
+  startMessageListener(){
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -119,7 +131,6 @@ export default class Settings extends React.Component{
       }
     });
 
-    saveCurrentPageTitle("Settings");
   }
 
   saveCheckBoxNewState(event){

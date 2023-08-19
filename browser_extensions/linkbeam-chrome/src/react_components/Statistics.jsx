@@ -73,6 +73,8 @@ export default class Settings extends React.Component{
 
     this.setSearchChartData = this.setSearchChartData.bind(this);
     this.setSearchChartLabels = this.setSearchChartLabels.bind(this);
+
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   componentDidMount() {
@@ -81,6 +83,20 @@ export default class Settings extends React.Component{
     this.setState({lastDataResetDate: this.props.globalData.settings.lastDataResetDate});
 
     // Starting the listener
+    this.startMessageListener();
+
+    this.setKeywordChartLabels();
+
+    this.setSearchChartLabels();
+    
+    // Requesting the last reset date
+    sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
+
+    saveCurrentPageTitle("Statistics");
+  }
+
+  startMessageListener(){
+
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
         case "object-list":{
@@ -159,15 +175,7 @@ export default class Settings extends React.Component{
       }
 
     });
-
-    this.setKeywordChartLabels();
-
-    this.setSearchChartLabels();
     
-    // Requesting the last reset date
-    sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
-
-    saveCurrentPageTitle("Statistics");
   }
 
   setKeywordChartLabels(){

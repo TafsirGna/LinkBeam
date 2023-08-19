@@ -24,6 +24,7 @@ export default class Keywords extends React.Component{
     this.addKeyword = this.addKeyword.bind(this);
     this.setListData = this.setListData.bind(this);
     this.checkInputKeyword = this.checkInputKeyword.bind(this);
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   componentDidMount() {
@@ -39,6 +40,14 @@ export default class Keywords extends React.Component{
     }
 
     sendDatabaseActionMessage("get-list", "keywords", null);
+
+    this.startMessageListener();
+
+    saveCurrentPageTitle("Keywords");
+
+  }
+
+  startMessageListener(){
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -93,9 +102,7 @@ export default class Keywords extends React.Component{
       this.setState({processingState: {status: "NO", info: ""}});
 
     });
-
-    saveCurrentPageTitle("Keywords");
-
+    
   }
 
   setListData(listData){

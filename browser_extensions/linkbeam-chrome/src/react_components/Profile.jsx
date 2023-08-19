@@ -10,6 +10,8 @@ export default class Profile extends React.Component{
     this.state = {
       profile: null, 
     };
+
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   componentDidMount() {
@@ -20,6 +22,11 @@ export default class Profile extends React.Component{
 
     // Retrieving the profile for the url given throught the url paremeters 
     sendDatabaseActionMessage("get-object", "profiles", profileUrl);
+
+    this.startMessageListener();
+  }
+
+  startMessageListener(){
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -123,6 +130,7 @@ export default class Profile extends React.Component{
 
       }
     });
+    
   }
 
   render(){

@@ -15,6 +15,8 @@ export default class MyAccount extends React.Component{
     	productID: "",
     	installedOn: "",
     };
+
+    this.startMessageListener = this.startMessageListener.bind(this);
   }
 
   componentDidMount() {
@@ -31,6 +33,14 @@ export default class MyAccount extends React.Component{
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
   		sendDatabaseActionMessage("get-object", "settings", ["installedOn", "productID"]);
   	}
+
+  	this.startMessageListener();
+
+		// Saving the current page title
+		sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: "MyAccount"});
+  }
+
+  startMessageListener(){
 
   	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		    switch(message.header){
@@ -78,8 +88,6 @@ export default class MyAccount extends React.Component{
 		    }
 		});
 
-		// Saving the current page title
-		sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: "MyAccount"});
   }
 
   render(){

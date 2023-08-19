@@ -12,6 +12,9 @@ export default class Reminders extends React.Component{
       reminderList: null,
       reminderListTags: null,
     };
+
+    this.startMessageListener = this.startMessageListener.bind(this);
+    
   }
 
   componentDidMount() {
