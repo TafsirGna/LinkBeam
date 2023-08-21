@@ -224,9 +224,10 @@ function getBookmarkList(){
 
 // Script for getting all saved searches
 
-function getSearchList(offset=0) {
+function getSearchList(params) {
 
-    offset = (offset ? offset : 0);
+    var offset = (params.offset ? params.offset : 0);
+    var date = (params.date ? params.date : null);
 
     let searches = [];
     var offsetApplied = false;
@@ -246,7 +247,14 @@ function getSearchList(offset=0) {
         }
 
         let search = cursor.value;
-        searches.push(search);
+        if (date){
+            if (date == search.date.split("T")[0]){
+                searches.push(search);
+            }
+        }
+        else{
+            searches.push(search);
+        }
 
         if(searches.length < appParams.searchPageLimit) {
             cursor.continue();

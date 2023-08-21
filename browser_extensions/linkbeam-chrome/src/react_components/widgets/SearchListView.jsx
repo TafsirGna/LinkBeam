@@ -1,9 +1,10 @@
-/*import './SearchView.css'*/
+/*import './SearchListView.css'*/
 import React from 'react';
 import moment from 'moment';
 import user_icon from '../../assets/user_icon.png';
+import { Link } from 'react-router-dom';
 
-export default class SearchView extends React.Component{
+export default class SearchListView extends React.Component{
 
   constructor(props){
     super(props);
@@ -16,8 +17,17 @@ export default class SearchView extends React.Component{
 
   componentDidMount() {
 
-    var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft)
+    var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
     this.setState({seeMoreButtonShow: seeMoreButtonShow});
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
+    if (seeMoreButtonShow != prevState.seeMoreButtonShow){
+      this.setState({seeMoreButtonShow: seeMoreButtonShow});
+    }
 
   }
 
@@ -32,13 +42,13 @@ export default class SearchView extends React.Component{
 
         { this.props.objects != null && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
                     <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles yet</span></p>
+                    <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
                   </div> }
 
         { this.props.objects != null && this.props.objects.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((search) => (<a href={"index.html?profile-url=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    this.props.objects.map((search) => (<Link to={"index.html?profile-url=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                 <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
@@ -48,7 +58,7 @@ export default class SearchView extends React.Component{
                                   </div>
                                   <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
                                 </div>
-                              </a>))
+                              </Link>))
                   }
                 </div>
                 <div class="text-center my-2 ">

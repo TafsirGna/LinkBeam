@@ -6,21 +6,67 @@ import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
-
-
-function onChange(){
-
-}
+import SearchListView from "./widgets/SearchListView";
 
 export default class Calendar extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      searchList: null,
+      selectedDate: (new Date()).toISOString().split("T")[0],
     };
+
+    this.onClickDay = this.onClickDay.bind(this);
   }
 
   componentDidMount() {
+
+    this.startMessageListener();
+
+    this.getSearchList(this.state.selectedDate);
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (this.state.selectedDate != prevState.selectedDate){
+      this.setState({searchList: null});
+      this.getSearchList(this.state.selectedDate);
+    }
+
+  }
+
+  getSearchList(dateString){
+
+    sendDatabaseActionMessage("get-list", "searches", {date: dateString});
+
+  }
+
+  onClickDay(value, event){
+    
+    this.setState({selectedDate: value.toISOString().split("T")[0]});
+
+  }
+
+  startMessageListener(){
+
+    // Listening for messages from the service worker
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+      switch(message.header){
+        case "object-list":{
+
+          switch(message.data.objectStoreName){
+            case "searches": {
+              var searchList = message.data.objectData;
+              this.setState({searchList: searchList});
+              break;
+            }
+          }
+        }
+      }
+    });
 
   }
 
@@ -31,7 +77,7 @@ export default class Calendar extends React.Component{
           <span class="badge text-bg-primary shadow">Calendar View</span>
         </div>
 				<div class="offset-1 col-10 mt-4 row">
-          <Cal onChange={onChange} value={new Date()} className="rounded shadow col-4"/>
+          <Cal onClickDay={this.onClickDay} value={new Date()} className="rounded shadow col-4"/>
           <div class="col-8 ps-3">
             <Card className="shadow">
               <Card.Header>
@@ -45,10 +91,11 @@ export default class Calendar extends React.Component{
                 </Nav>
               </Card.Header>
               <Card.Body>
-                <Card.Title>Special title treatment</Card.Title>
+                {/*<Card.Title>Special title treatment</Card.Title>
                 <Card.Text>
                   With supporting text below as a natural lead-in to additional content.
-                </Card.Text>
+                </Card.Text>*/}
+                <SearchListView objects={this.state.searchList} seeMore={() => {}} loading={false} searchLeft={false}/>
               </Card.Body>
             </Card>
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import HomeMenu from "./widgets/HomeMenu";
-import SearchView from "./widgets/SearchView";
+import SearchListView from "./widgets/SearchListView";
 import user_icon from '../assets/user_icon.png';
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
@@ -183,7 +183,7 @@ export default class Activity extends React.Component{
 
     if (this.state.searchLeft){
       this.setState({loadingSearches: true});
-      sendDatabaseActionMessage("get-list", "searches", (this.state.searchList ? this.state.searchList.length : 0));
+      sendDatabaseActionMessage("get-list", "searches", {offset: (this.state.searchList ? this.state.searchList.length : 0)});
     }
 
   }
@@ -241,7 +241,7 @@ export default class Activity extends React.Component{
 
         {/* Search List Tab */}
 
-        { this.state.currentTabIndex == 0 && <SearchView objects={this.state.searchList} seeMore={this.getSearchList} loading={this.state.loadingSearches} searchLeft={this.state.searchLeft}/>}
+        { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.searchList} seeMore={this.getSearchList} loading={this.state.loadingSearches} searchLeft={this.state.searchLeft}/>}
 
         {/* Bookmark List Tab */}
 

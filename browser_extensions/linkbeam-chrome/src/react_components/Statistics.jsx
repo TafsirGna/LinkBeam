@@ -246,9 +246,9 @@ export default class Settings extends React.Component{
                         View
                       </button>
                       <ul class="dropdown-menu shadow">
-                        <li><a class="dropdown-item small" href="#">Day</a></li>
-                        <li><a class="dropdown-item small" href="#">Week</a></li>
-                        <li><a class="dropdown-item small" href="#">Month</a></li>
+                        <li><a class="dropdown-item small" href="#">Last week</a></li>
+                        <li><a class="dropdown-item small" href="#">Last month</a></li>
+                        <li><a class="dropdown-item small" href="#">Last year</a></li>
                       </ul>
                     </div>
                   </div>
