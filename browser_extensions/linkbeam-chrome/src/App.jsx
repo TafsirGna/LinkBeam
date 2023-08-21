@@ -20,6 +20,7 @@ export default class App extends React.Component{
     super(props);
     this.state = {
       profileUrlValue: null,
+      calendarView: null,
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -36,8 +37,10 @@ export default class App extends React.Component{
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrlValue = urlParams.get("profile-url");
+    const calendarView = urlParams.get("calendar-view");
 
     this.setState({profileUrlValue: profileUrlValue});
+    this.setState({calendarView: calendarView});
 
     // Getting the app parameters
     chrome.runtime.sendMessage({header: 'get-app-params', data: null}, (response) => {
@@ -159,7 +162,6 @@ export default class App extends React.Component{
                   
                   this.setState(prevState => {
                     let globalData = Object.assign({}, prevState.globalData);
-                    globalData.searchList = [];
                     globalData.settings.lastDataResetDate = message.data.objectData.value;
                     return { globalData };
                   });
@@ -223,7 +225,9 @@ export default class App extends React.Component{
             <Route path="/index.html" element={
               this.state.profileUrlValue ? 
                 <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.profileUrlValue} />
-                : <Activity globalData={this.state.globalData} />
+                : this.state.calendarView ?
+                    <Navigate replace to={"/index.html/Calendar"} />
+                    : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
@@ -233,7 +237,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Profile" element={<Profile />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
-            <Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />
+            {/*<Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />*/}
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>

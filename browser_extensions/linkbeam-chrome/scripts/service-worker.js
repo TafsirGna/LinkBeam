@@ -226,6 +226,8 @@ function getBookmarkList(){
 
 function getSearchList(offset=0) {
 
+    offset = (offset ? offset : 0);
+
     let searches = [];
     var offsetApplied = false;
     let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
@@ -906,6 +908,7 @@ function clearObjectStores(objectStoreNames){
     const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
     objectStore.clear().onsuccess = (event) => {
         // Clearing the next objectStore
+        getList(objectStoreNames[0], null);
         objectStoreNames.shift()
         clearObjectStores(objectStoreNames)
     }
