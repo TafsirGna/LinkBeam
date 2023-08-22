@@ -12,6 +12,7 @@ import Reminders from "./react_components/Reminders";
 import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
+import Feedback from "./react_components/Feedback";
 
 
 export default class App extends React.Component{
@@ -237,7 +238,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Profile" element={<Profile />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
-            {/*<Route path="/index.html/NewsFeed" element={<NewsFeed globalData={this.state.globalData} />} />*/}
+            <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
