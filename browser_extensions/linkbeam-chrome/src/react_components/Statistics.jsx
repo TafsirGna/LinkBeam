@@ -1,84 +1,18 @@
+/*import './Statistics.css'*/
 import React from 'react'
 import moment from 'moment';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
-import BackToPrev from "./widgets/BackToPrev"
-import { faker } from '@faker-js/faker';
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library"
-/*import './Statistics.css'*/
-
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
-const lineOptions = {
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'top',
-    },
-    title: {
-      display: true,
-      text: 'Searches Line Chart',
-    },
-  },
-};
-
-const barOptions = {
-  responsive: true,
-  /*layout: {
-    padding: {
-      left: 30,
-      right: 30
-    }
-  }*/
-  plugins: {
-    legend: {
-      position: 'top',
-    },
-    title: {
-      display: true,
-      text: 'Keywords Bar Chart',
-    },
-  },
-};
-
+import BackToPrev from "./widgets/BackToPrev";
+import ViewsTimelineChart from "./widgets/ViewsTimelineChart";
+import ViewsKeywordsBarChart from "./widgets/ViewsKeywordsBarChart";
+import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class Settings extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      lineLabels: null,
-      barLabels: null,
-      barData: null,
-      lineData: null,
       lastDataResetDate: null,
     };
-
-    this.setKeywordChartData = this.setKeywordChartData.bind(this);
-    this.setKeywordChartLabels = this.setKeywordChartLabels.bind(this);
-
-    this.setSearchChartData = this.setSearchChartData.bind(this);
-    this.setSearchChartLabels = this.setSearchChartLabels.bind(this);
 
     this.startMessageListener = this.startMessageListener.bind(this);
   }
@@ -90,10 +24,6 @@ export default class Settings extends React.Component{
 
     // Starting the listener
     this.startMessageListener();
-
-    this.setKeywordChartLabels();
-
-    this.setSearchChartLabels();
     
     // Requesting the last reset date
     sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
@@ -105,53 +35,6 @@ export default class Settings extends React.Component{
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
-        case "object-list":{
-          
-          switch(message.data.objectStoreName){
-            case "keywords":{
-              
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              let labels = [];
-              var results = message.data.objectData;
-              results.forEach((keyword) => {
-                labels.push(keyword.name);
-              });
-              
-              // setting the new value
-              this.setState({barLabels: labels}, () => {this.setKeywordChartData()});
-              break;
-            }
-          }
-
-          break;
-        }
-        case "search-chart-data":{
-          console.log("Statistics Message received search-chart-data: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
-
-          let labels = this.state.lineLabels;
-
-          this.setState({lineData: {
-            labels,
-            datasets: [
-              {
-                label: 'Dataset',
-                data: message.data,
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-              },
-            ],
-          }});
-
-          break;
-        }
 
         case "object-data":{
 
@@ -184,57 +67,6 @@ export default class Settings extends React.Component{
     
   }
 
-  setKeywordChartLabels(){
-
-    sendDatabaseActionMessage("get-list", "keywords", null);
-
-  }
-
-  setKeywordChartData(){
-
-    let labels = this.state.barLabels;
-
-    this.setState({barData: {
-      labels,
-      datasets: [
-        {
-          label: 'Dataset',
-          data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        },
-      ],
-    }});
-  }
-
-  setSearchChartLabels(){
-    let labels = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-
-    const d = new Date();
-    let day = labels[d.getDay()];
-
-    while(labels[labels.length - 1] != day){
-      let firstItem = labels.shift();
-      labels.push(firstItem);
-    }
-
-    this.setState({lineLabels: labels}, () => {this.setSearchChartData()})
-  }
-
-  setSearchChartData(){
-
-    let dateDataList = [];
-    for (let i = 0; i < 7; i++){
-      dateDataList.push(moment().subtract(i, 'days').format().split("T")[0]);
-    }
-
-    // Requesting search chart data
-    chrome.runtime.sendMessage({header: 'get-search-chart-data', data: dateDataList}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('Search chart data request sent', response);
-    });
-
-  }
-
   render(){
 
     return(
@@ -259,10 +91,10 @@ export default class Settings extends React.Component{
           <div id="carouselExample" class="carousel slide carousel-dark shadow rounded p-2 border mt-3">
             <div class="carousel-inner">
               <div class="carousel-item active">
-                {this.state.lineData && <Line options={lineOptions} data={this.state.lineData} />}
+                <ViewsTimelineChart />
               </div>
               <div class="carousel-item">
-                {this.state.barData && <Bar options={barOptions} data={this.state.barData} />}
+                <ViewsKeywordsBarChart />
               </div>
               <div class="carousel-item">
                 <img src="..." class="d-block w-100" alt="..."/>

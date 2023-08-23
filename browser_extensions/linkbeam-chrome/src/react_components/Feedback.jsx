@@ -112,7 +112,7 @@ export default class Feedback extends React.Component{
           <BackToPrev prevPageTitle="About"/>
           <div class="">
 
-            { this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" && <div class="alert alert-success py-1 fst-italic mb-0 mt-3" role="alert">
+            { this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" && <div class="small alert alert-success py-1 fst-italic mb-0 mt-3" role="alert">
                           Thank you for your feedback
                           <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>}

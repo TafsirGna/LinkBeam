@@ -1,7 +1,7 @@
 /*import './About.css'*/
-import React from 'react'
-import app_logo from '../assets/app_logo.svg'
-import BackToPrev from "./widgets/BackToPrev"
+import React from 'react';
+import app_logo from '../assets/app_logo.svg';
+import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCurrentPageTitle } from "./Local_library";
 import { Link } from 'react-router-dom';
