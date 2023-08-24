@@ -62,11 +62,15 @@ export default class ViewsKeywordsBarChart extends React.Component{
 
 	componentDidMount() {
 
+    this.startMessageListener();
+
 		this.setChartLabels();
 
-		this.startMessageListener();
-
 	}
+
+  componentDidUpdate(){
+    
+  }
 
 	startMessageListener(){
 
