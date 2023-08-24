@@ -4,6 +4,7 @@ import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
 import ViewsTimelineChart from "./widgets/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/ViewsKeywordsBarChart";
+import ViewsGeoMapChart from "./widgets/ViewsGeoMapChart";
 import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
 
 export default class Settings extends React.Component{
@@ -12,9 +13,11 @@ export default class Settings extends React.Component{
     super(props);
     this.state = {
       lastDataResetDate: null,
+      viewChoice: 0,
     };
 
     this.startMessageListener = this.startMessageListener.bind(this);
+    this.onViewParamChoice = this.onViewParamChoice.bind(this);
   }
 
   componentDidMount() {
@@ -67,6 +70,10 @@ export default class Settings extends React.Component{
     
   }
 
+  onViewParamChoice(index){
+    this.setState({viewChoice: index});
+  }
+
   render(){
 
     return(
@@ -81,9 +88,14 @@ export default class Settings extends React.Component{
                 View
               </button>
               <ul class="dropdown-menu shadow">
-                <li><a class="dropdown-item small" href="#">Last week</a></li>
-                <li><a class="dropdown-item small" href="#">Last month</a></li>
-                <li><a class="dropdown-item small" href="#">Last year</a></li>
+
+                { ["days", "month", "year"].map((item, index) => (<li>
+                                                                    <a class={"dropdown-item small " + (this.state.viewChoice == index ? "active" : "")} href="#" onClick={() => {this.onViewParamChoice(index)}}>
+                                                                      Last {item}
+                                                                      { this.state.viewChoice == index && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                                    </a>
+                                                                  </li>)) }
+
               </ul>
             </div>
           </div>
@@ -91,13 +103,13 @@ export default class Settings extends React.Component{
           <div id="carouselExample" class="carousel slide carousel-dark shadow rounded p-2 border mt-3">
             <div class="carousel-inner">
               <div class="carousel-item active">
-                <ViewsTimelineChart />
+                <ViewsTimelineChart viewChoice={this.state.viewChoice} />
               </div>
               <div class="carousel-item">
-                <ViewsKeywordsBarChart />
+                <ViewsKeywordsBarChart viewChoice={this.state.viewChoice} />
               </div>
               <div class="carousel-item">
-                <img src="..." class="d-block w-100" alt="..."/>
+                <ViewsGeoMapChart viewChoice={this.state.viewChoice} />
               </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">

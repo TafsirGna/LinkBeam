@@ -2,7 +2,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
-import { sendDatabaseActionMessage } from "../Local_library";
+import { sendDatabaseActionMessage, shuffle, stickColors } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -48,7 +48,7 @@ export default class ViewsTimelineChart extends React.Component{
 			lineData: null,
 		};
 
-		this.setChartData = this.setChartData.bind(this);
+		this.getChartData = this.getChartData.bind(this);
     	this.setChartLabels = this.setChartLabels.bind(this);
 
     	this.startMessageListener = this.startMessageListener.bind(this);
@@ -57,9 +57,18 @@ export default class ViewsTimelineChart extends React.Component{
 
 	componentDidMount() {
 
+		this.startMessageListener();
+
 		this.setChartLabels();
 
-		this.startMessageListener();
+	}
+
+	componentDidUpdate(prevProps, prevState){
+
+		// everytime the view choice is changed, the chart is reset
+		if (prevProps.viewChoice != this.props.viewChoice){
+			this.setChartLabels();
+		}
 
 	}
 
@@ -69,35 +78,40 @@ export default class ViewsTimelineChart extends React.Component{
 	      	switch(message.header){
 
 	      		case "search-chart-data":{
-					console.log("Statistics Message received search-chart-data: ", message);
-					// sending a response
-					sendResponse({
-						status: "ACK"
-					});
+							console.log("Statistics Message received search-chart-data: ", message);
+							// sending a response
+							sendResponse({
+								status: "ACK"
+							});
 
-					let labels = this.state.lineLabels;
+							let labels = this.state.lineLabels;
 
-					this.setState({lineData: {
-						labels,
-						datasets: [
-						  {
-						    label: 'Dataset',
-						    data: message.data,
-						    borderColor: 'rgb(255, 99, 132)',
-						    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-						  },
-						],
-					}});
+							var colors = stickColors;
+					  	shuffle(colors);
+					  	colors = colors.splice(0, labels.length); 
 
-					break;
-				}
+							this.setState({lineData: {
+								labels,
+								datasets: [
+								  {
+								    label: 'Dataset',
+								    data: message.data,
+								    borderColor: 'rgb(255, 99, 132)',
+								    backgroundColor: colors,
+								  },
+								],
+							}});
+
+							break;
+						}
 
 	      	}
       	});
 
 	}
 
-	setChartLabels(){
+	getLastDaysViewChartLabels(){
+
 		let labels = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
 
 		const d = new Date();
@@ -108,10 +122,40 @@ export default class ViewsTimelineChart extends React.Component{
 			labels.push(firstItem);
 		}
 
-		this.setState({lineLabels: labels}, () => {this.setChartData()})
+		return labels;
+
 	}
 
-	setChartData(){
+	getLastMonthViewChartLabels(){
+
+	}
+
+	getLastYearViewChartLabels(){
+
+	}
+
+	setChartLabels(){
+		
+		var labels = null;
+		switch(this.props.viewChoice){
+			case 0: {
+				labels = this.getLastDaysViewChartLabels();
+				break;
+			}
+			case 1: {
+				labels = this.getLastMonthViewChartLabels();
+				break;
+			}
+			case 2: {
+				labels = this.getLastYearViewChartLabels();
+				break;
+			}
+		}
+
+		this.setState({lineLabels: labels}, () => {this.getChartData()})
+	}
+
+	getChartData(){
 
 		let dateDataList = [];
 		for (let i = 0; i < 7; i++){

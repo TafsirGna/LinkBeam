@@ -1,7 +1,5 @@
-/*import './StatisticsGeoMap.css'*/
+/*import './ViewsGeoMapChart.css'*/
 import React from 'react'
-/*import { saveCurrentPageTitle } from "./Local_library";
-import { Link } from 'react-router-dom';*/
 import * as ChartGeo from "chartjs-chart-geo";
 import {
   Chart as ChartJS,
@@ -10,7 +8,7 @@ import {
   Title,
   Legend
 } from "chart.js";
-import Map from "./geo-map";
+import Map from "./geo-map.tsx";
 
 ChartJS.register(
   Title,
@@ -23,7 +21,7 @@ ChartJS.register(
   ChartGeo.GeoFeature
 );
 
-export default class StatisticsGeoMap extends React.Component{
+export default class ViewsGeoMapChart extends React.Component{
 
   constructor(props){
     super(props);
