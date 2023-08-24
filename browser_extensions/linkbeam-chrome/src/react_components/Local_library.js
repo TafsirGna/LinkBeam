@@ -35,9 +35,37 @@ export function shuffle(array) {
   return array;
 }
 
+export function getChartColors(length){
+
+  var indices = [];
+  for (var i = 0; i < stickColors.length; i++){
+    indices.push(i);
+  }
+
+  shuffle(indices);
+
+  let backgrounds = []; let borders = [];
+  for (var i = 0; i < length; i++){
+    backgrounds.push(stickColors.at(i));
+    borders.push(stickBorderColors.at(i));
+  }
+  
+  return {borders: borders, backgrounds: backgrounds};
+
+}
+
 export const stickColors = ['rgba(255, 26, 104, 0.2)',
           'rgba(54, 162, 235, 0.2)',
           'rgba(255, 206, 86, 0.2)',
           'rgba(75, 192, 192, 0.2)',
           'rgba(153, 102, 255, 0.2)',
           'rgba(255, 159, 64, 0.2)'];
+
+export const stickBorderColors = [
+          'rgba(255, 26, 104, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ];

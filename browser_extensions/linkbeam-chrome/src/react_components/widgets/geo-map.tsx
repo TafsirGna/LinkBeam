@@ -8,7 +8,7 @@ import {
   Title,
   Legend
 } from "chart.js";
-import MAP_JSON from "./map-json.const.ts";
+import MAP_JSON from "../map-json.const.ts";
 
 ChartJS.register(
   Title,

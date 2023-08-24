@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { sendDatabaseActionMessage, shuffle, stickColors } from "../Local_library";
+import { sendDatabaseActionMessage, getChartColors } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -110,9 +110,7 @@ export default class ViewsKeywordsBarChart extends React.Component{
 
   	let labels = this.state.barLabels;
 
-  	var colors = stickColors;
-  	shuffle(colors);
-  	colors = colors.splice(0, labels.length); 
+  	var colors = getChartColors(labels.length);
 
   	this.setState({barData: {
     		labels,
@@ -120,7 +118,9 @@ export default class ViewsKeywordsBarChart extends React.Component{
 	        {
 	          label: 'Dataset',
 	          data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
-	          backgroundColor: colors,
+	          backgroundColor: colors.backgrounds,
+            borderColor: colors.borders,
+            borderWidth: 2,
 	        },
       	],
   	}});

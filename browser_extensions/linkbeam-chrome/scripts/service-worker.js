@@ -433,7 +433,7 @@ function add_search_data(searchData){
     const request = objectStore.add(searchData);
     request.onsuccess = (event) => {
         console.log("New search data added");
-        provideSearchList();
+        // getSearchList({});
     };
 
     request.onerror = (event) => {
@@ -555,6 +555,11 @@ function getObject(objectStoreName, objectData){
 
         case settingObjectStoreName:{
             getSettingsData(objectData);
+            break;
+        }
+
+        case "feedback": {
+            getFeedbackData(objectData);
             break;
         }
     }
@@ -948,10 +953,9 @@ function getSettingsData(properties){
 // Script for sending search chart data
 
 function sendSearchChartData(chartData){
-    chartData.reverse();
     
     chrome.runtime.sendMessage({header: 'search-chart-data', data: chartData}, (response) => {
-      console.log('Search chart data response sent', response);
+      console.log('Search chart data response sent', response, chartData);
     });
 }
 
@@ -975,14 +979,33 @@ function provideSearchChartData(chartData){
         }
 
         let searchDate = cursor.value.date.split("T")[0];
-        let index = chartData.indexOf(searchDate);
-        if (index != -1){
+        if (typeof chartData[0] == "string"){
+
+            let index = chartData.indexOf(searchDate);
+
+            if (index == -1){
+                sendSearchChartData(results);
+                return;
+            }
+            
             results[index]++;
         }
-        else{
-            sendSearchChartData(results);
-            return;
+        else{ // if object
+            searchDate = new Date(searchDate);
+            var found = false;
+            for (var i = (chartData.length - 1); i >= 0 ; i--){
+                if ((new Date((chartData[i]).beg)) < searchDate && searchDate <= (new Date((chartData[i]).end))){
+                    results[i]++;
+                    found = true;
+                }
+            }
+
+            if (!found){
+                sendSearchChartData(results);
+                return;
+            }
         }
+        
 
         cursor.continue();        
     }
