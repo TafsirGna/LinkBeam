@@ -1,3 +1,19 @@
+export const stickColors = ['rgba(255, 26, 104, 0.2)',
+          'rgba(54, 162, 235, 0.2)',
+          'rgba(255, 206, 86, 0.2)',
+          'rgba(75, 192, 192, 0.2)',
+          'rgba(153, 102, 255, 0.2)',
+          'rgba(255, 159, 64, 0.2)'];
+
+export const stickBorderColors = [
+          'rgba(255, 26, 104, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)',
+          'rgba(153, 102, 255, 1)',
+          'rgba(255, 159, 64, 1)'
+        ];
+
 
 export function saveCurrentPageTitle(pageTitle){
 
@@ -5,7 +21,6 @@ export function saveCurrentPageTitle(pageTitle){
   sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: pageTitle});
 
 }
-
 
 export function sendDatabaseActionMessage(action, objectStoreName, objectData){
 
@@ -54,18 +69,13 @@ export function getChartColors(length){
 
 }
 
-export const stickColors = ['rgba(255, 26, 104, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(255, 206, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'];
+export function ack(sendResponse){
+  // sending a response
+  sendResponse({
+      status: "ACK"
+  });
+}
 
-export const stickBorderColors = [
-          'rgba(255, 26, 104, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 159, 64, 1)'
-        ];
+export function startMessageListener(){
+
+}

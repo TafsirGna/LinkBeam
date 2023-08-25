@@ -123,7 +123,7 @@ export default class ViewsTimelineChart extends React.Component{
 			labels.titles.push(firstItem);
 		}*/
 
-		for (var i=0; i < 6; i++){
+		for (var i=0; i < 7; i++){
 			var date = moment().subtract(i, 'days');
 			labels.titles.push(date.format('dddd'));
 			labels.values.push(date.toISOString().split("T")[0]);
@@ -140,7 +140,7 @@ export default class ViewsTimelineChart extends React.Component{
 
 		var labels = {titles: [], values: []};
 
-		for (var i=0; i < 30; i++){
+		for (var i=0; i < 31; i++){
 			var date = moment().subtract(i, 'days');
 			labels.titles.push(date.format("DD-MM"));
 			labels.values.push(date.toISOString().split("T")[0]);
@@ -157,7 +157,7 @@ export default class ViewsTimelineChart extends React.Component{
 
 		var labels = {titles: [], values: []};
 
-		for (var i=1; i < 12; i++){
+		for (var i=1; i <= 12; i++){
 			labels.titles.push(moment().subtract(i - 1, 'months').format("MM-YYYY"));
 			labels.values.push({beg: moment().subtract(i, 'months').toISOString().split("T")[0], end: moment().subtract(i - 1, 'months').toISOString().split("T")[0]});
 		}
