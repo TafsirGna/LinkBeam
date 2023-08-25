@@ -14,6 +14,21 @@ export const stickBorderColors = [
           'rgba(255, 159, 64, 1)'
         ];
 
+export const messageParameters = {
+
+  actionObjectNames: {
+    SEARCHES: "searches",
+    BOOKMARKS: "bookmarks",
+    SETTINGS: "settings",
+    REMINDERS: "reminders"
+  },
+  actionNames: {
+    GET_LIST: "object-list",
+    GET_OBJECT: "object-data",
+  },
+  separator: "|",
+
+};
 
 export function saveCurrentPageTitle(pageTitle){
 
@@ -76,6 +91,67 @@ export function ack(sendResponse){
   });
 }
 
-export function startMessageListener(){
+export function startMessageListener(listenerSettings){
+
+  var responseParams = []; var responseCallbacks = [];
+
+  listenerSettings.forEach((settings) => {
+    responseParams.push(settings.param);
+    responseCallbacks.push(settings.callback);
+  });
+
+
+  // Listening for messages from the service worker
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+    switch(message.header){
+      case "object-list":{
+
+        switch(message.data.objectStoreName){
+          case "searches":{
+
+            var param = message.header+"|"+message.data.objectStoreName;
+            var index = responseParams.indexOf(param);
+            if (index >= 0){
+              (responseCallbacks[index])(message, sendResponse);
+            }
+            
+            break;
+          }
+          case "bookmarks": {
+            
+            var param = message.header+"|"+message.data.objectStoreName;
+            var index = responseParams.indexOf(param);
+            if (index >= 0){
+              (responseCallbacks[index])(message, sendResponse);
+            }
+
+            break;
+          }
+        }
+        
+        break;
+      }
+      case "object-data":{
+
+        switch(message.data.objectStoreName){
+          case "settings": {
+
+            var param = message.header+"|"+message.data.objectStoreName;
+            var index = responseParams.indexOf(param);
+            if (index >= 0){
+              (responseCallbacks[index])(message, sendResponse);
+            }
+
+            break;
+          }
+        }
+
+        break;
+      }
+    }
+
+  });
+
 
 }

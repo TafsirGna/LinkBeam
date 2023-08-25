@@ -2,7 +2,11 @@
 import React from 'react'
 import BackToPrev from "./widgets/BackToPrev"
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage,
+  ack,
+  } from "./Local_library";
 
 export default class Feedback extends React.Component{
 
@@ -19,11 +23,12 @@ export default class Feedback extends React.Component{
     this.onFeedbackTextInputChange = this.onFeedbackTextInputChange.bind(this);
     this.onFeedbackTitleInputChange = this.onFeedbackTitleInputChange.bind(this);
     this.sendFeedback = this.sendFeedback.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
   }
 
   componentDidMount() {
 
-    this.startMessageListener();
+    this.listenToMessages();
 
     sendDatabaseActionMessage("get-object", "settings", ["feedback"]);
 
@@ -31,7 +36,7 @@ export default class Feedback extends React.Component{
 
   }
 
-  startMessageListener(){
+  listenToMessages(){
 
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       switch(message.header){
@@ -41,11 +46,8 @@ export default class Feedback extends React.Component{
           switch(message.data.objectStoreName){
             case "settings":{
 
-              console.log("Settings Message received Settings data: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+              // acknowledge receipt
+              ack(sendResponse);
 
               // setting the new value
               switch(message.data.objectData.property){

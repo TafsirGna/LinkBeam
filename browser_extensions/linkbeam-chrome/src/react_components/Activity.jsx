@@ -6,7 +6,13 @@ import user_icon from '../assets/user_icon.png';
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import moment from 'moment';
-import { saveCurrentPageTitle, sendDatabaseActionMessage, ack } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage, 
+  ack, 
+  startMessageListener,
+  messageParameters
+  } from "./Local_library";
 
 export default class Activity extends React.Component{
 
@@ -24,7 +30,7 @@ export default class Activity extends React.Component{
     this.setListData = this.setListData.bind(this);
     this.getSearchList = this.getSearchList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
@@ -34,7 +40,7 @@ export default class Activity extends React.Component{
   componentDidMount() {
 
     // Start the message listener
-    this.startMessageListener();
+    this.listenToMessages();
 
     // Setting bookmark list if possible
     if (this.props.globalData.bookmarkList){
@@ -109,47 +115,22 @@ export default class Activity extends React.Component{
 
   }
 
-  startMessageListener(){
+  listenToMessages(){
 
-    // Listening for messages from the service worker
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
-      switch(message.header){
-        case "object-list":{
-
-          switch(message.data.objectStoreName){
-            case "searches":{
-
-              this.onSearchesDataReceived(message, sendResponse);
-              
-              break;
-            }
-            case "bookmarks": {
-              
-              this.onBookmarksDataReceived(message, sendResponse);
-
-              break;
-            }
-          }
-          
-          break;
-        }
-        case "object-data":{
-          
-          switch(message.data.objectStoreName){
-            case "settings": {
-
-              this.onSettingsDataReceived(message, sendResponse);
-
-              break;
-            }
-          }
-
-          break;
-        }
-      }
-
-    });
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.SEARCHES].join(messageParameters.separator), 
+        callback: this.onSearchesDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarksDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      },
+    ]);
 
   }
 

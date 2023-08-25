@@ -5,7 +5,13 @@ import BackToPrev from "./widgets/BackToPrev";
 import ViewsTimelineChart from "./widgets/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/ViewsKeywordsBarChart";
 import ViewsGeoMapChart from "./widgets/ViewsGeoMapChart";
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage,
+  ack,
+  startMessageListener,
+  messageParameters
+} from "./Local_library";
 
 export default class Settings extends React.Component{
 
@@ -16,8 +22,9 @@ export default class Settings extends React.Component{
       viewChoice: 0,
     };
 
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewParamChoice = this.onViewParamChoice.bind(this);
+    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -26,7 +33,7 @@ export default class Settings extends React.Component{
     this.setState({lastDataResetDate: this.props.globalData.settings.lastDataResetDate});
 
     // Starting the listener
-    this.startMessageListener();
+    this.listenToMessages();
     
     // Requesting the last reset date
     sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
@@ -34,39 +41,29 @@ export default class Settings extends React.Component{
     saveCurrentPageTitle("Statistics");
   }
 
-  startMessageListener(){
+  onSettingsDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
+    switch(message.data.objectData.property){
+      case "lastDataResetDate":{
+        // acknowledge receipt
+        ack(sendResponse);
+        
+        this.setState({lastDataResetDate: message.data.objectData.value});
 
-        case "object-data":{
-
-          switch(message.data.objectStoreName){
-            case "settings":{
-
-              switch(message.data.objectData.property){
-                case "lastDataResetDate":{
-
-                  console.log("Statistics Message received last reset date: ", message);
-                  // sending a response
-                  sendResponse({
-                      status: "ACK"
-                  });
-                  this.setState({lastDataResetDate: message.data.objectData.value});
-
-                  break;
-                }
-              }
-
-              break;
-            }
-          }
-
-          break;
-        }
+        break;
       }
+    }
 
-    });
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      }
+    ]);
     
   }
 
