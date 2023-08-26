@@ -20,10 +20,12 @@ export const messageParameters = {
     SEARCHES: "searches",
     BOOKMARKS: "bookmarks",
     SETTINGS: "settings",
-    REMINDERS: "reminders"
+    REMINDERS: "reminders",
+    KEYWORDS: "keywords"
   },
   actionNames: {
     GET_LIST: "object-list",
+    GET_COUNT: "object-count",
     GET_OBJECT: "object-data",
   },
   separator: "|",
@@ -91,6 +93,16 @@ export function ack(sendResponse){
   });
 }
 
+function switchCaseFunction(message, sendResponse, responseParams, responseCallbacks){
+
+  var param = message.header+"|"+message.data.objectStoreName;
+  var index = responseParams.indexOf(param);
+  if (index >= 0){
+    (responseCallbacks[index])(message, sendResponse);
+  }
+
+}
+
 export function startMessageListener(listenerSettings){
 
   var responseParams = []; var responseCallbacks = [];
@@ -110,21 +122,60 @@ export function startMessageListener(listenerSettings){
         switch(message.data.objectStoreName){
           case "searches":{
 
-            var param = message.header+"|"+message.data.objectStoreName;
-            var index = responseParams.indexOf(param);
-            if (index >= 0){
-              (responseCallbacks[index])(message, sendResponse);
-            }
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
             
             break;
           }
           case "bookmarks": {
             
-            var param = message.header+"|"+message.data.objectStoreName;
-            var index = responseParams.indexOf(param);
-            if (index >= 0){
-              (responseCallbacks[index])(message, sendResponse);
-            }
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case "keywords": {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+        case "reminders": {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+        }
+        
+        break;
+      }
+      case "object-count":{
+
+        switch(message.data.objectStoreName){
+          case "searches":{
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+            
+            break;
+          }
+          case "bookmarks": {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case "keywords": {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+        case "reminders": {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
@@ -137,11 +188,7 @@ export function startMessageListener(listenerSettings){
         switch(message.data.objectStoreName){
           case "settings": {
 
-            var param = message.header+"|"+message.data.objectStoreName;
-            var index = responseParams.indexOf(param);
-            if (index >= 0){
-              (responseCallbacks[index])(message, sendResponse);
-            }
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }

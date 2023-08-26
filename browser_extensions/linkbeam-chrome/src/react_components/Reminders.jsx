@@ -1,7 +1,13 @@
 /*import './Reminders.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage,
+  ack,
+  startMessageListener, 
+  messageParameters 
+} from "./Local_library";
 import moment from 'moment';
 
 export default class Reminders extends React.Component{
@@ -13,17 +19,19 @@ export default class Reminders extends React.Component{
       reminderListTags: null,
     };
 
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.setReminderList = this.setReminderList.bind(this);
+    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     
   }
 
   componentDidMount() {
 
+    this.listenToMessages();
+
     if (this.props.globalData.reminderList){
       this.setReminderList(this.props.globalData.reminderList);
     }
-
-    this.startMessageListener();
 
     // Saving the current page title
     saveCurrentPageTitle("Reminders");
@@ -32,31 +40,24 @@ export default class Reminders extends React.Component{
 
   }
 
-  startMessageListener(){
+  onRemindersDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-        case "object-list":{
-          
-          switch(message.data.objectStoreName){
-            case "reminders":{
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    var reminders = message.data.objectData;
+    this.setReminderList(reminders);
 
-              var reminders = message.data.objectData;
-              this.setReminderList(reminders);
+  }
 
-              break;
-            }
-          }
+  listenToMessages(){
 
-          break;
-        }
-      }
-    });
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onRemindersDataReceived
+      },
+    ]);
 
 
   }

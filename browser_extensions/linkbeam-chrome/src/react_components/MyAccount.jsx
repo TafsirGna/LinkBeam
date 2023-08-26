@@ -5,7 +5,13 @@ import { v4 as uuidv4 } from 'uuid';
 import user_icon from '../assets/user_icon.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+	saveCurrentPageTitle, 
+	sendDatabaseActionMessage,
+	ack,
+	messageParameters, 
+	startMessageListener
+} from "./Local_library";
 
 export default class MyAccount extends React.Component{
 
@@ -16,10 +22,13 @@ export default class MyAccount extends React.Component{
     	installedOn: "",
     };
 
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   componentDidMount() {
+
+  	this.listenToMessages();
 
   	// Setting the local data with the global ones
   	if (this.props.globalData.productID){
@@ -34,59 +43,50 @@ export default class MyAccount extends React.Component{
   		sendDatabaseActionMessage("get-object", "settings", ["installedOn", "productID"]);
   	}
 
-  	this.startMessageListener();
-
 		// Saving the current page title
 		sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: "MyAccount"});
   }
 
-  startMessageListener(){
+  onSettingsDataReceived(message, sendResponse){
 
-  	chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-		    switch(message.header){
-		        case "object-data": {
-		        	
-		        	switch(message.data.objectStoreName){
-		        		case "settings":{
+  	switch(message.data.objectData.property){
+  		case "installedOn":{
 
-		        			switch(message.data.objectData.property){
-				        		case "installedOn":{
-				        			// sending a response
-									sendResponse({
-										status: "ACK"
-									});
+  			// acknowledge receipt
+  			ack(sendResponse);
 
-									// setting the value
-									let installedOn = message.data.objectData.value;
-									this.setState({installedOn: installedOn});
-				        			break;
-				        		}
-				        		case "productID":{
-				        			// sending a response
-									sendResponse({
-										status: "ACK"
-									});
+				// setting the value
+				let installedOn = message.data.objectData.value;
+				this.setState({installedOn: installedOn});
+		  			break;
+		  		}
+  		case "productID":{
 
-									let productID = message.data.objectData.value;
-									if (productID){
-										this.setState({productID: productID});
-									}
-									else{
-										// setting the new product ID
-										saveCurrentPageTitle("MyAccount");
-									}
-				        			break;
-				        		}
-				        	}
+  			// acknowledge receipt
+  			ack(sendResponse);
 
-		        			break;
-		        		}
-		        	}
+				let productID = message.data.objectData.value;
+				if (productID){
+					this.setState({productID: productID});
+				}
+				else{
+					// setting the new product ID
+					saveCurrentPageTitle("MyAccount");
+				}
+		  			break;
+		  		}
+		  	}
 
-		        	break;
-		        }
-		    }
-		});
+  }
+
+  listenToMessages(){
+
+  	startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      },
+    ]);
 
   }
 

@@ -3,7 +3,13 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage,
+  ack,
+  startMessageListener, 
+  messageParameters 
+} from "./Local_library";
 
 export default class Settings extends React.Component{
   
@@ -23,10 +29,15 @@ export default class Settings extends React.Component{
     this.deleteAll = this.deleteAll.bind(this);
     this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
     this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
+    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
   }
 
   componentDidMount() {
+
+    this.listenToMessages();
 
     if (Object.hasOwn(this.props.globalData.settings, 'notifications')){
       this.setState({notifSettingCheckBoxValue: this.props.globalData.settings.notifications});
@@ -37,6 +48,8 @@ export default class Settings extends React.Component{
       this.setState({keywordCount: this.props.globalData.keywordList.length});
     }
 
+    saveCurrentPageTitle("Settings");
+
     // Getting the keyword count
     sendDatabaseActionMessage("get-count", "keywords", null);
 
@@ -45,91 +58,75 @@ export default class Settings extends React.Component{
 
     // Knowing the previous status of the notification checkbox
     sendDatabaseActionMessage("get-object", "settings", ["notifications"]);
-
-    this.startMessageListener();
-
-    saveCurrentPageTitle("Settings");
   }
 
-  startMessageListener(){
+  onKeywordsDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-        
-        case "object-count": {
-          
-          switch(message.data.objectStoreName){
-            case "keywords": {
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              // setting the new value
-              this.setState({keywordCount: message.data.objectData});
+    // setting the new value
+    this.setState({keywordCount: message.data.objectData});
 
-              break;
-            }
+  }
 
-            case "reminders": {
+  onRemindersDataReceived(message, sendResponse){
 
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              // setting the new value
-              this.setState({reminderCount: message.data.objectData});
+    // acknowledge receipt
+    ack(sendResponse);
 
-              break;
-            }
-          }
+    // setting the new value
+    this.setState({reminderCount: message.data.objectData});
 
-          break;
-        }
+  }
 
-        case "object-data": {
-          
-          switch(message.data.objectStoreName){
-            case "settings":{
+  onSettingsDataReceived(message, sendResponse){
 
-              console.log("Settings Message received Settings data: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // setting the new value
-              switch(message.data.objectData.property){
-                case "notifications": {
-                  this.setState({notifSettingCheckBoxValue: message.data.objectData.value});
-                  break;
-                }
-
-                case "lastDataResetDate": {
-
-                  // Displaying the validation sign
-                  this.setState({processingState: {status: "NO", info: "ERASING"}});
-
-                  // updating local value
-                  this.setState({keywordCount: 0});
-
-                  // Setting a timer to reset all of this
-                  setTimeout(() => {
-                    this.setState({processingState: {status: "NO", info: ""}});
-                  }, 3000);
-
-                  break;
-                }            
-              }
-
-              break;
-            }
-          }
-
-          break;
-        }
+    // setting the new value
+    switch(message.data.objectData.property){
+      case "notifications": {
+        this.setState({notifSettingCheckBoxValue: message.data.objectData.value});
+        break;
       }
-    });
+
+      case "lastDataResetDate": {
+
+        // Displaying the validation sign
+        this.setState({processingState: {status: "NO", info: "ERASING"}});
+
+        // updating local value
+        this.setState({keywordCount: 0});
+
+        // Setting a timer to reset all of this
+        setTimeout(() => {
+          this.setState({processingState: {status: "NO", info: ""}});
+        }, 3000);
+
+        break;
+      }            
+    }
+
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_COUNT, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        callback: this.onKeywordsDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_COUNT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onRemindersDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      },
+    ]);
 
   }
 

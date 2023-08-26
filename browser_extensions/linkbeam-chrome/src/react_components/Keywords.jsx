@@ -1,7 +1,13 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+import KeywordListView from "./widgets/KeywordListView";
 // import { uid } from 'uid';
-import { saveCurrentPageTitle, sendDatabaseActionMessage } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  sendDatabaseActionMessage,
+  startMessageListener, 
+  ack, messageParameters
+} from "./Local_library";
 
 
 export default class Keywords extends React.Component{
@@ -11,7 +17,6 @@ export default class Keywords extends React.Component{
     this.state = {
       keyword: "",
       keywordList: null,
-      keywordListTags: null,
       processingState:{
         status: "NO",
         info: ""
@@ -22,9 +27,10 @@ export default class Keywords extends React.Component{
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
-    this.setListData = this.setListData.bind(this);
+    this.deleteKeyword = this.deleteKeyword.bind(this);
+    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.checkInputKeyword = this.checkInputKeyword.bind(this);
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
   }
 
   componentDidMount() {
@@ -36,98 +42,77 @@ export default class Keywords extends React.Component{
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
-      this.setListData(this.props.globalData.keywordList);
+      this.setState({keywordList: this.props.globalData.keywordList});
     }
 
-    sendDatabaseActionMessage("get-list", "keywords", null);
-
-    this.startMessageListener();
+    this.listenToMessages();
 
     saveCurrentPageTitle("Keywords");
 
+    sendDatabaseActionMessage("get-list", "keywords", null);
+
   }
 
-  startMessageListener(){
+  onKeywordsDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-        case "add-keyword-error":{
-          alert(message.data);
-          break;
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // setting the new value
+    var keywords = message.data.objectData;
+    this.setState({keywordList: keywords});
+
+    // Displaying the alertBadge
+    if (this.state.processingState.status == "YES"){
+      switch(this.state.processingState.info){
+        case "ADDING":{
+          this.setState({alertBadgeContent: "Added !"});
+          break
         }
-
-        case "object-list":{
-          
-          switch(message.data.objectStoreName){
-            case "keywords":{
-
-              console.log("Keyword Message received Keyword list: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              // setting the new value
-              this.setListData(message.data.objectData)
-
-              // Displaying the alertBadge
-              if (this.state.processingState.status == "YES"){
-                switch(this.state.processingState.info){
-                  case "ADDING":{
-                    this.setState({alertBadgeContent: "Added !"});
-                    break
-                  }
-                  case "DELETING":{
-                    this.setState({alertBadgeContent: "Deleted !"});
-                    break
-                  }
-                }
-              }
-
-              // Setting a timeout for the alertBadge to disappear
-              setTimeout(() => {
-                this.setState({alertBadgeContent: ""});
-              }
-              , 3000);
-
-              break;
-            }
-          }
-
-          break;
+        case "DELETING":{
+          this.setState({alertBadgeContent: "Deleted !"});
+          break
         }
       }
+    }
 
-      // vanishing the spinner
-      this.setState({processingState: {status: "NO", info: ""}});
+    // Setting a timeout for the alertBadge to disappear
+    setTimeout(() => {
+      this.setState({alertBadgeContent: ""});
+    }
+    , 3000);
 
-    });
-    
+    // vanishing the spinner
+    this.setState({processingState: {status: "NO", info: ""}});
+
   }
 
-  setListData(listData){
-    this.setState({
-      keywordList: listData,
-      keywordListTags: listData.map((keyword, index) =>
-                          (<li key={index}>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.deleteKeyword(keyword)}}>
-                              <span class="d-inline-block bg-success rounded-circle p-1"></span>
-                              {keyword.name}
-                              <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                            </a>
-                          </li>)
-                        ),
-    });
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        callback: this.onKeywordsDataReceived
+      }
+    ]);
+
+    /*case "add-keyword-error":{
+      alert(message.data);
+      break;
+    }*/
+    
   }
 
   // Function for initiating the deletion of a keyword
   deleteKeyword(keyword){
     const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
-    // Displaying the spinner
-    this.setState({processingState: {status: "YES", info: "DELETING"}});
-
     if (response){
-      sendDatabaseActionMessage("delete-object", "keywords", keyword.name);
+      // Displaying the spinner
+      this.setState({processingState: {status: "YES", info: "DELETING"}});
+
+      if (response){
+        sendDatabaseActionMessage("delete-object", "keywords", keyword.name);
+      }
     }
   }
 
@@ -201,21 +186,11 @@ export default class Keywords extends React.Component{
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="#0d6efd" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
               </span>
             </div>
-            {this.state.keywordList == null && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                      {/*<span class="visually-hidden">Loading...</span>*/}
-                    </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                  </div>
-                </div>}
+            
+            {/* Keyword list view */}
 
-            {this.state.keywordList != null && this.state.keywordList.length == 0 && <div class="text-center m-5 mt-4">
-                      <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                      <p><span class="badge text-bg-primary fst-italic shadow">No keywords yet</span></p>
-                    </div>}
+            <KeywordListView objects={this.state.keywordList} onItemDeletion={this.deleteKeyword} />
 
-            {this.state.keywordList != null && this.state.keywordList.length != 0 && <ul class="list-unstyled mb-0 rounded shadow p-2">
-                  {this.state.keywordListTags}
-                </ul>}
           </div>
         </div>
       </>

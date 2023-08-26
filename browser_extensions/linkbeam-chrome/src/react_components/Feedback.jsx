@@ -1,11 +1,12 @@
 /*import './About.css'*/
-import React from 'react'
-import BackToPrev from "./widgets/BackToPrev"
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
   ack,
+  messageParameters,
+  startMessageListener
   } from "./Local_library";
 
 export default class Feedback extends React.Component{
@@ -22,8 +23,9 @@ export default class Feedback extends React.Component{
 
     this.onFeedbackTextInputChange = this.onFeedbackTextInputChange.bind(this);
     this.onFeedbackTitleInputChange = this.onFeedbackTitleInputChange.bind(this);
-    this.sendFeedback = this.sendFeedback.bind(this);
+    this.onSendButtonClick = this.onSendButtonClick.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
+    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -36,48 +38,41 @@ export default class Feedback extends React.Component{
 
   }
 
-  listenToMessages(){
+  onSettingsDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
+    // acknowledge receipt
+    ack(sendResponse);
 
-        case "object-data": {
-          
-          switch(message.data.objectStoreName){
-            case "settings":{
+    // setting the new value
+    switch(message.data.objectData.property){
+      case "feedback": {
+        var feedback = message.data.objectData.value;
 
-              // acknowledge receipt
-              ack(sendResponse);
-
-              // setting the new value
-              switch(message.data.objectData.property){
-                case "feedback": {
-                  var feedback = message.data.objectData.value;
-
-                  if (feedback == null || feedback == undefined){
-                    this.setState({feedback: {title: "", text: ""}, dataRequestDone: "N/A"});
-                    return;
-                  }
-
-                  this.setState({feedback: feedback, dataRequestDone: "AVAIL"});
-                  break;
-                }
-     
-              }
-
-              break;
-            }
-          }
-
-          break;
+        if (feedback == null || feedback == undefined){
+          this.setState({feedback: {title: "", text: ""}, dataRequestDone: "N/A"});
+          return;
         }
 
+        this.setState({feedback: feedback, dataRequestDone: "AVAIL"});
+        break;
       }
-    });
+
+    }
 
   }
 
-  sendFeedback(){
+  listenToMessages(){
+
+    startMessageListener([,
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      },
+    ]);
+
+  }
+
+  onSendButtonClick(){
 
     if (this.state.feedback.title == "" || this.state.feedback.text == ""){
       return;
@@ -130,7 +125,7 @@ export default class Feedback extends React.Component{
 
             { this.state.dataRequestDone && this.state.dataRequestDone == "N/A" &&
                 <div class="clearfix">
-                  <button type="button" class="btn btn-primary btn-sm float-end shadow-sm" onClick={this.sendFeedback}>Send</button>
+                  <button type="button" class="btn btn-primary btn-sm float-end shadow-sm" onClick={this.onSendButtonClick}>Send</button>
                 </div>}
           </div>
         </div>
