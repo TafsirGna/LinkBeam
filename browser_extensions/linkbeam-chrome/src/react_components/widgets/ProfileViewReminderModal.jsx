@@ -3,7 +3,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { sendDatabaseActionMessage } from "../Local_library";
+import { sendDatabaseActionMessage, startMessageListener, messageParameters, ack } from "../Local_library";
 
 export default class ProfileViewReminderModal extends React.Component{
 
@@ -17,7 +17,7 @@ export default class ProfileViewReminderModal extends React.Component{
     this.saveReminder = this.saveReminder.bind(this);
     this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
   }
 
   saveReminder(){
@@ -29,31 +29,10 @@ export default class ProfileViewReminderModal extends React.Component{
 
   componentDidMount() {
 
-    this.startMessageListener();
+    this.listenToMessages();
   }
 
-  startMessageListener(){
-
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-
-        case "object-data":{
-          
-          switch(message.data.objectStoreName){
-            case "reminders":{
-
-              break;
-            }
-          }
-
-          break;
-        }
-      }
-
-      // vanishing the spinner
-      this.setState({processingState: {status: "NO", info: ""}});
-
-    });
+  listenToMessages(){
 
     
   }

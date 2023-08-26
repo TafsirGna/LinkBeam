@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { sendDatabaseActionMessage, getChartColors } from "../Local_library";
+import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParameters, ack } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -55,14 +55,14 @@ export default class ViewsKeywordsBarChart extends React.Component{
 		};
 
   	this.setChartLabels = this.setChartLabels.bind(this);
-
-  	this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+  	this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
 
 	}
 
 	componentDidMount() {
 
-    this.startMessageListener();
+    this.listenToMessages();
 
 		this.setChartLabels();
 
@@ -72,36 +72,30 @@ export default class ViewsKeywordsBarChart extends React.Component{
     
   }
 
-	startMessageListener(){
+  onKeywordsDataReceived(message, sendResponse){
 
-		chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-        case "object-list":{
-          
-          switch(message.data.objectStoreName){
-            case "keywords":{
-              
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              let labels = [];
-              var results = message.data.objectData;
-              results.forEach((keyword) => {
-                labels.push(keyword.name);
-              });
-              
-              // setting the new value
-              this.setState({barLabels: labels}, () => {this.setChartData()});
-              break;
-            }
-          }
-
-          break;
-        }
-      }
+    let labels = [];
+    var results = message.data.objectData;
+    results.forEach((keyword) => {
+      labels.push(keyword.name);
     });
+    
+    // setting the new value
+    this.setState({barLabels: labels}, () => {this.setChartData()});
+
+  }
+
+	listenToMessages(){
+
+		startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        callback: this.onKeywordsDataReceived
+      },
+    ]);
 	}
 
 	setChartLabels(){

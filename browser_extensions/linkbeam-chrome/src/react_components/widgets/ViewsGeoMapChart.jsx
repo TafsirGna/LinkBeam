@@ -34,7 +34,7 @@ export default class ViewsGeoMapChart extends React.Component{
 
     fetch('https://unpkg.com/world-atlas/countries-50m.json').then((r) => r.json()).then((data) => {
       
-      console.log("********************************************");
+      // console.log("********************************************");
       this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
 
     });

@@ -21,12 +21,15 @@ export const messageParameters = {
     BOOKMARKS: "bookmarks",
     SETTINGS: "settings",
     REMINDERS: "reminders",
-    KEYWORDS: "keywords"
+    KEYWORDS: "keywords",
+    PROFILES: "profiles"
   },
   actionNames: {
     GET_LIST: "object-list",
     GET_COUNT: "object-count",
     GET_OBJECT: "object-data",
+    ADD_OBJECT: "object-added",
+    DEL_OBJECT: "object-deleted",
   },
   separator: "|",
 
@@ -117,30 +120,33 @@ export function startMessageListener(listenerSettings){
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     switch(message.header){
+
       case "object-list":{
 
         switch(message.data.objectStoreName){
-          case "searches":{
+
+          case messageParameters.actionObjectNames.SEARCHES:{
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
             
             break;
           }
-          case "bookmarks": {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
-            break;
-          }
-
-          case "keywords": {
+          case messageParameters.actionObjectNames.BOOKMARKS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-        case "reminders": {
+          case messageParameters.actionObjectNames.KEYWORDS: {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case messageParameters.actionObjectNames.REMINDERS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -153,27 +159,28 @@ export function startMessageListener(listenerSettings){
       case "object-count":{
 
         switch(message.data.objectStoreName){
-          case "searches":{
+          /*case messageParameters.actionObjectNames.SEARCHES:{
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
             
             break;
-          }
-          case "bookmarks": {
+          }*/
+
+          /*case messageParameters.actionObjectNames.BOOKMARKS: {
+            
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }*/
+
+          case messageParameters.actionObjectNames.KEYWORDS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case "keywords": {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-        case "reminders": {
+          case messageParameters.actionObjectNames.REMINDERS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -186,7 +193,59 @@ export function startMessageListener(listenerSettings){
       case "object-data":{
 
         switch(message.data.objectStoreName){
-          case "settings": {
+
+          case messageParameters.actionObjectNames.SETTINGS: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case messageParameters.actionObjectNames.PROFILES: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+        }
+
+        break;
+      }
+
+      case "object-added":{
+
+        switch(message.data.objectStoreName){
+
+          case messageParameters.actionObjectNames.BOOKMARKS: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case messageParameters.actionObjectNames.REMINDERS: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+        }
+
+        break;
+      }
+
+      case "object-deleted":{
+
+        switch(message.data.objectStoreName){
+
+          case messageParameters.actionObjectNames.BOOKMARKS: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+
+          case messageParameters.actionObjectNames.REMINDERS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 

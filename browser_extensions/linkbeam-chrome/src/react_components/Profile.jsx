@@ -1,7 +1,7 @@
 /*import './Profile.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
-import { sendDatabaseActionMessage } from "./Local_library";
+import { sendDatabaseActionMessage, startMessageListener, ack, messageParameters } from "./Local_library";
 
 export default class Profile extends React.Component{
 
@@ -11,10 +11,17 @@ export default class Profile extends React.Component{
       profile: null, 
     };
 
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onProfileDataReceived = this.onProfileDataReceived.bind(this);
+    this.onReminderAdditionDataReceived = this.onReminderAdditionDataReceived.bind(this);
+    this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
+    this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
+    this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
   }
 
   componentDidMount() {
+
+    this.listenToMessages();
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
@@ -23,113 +30,98 @@ export default class Profile extends React.Component{
     // Retrieving the profile for the url given throught the url paremeters 
     sendDatabaseActionMessage("get-object", "profiles", profileUrl);
 
-    this.startMessageListener();
   }
 
-  startMessageListener(){
+  onProfileDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
-        case "object-data":{
-          
-          switch(message.data.objectStoreName){
-            case "profiles": {
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              let profile = message.data.objectData;
+    let profile = message.data.objectData;
 
-              // Setting the retrieved profile as a local variable
-              this.setState({profile: profile});
-            }
-          }
-          break;
-        }
-        case "object-added":{
-          
-          switch(message.data.objectStoreName){
-            case "bookmarks":{ 
+    // Setting the retrieved profile as a local variable
+    this.setState({profile: profile});
 
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+  }
 
-              var bookmark = message.data.objectData;
-              this.setState(prevState => {
-                let profile = Object.assign({}, prevState.profile);
-                profile.bookmark = bookmark;
-                return { profile };
-              });
+  onBookmarkAdditionDataReceived(message, sendResponse){
 
-              break;
-            }
+    // acknowledge receipt
+    ack(sendResponse);
 
-            case "reminders":{ 
-
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              var reminder = message.data.objectData;
-              this.setState(prevState => {
-                let profile = Object.assign({}, prevState.profile);
-                profile.reminder = reminder;
-                return { profile };
-              });
-
-              break;
-            }
-          }
-          
-          break;
-        }
-        case "object-deleted":{
-          
-          switch(message.data.objectStoreName){
-            case "bookmarks": {
-
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              this.setState(prevState => {
-                let profile = Object.assign({}, prevState.profile);
-                profile.bookmark = null;
-                return { profile };
-              });
-
-              break;
-
-            }
-
-          case "reminders": {
-
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              this.setState(prevState => {
-                let profile = Object.assign({}, prevState.profile);
-                profile.reminder = null;
-                return { profile };
-              });
-
-              break;
-
-            }
-          }
-          
-          break;
-        }
-
-      }
+    var bookmark = message.data.objectData;
+    this.setState(prevState => {
+      let profile = Object.assign({}, prevState.profile);
+      profile.bookmark = bookmark;
+      return { profile };
     });
+
+  }
+
+  onReminderAdditionDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var reminder = message.data.objectData;
+    this.setState(prevState => {
+      let profile = Object.assign({}, prevState.profile);
+      profile.reminder = reminder;
+      return { profile };
+    });
+
+  }
+
+  onBookmarkDeletionDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    this.setState(prevState => {
+      let profile = Object.assign({}, prevState.profile);
+      profile.bookmark = null;
+      return { profile };
+    });
+
+  }
+
+  onReminderDeletionDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    this.setState(prevState => {
+      let profile = Object.assign({}, prevState.profile);
+      profile.reminder = null;
+      return { profile };
+    });
+
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onReminderAdditionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarkAdditionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onReminderDeletionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarkDeletionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.PROFILES].join(messageParameters.separator), 
+        callback: this.onProfileDataReceived
+      },
+    ]);
     
   }
 

@@ -4,7 +4,7 @@ import CustomToast from "./CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./ProfileViewReminderModal";
-import { sendDatabaseActionMessage } from "../Local_library";
+import { sendDatabaseActionMessage, startMessageListener, ack, messageParameters } from "../Local_library";
 
 export default class ProfileView extends React.Component{
 
@@ -19,76 +19,78 @@ export default class ProfileView extends React.Component{
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
     this.onReminderMenuActionClick = this.onReminderMenuActionClick.bind(this);
-    this.startMessageListener = this.startMessageListener.bind(this);
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onReminderAdditionDataReceived = this.onReminderAdditionDataReceived.bind(this);
+    this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
+    this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
+    this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
 
   }
 
   componentDidMount() {
 
-    this.startMessageListener();
+    this.listenToMessages();
 
   }
 
-  startMessageListener(){
+  onBookmarkAdditionDataReceived(message, sendResponse){
 
-    // listening to events
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      
-      switch(message.header){
-        case "object-added": {
+    // acknowledge receipt
+    ack(sendResponse);
 
-          switch(message.data.objectStoreName){
-            case "bookmarks": {
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              this.toggleBookmarkToastShow("Profile bookmarked !");
-              break;
-            }
+    this.toggleBookmarkToastShow("Profile bookmarked !");
 
-          case "reminders": {
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              this.handleReminderModalClose();
-              this.toggleBookmarkToastShow("Reminder added !");
-              break;
-            }
-          }
+  }
 
-          break;
-        }
+  onReminderAdditionDataReceived(message, sendResponse){
 
-        case "object-deleted": {
+    // acknowledge receipt
+    ack(sendResponse);
 
-          switch(message.data.objectStoreName){
-            case "bookmarks": {
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              this.toggleBookmarkToastShow("Profile unbookmarked !");
-              break;
-            }
+    this.handleReminderModalClose();
+    this.toggleBookmarkToastShow("Reminder added !");
 
-          case "reminders": {
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              this.handleReminderModalClose();
-              this.toggleBookmarkToastShow("Reminder deleted !");
-              break;
-            }
-          }
-          
-          break;
-        }
+  }
+
+  onBookmarkDeletionDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    this.toggleBookmarkToastShow("Profile unbookmarked !");
+
+  }
+
+  onReminderDeletionDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    this.handleReminderModalClose();
+    this.toggleBookmarkToastShow("Reminder deleted !");
+
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onReminderAdditionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarkAdditionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onReminderDeletionDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarkDeletionDataReceived
       }
-
-    });
+    ]);
     
   }
 
