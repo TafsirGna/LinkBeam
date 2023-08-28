@@ -51,13 +51,13 @@ export default class Settings extends React.Component{
     saveCurrentPageTitle("Settings");
 
     // Getting the keyword count
-    sendDatabaseActionMessage("get-count", "keywords", null);
+    sendDatabaseActionMessage("get-count", messageParameters.actionObjectNames.KEYWORDS, null);
 
     // Getting the reminder count
-    sendDatabaseActionMessage("get-count", "reminders", null);
+    sendDatabaseActionMessage("get-count", messageParameters.actionObjectNames.REMINDERS, null);
 
     // Knowing the previous status of the notification checkbox
-    sendDatabaseActionMessage("get-object", "settings", ["notifications"]);
+    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["notifications"]);
   }
 
   onKeywordsDataReceived(message, sendResponse){
@@ -133,7 +133,7 @@ export default class Settings extends React.Component{
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    sendDatabaseActionMessage("update-object", "settings", {property: "notifications", value: event.target.checked});
+    sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "notifications", value: event.target.checked});
   }
 
   saveDarkThemeState(){
@@ -147,10 +147,7 @@ export default class Settings extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      chrome.runtime.sendMessage({header: 'erase-all-data', data: null}, (response) => {
-        // Got an asynchronous response with the data from the service worker
-        console.log('Erase all data request sent', response);
-      });
+      sendDatabaseActionMessage("delete-object", "all", null);
     }
   }
 

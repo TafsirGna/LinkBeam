@@ -36,7 +36,7 @@ export default class Settings extends React.Component{
     this.listenToMessages();
     
     // Requesting the last reset date
-    sendDatabaseActionMessage("get-object", "settings", ["lastDataResetDate"]);
+    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["lastDataResetDate"]);
 
     saveCurrentPageTitle("Statistics");
   }

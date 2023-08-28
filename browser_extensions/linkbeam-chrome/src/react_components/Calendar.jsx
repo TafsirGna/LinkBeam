@@ -41,7 +41,7 @@ export default class Calendar extends React.Component{
 
   getSearchList(dateString){
 
-    sendDatabaseActionMessage("get-list", "searches", {date: dateString});
+    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.SEARCHES, {date: dateString, context: "Calendar"});
 
   }
 
@@ -53,10 +53,15 @@ export default class Calendar extends React.Component{
 
   onSearchesDataReceived(message, sendResponse){
 
+    var context = message.data.objectData.context; 
+    if (context != "Calendar"){
+      return;
+    }
+
     // acknowledge receipt
     ack(sendResponse);
 
-    var searchList = message.data.objectData;
+    var searchList = message.data.objectData.list;
     this.setState({searchList: searchList});
 
   }

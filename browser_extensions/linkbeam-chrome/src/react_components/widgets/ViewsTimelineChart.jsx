@@ -2,7 +2,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
-import { sendDatabaseActionMessage, getChartColors } from "../Local_library";
+import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParameters } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -49,15 +49,16 @@ export default class ViewsTimelineChart extends React.Component{
 		};
 
 		this.getChartData = this.getChartData.bind(this);
-    	this.setChartLabels = this.setChartLabels.bind(this);
+  	this.setChartLabels = this.setChartLabels.bind(this);
 
-    	this.startMessageListener = this.startMessageListener.bind(this);
+  	this.listenToMessages = this.listenToMessages.bind(this);
+  	this.onProcessedDataReceived = this.onProcessedDataReceived.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.startMessageListener();
+		this.listenToMessages();
 
 		this.setChartLabels();
 
@@ -72,56 +73,44 @@ export default class ViewsTimelineChart extends React.Component{
 
 	}
 
-	startMessageListener(){
+	onProcessedDataReceived(message, sendResponse){
 
-		chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-	      	switch(message.header){
+		// acknowledge receipt
+		ack(sendResponse);
 
-	      		case "search-chart-data":{
-							console.log("Statistics Message received search-chart-data: ", message);
-							// sending a response
-							sendResponse({
-								status: "ACK"
-							});
+		console.log("??????????????????????????????? : ", this.state.lineLabels.titles);
 
-							let labels = this.state.lineLabels.titles;
+		let labels = this.state.lineLabels.titles;
+		var colors = getChartColors(labels.length);
 
+		this.setState({lineData: {
+			labels,
+			datasets: [
+			  {
+			    label: 'Dataset',
+			    data: message.data.objectData,
+			    borderColor: colors.borders,
+			    backgroundColor: colors.backgrounds,
+			  },
+			],
+		}});
 
-							var colors = getChartColors(labels.length);
+	}
 
-							this.setState({lineData: {
-								labels,
-								datasets: [
-								  {
-								    label: 'Dataset',
-								    data: message.data,
-								    borderColor: colors.borders,
-								    backgroundColor: colors.backgrounds,
-								  },
-								],
-							}});
+	listenToMessages(){
 
-							break;
-						}
-
-	      	}
-      	});
-
+		startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_PROCESSED_DATA, "views-timeline-chart"].join(messageParameters.separator), 
+        callback: this.onProcessedDataReceived
+      },
+    ]);
+    
 	}
 
 	getLastDaysViewChartLabels(){
 
 		var labels = {titles: [], values: []};
-
-		/*var labels = {titles: ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"], values: []};
-
-		const d = new Date();
-		let day = labels.titles[d.getDay()];
-
-		while(labels.titles[labels.titles.length - 1] != day){
-			let firstItem = labels.titles.shift();
-			labels.titles.push(firstItem);
-		}*/
 
 		for (var i=0; i < 7; i++){
 			var date = moment().subtract(i, 'days');
@@ -193,10 +182,7 @@ export default class ViewsTimelineChart extends React.Component{
 	getChartData(){
 
 		// Requesting search chart data
-		chrome.runtime.sendMessage({header: 'get-search-chart-data', data: this.state.lineLabels.values}, (response) => {
-			// Got an asynchronous response with the data from the service worker
-			console.log('Search chart data request sent', response, this.state.lineLabels.values);
-		});
+		sendDatabaseActionMessage("get-processed-data", "views-timeline-chart", this.state.lineLabels.values);
 
 	}
 

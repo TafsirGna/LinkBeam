@@ -23,7 +23,7 @@ export default class ProfileViewReminderModal extends React.Component{
   saveReminder(){
 
     var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
-    sendDatabaseActionMessage("add-object", "reminders", reminder);
+    sendDatabaseActionMessage("add-object", messageParameters.actionObjectNames.REMINDERS, reminder);
 
   }
 

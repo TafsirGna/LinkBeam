@@ -103,7 +103,7 @@ export default class ProfileView extends React.Component{
     if (this.props.profile.reminder){
       var response = confirm("Do you confirm the deletion of the reminder ?");
       if (response){
-        sendDatabaseActionMessage("delete-object", "reminders", this.props.profile.url);
+        sendDatabaseActionMessage("delete-object", messageParameters.actionObjectNames.REMINDERS, this.props.profile.url);
       }
     } 
     else{

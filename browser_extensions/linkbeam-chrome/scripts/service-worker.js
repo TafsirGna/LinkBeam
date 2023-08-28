@@ -136,10 +136,10 @@ function initSettings(){
     });
 }
 
-function getSearchProfiles(searches){
+function getSearchProfiles(searches, context){
 
     if (searches.length == 0){
-        sendBackResponse("OBJECT-LIST", searchObjectStoreName, searches);
+        sendBackResponse("OBJECT-LIST", searchObjectStoreName, {context: context, list: searches});
         return;
     }
 
@@ -162,7 +162,7 @@ function getSearchProfiles(searches){
             // keep going to the next search
             if(results.length == searches.length) {
                 // only continue if under limit
-                sendBackResponse("OBJECT-LIST", searchObjectStoreName, results);
+                sendBackResponse("OBJECT-LIST", searchObjectStoreName, {context: context, list: results});
             }
 
         };
@@ -228,6 +228,7 @@ function getSearchList(params) {
 
     var offset = (params.offset ? params.offset : 0);
     var date = (params.date ? params.date : null);
+    var context = params.context;
 
     let searches = [];
     var offsetApplied = false;
@@ -236,7 +237,7 @@ function getSearchList(params) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            getSearchProfiles(searches);
+            getSearchProfiles(searches, context);
             return;
         }
 
@@ -260,7 +261,7 @@ function getSearchList(params) {
             cursor.continue();
         }
         else{
-            getSearchProfiles(searches);
+            getSearchProfiles(searches, context);
             return;
         }
     }
@@ -405,14 +406,6 @@ function getReminderList() {
     request.onerror = (event) => {
         console.log("An error occured when retrieving reminder list : ", event);
     };
-}
-
-// Script for providing all the app parameters
-
-function provideAppParams() {
-    chrome.runtime.sendMessage({header: 'app-params-list', data: appParams}, (response) => {
-      console.log('App params list response sent', response);
-    });
 }
 
 // Script for adding a new search
@@ -562,6 +555,10 @@ function getObject(objectStoreName, objectData){
             getFeedbackData(objectData);
             break;
         }
+
+        case "app-params": {
+            sendBackResponse("GET-OBJECT", "app-params", appParams);
+        }
     }
 
 }
@@ -608,6 +605,11 @@ function deleteObject(objectStoreName, objectData){
             deleteReminderObject(objectData);
             break;
         }
+
+        case "all":{
+            truncateDB();
+            break;
+        }
     }
 
 }
@@ -631,6 +633,21 @@ function getObjectCount(objectStoreName, objectData){
 
 }
 
+// Script for getting processed data usually for statistics
+
+function getProcessedData(objectStoreName, objectData){
+
+    switch(objectStoreName){
+
+        case "views-timeline-chart":{
+            getViewsTimelineData(objectData);
+            break;
+        }
+
+    }
+
+}
+
 // Script for updating any object instance
 
 function updateObject(objectStoreName, objectData){
@@ -638,6 +655,11 @@ function updateObject(objectStoreName, objectData){
     switch(objectStoreName){
         case settingObjectStoreName:{
             updateSettingObject(objectData.property, objectData.value);
+            break;
+        }
+
+        case profileObjectStoreName: {
+            updateProfileObject(objectData);
             break;
         }
     }
@@ -671,8 +693,13 @@ function sendBackResponse(action, objectStoreName, data){
             break;
         }
 
-    case "OBJECT-COUNT": {
+        case "OBJECT-COUNT": {
             header = 'object-count';
+            break;
+        }
+
+        case "GET-PROCESSED-DATA": {
+            header = 'processed-data';
             break;
         }
     }
@@ -909,6 +936,22 @@ function updateSettingObject(propKey, propValue){
     };
 } 
 
+// Script for truncating the database 
+
+function truncateDB(){
+
+    // Erasing all data
+    const data = db.objectStoreNames;
+    let objectStoreNames = [];
+    for (var key in data){
+        if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
+            objectStoreNames.push(data[key]);
+        }
+    }
+    clearObjectStores(objectStoreNames);
+    
+}
+
 // Script for clearing an objectStore
 
 function clearObjectStores(objectStoreNames){
@@ -950,18 +993,9 @@ function getSettingsData(properties){
     };
 }
 
-// Script for sending search chart data
-
-function sendSearchChartData(chartData){
-    
-    chrome.runtime.sendMessage({header: 'search-chart-data', data: chartData}, (response) => {
-      console.log('Search chart data response sent', response, chartData);
-    });
-}
-
 // Script for providing search chart data
 
-function provideSearchChartData(chartData){
+function getViewsTimelineData(chartData){
 
     let results = [];
     for (let i = 0; i < chartData.length; i++){
@@ -974,7 +1008,7 @@ function provideSearchChartData(chartData){
         var cursor = event.target.result;
 
         if(!cursor) {
-            sendSearchChartData(results);
+            sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
             return;
         }
 
@@ -984,7 +1018,7 @@ function provideSearchChartData(chartData){
             let index = chartData.indexOf(searchDate);
 
             if (index == -1){
-                sendSearchChartData(results);
+                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
                 return;
             }
             
@@ -1001,7 +1035,7 @@ function provideSearchChartData(chartData){
             }
 
             if (!found){
-                sendSearchChartData(results);
+                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
                 return;
             }
         }
@@ -1112,34 +1146,14 @@ function processMessageEvent(message, sender, sendResponse){
             getObjectCount(message.data.objectStoreName, message.data.objectData);
             break;
         }
-        case 'get-app-params':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Providing the app parameters to the front 
-            provideAppParams();       
-            break;
-        }
 
-        case 'update-profile':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Providing the last reset date to the front 
-            let params = message.data;
-            updateProfileObject(params);
-            break;
-        }
-
-        case 'get-search-chart-data':{
+        case 'get-processed-data':{
             // sending a response
             sendResponse({
                 status: "ACK"
             });
             // Saving the new notification setting state
-            provideSearchChartData(message.data);
+            getProcessedData(message.data.objectStoreName, message.data.objectData);
             break;
         }
         /*case 'linkedin-data':{
@@ -1152,22 +1166,6 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }*/
 
-        case 'erase-all-data':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
-            // Erasing all data
-            const data = db.objectStoreNames;
-            let objectStoreNames = [];
-            for (var key in data){
-                if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
-                    objectStoreNames.push(data[key]);
-                }
-            }
-            clearObjectStores(objectStoreNames);
-            break;
-        }
         default:{
             // TODO
         }

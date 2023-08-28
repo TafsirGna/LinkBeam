@@ -49,7 +49,7 @@ export default class Keywords extends React.Component{
 
     saveCurrentPageTitle("Keywords");
 
-    sendDatabaseActionMessage("get-list", "keywords", null);
+    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.KEYWORDS, null);
 
   }
 
@@ -111,7 +111,7 @@ export default class Keywords extends React.Component{
       this.setState({processingState: {status: "YES", info: "DELETING"}});
 
       if (response){
-        sendDatabaseActionMessage("delete-object", "keywords", keyword.name);
+        sendDatabaseActionMessage("delete-object", messageParameters.actionObjectNames.KEYWORDS, keyword.name);
       }
     }
   }
@@ -133,7 +133,7 @@ export default class Keywords extends React.Component{
       // cleaning the keyword input
       this.setState({keyword: ""});
       
-      sendDatabaseActionMessage("add-object", "keywords", this.state.keyword)
+      sendDatabaseActionMessage("add-object", messageParameters.actionObjectNames.KEYWORDS, this.state.keyword)
     }
   }
 

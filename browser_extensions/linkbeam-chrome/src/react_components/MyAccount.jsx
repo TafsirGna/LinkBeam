@@ -40,11 +40,11 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		sendDatabaseActionMessage("get-object", "settings", ["installedOn", "productID"]);
+  		sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["installedOn", "productID"]);
   	}
 
 		// Saving the current page title
-		sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: "MyAccount"});
+		sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "currentPageTitle", value: "MyAccount"});
   }
 
   onSettingsDataReceived(message, sendResponse){

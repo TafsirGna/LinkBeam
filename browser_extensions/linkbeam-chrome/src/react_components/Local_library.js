@@ -30,6 +30,7 @@ export const messageParameters = {
     GET_OBJECT: "object-data",
     ADD_OBJECT: "object-added",
     DEL_OBJECT: "object-deleted",
+    GET_PROCESSED_DATA: "processed-data",
   },
   separator: "|",
 
@@ -38,7 +39,7 @@ export const messageParameters = {
 export function saveCurrentPageTitle(pageTitle){
 
   // Saving the current page title
-  sendDatabaseActionMessage("update-object", "settings", {property: "currentPageTitle", value: pageTitle});
+  sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "currentPageTitle", value: pageTitle});
 
 }
 
@@ -207,6 +208,13 @@ export function startMessageListener(listenerSettings){
 
             break;
           }
+
+          case "app-params": {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
         }
 
         break;
@@ -246,6 +254,21 @@ export function startMessageListener(listenerSettings){
           }
 
           case messageParameters.actionObjectNames.REMINDERS: {
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+
+            break;
+          }
+        }
+
+        break;
+      }
+
+      case "processed-data":{
+
+        switch(message.data.objectStoreName){
+
+          case "views-timeline-chart": {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 

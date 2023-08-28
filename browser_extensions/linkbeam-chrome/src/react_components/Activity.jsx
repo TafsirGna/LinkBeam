@@ -64,18 +64,23 @@ export default class Activity extends React.Component{
       this.getSearchList(offset);
     }
     else{
-      sendDatabaseActionMessage("get-object", "settings", ["currentPageTitle"]);
+      sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["currentPageTitle"]);
     }
 
   }
 
   onSearchesDataReceived(message, sendResponse){
 
+    var context = message.data.objectData.context; 
+    if (context != "Activity"){
+      return;
+    }
+
     // acknowledge receipt
     ack(sendResponse);
 
     // setting the new value
-    var listData = message.data.objectData;
+    var listData = message.data.objectData.list;
     this.setListData(listData);
 
   }
@@ -155,14 +160,14 @@ export default class Activity extends React.Component{
 
     if (this.state.searchLeft){
       this.setState({loadingSearches: true});
-      sendDatabaseActionMessage("get-list", "searches", {offset: (this.state.searchList ? this.state.searchList.length : 0)});
+      sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.SEARCHES, {offset: (this.state.searchList ? this.state.searchList.length : 0), context: "Activity"});
     }
 
   }
 
   getBookmarkList(){
 
-    sendDatabaseActionMessage("get-list", "bookmarks", null);
+    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.BOOKMARKS, null);
 
   }
 

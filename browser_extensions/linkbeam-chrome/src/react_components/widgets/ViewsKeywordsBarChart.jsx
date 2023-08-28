@@ -100,7 +100,7 @@ export default class ViewsKeywordsBarChart extends React.Component{
 
 	setChartLabels(){
 
-  	sendDatabaseActionMessage("get-list", "keywords", null);
+  	sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.KEYWORDS, null);
 
 	}
 

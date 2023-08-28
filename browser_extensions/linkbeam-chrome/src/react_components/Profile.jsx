@@ -28,7 +28,7 @@ export default class Profile extends React.Component{
     const profileUrl = urlParams.get("profile-url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    sendDatabaseActionMessage("get-object", "profiles", profileUrl);
+    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.PROFILES, profileUrl);
 
   }
 

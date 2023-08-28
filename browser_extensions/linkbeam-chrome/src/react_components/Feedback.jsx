@@ -32,7 +32,7 @@ export default class Feedback extends React.Component{
 
     this.listenToMessages();
 
-    sendDatabaseActionMessage("get-object", "settings", ["feedback"]);
+    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["feedback"]);
 
     saveCurrentPageTitle("Feedback");
 
@@ -78,7 +78,7 @@ export default class Feedback extends React.Component{
       return;
     }
 
-    sendDatabaseActionMessage("update-object", "settings", {property: "feedback", value: this.state.feedback});
+    sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "feedback", value: this.state.feedback});
 
   }
 

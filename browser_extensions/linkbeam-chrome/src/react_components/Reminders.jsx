@@ -36,7 +36,7 @@ export default class Reminders extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle("Reminders");
 
-    sendDatabaseActionMessage("get-list", "reminders", null);
+    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.REMINDERS, null);
 
   }
 

@@ -13,6 +13,12 @@ import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
+import { 
+  sendDatabaseActionMessage,
+  ack,
+  startMessageListener, 
+  messageParameters 
+} from "./react_components/Local_library";
 
 
 export default class App extends React.Component{
@@ -31,9 +37,19 @@ export default class App extends React.Component{
         settings: {},
       }
     };
+
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
+    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
+    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
+    this.onAppParamsDataReceived = this.onAppParamsDataReceived.bind(this);
   }
 
   componentDidMount() {
+
+    this.listenToMessages();
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
@@ -44,154 +60,140 @@ export default class App extends React.Component{
     this.setState({calendarView: calendarView});
 
     // Getting the app parameters
-    chrome.runtime.sendMessage({header: 'get-app-params', data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log('App params list request sent', response);
-    });
-
-    this.startMessageListener();
+    sendDatabaseActionMessage("get-object", "app-params", null);
 
   }
 
-  startMessageListener(){
+  onSearchesDataReceived(message, sendResponse){
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      switch(message.header){
+    // acknowledge receipt
+    ack(sendResponse);
 
-        case "app-params-list":{
-          console.log("App Message received App Params List: ", message);
-          // sending a response
-          sendResponse({
-              status: "ACK"
-          });
+    this.setSearchList(message.data.objectData);
 
-          // setting the new value
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.appParams = message.data;
-            return { globalData };
-          });
-          break;
-        }
+  }
 
-        case "object-list":{
+  onBookmarksDataReceived(message, sendResponse){
 
-          switch(message.data.objectStoreName){
-            case "searches":{
+    // acknowledge receipt
+    ack(sendResponse);
 
-              console.log("App Message received Search List: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-              this.setSearchList(message.data.objectData);
-              break;
+    // Setting the search list here too
+    this.setState(prevState => {
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.bookmarkList = message.data.objectData;
+      return { globalData };
+    });
 
-            }
+  }
 
-            case "keywords":{
+  onKeywordsDataReceived(message, sendResponse){
 
-              console.log("App Message received Keyword List: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // Setting the search list here too
-              this.setState(prevState => {
-                let globalData = Object.assign({}, prevState.globalData);
-                globalData.keywordList = message.data.objectData;
-                return { globalData };
-              });
+    // Setting the search list here too
+    this.setState(prevState => {
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.keywordList = message.data.objectData;
+      return { globalData };
+    });
 
-              break;
-            }
+  }
 
-            case "bookmarks":{
+  onRemindersDataReceived(message, sendResponse){
 
-              console.log("App Message received Bookmarks List: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // Setting the search list here too
-              this.setState(prevState => {
-                let globalData = Object.assign({}, prevState.globalData);
-                globalData.bookmarkList = message.data.objectData;
-                return { globalData };
-              });
+    // Setting the search list here too
+    this.setState(prevState => {
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.reminderList = message.data.objectData;
+      return { globalData };
+    });
 
-              break;
-            }
+  }
 
-          case "reminders":{
+  onSettingsDataReceived(message, sendResponse){
 
-              console.log("App Message received Reminders List: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
+    // acknowledge receipt
+    ack(sendResponse);
 
-              // Setting the search list here too
-              this.setState(prevState => {
-                let globalData = Object.assign({}, prevState.globalData);
-                globalData.reminderList = message.data.objectData;
-                return { globalData };
-              });
+    switch(message.data.objectData.property){
+      case "lastDataResetDate":{
+        
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.settings.lastDataResetDate = message.data.objectData.value;
+          return { globalData };
+        });
+        break;
 
-              break;
-            }
-          }
-
-          break;
-        }
-
-        case "object-data":{
-
-          switch(message.data.objectStoreName){
-            case "settings": {
-
-              console.log("App Message received settings-data: ", message);
-              // sending a response
-              sendResponse({
-                  status: "ACK"
-              });
-
-              switch(message.data.objectData.property){
-                case "lastDataResetDate":{
-                  
-                  this.setState(prevState => {
-                    let globalData = Object.assign({}, prevState.globalData);
-                    globalData.settings.lastDataResetDate = message.data.objectData.value;
-                    return { globalData };
-                  });
-                  break;
-
-                }
-
-                case "notifications":{
-                  
-                  this.setState(prevState => {
-                    let globalData = Object.assign({}, prevState.globalData);
-                    globalData.settings.notifications = message.data.objectData.value;
-                    return { globalData };
-                  });
-                  break;
-
-                }
-              }
-
-              break;
-            }
-          }
-
-          break;
-
-        }
       }
 
+      case "notifications":{
+        
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.settings.notifications = message.data.objectData.value;
+          return { globalData };
+        });
+        break;
+
+      }
+    }
+
+  }
+
+  onAppParamsDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // setting the new value
+    this.setState(prevState => {
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.appParams = message.data.objectData;
+      return { globalData };
     });
+
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.SEARCHES].join(messageParameters.separator), 
+        callback: this.onSearchesDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        callback: this.onBookmarksDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        callback: this.onKeywordsDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        callback: this.onRemindersDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        callback: this.onSettingsDataReceived
+      },
+      {
+        param: [messageParameters.actionNames.GET_OBJECT, "app-params"].join(messageParameters.separator), 
+        callback: this.onAppParamsDataReceived
+      },
+    ]);
+
+    /*case "app-params-list":{
+      console.log("App Message received App Params List: ", message);
+      
+      break;
+    }*/
 
   }
 
