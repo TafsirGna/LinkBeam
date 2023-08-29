@@ -69,7 +69,11 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    this.setSearchList(message.data.objectData);
+    var context = message.data.objectData.context;    
+    if (context == "Activity"){
+      var listData = message.data.objectData.list;
+      this.setSearchList(listData);
+    }
 
   }
 

@@ -136,6 +136,18 @@ function initSettings(){
     });
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
 function getSearchProfiles(searches, context){
 
     if (searches.length == 0){
@@ -226,6 +238,8 @@ function getBookmarkList(){
 
 function getSearchList(params) {
 
+
+    var params = (params ? params : {});
     var offset = (params.offset ? params.offset : 0);
     var date = (params.date ? params.date : null);
     var context = params.context;
@@ -271,90 +285,6 @@ function getSearchList(params) {
     };
 }
 
-// Sorting the list before sending it
-// searches.sort((a,b) => a.date - b.date);
-// searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
-
-// Script for getting the count of any objectStore
-
-function getCount(objectStoreName, objectData){
-
-    switch(objectStoreName){
-        case keywordObjectStoreName:{
-            getKeywordCount(params);
-            break;
-        }
-
-        case reminderObjectStoreName:{
-            getReminderCount(params);
-            break;
-        }
-    }
-
-}
-
-
-// Script for getting reminder count
-
-function getReminderCount() {
-
-    var request = db
-                    .transaction(reminderObjectStoreName, "readonly")
-                    .objectStore(reminderObjectStoreName)
-                    .count();
-    request.onsuccess = (event) => {
-        console.log('Got reminder count:', event.target.result);
-        // Sending the retrieved data
-        var result = event.target.result;
-        sendBackResponse("OBJECT-COUNT", reminderObjectStoreName, result);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when counting reminders : ", event);
-    };
-}
-
-
-// Script for getting keyword count
-
-function getKeywordCount() {
-
-    var request = db
-                    .transaction(keywordObjectStoreName, "readonly")
-                    .objectStore(keywordObjectStoreName)
-                    .count();
-    request.onsuccess = (event) => {
-        console.log('Got keyword count:', event.target.result);
-        // Sending the retrieved data
-        var result = event.target.result;
-        sendBackResponse("OBJECT-COUNT", keywordObjectStoreName, result);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when counting keywords : ", event);
-    };
-}
-
-// Script for getting all saved searches
-
-function getKeywordList() {
-
-    let request = db
-                .transaction(keywordObjectStoreName, "readonly")
-                .objectStore(keywordObjectStoreName)
-                .getAll();
-
-    request.onsuccess = (event) => {
-        console.log('Got all keywords:', event.target.result);
-        // Sending the retrieved data
-        let results = event.target.result;
-        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when retrieving keyword list : ", event);
-    };
-}
 
 // Script for getting all saved searches
 
@@ -408,6 +338,143 @@ function getReminderList() {
     };
 }
 
+// Script for getting all saved searches
+
+function getKeywordList() {
+
+    let request = db
+                .transaction(keywordObjectStoreName, "readonly")
+                .objectStore(keywordObjectStoreName)
+                .getAll();
+
+    request.onsuccess = (event) => {
+        console.log('Got all keywords:', event.target.result);
+        // Sending the retrieved data
+        let results = event.target.result;
+        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving keyword list : ", event);
+    };
+}
+
+// Script for getting any objectStore list
+
+function getList(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case searchObjectStoreName:{
+            getSearchList(objectData);
+            break;
+        }
+
+        case bookmarkObjectStoreName:{
+            getBookmarkList();
+            break;
+        }
+
+        case keywordObjectStoreName:{
+            getKeywordList();
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            getReminderList();
+            break;
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Script for count any object store elements
+
+function getObjectCount(objectStoreName, objectData){
+
+    switch(objectStoreName){
+
+        case keywordObjectStoreName:{
+            getKeywordCount(objectData);
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            getReminderCount(objectData);
+            break;
+        }
+    }
+
+}
+
+// Sorting the list before sending it
+// searches.sort((a,b) => a.date - b.date);
+// searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
+
+// Script for getting reminder count
+
+function getReminderCount() {
+
+    var request = db
+                    .transaction(reminderObjectStoreName, "readonly")
+                    .objectStore(reminderObjectStoreName)
+                    .count();
+    request.onsuccess = (event) => {
+        console.log('Got reminder count:', event.target.result);
+        // Sending the retrieved data
+        var result = event.target.result;
+        sendBackResponse("OBJECT-COUNT", reminderObjectStoreName, result);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when counting reminders : ", event);
+    };
+}
+
+
+// Script for getting keyword count
+
+function getKeywordCount() {
+
+    var request = db
+                    .transaction(keywordObjectStoreName, "readonly")
+                    .objectStore(keywordObjectStoreName)
+                    .count();
+    request.onsuccess = (event) => {
+        console.log('Got keyword count:', event.target.result);
+        // Sending the retrieved data
+        var result = event.target.result;
+        sendBackResponse("OBJECT-COUNT", keywordObjectStoreName, result);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when counting keywords : ", event);
+    };
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Script for adding a new search
 
 function add_search(search) {
@@ -426,7 +493,6 @@ function add_search_data(searchData){
     const request = objectStore.add(searchData);
     request.onsuccess = (event) => {
         console.log("New search data added");
-        // getSearchList({});
     };
 
     request.onerror = (event) => {
@@ -454,23 +520,6 @@ function addReminderObject(reminder){
 
 }
 
-// Script for deleting a reminder
-
-function deleteReminderObject(reminderData){
-
-    const objectStore = db.transaction(reminderObjectStoreName, "readwrite").objectStore(reminderObjectStoreName);
-    const request = objectStore.delete(reminderData);
-    request.onsuccess = (event) => {
-        console.log("A reminder deleting");
-        sendBackResponse("DELETE", reminderObjectStoreName, reminderData);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when deleting a reminder ", event);
-    };
-
-}
-
 // Script for adding a bookmark
 
 function addBookmarkObject(url){
@@ -487,79 +536,6 @@ function addBookmarkObject(url){
     request.onerror = (event) => {
         console.log("An error occured when adding a bookmark");
     };
-
-}
-
-// Script for deleting a bookmark 
-
-function deleteBookmarkObject(bookmarkData){
-
-    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
-    const request = objectStore.delete(bookmarkData);
-    request.onsuccess = (event) => {
-        console.log("Bookmark deleted");
-        sendBackResponse("DELETE", bookmarkObjectStoreName, bookmarkData)
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when deleting a bookmark");
-    };
-
-}
-
-// Script for getting any objectStore list
-
-function getList(objectStoreName, params){
-
-    switch(objectStoreName){
-        case searchObjectStoreName:{
-            getSearchList(params);
-            break;
-        }
-
-        case bookmarkObjectStoreName:{
-            getBookmarkList();
-            break;
-        }
-
-        case keywordObjectStoreName:{
-            getKeywordList();
-            break;
-        }
-
-        case reminderObjectStoreName:{
-            getReminderList();
-            break;
-        }
-    }
-
-}
-
-
-// Script for getting any object instance
-
-function getObject(objectStoreName, objectData){
-
-    switch(objectStoreName){
-        case profileObjectStoreName:{
-            getProfileObject(objectData);
-            break;
-        }
-
-        case settingObjectStoreName:{
-            getSettingsData(objectData);
-            break;
-        }
-
-        case "feedback": {
-            getFeedbackData(objectData);
-            break;
-        }
-
-        case "app-params": {
-            sendBackResponse("GET-OBJECT", "app-params", appParams);
-        }
-    }
 
 }
 
@@ -583,187 +559,6 @@ function addObject(objectStoreName, objectData){
             break;
         }
     }
-
-}
-
-// Script for deleting any object instance
-
-function deleteObject(objectStoreName, objectData){
-
-    switch(objectStoreName){
-        case bookmarkObjectStoreName:{
-            deleteBookmarkObject(objectData);
-            break;
-        }
-
-        case keywordObjectStoreName:{
-            deleteKeywordObject(objectData);
-            break;
-        }
-
-        case reminderObjectStoreName:{
-            deleteReminderObject(objectData);
-            break;
-        }
-
-        case "all":{
-            truncateDB();
-            break;
-        }
-    }
-
-}
-
-// Script for count any object store elements
-
-function getObjectCount(objectStoreName, objectData){
-
-    switch(objectStoreName){
-
-        case keywordObjectStoreName:{
-            getKeywordCount(objectData);
-            break;
-        }
-
-        case reminderObjectStoreName:{
-            getReminderCount(objectData);
-            break;
-        }
-    }
-
-}
-
-// Script for getting processed data usually for statistics
-
-function getProcessedData(objectStoreName, objectData){
-
-    switch(objectStoreName){
-
-        case "views-timeline-chart":{
-            getViewsTimelineData(objectData);
-            break;
-        }
-
-    }
-
-}
-
-// Script for updating any object instance
-
-function updateObject(objectStoreName, objectData){
-
-    switch(objectStoreName){
-        case settingObjectStoreName:{
-            updateSettingObject(objectData.property, objectData.value);
-            break;
-        }
-
-        case profileObjectStoreName: {
-            updateProfileObject(objectData);
-            break;
-        }
-    }
-
-}
-
-// Script for sending back responses
-
-function sendBackResponse(action, objectStoreName, data){
-
-    let responseData = {objectStoreName: objectStoreName, objectData: data};
-
-    switch(action){
-        case "ADD": {
-            header = 'object-added';
-            break;
-        }
-
-        case "GET-OBJECT": {
-            header = 'object-data';
-            break;
-        }
-
-        case "DELETE": {
-            header = 'object-deleted';
-            break;
-        }
-
-        case "OBJECT-LIST": {
-            header = 'object-list';
-            break;
-        }
-
-        case "OBJECT-COUNT": {
-            header = 'object-count';
-            break;
-        }
-
-        case "GET-PROCESSED-DATA": {
-            header = 'processed-data';
-            break;
-        }
-    }
-
-    chrome.runtime.sendMessage({header: header, data: responseData}, (response) => {
-      console.log(action + " " + objectStoreName + ' response sent', response, responseData);
-    });
-}
-
-
-// Script for providing a profile given its url
-
-function getProfileObject(url){
-
-    let objectStore = db.transaction(profileObjectStoreName, "readonly").objectStore(profileObjectStoreName);
-    let request = objectStore.get(url);
-
-    request.onsuccess = (event) => {
-
-        let profile = event.target.result;
-        profile.bookmark = null;
-        profile.reminder = null;
-
-        let bookmarkObjectStore = db.transaction(bookmarkObjectStoreName, "readonly").objectStore(bookmarkObjectStoreName);
-        let bookmarkRequest = bookmarkObjectStore.get(url);
-
-        bookmarkRequest.onsuccess = (event) => {
-
-            let bookmark = event.target.result;
-
-            if (bookmark != undefined){
-                profile.bookmark = bookmark;
-            }
-
-            let reminderObjectStore = db.transaction(reminderObjectStoreName, "readonly").objectStore(reminderObjectStoreName);
-            let reminderRequest = reminderObjectStore.get(url);
-
-            reminderRequest.onsuccess = (event) => {
-
-                let reminder = event.target.result;
-                if (reminder != undefined){
-                    profile.reminder = reminder;
-                }
-                sendBackResponse("GET-OBJECT", profileObjectStoreName, profile);
-
-            };
-
-            bookmarkRequest.onerror = (event) => {
-                // Handle errors!
-                console.log("An error occured when retrieving the reminder with url : ", url);
-            };
-
-        };
-
-        bookmarkRequest.onerror = (event) => {
-            // Handle errors!
-            console.log("An error occured when retrieving the bookmark with url : ", url);
-        };
-    };
-
-    request.onerror = (event) => {
-        // Handle errors!
-        console.log("An error occured when retrieving the profile with url : ", profile.url);
-    };
 
 }
 
@@ -831,6 +626,80 @@ function addKeywordObject(keywordData) {
 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+// Script for deleting a reminder
+
+function deleteReminderObject(reminderData){
+
+    const objectStore = db.transaction(reminderObjectStoreName, "readwrite").objectStore(reminderObjectStoreName);
+    const request = objectStore.delete(reminderData);
+    request.onsuccess = (event) => {
+        console.log("A reminder deleting");
+        sendBackResponse("DELETE", reminderObjectStoreName, reminderData);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when deleting a reminder ", event);
+    };
+
+}
+
+// Script for deleting a bookmark 
+
+function deleteBookmarkObject(bookmarkData){
+
+    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
+    const request = objectStore.delete(bookmarkData);
+    request.onsuccess = (event) => {
+        console.log("Bookmark deleted");
+        sendBackResponse("DELETE", bookmarkObjectStoreName, bookmarkData)
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when deleting a bookmark");
+    };
+
+}
+
+// Script for deleting any object instance
+
+function deleteObject(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case bookmarkObjectStoreName:{
+            deleteBookmarkObject(objectData);
+            break;
+        }
+
+        case keywordObjectStoreName:{
+            deleteKeywordObject(objectData);
+            break;
+        }
+
+        case reminderObjectStoreName:{
+            deleteReminderObject(objectData);
+            break;
+        }
+
+        case "all":{
+            truncateDB();
+            break;
+        }
+    }
+
+}
+
 // Script for deleting a keyword
 
 function deleteKeywordObject(keywordData) {
@@ -849,6 +718,259 @@ function deleteKeywordObject(keywordData) {
           console.log('Delete keyword error message sent', response);
         });
     }
+}
+
+// Script for truncating the database 
+
+function truncateDB(){
+
+    // Erasing all data
+    const data = db.objectStoreNames;
+    let objectStoreNames = [];
+    for (var key in data){
+        if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
+            objectStoreNames.push(data[key]);
+        }
+    }
+    clearObjectStores(objectStoreNames);
+    
+}
+
+// Script for clearing an objectStore
+
+function clearObjectStores(objectStoreNames){
+
+    if (objectStoreNames.length == 0){
+        // updating the last reset date before notifying the content script
+        updateSettingObject("lastDataResetDate", (new Date()).toISOString());
+        return;
+    }
+
+    const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
+    objectStore.clear().onsuccess = (event) => {
+        // Clearing the next objectStore
+        getList(objectStoreNames[0], null);
+        objectStoreNames.shift()
+        clearObjectStores(objectStoreNames)
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Script for getting any object instance
+
+function getObject(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case profileObjectStoreName:{
+            getProfileObject(objectData);
+            break;
+        }
+
+        case settingObjectStoreName:{
+            getSettingsData(objectData);
+            break;
+        }
+
+        case "feedback": {
+            getFeedbackData(objectData);
+            break;
+        }
+
+        case "app-params": {
+            sendBackResponse("GET-OBJECT", "app-params", appParams);
+        }
+    }
+
+}
+
+// Script for getting processed data usually for statistics
+
+function getProcessedData(objectStoreName, objectData){
+
+    switch(objectStoreName){
+
+        case "views-timeline-chart":{
+            getViewsTimelineData(objectData);
+            break;
+        }
+
+    }
+
+}
+
+// Script for providing a profile given its url
+
+function getProfileObject(url){
+
+    let objectStore = db.transaction(profileObjectStoreName, "readonly").objectStore(profileObjectStoreName);
+    let request = objectStore.get(url);
+
+    request.onsuccess = (event) => {
+
+        let profile = event.target.result;
+        profile.bookmark = null;
+        profile.reminder = null;
+
+        let bookmarkObjectStore = db.transaction(bookmarkObjectStoreName, "readonly").objectStore(bookmarkObjectStoreName);
+        let bookmarkRequest = bookmarkObjectStore.get(url);
+
+        bookmarkRequest.onsuccess = (event) => {
+
+            let bookmark = event.target.result;
+
+            if (bookmark != undefined){
+                profile.bookmark = bookmark;
+            }
+
+            let reminderObjectStore = db.transaction(reminderObjectStoreName, "readonly").objectStore(reminderObjectStoreName);
+            let reminderRequest = reminderObjectStore.get(url);
+
+            reminderRequest.onsuccess = (event) => {
+
+                let reminder = event.target.result;
+                if (reminder != undefined){
+                    profile.reminder = reminder;
+                }
+                sendBackResponse("GET-OBJECT", profileObjectStoreName, profile);
+
+            };
+
+            bookmarkRequest.onerror = (event) => {
+                // Handle errors!
+                console.log("An error occured when retrieving the reminder with url : ", url);
+            };
+
+        };
+
+        bookmarkRequest.onerror = (event) => {
+            // Handle errors!
+            console.log("An error occured when retrieving the bookmark with url : ", url);
+        };
+    };
+
+    request.onerror = (event) => {
+        // Handle errors!
+        console.log("An error occured when retrieving the profile with url : ", profile.url);
+    };
+
+}
+
+// Script for providing setting data
+
+function getSettingsData(properties){
+    
+    var request = db
+                    .transaction(settingObjectStoreName, "readonly")
+                    .objectStore(settingObjectStoreName)
+                    .get(1);
+
+    request.onsuccess = (event) => {
+        console.log('Got settings:', event.target.result);
+        // Sending the retrieved data
+        let settings = event.target.result;
+        properties.forEach((property) => {
+            sendBackResponse("GET-OBJECT", settingObjectStoreName, {property: property, value: settings[property]});
+        });
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when getting the settings data");
+    };
+}
+
+// Script for providing search chart data
+
+function getViewsTimelineData(chartData){
+
+    let results = [];
+    for (let i = 0; i < chartData.length; i++){
+        results.push(0);
+    }
+
+    // populating the chart data Array
+    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
+    cursor.onsuccess = function(event) {
+        var cursor = event.target.result;
+
+        if(!cursor) {
+            sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+            return;
+        }
+
+        let searchDate = cursor.value.date.split("T")[0];
+        if (typeof chartData[0] == "string"){
+
+            let index = chartData.indexOf(searchDate);
+
+            if (index == -1){
+                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+                return;
+            }
+            
+            results[index]++;
+        }
+        else{ // if object
+            searchDate = new Date(searchDate);
+            var found = false;
+            for (var i = (chartData.length - 1); i >= 0 ; i--){
+                if ((new Date((chartData[i]).beg)) < searchDate && searchDate <= (new Date((chartData[i]).end))){
+                    results[i]++;
+                    found = true;
+                }
+            }
+
+            if (!found){
+                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+                return;
+            }
+        }
+        
+
+        cursor.continue();        
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Script for updating any object instance
+
+function updateObject(objectStoreName, objectData){
+
+    switch(objectStoreName){
+        case settingObjectStoreName:{
+            updateSettingObject(objectData.property, objectData.value);
+            break;
+        }
+
+        case profileObjectStoreName: {
+            updateProfileObject(objectData);
+            break;
+        }
+    }
+
 }
 
 // Script for updating a profile object
@@ -936,114 +1058,59 @@ function updateSettingObject(propKey, propValue){
     };
 } 
 
-// Script for truncating the database 
 
-function truncateDB(){
 
-    // Erasing all data
-    const data = db.objectStoreNames;
-    let objectStoreNames = [];
-    for (var key in data){
-        if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
-            objectStoreNames.push(data[key]);
-        }
-    }
-    clearObjectStores(objectStoreNames);
-    
-}
 
-// Script for clearing an objectStore
 
-function clearObjectStores(objectStoreNames){
-    if (objectStoreNames.length == 0){
-        // updating the last reset date before notifying the content script
-        updateSettingObject("lastDataResetDate", (new Date().toISOString()));
-        return;
-    }
 
-    const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
-    objectStore.clear().onsuccess = (event) => {
-        // Clearing the next objectStore
-        getList(objectStoreNames[0], null);
-        objectStoreNames.shift()
-        clearObjectStores(objectStoreNames)
-    }
-}
 
-// Script for providing setting data
 
-function getSettingsData(properties){
-    
-    var request = db
-                    .transaction(settingObjectStoreName, "readonly")
-                    .objectStore(settingObjectStoreName)
-                    .get(1);
 
-    request.onsuccess = (event) => {
-        console.log('Got settings:', event.target.result);
-        // Sending the retrieved data
-        let settings = event.target.result;
-        properties.forEach((property) => {
-            sendBackResponse("GET-OBJECT", settingObjectStoreName, {property: property, value: settings[property]});
-        });
-    };
 
-    request.onerror = (event) => {
-        console.log("An error occured when getting the settings data");
-    };
-}
 
-// Script for providing search chart data
 
-function getViewsTimelineData(chartData){
 
-    let results = [];
-    for (let i = 0; i < chartData.length; i++){
-        results.push(0);
-    }
+// Script for sending back responses
 
-    // populating the chart data Array
-    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
-    cursor.onsuccess = function(event) {
-        var cursor = event.target.result;
+function sendBackResponse(action, objectStoreName, data){
 
-        if(!cursor) {
-            sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
-            return;
+    let responseData = {objectStoreName: objectStoreName, objectData: data};
+
+    switch(action){
+        case "ADD": {
+            header = 'object-added';
+            break;
         }
 
-        let searchDate = cursor.value.date.split("T")[0];
-        if (typeof chartData[0] == "string"){
-
-            let index = chartData.indexOf(searchDate);
-
-            if (index == -1){
-                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
-                return;
-            }
-            
-            results[index]++;
+        case "GET-OBJECT": {
+            header = 'object-data';
+            break;
         }
-        else{ // if object
-            searchDate = new Date(searchDate);
-            var found = false;
-            for (var i = (chartData.length - 1); i >= 0 ; i--){
-                if ((new Date((chartData[i]).beg)) < searchDate && searchDate <= (new Date((chartData[i]).end))){
-                    results[i]++;
-                    found = true;
-                }
-            }
 
-            if (!found){
-                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
-                return;
-            }
+        case "DELETE": {
+            header = 'object-deleted';
+            break;
         }
-        
 
-        cursor.continue();        
+        case "OBJECT-LIST": {
+            header = 'object-list';
+            break;
+        }
+
+        case "OBJECT-COUNT": {
+            header = 'object-count';
+            break;
+        }
+
+        case "GET-PROCESSED-DATA": {
+            header = 'processed-data';
+            break;
+        }
     }
 
+    chrome.runtime.sendMessage({header: header, data: responseData}, (response) => {
+      console.log(action + " " + objectStoreName + ' response sent', response, responseData);
+    });
 }
 
 // Script for processing linkedin data

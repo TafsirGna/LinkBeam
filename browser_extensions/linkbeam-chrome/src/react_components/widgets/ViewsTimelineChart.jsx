@@ -78,8 +78,6 @@ export default class ViewsTimelineChart extends React.Component{
 		// acknowledge receipt
 		ack(sendResponse);
 
-		console.log("??????????????????????????????? : ", this.state.lineLabels.titles);
-
 		let labels = this.state.lineLabels.titles;
 		var colors = getChartColors(labels.length);
 
