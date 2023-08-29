@@ -33,7 +33,6 @@ export default class App extends React.Component{
         bookmarkList: null,
         reminderList: null,
         searchList: null,
-        appParams: null,
         settings: {},
       }
     };
@@ -44,7 +43,6 @@ export default class App extends React.Component{
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
-    this.onAppParamsDataReceived = this.onAppParamsDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -150,20 +148,6 @@ export default class App extends React.Component{
 
   }
 
-  onAppParamsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    this.setState(prevState => {
-      let globalData = Object.assign({}, prevState.globalData);
-      globalData.appParams = message.data.objectData;
-      return { globalData };
-    });
-
-  }
-
   listenToMessages(){
 
     startMessageListener([
@@ -186,10 +170,6 @@ export default class App extends React.Component{
       {
         param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
         callback: this.onSettingsDataReceived
-      },
-      {
-        param: [messageParameters.actionNames.GET_OBJECT, "app-params"].join(messageParameters.separator), 
-        callback: this.onAppParamsDataReceived
       },
     ]);
 
@@ -236,7 +216,7 @@ export default class App extends React.Component{
                     <Navigate replace to={"/index.html/Calendar"} />
                     : <Activity globalData={this.state.globalData} />
             }/>
-            <Route path="/index.html/About" element={<About globalData={this.state.globalData} />} />
+            <Route path="/index.html/About" element={<About />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
             <Route path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
             <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />

@@ -2,6 +2,7 @@
 import React from 'react';
 import Toast from 'react-bootstrap/Toast';
 import ToastContainer from 'react-bootstrap/ToastContainer';
+import { appParams } from "../Local_library";
 
 export default class CustomToast extends React.Component{
 
@@ -31,7 +32,7 @@ export default class CustomToast extends React.Component{
                 className="rounded me-2"
                 alt=""
               />
-              <strong className="me-auto">LinkBeam</strong>
+              <strong className="me-auto">{appParams.appName}</strong>
               <small>{/*11 mins ago*/}</small>
             </Toast.Header>
             <Toast.Body>{this.props.message}</Toast.Body>

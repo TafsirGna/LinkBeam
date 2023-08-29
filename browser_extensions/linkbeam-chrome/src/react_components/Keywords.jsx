@@ -6,7 +6,8 @@ import {
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
   startMessageListener, 
-  ack, messageParameters
+  ack, messageParameters,
+  appParams
 } from "./Local_library";
 
 
@@ -37,7 +38,7 @@ export default class Keywords extends React.Component{
 
     // setting the keyword count limit
     this.setState({
-      keywordCountLimit: this.props.globalData.appParams.keywordCountLimit
+      keywordCountLimit: appParams.keywordCountLimit
     }); 
 
     // setting the local variable with the global data

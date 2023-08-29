@@ -11,7 +11,8 @@ import {
   sendDatabaseActionMessage, 
   ack, 
   startMessageListener,
-  messageParameters
+  messageParameters,
+  appParams
   } from "./Local_library";
 
 export default class Activity extends React.Component{
@@ -180,7 +181,7 @@ export default class Activity extends React.Component{
       return;
     }
 
-    if (listData.length < this.props.globalData.appParams.searchPageLimit){
+    if (listData.length < appParams.searchPageLimit){
       this.setState({searchLeft: false});
     }
 

@@ -3,7 +3,10 @@ import React from 'react';
 import app_logo from '../assets/app_logo.svg';
 import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { saveCurrentPageTitle } from "./Local_library";
+import { 
+  saveCurrentPageTitle, 
+  appParams,
+} from "./Local_library";
 import { Link } from 'react-router-dom';
 
 export default class About extends React.Component{
@@ -28,8 +31,8 @@ export default class About extends React.Component{
           <div class="text-center">
             <img src={app_logo}  alt=""/>
             <p class="fw-bold mt-2">
-              LinkBeam 
-              <span class="badge text-bg-primary ms-1 shadow">{this.props.globalData.appParams.appVersion}</span>
+              {appParams.appName}
+              <span class="badge text-bg-primary ms-1 shadow">{appParams.appVersion}</span>
               <OverlayTrigger
                 placement="bottom"
                 overlay={<Tooltip id="tooltip1">Privacy by design {/*Incognito by design*/}</Tooltip>}

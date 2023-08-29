@@ -1,4 +1,7 @@
 // Script of extension database creation
+import { 
+  appParams
+} from "./react_components/Local_library";
 
 let db = null;
 const searchObjectStoreName = "searches";
@@ -8,7 +11,7 @@ const profileObjectStoreName = "profiles";
 const reminderObjectStoreName = "reminders";
 const notificationObjectStoreName = "notifications";
 const bookmarkObjectStoreName = "bookmarks";
-const appParams = {appVersion: "0.1.0", keywordCountLimit: 5, searchPageLimit: 2, bookmarkCountLimit: 5};
+
 const settingData = [{
     id: 1,
     notifications: true,
@@ -787,10 +790,6 @@ function getObject(objectStoreName, objectData){
             getFeedbackData(objectData);
             break;
         }
-
-        case "app-params": {
-            sendBackResponse("GET-OBJECT", "app-params", appParams);
-        }
     }
 
 }
@@ -1255,10 +1254,10 @@ function processTabEvent(tabId, changeInfo, tab){
 
         /*chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            files: ["./assets/bootstrap.min.css", "./assets/bootstrap.min.js", "content.js"]
+            files: ["ui-injection.js"]
         });*/
 
-        processLinkedInData({});
+        // processLinkedInData({});
     }
 };
 

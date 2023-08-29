@@ -1,3 +1,11 @@
+export const appParams = {
+  appName: "LinkBeam",
+  appVersion: "0.1.0", 
+  keywordCountLimit: 5, 
+  searchPageLimit: 2, 
+  bookmarkCountLimit: 5
+}
+
 export const stickColors = ['rgba(255, 26, 104, 0.2)',
           'rgba(54, 162, 235, 0.2)',
           'rgba(255, 206, 86, 0.2)',
