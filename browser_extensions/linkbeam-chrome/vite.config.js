@@ -11,7 +11,7 @@ export default defineConfig({
       input: {
         index: resolve(__dirname, 'index.html'),
         web_ui: resolve(__dirname, 'web_ui.html'),
-        service_worker: resolve(__dirname, 'src/service-worker.js'),
+        service_worker: resolve(__dirname, 'src/service-worker.mjs'),
       },
     },
   },

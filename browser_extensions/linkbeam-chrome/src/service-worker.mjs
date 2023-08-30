@@ -23,7 +23,7 @@ const settingData = [{
 
 function createDatabase(context) {
 
-    const dbName = "LinkBeamDB"
+    const dbName = "LinkBeamDB";
     const request = indexedDB.open(dbName, 1);
 
     request.onerror = function (event) {
@@ -1074,6 +1074,7 @@ function updateSettingObject(propKey, propValue){
 function sendBackResponse(action, objectStoreName, data){
 
     let responseData = {objectStoreName: objectStoreName, objectData: data};
+    var header = null;
 
     switch(action){
         case "ADD": {
@@ -1149,7 +1150,7 @@ function processLinkedInData(linkedInData){
 
 function processMessageEvent(message, sender, sendResponse){
 
-    console.log("Message received : ", message)
+    console.log("Message received : ", message);
     // Script for getting all the searches done so far
     switch(message.header){
 
