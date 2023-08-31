@@ -17,7 +17,8 @@ import {
   sendDatabaseActionMessage,
   ack,
   startMessageListener, 
-  messageParameters 
+  messageParams,
+  dbData
 } from "./react_components/Local_library";
 
 
@@ -56,9 +57,6 @@ export default class App extends React.Component{
 
     this.setState({profileUrlValue: profileUrlValue});
     this.setState({calendarView: calendarView});
-
-    // Getting the app parameters
-    sendDatabaseActionMessage("get-object", "app-params", null);
 
   }
 
@@ -152,32 +150,26 @@ export default class App extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.SEARCHES].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarksDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onRemindersDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
     ]);
-
-    /*case "app-params-list":{
-      console.log("App Message received App Params List: ", message);
-      
-      break;
-    }*/
 
   }
 

@@ -6,7 +6,8 @@ import {
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
   startMessageListener, 
-  ack, messageParameters,
+  ack, messageParams,
+  dbData,
   appParams
 } from "./Local_library";
 
@@ -50,7 +51,7 @@ export default class Keywords extends React.Component{
 
     saveCurrentPageTitle("Keywords");
 
-    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.KEYWORDS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, null);
 
   }
 
@@ -92,7 +93,7 @@ export default class Keywords extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       }
     ]);
@@ -112,7 +113,7 @@ export default class Keywords extends React.Component{
       this.setState({processingState: {status: "YES", info: "DELETING"}});
 
       if (response){
-        sendDatabaseActionMessage("delete-object", messageParameters.actionObjectNames.KEYWORDS, keyword.name);
+        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, keyword.name);
       }
     }
   }
@@ -134,7 +135,7 @@ export default class Keywords extends React.Component{
       // cleaning the keyword input
       this.setState({keyword: ""});
       
-      sendDatabaseActionMessage("add-object", messageParameters.actionObjectNames.KEYWORDS, this.state.keyword)
+      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, this.state.keyword)
     }
   }
 

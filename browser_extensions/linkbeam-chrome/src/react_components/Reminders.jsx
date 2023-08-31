@@ -6,7 +6,8 @@ import {
   sendDatabaseActionMessage,
   ack,
   startMessageListener, 
-  messageParameters 
+  messageParams,
+  dbData 
 } from "./Local_library";
 import moment from 'moment';
 
@@ -36,7 +37,7 @@ export default class Reminders extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle("Reminders");
 
-    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.REMINDERS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, null);
 
   }
 
@@ -54,7 +55,7 @@ export default class Reminders extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onRemindersDataReceived
       },
     ]);

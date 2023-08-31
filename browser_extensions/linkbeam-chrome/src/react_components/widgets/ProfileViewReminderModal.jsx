@@ -3,7 +3,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { sendDatabaseActionMessage, startMessageListener, messageParameters, ack } from "../Local_library";
+import { sendDatabaseActionMessage, startMessageListener, messageParams, ack, dbData } from "../Local_library";
 
 export default class ProfileViewReminderModal extends React.Component{
 
@@ -23,7 +23,7 @@ export default class ProfileViewReminderModal extends React.Component{
   saveReminder(){
 
     var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
-    sendDatabaseActionMessage("add-object", messageParameters.actionObjectNames.REMINDERS, reminder);
+    sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.REMINDERS, reminder);
 
   }
 

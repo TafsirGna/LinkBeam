@@ -4,7 +4,7 @@ import CustomToast from "./CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./ProfileViewReminderModal";
-import { sendDatabaseActionMessage, startMessageListener, ack, messageParameters } from "../Local_library";
+import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
 
 export default class ProfileView extends React.Component{
 
@@ -75,19 +75,19 @@ export default class ProfileView extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onReminderAdditionDataReceived
       },
       {
-        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkAdditionDataReceived
       },
       {
-        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onReminderDeletionDataReceived
       },
       {
-        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkDeletionDataReceived
       }
     ]);
@@ -103,7 +103,7 @@ export default class ProfileView extends React.Component{
     if (this.props.profile.reminder){
       var response = confirm("Do you confirm the deletion of the reminder ?");
       if (response){
-        sendDatabaseActionMessage("delete-object", messageParameters.actionObjectNames.REMINDERS, this.props.profile.url);
+        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, this.props.profile.url);
       }
     } 
     else{
@@ -116,14 +116,14 @@ export default class ProfileView extends React.Component{
     let action = null;
     if (this.props.profile.bookmark){
       //
-      action = "delete-object";
+      action = messageParams.requestHeaders.DEL_OBJECT;
     }
     else{
       //
-      action = "add-object"
+      action = messageParams.requestHeaders.ADD_OBJECT;
     }
 
-    sendDatabaseActionMessage(action, "bookmarks", this.props.profile.url);
+    sendDatabaseActionMessage(action, dbData.objectStoreNames.BOOKMARKS, this.props.profile.url);
 
   }
 

@@ -1,7 +1,7 @@
 /*import './Profile.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
-import { sendDatabaseActionMessage, startMessageListener, ack, messageParameters } from "./Local_library";
+import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "./Local_library";
 
 export default class Profile extends React.Component{
 
@@ -28,7 +28,7 @@ export default class Profile extends React.Component{
     const profileUrl = urlParams.get("profile-url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.PROFILES, profileUrl);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.PROFILES, profileUrl);
 
   }
 
@@ -102,23 +102,23 @@ export default class Profile extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onReminderAdditionDataReceived
       },
       {
-        param: [messageParameters.actionNames.ADD_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkAdditionDataReceived
       },
       {
-        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onReminderDeletionDataReceived
       },
       {
-        param: [messageParameters.actionNames.DEL_OBJECT, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkDeletionDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.PROFILES].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
         callback: this.onProfileDataReceived
       },
     ]);

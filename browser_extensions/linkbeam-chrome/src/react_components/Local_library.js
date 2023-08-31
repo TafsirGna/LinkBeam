@@ -6,40 +6,60 @@ export const appParams = {
   bookmarkCountLimit: 5
 }
 
-export const stickColors = ['rgba(255, 26, 104, 0.2)',
+export const dbData = {
+  objectStoreNames: {
+    SEARCHES: "searches",
+    BOOKMARKS: "bookmarks",
+    SETTINGS: "settings",
+    REMINDERS: "reminders",
+    KEYWORDS: "keywords",
+    PROFILES: "profiles",
+    NOTIFICATIONS: "notifications",
+  }
+}
+
+export const chartData = {
+
+  stickColors: ['rgba(255, 26, 104, 0.2)',
           'rgba(54, 162, 235, 0.2)',
           'rgba(255, 206, 86, 0.2)',
           'rgba(75, 192, 192, 0.2)',
           'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'];
+          'rgba(255, 159, 64, 0.2)'],
 
-export const stickBorderColors = [
+  stickBorderColors: [
           'rgba(255, 26, 104, 1)',
           'rgba(54, 162, 235, 1)',
           'rgba(255, 206, 86, 1)',
           'rgba(75, 192, 192, 1)',
           'rgba(153, 102, 255, 1)',
           'rgba(255, 159, 64, 1)'
-        ];
+        ],
 
-export const messageParameters = {
+}
 
-  actionObjectNames: {
-    SEARCHES: "searches",
-    BOOKMARKS: "bookmarks",
-    SETTINGS: "settings",
-    REMINDERS: "reminders",
-    KEYWORDS: "keywords",
-    PROFILES: "profiles"
+export const messageParams = {
+
+  requestHeaders: {
+    GET_LIST: "get-list",
+    GET_COUNT: "get-count",
+    GET_OBJECT: "get-object",
+    ADD_OBJECT: "add-object",
+    DEL_OBJECT: "delete-object",
+    GET_PROCESSED_DATA: "get-processed-data",
+    UPDATE_OBJECT: "update-object",
   },
-  actionNames: {
-    GET_LIST: "object-list",
-    GET_COUNT: "object-count",
-    GET_OBJECT: "object-data",
-    ADD_OBJECT: "object-added",
-    DEL_OBJECT: "object-deleted",
-    GET_PROCESSED_DATA: "processed-data",
+
+  responseHeaders: {
+    OBJECT_LIST: "object-list",
+    OBJECT_COUNT: "object-count",
+    OBJECT_DATA: "object-data",
+    OBJECT_ADDED: "object-added",
+    OBJECT_UPDATED: "object-updated",
+    OBJECT_DELETED: "object-deleted",
+    PROCESSED_DATA: "processed-data",
   },
+
   separator: "|",
 
 };
@@ -47,7 +67,7 @@ export const messageParameters = {
 export function saveCurrentPageTitle(pageTitle){
 
   // Saving the current page title
-  sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "currentPageTitle", value: pageTitle});
+  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "currentPageTitle", value: pageTitle});
 
 }
 
@@ -82,7 +102,7 @@ export function shuffle(array) {
 export function getChartColors(length){
 
   var indices = [];
-  for (var i = 0; i < stickColors.length; i++){
+  for (var i = 0; i < chartData.stickColors.length; i++){
     indices.push(i);
   }
 
@@ -90,8 +110,8 @@ export function getChartColors(length){
 
   let backgrounds = []; let borders = [];
   for (var i = 0; i < length; i++){
-    backgrounds.push(stickColors.at(i));
-    borders.push(stickBorderColors.at(i));
+    backgrounds.push(chartData.stickColors.at(i));
+    borders.push(chartData.stickBorderColors.at(i));
   }
   
   return {borders: borders, backgrounds: backgrounds};
@@ -130,32 +150,32 @@ export function startMessageListener(listenerSettings){
 
     switch(message.header){
 
-      case "object-list":{
+      case messageParams.responseHeaders.OBJECT_LIST:{
 
         switch(message.data.objectStoreName){
 
-          case messageParameters.actionObjectNames.SEARCHES:{
+          case dbData.objectStoreNames.SEARCHES:{
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
             
             break;
           }
 
-          case messageParameters.actionObjectNames.BOOKMARKS: {
+          case dbData.objectStoreNames.BOOKMARKS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.KEYWORDS: {
+          case dbData.objectStoreNames.KEYWORDS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.REMINDERS: {
+          case dbData.objectStoreNames.REMINDERS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -165,31 +185,31 @@ export function startMessageListener(listenerSettings){
         
         break;
       }
-      case "object-count":{
+      case messageParams.responseHeaders.OBJECT_COUNT:{
 
         switch(message.data.objectStoreName){
-          /*case messageParameters.actionObjectNames.SEARCHES:{
+          /*case dbData.objectStoreNames.SEARCHES:{
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
             
             break;
           }*/
 
-          /*case messageParameters.actionObjectNames.BOOKMARKS: {
+          /*case dbData.objectStoreNames.BOOKMARKS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }*/
 
-          case messageParameters.actionObjectNames.KEYWORDS: {
+          case dbData.objectStoreNames.KEYWORDS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.REMINDERS: {
+          case dbData.objectStoreNames.REMINDERS: {
             
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -199,18 +219,18 @@ export function startMessageListener(listenerSettings){
         
         break;
       }
-      case "object-data":{
+      case messageParams.responseHeaders.OBJECT_DATA:{
 
         switch(message.data.objectStoreName){
 
-          case messageParameters.actionObjectNames.SETTINGS: {
+          case dbData.objectStoreNames.SETTINGS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.PROFILES: {
+          case dbData.objectStoreNames.PROFILES: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -228,18 +248,18 @@ export function startMessageListener(listenerSettings){
         break;
       }
 
-      case "object-added":{
+      case messageParams.responseHeaders.OBJECT_ADDED:{
 
         switch(message.data.objectStoreName){
 
-          case messageParameters.actionObjectNames.BOOKMARKS: {
+          case dbData.objectStoreNames.BOOKMARKS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.REMINDERS: {
+          case dbData.objectStoreNames.REMINDERS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -250,18 +270,18 @@ export function startMessageListener(listenerSettings){
         break;
       }
 
-      case "object-deleted":{
+      case messageParams.responseHeaders.OBJECT_DELETED:{
 
         switch(message.data.objectStoreName){
 
-          case messageParameters.actionObjectNames.BOOKMARKS: {
+          case dbData.objectStoreNames.BOOKMARKS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
             break;
           }
 
-          case messageParameters.actionObjectNames.REMINDERS: {
+          case dbData.objectStoreNames.REMINDERS: {
 
             switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
 
@@ -272,7 +292,7 @@ export function startMessageListener(listenerSettings){
         break;
       }
 
-      case "processed-data":{
+      case messageParams.responseHeaders.PROCESSED_DATA:{
 
         switch(message.data.objectStoreName){
 

@@ -5,8 +5,9 @@ import {
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
   ack,
-  messageParameters,
-  startMessageListener
+  messageParams,
+  startMessageListener,
+  dbData,
   } from "./Local_library";
 
 export default class Feedback extends React.Component{
@@ -32,7 +33,7 @@ export default class Feedback extends React.Component{
 
     this.listenToMessages();
 
-    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["feedback"]);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback"]);
 
     saveCurrentPageTitle("Feedback");
 
@@ -65,7 +66,7 @@ export default class Feedback extends React.Component{
 
     startMessageListener([,
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
     ]);
@@ -78,7 +79,7 @@ export default class Feedback extends React.Component{
       return;
     }
 
-    sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "feedback", value: this.state.feedback});
+    sendDatabaseActionMessage(messageParams.responseHeaders.OBJECT_UPDATED, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: this.state.feedback});
 
   }
 

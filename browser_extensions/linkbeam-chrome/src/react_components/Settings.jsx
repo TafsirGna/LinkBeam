@@ -8,7 +8,8 @@ import {
   sendDatabaseActionMessage,
   ack,
   startMessageListener, 
-  messageParameters 
+  messageParams,
+  dbData, 
 } from "./Local_library";
 
 export default class Settings extends React.Component{
@@ -51,13 +52,13 @@ export default class Settings extends React.Component{
     saveCurrentPageTitle("Settings");
 
     // Getting the keyword count
-    sendDatabaseActionMessage("get-count", messageParameters.actionObjectNames.KEYWORDS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, null);
 
     // Getting the reminder count
-    sendDatabaseActionMessage("get-count", messageParameters.actionObjectNames.REMINDERS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, null);
 
     // Knowing the previous status of the notification checkbox
-    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["notifications"]);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
   }
 
   onKeywordsDataReceived(message, sendResponse){
@@ -115,15 +116,15 @@ export default class Settings extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_COUNT, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_COUNT, messageParameters.actionObjectNames.REMINDERS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
         callback: this.onRemindersDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
     ]);
@@ -133,7 +134,7 @@ export default class Settings extends React.Component{
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "notifications", value: event.target.checked});
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "notifications", value: event.target.checked});
   }
 
   saveDarkThemeState(){
@@ -147,7 +148,7 @@ export default class Settings extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      sendDatabaseActionMessage("delete-object", "all", null);
+      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", null);
     }
   }
 

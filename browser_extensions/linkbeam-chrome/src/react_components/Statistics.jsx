@@ -10,7 +10,8 @@ import {
   sendDatabaseActionMessage,
   ack,
   startMessageListener,
-  messageParameters
+  messageParams,
+  dbData,
 } from "./Local_library";
 
 export default class Settings extends React.Component{
@@ -36,7 +37,7 @@ export default class Settings extends React.Component{
     this.listenToMessages();
     
     // Requesting the last reset date
-    sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["lastDataResetDate"]);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
 
     saveCurrentPageTitle("Statistics");
   }
@@ -60,7 +61,7 @@ export default class Settings extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       }
     ]);

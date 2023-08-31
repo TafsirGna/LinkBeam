@@ -2,7 +2,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParameters } from "../Local_library";
+import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParams } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -99,7 +99,7 @@ export default class ViewsTimelineChart extends React.Component{
 
 		startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_PROCESSED_DATA, "views-timeline-chart"].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart"].join(messageParams.separator), 
         callback: this.onProcessedDataReceived
       },
     ]);
@@ -180,7 +180,7 @@ export default class ViewsTimelineChart extends React.Component{
 	getChartData(){
 
 		// Requesting search chart data
-		sendDatabaseActionMessage("get-processed-data", "views-timeline-chart", this.state.lineLabels.values);
+		sendDatabaseActionMessage(messageParams.requestHeaders.GET_PROCESSED_DATA, "views-timeline-chart", this.state.lineLabels.values);
 
 	}
 

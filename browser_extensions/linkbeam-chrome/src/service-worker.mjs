@@ -1,16 +1,12 @@
 // Script of extension database creation
 import { 
-  appParams
+  appParams, 
+  dbData,
+  messageParams,
+  ack,
 } from "./react_components/Local_library";
 
 let db = null;
-const searchObjectStoreName = "searches";
-const keywordObjectStoreName = "keywords";
-const settingObjectStoreName = "settings";
-const profileObjectStoreName = "profiles";
-const reminderObjectStoreName = "reminders";
-const notificationObjectStoreName = "notifications";
-const bookmarkObjectStoreName = "bookmarks";
 
 const settingData = [{
     id: 1,
@@ -34,14 +30,14 @@ function createDatabase(context) {
         db = event.target.result;
 
         // Search object store
-        let searchObjectStore = db.createObjectStore(searchObjectStoreName, { autoIncrement: true });
+        let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { autoIncrement: true });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
         }
 
         // Profile Object store
-        let profileObjectStore = db.createObjectStore(profileObjectStoreName, { keyPath: "url" });
+        let profileObjectStore = db.createObjectStore(dbData.objectStoreNames.PROFILES, { keyPath: "url" });
 
         // profileObjectStore.createIndex("bookmarked", "bookmarked", { unique: false });
 
@@ -50,35 +46,35 @@ function createDatabase(context) {
         }
 
         // keyword Object store
-        let keywordObjectStore = db.createObjectStore(keywordObjectStoreName, { keyPath: "name" });
+        let keywordObjectStore = db.createObjectStore(dbData.objectStoreNames.KEYWORDS, { keyPath: "name" });
 
         keywordObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Keyword' created.");
         }
 
         // Reminder Object store
-        let reminderObjectStore = db.createObjectStore(reminderObjectStoreName, { keyPath: "url" });
+        let reminderObjectStore = db.createObjectStore(dbData.objectStoreNames.REMINDERS, { keyPath: "url" });
 
         reminderObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Reminder' created.");
         }
 
         // setting object store
-        let settingObjectStore = db.createObjectStore(settingObjectStoreName, { keyPath: "id" });
+        let settingObjectStore = db.createObjectStore(dbData.objectStoreNames.SETTINGS, { keyPath: "id" });
 
         settingObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Setting' created.");
         }
 
         // notification object store
-        let notificationObjectStore = db.createObjectStore(notificationObjectStoreName, { keyPath: "id" });
+        let notificationObjectStore = db.createObjectStore(dbData.objectStoreNames.NOTIFICATIONS, { keyPath: "id" });
 
         notificationObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Notification' created.");
         }
 
         // bookmarks object store
-        let bookmarkObjectStore = db.createObjectStore(bookmarkObjectStoreName, { keyPath: "url" });
+        let bookmarkObjectStore = db.createObjectStore(dbData.objectStoreNames.BOOKMARKS, { keyPath: "url" });
 
         bookmarkObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Bookmark' created.");
@@ -130,7 +126,7 @@ function initSettings(){
     // Checking first that the settings are already set 
 
     // if nothing is set then proceed to set it up
-    const objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.SETTINGS, "readwrite").objectStore(dbData.objectStoreNames.SETTINGS);
     settingData.forEach((setting) => {
       const request = objectStore.add(setting);
       request.onsuccess = (event) => {
@@ -154,14 +150,14 @@ function initSettings(){
 function getSearchProfiles(searches, context){
 
     if (searches.length == 0){
-        sendBackResponse("OBJECT-LIST", searchObjectStoreName, {context: context, list: searches});
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: searches});
         return;
     }
 
     // For each url, create a request to retrieve the corresponding profile
     let objectStore = db
-                        .transaction(profileObjectStoreName, "readonly")
-                        .objectStore(profileObjectStoreName);
+                        .transaction(dbData.objectStoreNames.PROFILES, "readonly")
+                        .objectStore(dbData.objectStoreNames.PROFILES);
     let results = [];
 
     searches.forEach((search) => {
@@ -177,7 +173,7 @@ function getSearchProfiles(searches, context){
             // keep going to the next search
             if(results.length == searches.length) {
                 // only continue if under limit
-                sendBackResponse("OBJECT-LIST", searchObjectStoreName, {context: context, list: results});
+                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: results});
             }
 
         };
@@ -194,8 +190,8 @@ function getSearchProfiles(searches, context){
 function getBookmarkList(){
 
     let request = db
-                    .transaction(bookmarkObjectStoreName, "readonly")
-                    .objectStore(bookmarkObjectStoreName)
+                    .transaction(dbData.objectStoreNames.BOOKMARKS, "readonly")
+                    .objectStore(dbData.objectStoreNames.BOOKMARKS)
                     .getAll();
     let results = [];
     request.onsuccess = (event) => {
@@ -204,14 +200,14 @@ function getBookmarkList(){
         var bookmarks = event.target.result;
 
         if (bookmarks.length == 0){
-            sendBackResponse("OBJECT-LIST", bookmarkObjectStoreName, results);
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
             return;
         }
 
         bookmarks.forEach((bookmark) => {
             let profileRequest = db
-                    .transaction(profileObjectStoreName, "readonly")
-                    .objectStore(profileObjectStoreName)
+                    .transaction(dbData.objectStoreNames.PROFILES, "readonly")
+                    .objectStore(dbData.objectStoreNames.PROFILES)
                     .get(bookmark.url);
             profileRequest.onsuccess = (event) => {
                 var profile = event.target.result;
@@ -221,7 +217,7 @@ function getBookmarkList(){
 
                 if (results.length == bookmarks.length){
                     results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
-                    sendBackResponse("OBJECT-LIST", bookmarkObjectStoreName, results);
+                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
                 }
             };
 
@@ -249,7 +245,7 @@ function getSearchList(params) {
 
     let searches = [];
     var offsetApplied = false;
-    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
+    let cursor = db.transaction(dbData.objectStoreNames.SEARCHES, "readonly").objectStore(dbData.objectStoreNames.SEARCHES).openCursor(null, 'prev');
     cursor.onsuccess = function(event) {
         let cursor = event.target.result;
         
@@ -295,8 +291,8 @@ function getReminderList() {
 
     let results = [];
     let request = db
-                .transaction(reminderObjectStoreName, "readonly")
-                .objectStore(reminderObjectStoreName)
+                .transaction(dbData.objectStoreNames.REMINDERS, "readonly")
+                .objectStore(dbData.objectStoreNames.REMINDERS)
                 .getAll();
 
     request.onsuccess = (event) => {
@@ -305,7 +301,7 @@ function getReminderList() {
         let reminders = event.target.result;
 
         if (reminders.length == 0){
-            sendBackResponse("OBJECT-LIST", reminderObjectStoreName, results);
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
         }
 
         reminders.forEach((reminder) => {
@@ -313,8 +309,8 @@ function getReminderList() {
             reminder.profile = null;
 
             let profileRequest = db
-                .transaction(profileObjectStoreName, "readonly")
-                .objectStore(profileObjectStoreName)
+                .transaction(dbData.objectStoreNames.PROFILES, "readonly")
+                .objectStore(dbData.objectStoreNames.PROFILES)
                 .get(reminder.url);
 
             profileRequest.onsuccess = (event) => {
@@ -326,7 +322,7 @@ function getReminderList() {
                 }
                 results.push(reminder);
 
-                sendBackResponse("OBJECT-LIST", reminderObjectStoreName, results);
+                sendBackResponse("OBJECT-LIST", dbData.objectStoreNames.REMINDERS, results);
             };
 
             profileRequest.onerror = (event) => {
@@ -346,15 +342,15 @@ function getReminderList() {
 function getKeywordList() {
 
     let request = db
-                .transaction(keywordObjectStoreName, "readonly")
-                .objectStore(keywordObjectStoreName)
+                .transaction(dbData.objectStoreNames.KEYWORDS, "readonly")
+                .objectStore(dbData.objectStoreNames.KEYWORDS)
                 .getAll();
 
     request.onsuccess = (event) => {
         console.log('Got all keywords:', event.target.result);
         // Sending the retrieved data
         let results = event.target.result;
-        sendBackResponse("OBJECT-LIST", keywordObjectStoreName, results);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
     };
 
     request.onerror = (event) => {
@@ -367,22 +363,22 @@ function getKeywordList() {
 function getList(objectStoreName, objectData){
 
     switch(objectStoreName){
-        case searchObjectStoreName:{
+        case dbData.objectStoreNames.SEARCHES:{
             getSearchList(objectData);
             break;
         }
 
-        case bookmarkObjectStoreName:{
+        case dbData.objectStoreNames.BOOKMARKS:{
             getBookmarkList();
             break;
         }
 
-        case keywordObjectStoreName:{
+        case dbData.objectStoreNames.KEYWORDS:{
             getKeywordList();
             break;
         }
 
-        case reminderObjectStoreName:{
+        case dbData.objectStoreNames.REMINDERS:{
             getReminderList();
             break;
         }
@@ -408,12 +404,12 @@ function getObjectCount(objectStoreName, objectData){
 
     switch(objectStoreName){
 
-        case keywordObjectStoreName:{
+        case dbData.objectStoreNames.KEYWORDS:{
             getKeywordCount(objectData);
             break;
         }
 
-        case reminderObjectStoreName:{
+        case dbData.objectStoreNames.REMINDERS:{
             getReminderCount(objectData);
             break;
         }
@@ -430,14 +426,14 @@ function getObjectCount(objectStoreName, objectData){
 function getReminderCount() {
 
     var request = db
-                    .transaction(reminderObjectStoreName, "readonly")
-                    .objectStore(reminderObjectStoreName)
+                    .transaction(dbData.objectStoreNames.REMINDERS, "readonly")
+                    .objectStore(dbData.objectStoreNames.REMINDERS)
                     .count();
     request.onsuccess = (event) => {
         console.log('Got reminder count:', event.target.result);
         // Sending the retrieved data
         var result = event.target.result;
-        sendBackResponse("OBJECT-COUNT", reminderObjectStoreName, result);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.REMINDERS, result);
     };
 
     request.onerror = (event) => {
@@ -451,14 +447,14 @@ function getReminderCount() {
 function getKeywordCount() {
 
     var request = db
-                    .transaction(keywordObjectStoreName, "readonly")
-                    .objectStore(keywordObjectStoreName)
+                    .transaction(dbData.objectStoreNames.KEYWORDS, "readonly")
+                    .objectStore(dbData.objectStoreNames.KEYWORDS)
                     .count();
     request.onsuccess = (event) => {
         console.log('Got keyword count:', event.target.result);
         // Sending the retrieved data
         var result = event.target.result;
-        sendBackResponse("OBJECT-COUNT", keywordObjectStoreName, result);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.KEYWORDS, result);
     };
 
     request.onerror = (event) => {
@@ -492,7 +488,7 @@ function add_search_data(searchData){
 
     delete searchData.profile;
 
-    const objectStore = db.transaction(searchObjectStoreName, "readwrite").objectStore(searchObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.SEARCHES, "readwrite").objectStore(dbData.objectStoreNames.SEARCHES);
     const request = objectStore.add(searchData);
     request.onsuccess = (event) => {
         console.log("New search data added");
@@ -510,11 +506,11 @@ function addReminderObject(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
 
-    const objectStore = db.transaction(reminderObjectStoreName, "readwrite").objectStore(reminderObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
     const request = objectStore.add(reminder);
     request.onsuccess = (event) => {
         console.log("New reminder added");
-        sendBackResponse("ADD", reminderObjectStoreName, reminder);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS, reminder);
     };
 
     request.onerror = (event) => {
@@ -529,11 +525,11 @@ function addBookmarkObject(url){
 
     var bookmark = {url: url, createdOn: (new Date()).toISOString()};
 
-    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readwrite").objectStore(dbData.objectStoreNames.BOOKMARKS);
     const request = objectStore.add(bookmark);
     request.onsuccess = (event) => {
         console.log("New bookmark added");
-        sendBackResponse("ADD", bookmarkObjectStoreName, bookmark);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS, bookmark);
     };
 
     request.onerror = (event) => {
@@ -547,17 +543,17 @@ function addBookmarkObject(url){
 function addObject(objectStoreName, objectData){
 
     switch(objectStoreName){
-        case bookmarkObjectStoreName:{
+        case dbData.objectStoreNames.BOOKMARKS:{
             addBookmarkObject(objectData);
             break;
         }
 
-        case keywordObjectStoreName:{
+        case dbData.objectStoreNames.KEYWORDS:{
             addKeywordObject(objectData);
             break;
         }
 
-        case reminderObjectStoreName:{
+        case dbData.objectStoreNames.REMINDERS:{
             addReminderObject(objectData);
             break;
         }
@@ -570,7 +566,7 @@ function addObject(objectStoreName, objectData){
 function add_profile(profile, search){
 
     // checking first that a profile with the same id doesn't exist yet
-    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
     let request = objectStore.get(profile.url);
 
     request.onsuccess = (event) => {
@@ -584,7 +580,7 @@ function add_profile(profile, search){
         else{
 
             // then adding the given profile into the database
-            const objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+            const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
             const request = objectStore.add(profile);
             request.onsuccess = (event) => {
                 console.log("New profile added");
@@ -608,7 +604,7 @@ function add_profile(profile, search){
 // Script for adding a new keyword
 
 function addKeywordObject(keywordData) {
-    const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
     
     // setting the date of insertion
     var keyword = {name: keywordData, createdOn: new Date().toISOString()}
@@ -645,11 +641,11 @@ function addKeywordObject(keywordData) {
 
 function deleteReminderObject(reminderData){
 
-    const objectStore = db.transaction(reminderObjectStoreName, "readwrite").objectStore(reminderObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
     const request = objectStore.delete(reminderData);
     request.onsuccess = (event) => {
         console.log("A reminder deleting");
-        sendBackResponse("DELETE", reminderObjectStoreName, reminderData);
+        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS, reminderData);
     };
 
     request.onerror = (event) => {
@@ -662,11 +658,11 @@ function deleteReminderObject(reminderData){
 
 function deleteBookmarkObject(bookmarkData){
 
-    const objectStore = db.transaction(bookmarkObjectStoreName, "readwrite").objectStore(bookmarkObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readwrite").objectStore(dbData.objectStoreNames.BOOKMARKS);
     const request = objectStore.delete(bookmarkData);
     request.onsuccess = (event) => {
         console.log("Bookmark deleted");
-        sendBackResponse("DELETE", bookmarkObjectStoreName, bookmarkData)
+        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS, bookmarkData)
     };
 
     request.onerror = (event) => {
@@ -680,17 +676,17 @@ function deleteBookmarkObject(bookmarkData){
 function deleteObject(objectStoreName, objectData){
 
     switch(objectStoreName){
-        case bookmarkObjectStoreName:{
+        case dbData.objectStoreNames.BOOKMARKS:{
             deleteBookmarkObject(objectData);
             break;
         }
 
-        case keywordObjectStoreName:{
+        case dbData.objectStoreNames.KEYWORDS:{
             deleteKeywordObject(objectData);
             break;
         }
 
-        case reminderObjectStoreName:{
+        case dbData.objectStoreNames.REMINDERS:{
             deleteReminderObject(objectData);
             break;
         }
@@ -706,7 +702,7 @@ function deleteObject(objectStoreName, objectData){
 // Script for deleting a keyword
 
 function deleteKeywordObject(keywordData) {
-    const objectStore = db.transaction(keywordObjectStoreName, "readwrite").objectStore(keywordObjectStoreName);
+    const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
     let request = objectStore.delete(keywordData);
     request.onsuccess = (event) => {
         console.log("Keyword deleted")
@@ -731,7 +727,7 @@ function truncateDB(){
     const data = db.objectStoreNames;
     let objectStoreNames = [];
     for (var key in data){
-        if (typeof data[key] === "string" && data[key] != settingObjectStoreName){
+        if (typeof data[key] === "string" && data[key] != dbData.objectStoreNames.SETTINGS){
             objectStoreNames.push(data[key]);
         }
     }
@@ -776,12 +772,12 @@ function clearObjectStores(objectStoreNames){
 function getObject(objectStoreName, objectData){
 
     switch(objectStoreName){
-        case profileObjectStoreName:{
+        case dbData.objectStoreNames.PROFILES:{
             getProfileObject(objectData);
             break;
         }
 
-        case settingObjectStoreName:{
+        case dbData.objectStoreNames.SETTINGS:{
             getSettingsData(objectData);
             break;
         }
@@ -813,7 +809,7 @@ function getProcessedData(objectStoreName, objectData){
 
 function getProfileObject(url){
 
-    let objectStore = db.transaction(profileObjectStoreName, "readonly").objectStore(profileObjectStoreName);
+    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readonly").objectStore(dbData.objectStoreNames.PROFILES);
     let request = objectStore.get(url);
 
     request.onsuccess = (event) => {
@@ -822,7 +818,7 @@ function getProfileObject(url){
         profile.bookmark = null;
         profile.reminder = null;
 
-        let bookmarkObjectStore = db.transaction(bookmarkObjectStoreName, "readonly").objectStore(bookmarkObjectStoreName);
+        let bookmarkObjectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readonly").objectStore(dbData.objectStoreNames.BOOKMARKS);
         let bookmarkRequest = bookmarkObjectStore.get(url);
 
         bookmarkRequest.onsuccess = (event) => {
@@ -833,7 +829,7 @@ function getProfileObject(url){
                 profile.bookmark = bookmark;
             }
 
-            let reminderObjectStore = db.transaction(reminderObjectStoreName, "readonly").objectStore(reminderObjectStoreName);
+            let reminderObjectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS);
             let reminderRequest = reminderObjectStore.get(url);
 
             reminderRequest.onsuccess = (event) => {
@@ -842,7 +838,7 @@ function getProfileObject(url){
                 if (reminder != undefined){
                     profile.reminder = reminder;
                 }
-                sendBackResponse("GET-OBJECT", profileObjectStoreName, profile);
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.PROFILES, profile);
 
             };
 
@@ -871,8 +867,8 @@ function getProfileObject(url){
 function getSettingsData(properties){
     
     var request = db
-                    .transaction(settingObjectStoreName, "readonly")
-                    .objectStore(settingObjectStoreName)
+                    .transaction(dbData.objectStoreNames.SETTINGS, "readonly")
+                    .objectStore(dbData.objectStoreNames.SETTINGS)
                     .get(1);
 
     request.onsuccess = (event) => {
@@ -880,7 +876,7 @@ function getSettingsData(properties){
         // Sending the retrieved data
         let settings = event.target.result;
         properties.forEach((property) => {
-            sendBackResponse("GET-OBJECT", settingObjectStoreName, {property: property, value: settings[property]});
+            sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: settings[property]});
         });
     };
 
@@ -899,12 +895,12 @@ function getViewsTimelineData(chartData){
     }
 
     // populating the chart data Array
-    let cursor = db.transaction(searchObjectStoreName, "readonly").objectStore(searchObjectStoreName).openCursor(null, 'prev');
+    let cursor = db.transaction(dbData.objectStoreNames.SEARCHES, "readonly").objectStore(dbData.objectStoreNames.SEARCHES).openCursor(null, 'prev');
     cursor.onsuccess = function(event) {
         var cursor = event.target.result;
 
         if(!cursor) {
-            sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+            sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
             return;
         }
 
@@ -914,7 +910,7 @@ function getViewsTimelineData(chartData){
             let index = chartData.indexOf(searchDate);
 
             if (index == -1){
-                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+                sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
                 return;
             }
             
@@ -931,7 +927,7 @@ function getViewsTimelineData(chartData){
             }
 
             if (!found){
-                sendBackResponse("GET-PROCESSED-DATA", "views-timeline-chart", results);
+                sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
                 return;
             }
         }
@@ -959,12 +955,12 @@ function getViewsTimelineData(chartData){
 function updateObject(objectStoreName, objectData){
 
     switch(objectStoreName){
-        case settingObjectStoreName:{
+        case dbData.objectStoreNames.SETTINGS:{
             updateSettingObject(objectData.property, objectData.value);
             break;
         }
 
-        case profileObjectStoreName: {
+        case dbData.objectStoreNames.PROFILES: {
             updateProfileObject(objectData);
             break;
         }
@@ -976,7 +972,7 @@ function updateObject(objectStoreName, objectData){
 
 function updateProfileObject(params){
 
-    let objectStore = db.transaction(profileObjectStoreName, "readwrite").objectStore(profileObjectStoreName);
+    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
     let request = objectStore.get(params.url);
 
     request.onsuccess = (event) => {
@@ -1028,7 +1024,7 @@ function updateProfileObject(params){
 function updateSettingObject(propKey, propValue){
 
     // Retrieving the data first for later update
-    let objectStore = db.transaction(settingObjectStoreName, "readwrite").objectStore(settingObjectStoreName);
+    let objectStore = db.transaction(dbData.objectStoreNames.SETTINGS, "readwrite").objectStore(dbData.objectStoreNames.SETTINGS);
     let request = objectStore.get(1);
 
     request.onsuccess = (event) => {
@@ -1074,41 +1070,8 @@ function updateSettingObject(propKey, propValue){
 function sendBackResponse(action, objectStoreName, data){
 
     let responseData = {objectStoreName: objectStoreName, objectData: data};
-    var header = null;
 
-    switch(action){
-        case "ADD": {
-            header = 'object-added';
-            break;
-        }
-
-        case "GET-OBJECT": {
-            header = 'object-data';
-            break;
-        }
-
-        case "DELETE": {
-            header = 'object-deleted';
-            break;
-        }
-
-        case "OBJECT-LIST": {
-            header = 'object-list';
-            break;
-        }
-
-        case "OBJECT-COUNT": {
-            header = 'object-count';
-            break;
-        }
-
-        case "GET-PROCESSED-DATA": {
-            header = 'processed-data';
-            break;
-        }
-    }
-
-    chrome.runtime.sendMessage({header: header, data: responseData}, (response) => {
+    chrome.runtime.sendMessage({header: action, data: responseData}, (response) => {
       console.log(action + " " + objectStoreName + ' response sent', response, responseData);
     });
 }
@@ -1154,80 +1117,72 @@ function processMessageEvent(message, sender, sendResponse){
     // Script for getting all the searches done so far
     switch(message.header){
 
-        case 'get-list':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.GET_LIST:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // providing the result
             getList(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
-        case 'get-object':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.GET_OBJECT:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // providing the result
             getObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
-        case 'add-object':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.ADD_OBJECT:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // providing the result
             addObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
-        case 'update-object':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.UPDATE_OBJECT:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // providing the result
             updateObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
-        case 'delete-object':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.DELETE_OBJECT:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // providing the result
             deleteObject(message.data.objectStoreName, message.data.objectData);
             break;
         }
         
-        case 'get-count':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.GET_COUNT:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // Providing the keyword count to the front 
             getObjectCount(message.data.objectStoreName, message.data.objectData);
             break;
         }
 
-        case 'get-processed-data':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+        case messageParams.requestHeaders.GET_PROCESSED_DATA:{
+            // acknowledge receipt
+            ack(sendResponse);
+
             // Saving the new notification setting state
             getProcessedData(message.data.objectStoreName, message.data.objectData);
             break;
         }
         /*case 'linkedin-data':{
-            // sending a response
-            sendResponse({
-                status: "ACK"
-            });
+            // acknowledge receipt
+            ack(sendResponse);
+            
             // Saving the new notification setting state
             processLinkedInData(message.data);
             break;

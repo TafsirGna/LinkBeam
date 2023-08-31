@@ -11,7 +11,8 @@ import {
   sendDatabaseActionMessage, 
   ack, 
   startMessageListener,
-  messageParameters,
+  messageParams,
+  dbData,
   appParams
   } from "./Local_library";
 
@@ -65,7 +66,7 @@ export default class Activity extends React.Component{
       this.getSearchList(offset);
     }
     else{
-      sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["currentPageTitle"]);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle"]);
     }
 
   }
@@ -125,15 +126,15 @@ export default class Activity extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.SEARCHES].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.BOOKMARKS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarksDataReceived
       },
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
     ]);
@@ -161,14 +162,14 @@ export default class Activity extends React.Component{
 
     if (this.state.searchLeft){
       this.setState({loadingSearches: true});
-      sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.SEARCHES, {offset: (this.state.searchList ? this.state.searchList.length : 0), context: "Activity"});
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.state.searchList ? this.state.searchList.length : 0), context: "Activity"});
     }
 
   }
 
   getBookmarkList(){
 
-    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.BOOKMARKS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.BOOKMARKS, null);
 
   }
 

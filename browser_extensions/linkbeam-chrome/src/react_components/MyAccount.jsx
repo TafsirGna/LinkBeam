@@ -9,7 +9,8 @@ import {
 	saveCurrentPageTitle, 
 	sendDatabaseActionMessage,
 	ack,
-	messageParameters, 
+	messageParams,
+  dbData, 
 	startMessageListener
 } from "./Local_library";
 
@@ -40,11 +41,11 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		sendDatabaseActionMessage("get-object", messageParameters.actionObjectNames.SETTINGS, ["installedOn", "productID"]);
+  		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["installedOn", "productID"]);
   	}
 
 		// Saving the current page title
-		sendDatabaseActionMessage("update-object", messageParameters.actionObjectNames.SETTINGS, {property: "currentPageTitle", value: "MyAccount"});
+		sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "currentPageTitle", value: "MyAccount"});
   }
 
   onSettingsDataReceived(message, sendResponse){
@@ -83,7 +84,7 @@ export default class MyAccount extends React.Component{
 
   	startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_OBJECT, messageParameters.actionObjectNames.SETTINGS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
     ]);

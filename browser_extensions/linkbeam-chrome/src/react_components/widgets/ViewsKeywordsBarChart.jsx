@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParameters, ack } from "../Local_library";
+import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParams, dbData, ack } from "../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -92,7 +92,7 @@ export default class ViewsKeywordsBarChart extends React.Component{
 
 		startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.KEYWORDS].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       },
     ]);
@@ -100,7 +100,7 @@ export default class ViewsKeywordsBarChart extends React.Component{
 
 	setChartLabels(){
 
-  	sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.KEYWORDS, null);
+  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, null);
 
 	}
 

@@ -1,7 +1,7 @@
 /*import './Calendar.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { sendDatabaseActionMessage, ack, startMessageListener, messageParameters } from "./Local_library";
+import { sendDatabaseActionMessage, ack, startMessageListener, messageParams, dbData } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
@@ -41,7 +41,7 @@ export default class Calendar extends React.Component{
 
   getSearchList(dateString){
 
-    sendDatabaseActionMessage("get-list", messageParameters.actionObjectNames.SEARCHES, {date: dateString, context: "Calendar"});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: dateString, context: "Calendar"});
 
   }
 
@@ -70,7 +70,7 @@ export default class Calendar extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParameters.actionNames.GET_LIST, messageParameters.actionObjectNames.SEARCHES].join(messageParameters.separator), 
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
       },
     ]);
