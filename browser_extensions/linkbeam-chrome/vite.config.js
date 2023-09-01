@@ -9,9 +9,18 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        // web_ui: resolve(__dirname, 'web_ui.html'),
         index: resolve(__dirname, 'index.html'),
-        web_ui: resolve(__dirname, 'web_ui.html'),
-        service_worker: resolve(__dirname, 'src/service-worker.mjs'),
+        service_worker: resolve(__dirname, 'src/scripts/service-worker.mjs'),
+        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.js'),
+
+        // web_ui_cs: resolve(__dirname, 'src/scripts/web_ui_cs.js'),
+      },
+      output: {
+        // manualChunks: false,
+        // inlineDynamicImports: true,
+        entryFileNames: 'assets/[name].js',   // currently does not work for the legacy bundle
+        assetFileNames: 'assets/[name].[ext]', // currently does not work for images
       },
     },
   },

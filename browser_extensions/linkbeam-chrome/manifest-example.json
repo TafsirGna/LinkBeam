@@ -8,12 +8,16 @@
     "default_icon": "app_logo_white.png"
   },
   "background": {
-    "service_worker": "./assets/service_worker-55112823.js",
+    "service_worker": "./assets/service_worker.js",
     "type": "module"
   },
   "permissions": [
     "tabs",
     "scripting"
   ],
+  "web_accessible_resources": [{
+     "matches": ["*://*/*"],
+     "resources": ["/assets/web_ui.js"]
+   }],
   "host_permissions": ["*://*/*"]
 }

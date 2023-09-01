@@ -1,7 +1,6 @@
 /*import './Profile.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
-import { v4 as uuidv4 } from 'uuid';
 import user_icon from '../assets/user_icon.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -31,6 +30,9 @@ export default class MyAccount extends React.Component{
 
   	this.listenToMessages();
 
+    // Saving the current page title
+    saveCurrentPageTitle("MyAccount");
+
   	// Setting the local data with the global ones
   	if (this.props.globalData.productID){
   		this.setState({productID: this.props.globalData.productID});
@@ -44,8 +46,6 @@ export default class MyAccount extends React.Component{
   		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["installedOn", "productID"]);
   	}
 
-		// Saving the current page title
-		sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "currentPageTitle", value: "MyAccount"});
   }
 
   onSettingsDataReceived(message, sendResponse){
@@ -59,24 +59,18 @@ export default class MyAccount extends React.Component{
 				// setting the value
 				let installedOn = message.data.objectData.value;
 				this.setState({installedOn: installedOn});
-		  			break;
-		  		}
+		  	break;
+		  }
   		case "productID":{
 
   			// acknowledge receipt
   			ack(sendResponse);
 
 				let productID = message.data.objectData.value;
-				if (productID){
-					this.setState({productID: productID});
-				}
-				else{
-					// setting the new product ID
-					saveCurrentPageTitle("MyAccount");
-				}
-		  			break;
-		  		}
-		  	}
+				this.setState({productID: productID});
+		  	break;
+		  }
+		}
 
   }
 

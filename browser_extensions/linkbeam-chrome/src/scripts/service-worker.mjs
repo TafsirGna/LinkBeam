@@ -4,16 +4,18 @@ import {
   dbData,
   messageParams,
   ack,
-} from "./react_components/Local_library";
+} from "../react_components/Local_library";
+import { v4 as uuidv4 } from 'uuid';
 
 let db = null;
+let tabID = null;
 
 const settingData = [{
     id: 1,
     notifications: true,
     lastDataResetDate: new Date().toISOString(),
     installedOn: new Date().toISOString(),
-    productID: null, 
+    productID: uuidv4(), 
     currentPageTitle: "Activity",
 }];
 
@@ -1079,6 +1081,8 @@ function sendBackResponse(action, objectStoreName, data){
 // Script for processing linkedin data
 
 function processLinkedInData(linkedInData){
+    console.log("linkedInData : ", linkedInData);
+
     if (linkedInData == null){
         console.log("Not a valid linkedin page");
         return;
@@ -1106,7 +1110,14 @@ function processLinkedInData(linkedInData){
             languages: {},
         },
     };
-    add_search(search);
+    
+    // add_search(search);
+
+    console.log("tab id ", tabID);
+    chrome.scripting.executeScript({
+        target: { tabId: tabID },
+        files: ["./assets/web_ui.js"]
+    });
 }
 
 // Script handling the message execution
@@ -1153,7 +1164,7 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
-        case messageParams.requestHeaders.DELETE_OBJECT:{
+        case messageParams.requestHeaders.DEL_OBJECT:{
             // acknowledge receipt
             ack(sendResponse);
 
@@ -1179,14 +1190,15 @@ function processMessageEvent(message, sender, sendResponse){
             getProcessedData(message.data.objectStoreName, message.data.objectData);
             break;
         }
-        /*case 'linkedin-data':{
+        case 'linkedin-data':{
             // acknowledge receipt
             ack(sendResponse);
             
             // Saving the new notification setting state
-            processLinkedInData(message.data);
+            var linkedInData = message.data;
+            processLinkedInData(linkedInData);
             break;
-        }*/
+        }
 
         default:{
             // TODO
@@ -1203,17 +1215,13 @@ function processTabEvent(tabId, changeInfo, tab){
     const linkedInPattern = /github.com/;
     if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
     {
-        // Sending a signal to the content script for confirmation and data extraction
-        /*chrome.runtime.sendMessage({header: 'check-linkedin-page', data: null}, (response) => {
-          console.log('check-linkedin-page request sent', response);
-        });*/
+        // Starting the verifier script in order to make sure this is a linkedin page
+        tabID = tab.id;
+        chrome.scripting.executeScript({
+            target: { tabId: tabID },
+            files: ["./assets/tab_verifier_cs.js"]
+        });
 
-        /*chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ["ui-injection.js"]
-        });*/
-
-        // processLinkedInData({});
     }
 };
 
