@@ -1213,7 +1213,7 @@ function processTabEvent(tabId, changeInfo, tab){
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
     const linkedInPattern = /github.com/;
-    if (changeInfo.url && linkedInPattern.test(changeInfo.url)) 
+    if (changeInfo.url /*&& linkedInPattern.test(changeInfo.url)*/) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;
