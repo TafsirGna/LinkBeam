@@ -1116,7 +1116,7 @@ function processLinkedInData(linkedInData){
     console.log("tab id ", tabID);
     chrome.scripting.executeScript({
         target: { tabId: tabID },
-        files: ["./assets/web_ui.js"]
+        files: [/*"./assets/web_ui.css",*/ "./assets/web_ui.js"]
     });
 }
 

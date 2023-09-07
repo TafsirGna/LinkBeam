@@ -3,7 +3,8 @@ export const appParams = {
   appVersion: "0.1.0", 
   keywordCountLimit: 5, 
   searchPageLimit: 2, 
-  bookmarkCountLimit: 5
+  bookmarkCountLimit: 5,
+  extShadowHostId: "linkBeamExtensionRoot",
 }
 
 export const dbData = {
