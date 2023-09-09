@@ -4,7 +4,10 @@ export const appParams = {
   keywordCountLimit: 5, 
   searchPageLimit: 2, 
   bookmarkCountLimit: 5,
-  extShadowHostId: "linkBeamExtensionRoot",
+  extShadowHostId: "linkBeamExtensionMainRoot",
+  sectionMarkerID: "linkbeam-extension-section-marker",
+  modalContainerID: "web-ui-custom-modal",
+  sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
 }
 
 export const dbData = {

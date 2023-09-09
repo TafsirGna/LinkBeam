@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 
-/** {
-  all: initial;
-}*/
+div {
+  font-family: 'Ubuntu', sans-serif;
+}
 
 .handy-cursor{
   cursor: pointer;
@@ -13,7 +13,7 @@
 
 /* The Modal (background) */
 .modal-container-ac84bbb3728 {
-  display: block; /* Shown by default */
+  /*display: block;*/ /* Shown by default */
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
   padding-top: 100px; /* Location of the box */

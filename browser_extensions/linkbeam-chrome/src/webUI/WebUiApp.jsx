@@ -40,9 +40,28 @@ export default class App extends React.Component{
 
     this.handleQueryToastClose();
 
-    this.handleModalShow();
+    // this.handleModalShow();
 
     this.handleOkToastShow();
+
+    this.showSectionMarkers();
+
+  }
+
+  showSectionMarkers(){
+
+    try{
+      const sectionMarkerShadowHosts = document.getElementsByClassName(appParams.sectionMarkerShadowHostClassName);
+      console.log("$$$$$$ ", sectionMarkerShadowHosts);
+      for (var i = 0; i < sectionMarkerShadowHosts.length; i++){
+        var sectionMarkerShadowHost = document.getElementById((sectionMarkerShadowHosts[i]).id);
+        var sectionMarker = sectionMarkerShadowHost.shadowRoot.getElementById(appParams.sectionMarkerID);
+        sectionMarker.classList.remove("hidden");
+      }
+    }
+    catch(err){
+      console.log("An error occured when revealing the section markers ! ", err);
+    }
 
   }
 
