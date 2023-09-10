@@ -3,7 +3,8 @@ import {
   appParams
 } from "../react_components/Local_library";
 import WebUiCustomToast from "./widgets/WebUiCustomToast";
-import WebUiCustomModal from "./widgets/WebUiCustomModal";
+import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
+import WebUiCommentModal from "./widgets/WebUiCommentModal";
 
 export default class App extends React.Component{
 
@@ -52,7 +53,6 @@ export default class App extends React.Component{
 
     try{
       const sectionMarkerShadowHosts = document.getElementsByClassName(appParams.sectionMarkerShadowHostClassName);
-      console.log("$$$$$$ ", sectionMarkerShadowHosts);
       for (var i = 0; i < sectionMarkerShadowHosts.length; i++){
         var sectionMarkerShadowHost = document.getElementById((sectionMarkerShadowHosts[i]).id);
         var sectionMarker = sectionMarkerShadowHost.shadowRoot.getElementById(appParams.sectionMarkerID);
@@ -72,7 +72,9 @@ export default class App extends React.Component{
 
         <WebUiCustomToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCustomModal show={this.state.modalShow} handleClose={this.handleModalClose} />
+        <WebUiCommentListModal show={this.state.modalShow} handleClose={this.handleModalClose} />
+
+        <WebUiCommentModal />
 
         { this.state.okToastShow && <div id="toast-success" class="fixed bottom-5 right-5 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
                     <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">

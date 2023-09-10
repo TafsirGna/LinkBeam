@@ -6,7 +6,8 @@ export const appParams = {
   bookmarkCountLimit: 5,
   extShadowHostId: "linkBeamExtensionMainRoot",
   sectionMarkerID: "linkbeam-extension-section-marker",
-  modalContainerID: "web-ui-custom-modal",
+  commentModalContainerID: "web-ui-comment-modal",
+  commentListModalContainerID: "web-ui-comment-list-modal",
   sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
 }
 
