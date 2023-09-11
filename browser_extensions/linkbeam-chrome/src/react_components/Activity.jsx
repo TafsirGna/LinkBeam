@@ -200,6 +200,7 @@ export default class Activity extends React.Component{
 
     return (
       <>
+
         <div class="clearfix">
           {/*setting icon*/}
           <HomeMenu />

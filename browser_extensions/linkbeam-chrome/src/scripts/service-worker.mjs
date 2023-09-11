@@ -866,20 +866,29 @@ function getProfileObject(url){
 
 // Script for providing setting data
 
-function getSettingsData(properties){
+function getSettingsData(properties, callback = null){
     
     var request = db
                     .transaction(dbData.objectStoreNames.SETTINGS, "readonly")
                     .objectStore(dbData.objectStoreNames.SETTINGS)
                     .get(1);
 
+    var results = [];
     request.onsuccess = (event) => {
         console.log('Got settings:', event.target.result);
         // Sending the retrieved data
         let settings = event.target.result;
         properties.forEach((property) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: settings[property]});
+            results.push(settings[property]);
+            if (!callback){
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: settings[property]});
+            }
         });
+
+        //Executing the callback if exists
+        if (callback){
+            callback(results);
+        }
     };
 
     request.onerror = (event) => {
@@ -1083,7 +1092,7 @@ function sendBackResponse(action, objectStoreName, data){
 function processLinkedInData(linkedInData){
     console.log("linkedInData : ", linkedInData);
 
-    if (linkedInData == null){
+    if (!linkedInData){
         console.log("Not a valid linkedin page");
         return;
     }
@@ -1113,10 +1122,17 @@ function processLinkedInData(linkedInData){
     
     // add_search(search);
 
-    console.log("tab id ", tabID);
-    chrome.scripting.executeScript({
-        target: { tabId: tabID },
-        files: [/*"./assets/web_ui.css",*/ "./assets/web_ui.js"]
+    // checking that the setting allows the injection
+    getSettingsData(["notifications"], (results) => {
+        var notificationSetting = results[0];
+
+        if (notificationSetting){
+            console.log("tab id ", tabID);
+            chrome.scripting.executeScript({
+                target: { tabId: tabID },
+                files: ["./assets/web_ui.js"]
+            });
+        }
     });
 }
 
