@@ -1215,6 +1215,17 @@ function processMessageEvent(message, sender, sendResponse){
             processLinkedInData(linkedInData);
             break;
         }
+        case 'expand-modal':{
+            // acknowledge receipt
+            ack(sendResponse);
+            
+            // expand modal to a new tab
+            chrome.tabs.create({
+              active: true,
+              url:  'index.html?profile-comments=true'
+            }, null);
+            break;
+        }
 
         default:{
             // TODO

@@ -3,6 +3,7 @@ import React from 'react';
 import { appParams } from "../../react_components/Local_library";
 // import { Modal } from 'flowbite-react';
 // import { Drawer } from 'flowbite';
+import user_icon from '../../assets/user_icon.png';
 
 
 export default class WebUiCommentListModal extends React.Component{
@@ -18,9 +19,7 @@ export default class WebUiCommentListModal extends React.Component{
 
     // When the user clicks anywhere outside of the modal, close it
     window.onclick = (function(event) {
-          // console.log("^^^^^^^^^^^^^^");
           const $targetEl = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
-          // console.log("^^^^^^^^^^^^^^ ---------- ", $targetEl, event.composedPath()[0], event.composedPath()[0] == $targetEl);
           if (event.composedPath()[0] == $targetEl) {
             $targetEl.classList.add("hidden");
           }
@@ -74,6 +73,16 @@ export default class WebUiCommentListModal extends React.Component{
 
   }
 
+  expandToTab(){
+
+    // Send message to the background
+    chrome.runtime.sendMessage({header: "expand-modal", data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log("Expand Modal Request sent !");
+    });
+
+  }
+
   render(){
     return (
       <>
@@ -81,7 +90,7 @@ export default class WebUiCommentListModal extends React.Component{
           <div class={"modal-container-ac84bbb3728 hidden"} id={appParams.commentListModalContainerID}>
             <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
               <div class="p-4">
-                <div class="pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                <div onClick={() => {this.expandToTab()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                   <span class="inline-flex">
                     Expand to tab 
                     <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -89,7 +98,7 @@ export default class WebUiCommentListModal extends React.Component{
                 </div>
               </div>
               <div class="flex items-center p-4">
-                <img src="/img/avatar-1.jpg" alt="" class="h-10 w-10 flex-none rounded-full"/>
+                <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                 <div class="ml-4 flex-auto">
                   <div class="font-medium">
                     Leonard Krasner
@@ -119,7 +128,7 @@ export default class WebUiCommentListModal extends React.Component{
                 </div>
               </div>
               <div class="p-4">
-                <div class="pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                   View more
                 </div>
               </div>

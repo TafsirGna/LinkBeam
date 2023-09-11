@@ -2,10 +2,8 @@ import React from 'react';
 import HomeMenu from "./widgets/HomeMenu";
 import SearchListView from "./widgets/SearchListView";
 import BookmarkListView from "./widgets/BookmarkListView";
-import user_icon from '../assets/user_icon.png';
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-import moment from 'moment';
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage, 
