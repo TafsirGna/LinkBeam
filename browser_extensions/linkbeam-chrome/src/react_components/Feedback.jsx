@@ -1,6 +1,7 @@
 /*import './About.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,

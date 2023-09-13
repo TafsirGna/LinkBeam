@@ -2,6 +2,7 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import {
   Chart as ChartJS,
   CategoryScale,

@@ -3,6 +3,7 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCurrentPageTitle } from "./Local_library";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class NewsFeed extends React.Component{
 

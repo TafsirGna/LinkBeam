@@ -16,12 +16,12 @@ export default class WebUiCommentModal extends React.Component{
   componentDidMount() {
 
     // When the user clicks anywhere outside of the modal, close it
-    window.onclick = (function(event) {
+    /*window.onclick = (function(event) {
           const $targetEl = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
           if (event.composedPath()[0] == $targetEl) {
             $targetEl.classList.add("hidden");
           }
-        }).bind(this);
+        });*/
 
   }
 

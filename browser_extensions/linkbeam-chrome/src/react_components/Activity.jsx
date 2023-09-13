@@ -4,6 +4,7 @@ import SearchListView from "./widgets/SearchListView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage, 

@@ -10,6 +10,7 @@ import {
   dbData 
 } from "./Local_library";
 import moment from 'moment';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class Reminders extends React.Component{
 

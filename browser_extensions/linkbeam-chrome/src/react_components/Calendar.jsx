@@ -7,6 +7,7 @@ import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
 import SearchListView from "./widgets/SearchListView";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class Calendar extends React.Component{
 

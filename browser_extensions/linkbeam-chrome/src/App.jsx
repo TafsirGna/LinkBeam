@@ -13,7 +13,7 @@ import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
-import ProfileComments from "./react_components/ProfileComments";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   sendDatabaseActionMessage,
   ack,
@@ -30,7 +30,6 @@ export default class App extends React.Component{
     this.state = {
       profileUrlValue: null,
       calendarView: null,
-      profileComments: null,
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -56,11 +55,9 @@ export default class App extends React.Component{
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrlValue = urlParams.get("profile-url");
     const calendarView = urlParams.get("calendar-view");
-    const profileComments = urlParams.get("profile-comments");
 
     this.setState({profileUrlValue: profileUrlValue});
     this.setState({calendarView: calendarView});
-    this.setState({profileComments: profileComments});
 
   }
 
@@ -210,9 +207,7 @@ export default class App extends React.Component{
                 <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.profileUrlValue} />
                 : this.state.calendarView ?
                     <Navigate replace to={"/index.html/Calendar"} />
-                    : this.state.profileComments ?
-                      <Navigate replace to={"/index.html/ProfileComments"} />
-                      : <Activity globalData={this.state.globalData} />
+                    : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
@@ -224,7 +219,6 @@ export default class App extends React.Component{
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
-            <Route path="/index.html/ProfileComments" element={<ProfileComments globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>

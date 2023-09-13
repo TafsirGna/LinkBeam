@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class HomeMenu extends React.Component{
 

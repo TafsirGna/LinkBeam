@@ -1222,7 +1222,7 @@ function processMessageEvent(message, sender, sendResponse){
             // expand modal to a new tab
             chrome.tabs.create({
               active: true,
-              url:  'index.html?profile-comments=true'
+              url:  'web_ui.html?profile-url-comment-list=true'
             }, null);
             break;
         }

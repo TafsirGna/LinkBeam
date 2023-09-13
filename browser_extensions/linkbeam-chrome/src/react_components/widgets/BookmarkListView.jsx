@@ -3,6 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import user_icon from '../../assets/user_icon.png';
 import { Link } from 'react-router-dom';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class BookmarkListView extends React.Component{
 

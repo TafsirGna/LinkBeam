@@ -2,6 +2,7 @@
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart } from "react-chartjs-2";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import {
   Chart as ChartJS,
   CategoryScale,

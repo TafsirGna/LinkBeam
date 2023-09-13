@@ -3,6 +3,7 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParams } from "../Local_library";
 import {
   Chart as ChartJS,

@@ -4,6 +4,7 @@ import BackToPrev from "./widgets/BackToPrev";
 import user_icon from '../assets/user_icon.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
 	saveCurrentPageTitle, 
 	sendDatabaseActionMessage,

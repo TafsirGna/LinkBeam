@@ -5,6 +5,7 @@ import BackToPrev from "./widgets/BackToPrev";
 import ViewsTimelineChart from "./widgets/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/ViewsKeywordsBarChart";
 import ViewsGeoMapChart from "./widgets/ViewsGeoMapChart";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,

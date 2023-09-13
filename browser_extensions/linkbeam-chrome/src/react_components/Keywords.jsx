@@ -1,6 +1,7 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import KeywordListView from "./widgets/KeywordListView";
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 // import { uid } from 'uid';
 import { 
   saveCurrentPageTitle, 

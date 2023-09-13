@@ -2,6 +2,7 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
+/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParams, dbData, ack } from "../Local_library";
 import {
   Chart as ChartJS,
