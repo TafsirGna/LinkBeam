@@ -83,7 +83,7 @@ export default class Keywords extends React.Component{
     setTimeout(() => {
       this.setState({alertBadgeContent: ""});
     }
-    , 3000);
+    , appParams.TIMER_VALUE);
 
     // vanishing the spinner
     this.setState({processingState: {status: "NO", info: ""}});

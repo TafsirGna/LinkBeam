@@ -1,21 +1,44 @@
 /*import './WebUiSectionMenu.css'*/
 import React from 'react';
 import { appParams } from "../../react_components/Local_library";
-import { Dropdown } from 'flowbite-react';
+import { Spinner } from 'flowbite-react';
+import Parse from 'parse/dist/parse.min.js';
 
 export default class WebUiSectionMenu extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      commentsCount: null,
     };
   }
 
   componentDidMount() {
 
+    this.fetchCommentsCount();
+
+  }
+
+  async fetchCommentsCount(){
+
+    const query = new Parse.Query('Comment');
+
+    try {
+      // Uses 'count' instead of 'find' to retrieve the number of objects
+      const count = await query.count();
+      console.log(`ParseObjects found: ${count}`);
+      this.setState({commentsCount: count});
+    } catch (error) {
+      console.log(`Error: ${error}`);
+    }
+
   }
 
   handleCommentListModalShow(){
+
+    if (this.state.commentsCount == null || this.state.commentsCount == 0){
+      return;
+    }
 
     var commentListModalContainer = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
     commentListModalContainer.classList.remove("hidden");
@@ -47,7 +70,13 @@ export default class WebUiSectionMenu extends React.Component{
               <svg class="-ml-0.5 mr-2 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 14">
                 <path d="M10 0C4.612 0 0 5.336 0 7c0 1.742 3.546 7 10 7 6.454 0 10-5.258 10-7 0-1.664-4.612-7-10-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
               </svg>
-              Show (20)
+              Show 
+              {this.state.commentsCount == null && <Spinner
+                              aria-label="Extra small spinner example"
+                              className="ml-1"
+                              size="xs"
+                            />}
+              {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
             </button>
             <button onClick={() => {this.handleCommentModalShow()}} type="button" class="text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800" data-dismiss-target="#alert-additional-content-1" aria-label="Close">
               Comment

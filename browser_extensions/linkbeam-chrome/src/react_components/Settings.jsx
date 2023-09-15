@@ -105,7 +105,7 @@ export default class Settings extends React.Component{
         // Setting a timer to reset all of this
         setTimeout(() => {
           this.setState({processingState: {status: "NO", info: ""}});
-        }, 3000);
+        }, appParams.TIMER_VALUE);
 
         break;
       }            

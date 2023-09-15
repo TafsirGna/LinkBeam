@@ -9,6 +9,10 @@ export const appParams = {
   commentModalContainerID: "web-ui-comment-modal",
   commentListModalContainerID: "web-ui-comment-list-modal",
   sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
+  PARSE_APPLICATION_ID: 'VmRGMxmuLVDVyfGBKTESkWkAjIdjS7WkIubjKXSA',
+  PARSE_JAVASCRIPT_KEY: 'robF8N6XaqWscNKitZZeuTPcIkJI1ytJhjooUBOS',
+  PARSE_HOST_URL: 'https://parseapi.back4app.com/',
+  TIMER_VALUE: 3000,
 }
 
 export const dbData = {

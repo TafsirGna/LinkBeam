@@ -6,11 +6,15 @@ import styles from "./styles.min.css";
 import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
 import WebUiProfileComments from "./WebUiProfileComments";
 import { v4 as uuidv4 } from 'uuid';
+import Parse from 'parse/dist/parse.min.js';
 
 
-// Checking first if the user want to expand the comment list modal
-
+// Checking first if the user has expanded the comment list modal
 var webUiUrlRegex = /^chrome-extension:\/\/[\w.]+\/web_ui\.html\?profile-url-comment-list=/;
+
+// Parse initialization configuration goes here
+Parse.initialize(appParams.PARSE_APPLICATION_ID, appParams.PARSE_JAVASCRIPT_KEY);
+Parse.serverURL = appParams.PARSE_HOST_URL;
 
 if (webUiUrlRegex.test(window.location.href)){
 
@@ -26,7 +30,6 @@ if (webUiUrlRegex.test(window.location.href)){
       <link rel="preconnect" href="https://fonts.googleapis.com"/>
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
       <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>
-      {/*<style type="text/css">{styles}</style>*/}
       <WebUiProfileComments />
     </React.StrictMode>
   );

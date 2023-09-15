@@ -40,9 +40,7 @@ export default class App extends React.Component{
   onToastOK(){
 
     this.handleQueryToastClose();
-
-    // this.handleModalShow();
-
+    
     this.handleOkToastShow();
 
     this.showSectionMarkers();
