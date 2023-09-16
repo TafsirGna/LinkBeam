@@ -1,12 +1,11 @@
 /*import './WebUiCommentListModal.css'*/
 import React from 'react';
 import { appParams } from "../../react_components/Local_library";
-// import { Modal } from 'flowbite-react';
 // import { Drawer } from 'flowbite';
 import user_icon from '../../assets/user_icon.png';
+// import moment from 'moment';
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
-
 
 export default class WebUiCommentListModal extends React.Component{
 
@@ -178,16 +177,16 @@ const CommentListView = (props) => {
                                     <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                     <div class="ml-4 flex-auto">
                                       <div class="font-medium">
-                                        {commentItem.get("createdBy")}
+                                        {commentItem.get("createdBy")} · <span class="font-light text-xs">{moment(commentItem.get("createdAt").toISOString(), moment.ISO_8601).fromNow()}</span>
                                       </div>
-                                      <div class="mt-1 text-slate-700">
+                                      <div class="mt-1 text-slate-700 text-sm">
                                         {commentItem.get("text")}
                                       </div>
                                       <div class="mt-2">
                                         
                                         <span class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-500">
                                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                                          7
+                                          0{/*{ typeof commentItem.get(upvotes)}*/}
                                         </span>
                                         <span class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
                                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
@@ -200,9 +199,9 @@ const CommentListView = (props) => {
       
                                       </div>
                                     </div>
-                                    <div class="pointer-events-auto ml-4 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                    {/*<div class="pointer-events-auto ml-4 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                                       View
-                                    </div>
+                                    </div>*/}
                                   </div>)
                               )}
 

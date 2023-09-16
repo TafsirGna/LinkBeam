@@ -136,7 +136,7 @@ export function ack(sendResponse){
 
 function switchCaseFunction(message, sendResponse, responseParams, responseCallbacks){
 
-  var param = message.header+"|"+message.data.objectStoreName;
+  var param = [message.header, message.data.objectStoreName].join(messageParams.separator);
   var index = responseParams.indexOf(param);
   if (index >= 0){
     (responseCallbacks[index])(message, sendResponse);

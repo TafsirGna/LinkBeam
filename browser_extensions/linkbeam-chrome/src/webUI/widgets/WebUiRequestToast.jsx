@@ -1,8 +1,8 @@
-/*import './WebUiCustomToast.css'*/
+/*import './WebUiRequestToast.css'*/
 import React from 'react';
 import { appParams } from "../../react_components/Local_library";
 
-export default class WebUiCustomToast extends React.Component{
+export default class WebUiRequestToast extends React.Component{
 
   constructor(props){
     super(props);
