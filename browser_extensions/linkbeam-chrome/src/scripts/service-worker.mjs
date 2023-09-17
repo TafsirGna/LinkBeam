@@ -1123,15 +1123,28 @@ function processLinkedInData(linkedInData){
     // add_search(search);
 
     // checking that the setting allows the injection
-    getSettingsData(["notifications"], (results) => {
+    getSettingsData(["notifications", "productID"], (results) => {
         var notificationSetting = results[0];
 
         if (notificationSetting){
-            console.log("tab id ", tabID);
+
             chrome.scripting.executeScript({
                 target: { tabId: tabID },
-                files: ["./assets/moment.js", "./assets/web_ui.js"]
+                files: ["./assets/web_ui.js"],
+            }, () => {
+
+                /*chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                    chrome.tabs.sendMessage(tabs[0].id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: results[1]}}, (response) => {
+                      console.log('On load, productID sent', response);
+                    });  
+                });*/
+
+                chrome.tabs.sendMessage(tabID, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: results[1]}}, (response) => {
+                  console.log('On load, productID sent', response);
+                });  
+
             });
+
         }
     });
 }

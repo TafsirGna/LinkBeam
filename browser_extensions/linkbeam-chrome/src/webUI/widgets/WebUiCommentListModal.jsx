@@ -3,7 +3,7 @@ import React from 'react';
 import { appParams } from "../../react_components/Local_library";
 // import { Drawer } from 'flowbite';
 import user_icon from '../../assets/user_icon.png';
-// import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 
@@ -177,7 +177,7 @@ const CommentListView = (props) => {
                                     <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                     <div class="ml-4 flex-auto">
                                       <div class="font-medium">
-                                        {commentItem.get("createdBy")} · <span class="font-light text-xs">{moment(commentItem.get("createdAt").toISOString(), moment.ISO_8601).fromNow()}</span>
+                                        {commentItem.get("createdBy")} · <span class="font-light text-xs">{LuxonDateTime.fromISO(commentItem.get("createdAt").toISOString()).toRelative()}</span>
                                       </div>
                                       <div class="mt-1 text-slate-700 text-sm">
                                         {commentItem.get("text")}

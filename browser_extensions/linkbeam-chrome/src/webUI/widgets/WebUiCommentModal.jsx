@@ -39,7 +39,7 @@ export default class WebUiCommentModal extends React.Component{
 
   sendComment(){
 
-    if (this.props.productID == null){
+    if (this.props.appSettingsData.productID == null){
       console.log("No product ID specified ! ");
       return;
     }
@@ -53,7 +53,7 @@ export default class WebUiCommentModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', this.props.productID);
+      comment.set('createdBy', this.props.appSettingsData.productID);
       comment.set('profileId', 'test');
       comment.set('sectionId', 'test');
       try {

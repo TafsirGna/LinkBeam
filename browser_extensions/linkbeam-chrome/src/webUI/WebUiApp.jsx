@@ -2,10 +2,7 @@ import React from 'react';
 import { 
   appParams,
   messageParams,
-  dbData,
-  sendDatabaseActionMessage,
   ack,
-  startMessageListener,
 } from "../react_components/Local_library";
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
@@ -21,48 +18,12 @@ export default class App extends React.Component{
       queryToastShow: true,
       okToastShow: false,
       okToastText: "",
-      productID: null,
-      // viewTabIndex: 0,
     };
 
     this.onToastOK = this.onToastOK.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   componentDidMount() {
-
-    this.listenToMessages();
-    
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
-
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onSettingsDataReceived
-      },
-    ]);
-
-  }
-
-  onSettingsDataReceived(message, sendResponse){
-
-    switch(message.data.objectData.property){
-
-      case "productID":{
-
-        // acknowledge receipt
-        ack(sendResponse);
-
-        let productID = message.data.objectData.value;
-        this.setState({productID: productID});
-        break;
-      }
-    }
 
   }
 
@@ -86,15 +47,11 @@ export default class App extends React.Component{
     }, callback);
   }
 
-  /*switchViewTabIndex(){
-
-  }*/
-
   onToastOK(){
 
     this.handleQueryToastClose();
     
-    this.handleOkToastShow(appParams.appName + "activated", () => {
+    this.handleOkToastShow(appParams.appName + " activated", () => {
       setTimeout(() => {
         this.handleOkToastClose();
       }, appParams.TIMER_VALUE);
@@ -129,7 +86,7 @@ export default class App extends React.Component{
 
         <WebUiCommentListModal show={this.state.modalShow} /*handleClose={this.handleModalClose}*/ />
 
-        <WebUiCommentModal productID={this.state.productID}/>
+        <WebUiCommentModal appSettingsData={this.props.appSettingsData}/>
 
         <WebUiNotificationToast show={this.state.okToastShow} handleClose={this.handleOkToastClose} text={this.state.okToastText} />    
 

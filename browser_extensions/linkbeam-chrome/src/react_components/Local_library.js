@@ -67,6 +67,7 @@ export const messageParams = {
     OBJECT_UPDATED: "object-updated",
     OBJECT_DELETED: "object-deleted",
     PROCESSED_DATA: "processed-data",
+    WEB_UI_APP_SETTINGS_DATA: "web-ui-app-settings-data",
   },
 
   separator: "|",
