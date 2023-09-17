@@ -31,8 +31,6 @@ var appSettingsData = null;
         ack(sendResponse);
 
         appSettingsData = message.data;
-        console.log("$$$$$$$$$$ : ", appSettingsData);
-
         createApp();
 
         break;

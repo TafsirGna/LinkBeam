@@ -84,7 +84,7 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.modalShow} /*handleClose={this.handleModalClose}*/ />
+        <WebUiCommentListModal show={this.state.modalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleModalClose}*/ />
 
         <WebUiCommentModal appSettingsData={this.props.appSettingsData}/>
 
