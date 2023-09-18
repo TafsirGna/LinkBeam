@@ -4,7 +4,7 @@ import { appParams } from "../../react_components/Local_library";
 // import { Drawer } from 'flowbite';
 import user_icon from '../../assets/user_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
-import { Spinner } from 'flowbite-react';
+import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 
 export default class WebUiCommentListModal extends React.Component{
@@ -264,7 +264,13 @@ const CommentItemView = (props) => {
             </span>
             <span onClick={() => {updateCommentItemVote("downvotes")}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-              { !downVoting && <span>{ props.object.get("downvotes") == null ? "0" : props.object.get("downvotes").length }</span>}
+              { !downVoting && <Tooltip
+                                  content="You and 3 users"
+                                >
+                                  <span>
+                                    { props.object.get("downvotes") == null ? "0" : props.object.get("downvotes").length }
+                                  </span>
+                                </Tooltip>}
               { downVoting && <Spinner
                                 aria-label="Extra small spinner example"
                                 className="ml-1"

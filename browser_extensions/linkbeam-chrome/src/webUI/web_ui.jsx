@@ -18,34 +18,106 @@ Parse.serverURL = appParams.PARSE_HOST_URL;
 
 var appSettingsData = null;
 
-// Setting function to listen to the service worker for messages
-(() => {
 
-  chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+const checkWebPage = () => {
 
-    switch(message.header){
+  // Making sure all the necessary tags are fully loaded first
+  console.log("iiiiiiiiiiiiiiiiiiiiiiiii");
+  var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
 
-      case messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA: {
-
-        // Acknowledge the message
-        ack(sendResponse);
-
-        appSettingsData = message.data;
-        createApp();
-
-        break;
-      }
-
-    }
-
-    return true;
-  });
-
-})();
+  if (selectedTags.length == 0){
+    setTimeout(() => {
+      checkWebPage();
+    }, appParams.TIMER_VALUE);
+  }
+  else{
+    setUpAppWithinWebPage();
+  }
+};
 
 
+const setUpAppWithinWebPage = () => {
 
-const createApp = () => {
+  /*
+    Inserting the warning alerts
+  */
+
+  try {
+    
+    var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
+    // core-section-container
+
+    /*for (var i = 0; i < selectedTags.length; i++){
+      var selectedTag = document.getElementsByClassName("pvs-header__container")[i];
+    }*/
+    
+    Array.from(selectedTags).forEach((selectedTag) => {
+
+      var newDivTag = document.createElement('div');
+      newDivTag.id = uuidv4();
+      newDivTag.classList.add(appParams.sectionMarkerShadowHostClassName);
+      selectedTag.prepend(newDivTag);
+      newDivTag.attachShadow({ mode: 'open' });
+
+      ReactDOM.createRoot(newDivTag.shadowRoot).render(
+        <React.StrictMode>
+          {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+          <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
+          <style type="text/css">{styles}</style>
+          <WebUiSectionMenu />
+        </React.StrictMode>
+      );
+
+    });
+
+  }
+  catch(err) {
+    console.log("An error occured when inserting the section markers ! ", err);
+  }
+
+  /*
+    Inserting the overlay interface
+  */
+
+  console.log("***  Inserting overlay");
+
+  var shadowHost = document.createElement('div');
+  shadowHost.id = appParams.extShadowHostId;
+  shadowHost.style.cssText='all:initial';
+  document.body.appendChild(shadowHost);
+
+  shadowHost = document.getElementById(appParams.extShadowHostId);
+  shadowHost.attachShadow({ mode: 'open' });
+  const shadowRoot = shadowHost.shadowRoot;
+
+  /*var styleTag = document.createElement('style');
+  styleTag.type = "text/css";
+  styleTag.innerText = bootstrap_css;
+  document.head.prepend(styleTag);*/
+
+  ReactDOM.createRoot(shadowRoot).render(
+    <React.StrictMode>
+      {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+      <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
+      <style type="text/css">{styles}</style>
+      <App appSettingsData={appSettingsData}/>
+    </React.StrictMode>
+  );
+
+  /*ReactDOM.render(
+    <React.StrictMode>
+      <style type="text/css">{styles}</style>
+      <App />
+    </React.StrictMode>,
+    shadowWrapper
+  );*/
+
+}
+
+
+const setUpApp = () => {
 
   if (webUiUrlRegex.test(window.location.href)){
 
@@ -58,81 +130,43 @@ const createApp = () => {
 
     ReactDOM.createRoot(newDivTag).render(
       <React.StrictMode>
-        <link rel="preconnect" href="https://fonts.googleapis.com"/>
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>
-        <WebUiProfileComments />
+        {/*<style type="text/css">{styles}</style>*/}
+        <WebUiProfileComments/>
       </React.StrictMode>
     );
 
   }
   else{
 
-    /*
-      Inserting the warning alerts
-    */
+    // Setting function to listen to the service worker for messages
+    (() => {
 
-    try {
-      
-      const selectedTag = document.getElementsByClassName("js-pinned-items-reorder-container")[0];
-      var newDivTag = document.createElement('div');
-      newDivTag.id = uuidv4();
-      newDivTag.classList.add(appParams.sectionMarkerShadowHostClassName);
-      selectedTag.prepend(newDivTag);
-      newDivTag.attachShadow({ mode: 'open' });
+      chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 
-      ReactDOM.createRoot(newDivTag.shadowRoot).render(
-        <React.StrictMode>
-          <link rel="preconnect" href="https://fonts.googleapis.com"/>
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-          <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>
-          <style type="text/css">{styles}</style>
-          <WebUiSectionMenu />
-        </React.StrictMode>
-      );
+        switch(message.header){
 
-    }
-    catch(err) {
-      console.log("An error occured when inserting the section markers ! ", err);
-    }
+          case messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA: {
 
-    /*
-      Inserting the overlay interface
-    */
+            // Acknowledge the message
+            ack(sendResponse);
 
-    var shadowHost = document.createElement('div');
-    shadowHost.id = appParams.extShadowHostId;
-    shadowHost.style.cssText='all:initial';
-    document.body.appendChild(shadowHost);
+            appSettingsData = message.data;
+            checkWebPage();
 
-    shadowHost = document.getElementById(appParams.extShadowHostId);
-    shadowHost.attachShadow({ mode: 'open' });
-    const shadowRoot = shadowHost.shadowRoot;
+            break;
+          }
 
-    /*var styleTag = document.createElement('style');
-    styleTag.type = "text/css";
-    styleTag.innerText = bootstrap_css;
-    document.head.prepend(styleTag);*/
+        }
 
-    ReactDOM.createRoot(shadowRoot).render(
-      <React.StrictMode>
-        <link rel="preconnect" href="https://fonts.googleapis.com"/>
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>
-        <style type="text/css">{styles}</style>
-        <App appSettingsData={appSettingsData}/>
-      </React.StrictMode>
-    );
+        return true;
+      });
 
-    /*ReactDOM.render(
-      <React.StrictMode>
-        <style type="text/css">{styles}</style>
-        <App />
-      </React.StrictMode>,
-      shadowWrapper
-    );*/
+    })();
 
   }
 
 
 }
+
+setUpApp();
+

@@ -13,6 +13,8 @@ export const appParams = {
   PARSE_JAVASCRIPT_KEY: 'robF8N6XaqWscNKitZZeuTPcIkJI1ytJhjooUBOS',
   PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
+  SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
+  // SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
 }
 
 export const dbData = {
