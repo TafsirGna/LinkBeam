@@ -19,17 +19,17 @@ export default class HomeMenu extends React.Component{
     return (
       <>
         
-        <OverlayTrigger
-          placement="bottom"
-          overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
-        >
-          <button type="button" class="btn btn-light btn-sm float-start py-0 m-3">
-            Activate ?
-            <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-          </button>
-        </OverlayTrigger>
+        { this.props.envData != null && <OverlayTrigger
+                  placement="bottom"
+                  overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
+                >
+                  <button type="button" class={"btn btn-light btn-sm float-start py-0 m-3"}>
+                    Activate ?
+                    <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                  </button>
+                </OverlayTrigger>}
 
 
         <div class="dropdown float-end m-3 mt-2 bd-gray">

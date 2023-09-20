@@ -48,6 +48,11 @@ export default class WebUiCommentModal extends React.Component{
       return;
     }
 
+    const response = confirm("LinkBeam expects your contribution to be thoughtful and relevant. Confirm the comment ?");
+    if (!response){
+      return;
+    }
+
     this.setState({sending: true});
 
     (async () => {

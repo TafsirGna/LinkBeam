@@ -15,6 +15,7 @@ export const appParams = {
   TIMER_VALUE: 3000,
   SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   // SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
+  WEB_PAGE_URL_PATTERN: /github.com/,
 }
 
 export const dbData = {
@@ -59,6 +60,8 @@ export const messageParams = {
     DEL_OBJECT: "delete-object",
     GET_PROCESSED_DATA: "get-processed-data",
     UPDATE_OBJECT: "update-object",
+    SW_WEB_PAGE_CHECK: "sw-web-page-check",
+    CS_EXPAND_MODAL_ACTION: "web-ui-expand-modal-action",
   },
 
   responseHeaders: {
@@ -70,11 +73,27 @@ export const messageParams = {
     OBJECT_DELETED: "object-deleted",
     PROCESSED_DATA: "processed-data",
     WEB_UI_APP_SETTINGS_DATA: "web-ui-app-settings-data",
+    CS_WEB_PAGE_DATA: "sw-web-page-data",
+    SW_CS_MESSAGE_SENT: "sw-cs-message-sent",
+  },
+
+  contentMetaData: {
+    SW_WEB_PAGE_CHECKED: "sw-web-page-checked",
   },
 
   separator: "|",
 
 };
+
+export const checkCurrentTab = () => {
+
+  // Sending a message to the service worker for verification on the current tab
+  chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_WEB_PAGE_CHECK, data: null}, (response) => {
+    // Got an asynchronous response with the data from the service worker
+    console.log("Web page checking Request sent !");
+  });
+
+}
 
 export function saveCurrentPageTitle(pageTitle){
 
@@ -316,6 +335,22 @@ export function startMessageListener(listenerSettings){
           }
         }
 
+        break;
+      }
+
+      case messageParams.responseHeaders.SW_CS_MESSAGE_SENT:{
+
+        switch(message.data.objectStoreName){
+
+          case messageParams.contentMetaData.SW_WEB_PAGE_CHECKED:{
+
+            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
+            
+            break;
+          }
+
+        }
+        
         break;
       }
     }

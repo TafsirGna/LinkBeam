@@ -12,7 +12,8 @@ import {
   startMessageListener,
   messageParams,
   dbData,
-  appParams
+  appParams, 
+  checkCurrentTab,
   } from "./Local_library";
 
 export default class Activity extends React.Component{
@@ -26,6 +27,7 @@ export default class Activity extends React.Component{
       currentPageTitle: "Activity",
       currentTabIndex: 0,
       loadingSearches: false,
+      currentTabWebPageData: null,
     };
 
     this.setListData = this.setListData.bind(this);
@@ -65,7 +67,7 @@ export default class Activity extends React.Component{
       this.getSearchList(offset);
     }
     else{
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle"]);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle", "notifications"]);
     }
 
   }
@@ -116,8 +118,34 @@ export default class Activity extends React.Component{
         }
 
         break;
+
+      }
+
+      case "notifications":{
+        
+        // Deciding whether to display the grow spinner for plugin activation or not 
+        var notificationSetting = message.data.objectData.value;
+        if (notificationSetting){
+          return;
+        }
+
+        checkCurrentTab();
+
+        break;
+        
       }
     }
+
+  }
+
+  onSwResponseReceived(message, sendResponse){
+    
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // setting the new value
+    let currentTabWebPageData = message.data.objectData;
+    this.setState({currentTabWebPageData: currentTabWebPageData});
 
   }
 
@@ -135,6 +163,10 @@ export default class Activity extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
+        callback: this.onSwResponseReceived
       },
     ]);
 
@@ -202,7 +234,7 @@ export default class Activity extends React.Component{
 
         <div class="clearfix">
           {/*setting icon*/}
-          <HomeMenu />
+          <HomeMenu envData={this.state.currentTabWebPageData} />
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">

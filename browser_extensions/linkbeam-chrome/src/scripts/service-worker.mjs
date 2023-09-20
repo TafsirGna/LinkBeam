@@ -7,8 +7,9 @@ import {
 } from "../react_components/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 
-let db = null;
-let tabID = null;
+let db = null,
+    tabID = null,
+    currentTabCheckContext = null;
 
 const settingData = [{
     id: 1,
@@ -17,6 +18,7 @@ const settingData = [{
     installedOn: new Date().toISOString(),
     productID: uuidv4(), 
     currentPageTitle: "Activity",
+    interestingCurrentTab: false,
 }];
 
 function createDatabase(context) {
@@ -1083,14 +1085,22 @@ function sendBackResponse(action, objectStoreName, data){
     let responseData = {objectStoreName: objectStoreName, objectData: data};
 
     chrome.runtime.sendMessage({header: action, data: responseData}, (response) => {
-      console.log(action + " " + objectStoreName + ' response sent', response, responseData);
+      console.log(action + " " , objectStoreName , ' response sent', response, responseData);
     });
 }
 
 // Script for processing linkedin data
 
 function processLinkedInData(linkedInData){
+
     console.log("linkedInData : ", linkedInData);
+
+    if (currentTabCheckContext == "popup"){
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, linkedInData);
+        // resetting the variable
+        currentTabCheckContext = null;
+        return;   
+    }
 
     if (!linkedInData){
         console.log("Not a valid linkedin page");
@@ -1219,16 +1229,17 @@ function processMessageEvent(message, sender, sendResponse){
             getProcessedData(message.data.objectStoreName, message.data.objectData);
             break;
         }
-        case 'linkedin-data':{
+        case messageParams.responseHeaders.CS_WEB_PAGE_DATA:{
             // acknowledge receipt
             ack(sendResponse);
             
             // Saving the new notification setting state
             var linkedInData = message.data;
+            console.log("+++++++++++++++++++ ", linkedInData);
             processLinkedInData(linkedInData);
             break;
         }
-        case 'expand-modal':{
+        case messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION:{
             // acknowledge receipt
             ack(sendResponse);
             
@@ -1240,11 +1251,22 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case messageParams.requestHeaders.SW_WEB_PAGE_CHECK:{
+            // acknowledge receipt
+            ack(sendResponse);
+            
+            currentTabCheckContext = "popup";
+            getAndCheckCurrentTab();
+
+            break;
+        }
+
         default:{
             // TODO
         }
     }
 };
+
 
 // Script for processing tab event
 function processTabEvent(tabId, changeInfo, tab){
@@ -1252,18 +1274,45 @@ function processTabEvent(tabId, changeInfo, tab){
     // console.log("in processTabEvent function !");
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
-    const linkedInPattern = /github.com/;
-    if (changeInfo.url /*&& linkedInPattern.test(changeInfo.url)*/) 
+
+    checkCurrentTab(tab, changeInfo);
+
+};
+
+function checkCurrentTab(tab, changeInfo){
+
+    var url = (changeInfo ? changeInfo.url : tab.url); 
+    if (url /*&& appParams.WEB_PAGE_URL_PATTERN.test(url)*/) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;
         chrome.scripting.executeScript({
-            target: { tabId: tabID },
+            target: { tabId: tab.id },
             files: ["./assets/tab_verifier_cs.js"]
         });
 
     }
-};
+    else{
+        if (currentTabCheckContext == "popup"){
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, null);
+        }
+    }
+}
+
+// Script for checking the current tab for relevant information
+function getAndCheckCurrentTab(){
+
+    // getting current tab
+
+    let queryOptions = { active: true, lastFocusedWindow: true };
+    chrome.tabs.query(queryOptions, ([tab]) => {
+        if (chrome.runtime.lastError)
+            console.error(chrome.runtime.lastError);
+        // `tab` will either be a `tabs.Tab` instance or `undefined`.
+        checkCurrentTab(tab);
+    });
+
+}
 
 // Script for listening to all events related to the content scripts
 
