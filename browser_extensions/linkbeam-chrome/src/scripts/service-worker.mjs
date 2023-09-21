@@ -1282,7 +1282,7 @@ function processTabEvent(tabId, changeInfo, tab){
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    if (url /*&& appParams.WEB_PAGE_URL_PATTERN.test(url)*/) 
+    if (url && appParams.WEB_PAGE_URL_PATTERN.test(url)) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;

@@ -7,6 +7,7 @@ import {
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
 import WebUiCommentModal from "./widgets/WebUiCommentModal";
+import WebUiCommentRepliesListModal from "./widgets/WebUiCommentRepliesListModal";
 import WebUiNotificationToast from "./widgets/WebUiNotificationToast";
 
 export default class App extends React.Component{
@@ -14,7 +15,8 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      modalShow: false,
+      commentListModalShow: false,
+      commentRepliesListModalShow: true,
       queryToastShow: true,
       okToastShow: false,
       okToastText: "",
@@ -27,8 +29,8 @@ export default class App extends React.Component{
 
   }
 
-  handleModalClose = () => {this.setState({modalShow: false});}
-  handleModalShow = () => {this.setState({modalShow: true});}
+  handleCommentListModalClose = () => {this.setState({commentListModalShow: false});}
+  handleCommentListModalShow = () => {this.setState({commentListModalShow: true});}
 
   handleQueryToastClose = () => {this.setState({queryToastShow: false});}
   handleQueryToastShow = () => {this.setState({queryToastShow: true});}
@@ -84,7 +86,9 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.modalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleModalClose}*/ />
+        <WebUiCommentListModal show={this.state.commentListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
+        
+        <WebUiCommentRepliesListModal show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
 
         <WebUiCommentModal appSettingsData={this.props.appSettingsData}/>
 

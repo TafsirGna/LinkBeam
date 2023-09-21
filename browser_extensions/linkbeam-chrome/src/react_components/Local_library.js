@@ -149,6 +149,16 @@ export function getChartColors(length){
 
 }
 
+export function expandToTab(){
+
+    // Send message to the background
+    chrome.runtime.sendMessage({header: messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION, data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log("Expand Modal Request sent !");
+    });
+
+}
+
 export function ack(sendResponse){
   // sending a response
   sendResponse({

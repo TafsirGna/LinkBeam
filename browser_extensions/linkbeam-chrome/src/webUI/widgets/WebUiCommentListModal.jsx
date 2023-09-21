@@ -1,11 +1,10 @@
 /*import './WebUiCommentListModal.css'*/
 import React, { useState } from 'react';
-import { appParams, messageParams } from "../../react_components/Local_library";
+import { appParams, messageParams, expandToTab } from "../../react_components/Local_library";
 // import { Drawer } from 'flowbite';
-import user_icon from '../../assets/user_icon.png';
-import { DateTime as LuxonDateTime } from "luxon";
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
+import WebUiCommentItemView from "./WebUiCommentItemView";
 
 export default class WebUiCommentListModal extends React.Component{
 
@@ -102,23 +101,13 @@ export default class WebUiCommentListModal extends React.Component{
 
   }
 
-  expandToTab(){
-
-    // Send message to the background
-    chrome.runtime.sendMessage({header: messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION, data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log("Expand Modal Request sent !");
-    });
-
-  }
-
   render(){
     return (
       <>
         <div class={"modal-container-ac84bbb3728 " + ((this.props.show) ? "" : " hidden ")} id={appParams.commentListModalContainerID}>
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             {!this.props.show && <div class="p-4">
-                                    <div onClick={() => {this.expandToTab()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                    <div onClick={() => {expandToTab()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                                       <span class="inline-flex">
                                         Expand to tab 
                                         <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -132,7 +121,7 @@ export default class WebUiCommentListModal extends React.Component{
                     /></span></div>}
 
             { this.state.commentList != null &&  <>
-                                                    { this.state.commentList.map((commentItem, index) => <CommentItemView object={commentItem} appSettingsData={this.props.appSettingsData}/> )}
+                                                    { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData}/> )}
                                                     <div class="p-4">
                                                       <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                                                         View more
@@ -165,145 +154,5 @@ export default class WebUiCommentListModal extends React.Component{
       </>
     );
   }
-}
-
-
-const CommentItemView = (props) => {
-
-  const [upVoting, setUpVoting] = useState(false);
-  const [downVoting, setDownVoting] = useState(false);
-
-  const showSpinner = (property) => {
-
-
-    if (property == "upvotes"){
-      setUpVoting(true);
-    }
-
-    if (property == "downvotes"){
-      setDownVoting(true);
-    }
-
-  }
-
-  const hideSpinner = (property) => {
-
-
-    if (property == "upvotes"){
-      setUpVoting(false);
-    }
-
-    if (property == "downvotes"){
-      setDownVoting(false);
-    }
-
-  }
-
-  const updateCommentItemVote = (property) => {
-
-    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(props.appSettingsData.productID) != -1)
-          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(props.appSettingsData.productID) != -1)){
-      return;
-    }
-
-    (async () => {
-      // const query = new Parse.Query('Comment');
-      showSpinner(property);
-
-      // here you put the objectId that you want to update
-      // const object = await query.get(objectId);
-      // object.set(property, value);
-
-      var votes = props.object.get(property);
-
-      if (votes == null){
-        props.object.set(property, [props.appSettingsData.productID]);
-      }
-      else{
-        votes.push(props.appSettingsData.productID);
-        props.object.set(property, votes);
-      }
-
-      try {
-        // const response = await object.save();
-        const response = await props.object.save();
-
-        console.log('CommentItem updated', response);
-        hideSpinner(property)
-
-      } catch (error) {
-        console.error('Error while updating ', error);
-      }
-
-    })();
-
-  }
-
-  const getTooltipContent = () => {
-    
-  }
-
-  return (
-
-    <>
-      <div class="flex items-center p-4">
-        <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-        <div class="ml-4 flex-auto">
-          <div class="font-medium">
-            {props.object.get("createdBy")} · <span class="font-light text-xs">{LuxonDateTime.fromISO(props.object.get("createdAt").toISOString()).toRelative()}</span>
-          </div>
-          <div class="mt-1 text-slate-700 text-sm">
-            {props.object.get("text")}
-          </div>
-          <div class="mt-2">
-            
-            <span onClick={() => {updateCommentItemVote("upvotes")}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-500">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
-              { !upVoting && <span>{ props.object.get("upvotes") == null ? "0" : props.object.get("upvotes").length }</span>}
-              { upVoting && <Spinner
-                                aria-label="Extra small spinner example"
-                                className="ml-1"
-                                size="xs"
-                              />}
-            </span>
-            
-            <span class="inline-flex">
-              <Tooltip
-                  content={ !downVoting ? "You and 3 users" : "" }
-                >
-                <span onClick={() => {updateCommentItemVote("downvotes")}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  { 
-                    !downVoting &&  
-                                      <span>
-                                        { props.object.get("downvotes") == null ? "0" : props.object.get("downvotes").length }
-                                      </span>
-                  }
-                  { 
-                    downVoting && <Spinner
-                                    aria-label="Extra small spinner example"
-                                    className="ml-1"
-                                    size="xs"
-                                  />
-                  }
-                </span>
-              </Tooltip>
-            </span>
-            <span class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-              15
-            </span>
-
-          </div>
-        </div>
-        {/*<div class="pointer-events-auto ml-4 flex-none rounded-md px-2 py-[0.3125rem] font-medium text-slate-700 shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-          View
-        </div>*/}
-      </div>
-
-    </>
-
-  );
-
 }
 

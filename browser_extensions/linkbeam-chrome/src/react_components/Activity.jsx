@@ -37,6 +37,7 @@ export default class Activity extends React.Component{
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
+    this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
 
   }
 
