@@ -51,6 +51,11 @@ export default class Activity extends React.Component{
       this.setState({bookmarkList: this.props.globalData.bookmarkList});
     }
 
+    // Setting current tab info if possible
+    if (this.props.globalData.currentTabWebPageData){
+      this.setState({currentTabWebPageData: this.props.globalData.currentTabWebPageData});
+    }
+
     // setting the local variable with the global data
     var offset = 0;
     if (this.props.globalData.searchList){

@@ -10,6 +10,7 @@ import {
   startMessageListener,
   dbData,
   } from "./Local_library";
+  import Parse from 'parse/dist/parse.min.js';
 
 export default class Feedback extends React.Component{
 
@@ -19,8 +20,11 @@ export default class Feedback extends React.Component{
       feedback: {
         title: null,
         text: null,
+        createdAt: null, // new Date().toISOString(),
       },
+      productID: null,
       dataRequestDone: null,
+      sending: false,
     };
 
     this.onFeedbackTextInputChange = this.onFeedbackTextInputChange.bind(this);
@@ -34,7 +38,7 @@ export default class Feedback extends React.Component{
 
     this.listenToMessages();
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback"]);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback", "productID"]);
 
     saveCurrentPageTitle("Feedback");
 
@@ -59,6 +63,13 @@ export default class Feedback extends React.Component{
         break;
       }
 
+    case "productID": {
+        var productID = message.data.objectData.value;
+
+        this.setState({productID: productID});
+        break;
+      }
+
     }
 
   }
@@ -76,11 +87,33 @@ export default class Feedback extends React.Component{
 
   onSendButtonClick(){
 
-    if (this.state.feedback.title == "" || this.state.feedback.text == ""){
+    if (this.state.feedback.title == "" || this.state.feedback.text == "" || this.state.productID == null){
+      console.log("Missing data for processing");
       return;
     }
 
-    sendDatabaseActionMessage(messageParams.responseHeaders.OBJECT_UPDATED, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: this.state.feedback});
+    this.setState({sending: true});
+
+    (async () => {
+      const myNewObject = new Parse.Object('UsageFeedback');
+      myNewObject.set('createdBy', this.state.productID);
+      myNewObject.set('text', this.state.feedback.text);
+      myNewObject.set('subject', this.state.feedback.title);
+      try {
+        const result = await myNewObject.save();
+        // Access the Parse Object attributes using the .GET method
+        console.log('UsageFeedback created', result);
+
+        var feedbackObject = this.state.feedback;
+        feedbackObject.createdAt = new Date().toISOString();
+        sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: feedbackObject});
+
+        this.setState({sending: false});
+
+      } catch (error) {
+        console.error('Error while creating UsageFeedback: ', error);
+      }
+    })();
 
   }
 
@@ -127,7 +160,12 @@ export default class Feedback extends React.Component{
 
             { this.state.dataRequestDone && this.state.dataRequestDone == "N/A" &&
                 <div class="clearfix">
-                  <button type="button" class="btn btn-primary btn-sm float-end shadow-sm" onClick={this.onSendButtonClick}>Send</button>
+                  <button type="button" class="btn btn-primary btn-sm float-end shadow-sm" onClick={this.onSendButtonClick}>
+                    { !this.state.sending && <span>Send</span>}
+                    { this.state.sending && <div class="spinner-border spinner-border-sm" role="status">
+                                              <span class="visually-hidden">Loading...</span>
+                                            </div>}
+                  </button>
                 </div>}
           </div>
         </div>

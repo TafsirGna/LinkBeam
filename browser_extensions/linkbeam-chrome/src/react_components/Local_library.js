@@ -16,6 +16,7 @@ export const appParams = {
   SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   // SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
   WEB_PAGE_URL_PATTERN: /github.com/,
+  INTERVAL_FEEDBACK: 5,
 }
 
 export const dbData = {

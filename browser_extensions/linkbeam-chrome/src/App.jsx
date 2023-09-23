@@ -19,9 +19,14 @@ import {
   ack,
   startMessageListener, 
   messageParams,
-  dbData
+  dbData,
+  appParams,
 } from "./react_components/Local_library";
+import Parse from 'parse/dist/parse.min.js';
 
+// Parse initialization configuration goes here
+Parse.initialize(appParams.PARSE_APPLICATION_ID, appParams.PARSE_JAVASCRIPT_KEY);
+Parse.serverURL = appParams.PARSE_HOST_URL;
 
 export default class App extends React.Component{
 
@@ -36,6 +41,7 @@ export default class App extends React.Component{
         reminderList: null,
         searchList: null,
         settings: {},
+        currentTabWebPageData: null,
       }
     };
 
@@ -45,6 +51,7 @@ export default class App extends React.Component{
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
+    this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
   }
 
   componentDidMount() {
@@ -147,6 +154,21 @@ export default class App extends React.Component{
 
   }
 
+  onSwResponseReceived(message, sendResponse){
+    
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // setting the new value
+    let currentTabWebPageData = message.data.objectData;
+    this.setState(prevState => {
+      let globalData = Object.assign({}, prevState.globalData);
+      globalData.currentTabWebPageData = currentTabWebPageData;
+      return { globalData };
+    });
+
+  }
+
   listenToMessages(){
 
     startMessageListener([
@@ -169,6 +191,10 @@ export default class App extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
+        callback: this.onSwResponseReceived
       },
     ]);
 

@@ -18,7 +18,6 @@ const settingData = [{
     installedOn: new Date().toISOString(),
     productID: uuidv4(), 
     currentPageTitle: "Activity",
-    interestingCurrentTab: false,
 }];
 
 function createDatabase(context) {
@@ -881,9 +880,25 @@ function getSettingsData(properties, callback = null){
         // Sending the retrieved data
         let settings = event.target.result;
         properties.forEach((property) => {
-            results.push(settings[property]);
+            var propValue = settings[property]; 
+
+            if (property == "feedback"){
+                // checking the diff between two dates
+
+                var diffTime = Math.abs((new Date()) - (new Date(propValue.createdAt)));
+                const diffDays = Math.ceil(diffTime / (1000 * 60)); 
+                // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                console.log(diffTime + " milliseconds");
+                // console.log(diffDays + " days");
+
+                if (diffTime > appParams.INTERVAL_FEEDBACK){
+                    propValue = null;
+                }
+            }
+
+            results.push(propValue);
             if (!callback){
-                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: settings[property]});
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: propValue});
             }
         });
 
@@ -1235,7 +1250,7 @@ function processMessageEvent(message, sender, sendResponse){
             
             // Saving the new notification setting state
             var linkedInData = message.data;
-            console.log("+++++++++++++++++++ ", linkedInData);
+            // console.log("+++++++++++++++++++ ", linkedInData);
             processLinkedInData(linkedInData);
             break;
         }
