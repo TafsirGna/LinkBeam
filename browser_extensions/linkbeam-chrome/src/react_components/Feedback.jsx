@@ -38,7 +38,9 @@ export default class Feedback extends React.Component{
 
     this.listenToMessages();
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback", "productID"]);
+    this.setState({productID: this.props.globalData.settings.productID});
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback"/*, "productID"*/]);
 
     saveCurrentPageTitle("Feedback");
 
@@ -63,12 +65,12 @@ export default class Feedback extends React.Component{
         break;
       }
 
-    case "productID": {
+      /*case "productID": {
         var productID = message.data.objectData.value;
 
         this.setState({productID: productID});
         break;
-      }
+      }*/
 
     }
 

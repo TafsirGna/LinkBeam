@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { activateInCurrentTab } from "../Local_library";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class HomeMenu extends React.Component{
@@ -16,10 +17,6 @@ export default class HomeMenu extends React.Component{
 
   }
 
-  activateInCurrentTab(){
-
-  }
-
   render(){
     return (
       <>
@@ -28,7 +25,7 @@ export default class HomeMenu extends React.Component{
                   placement="bottom"
                   overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
                 >
-                  <button onClick={() => {this.activateInCurrentTab()}} type="button" class={"btn btn-light btn-sm float-start py-0 m-3"}>
+                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-light btn-sm float-start py-0 m-3"}>
                     Activate ?
                     <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
                       <span class="visually-hidden">Loading...</span>

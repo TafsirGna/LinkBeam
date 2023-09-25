@@ -62,6 +62,7 @@ export const messageParams = {
     GET_PROCESSED_DATA: "get-processed-data",
     UPDATE_OBJECT: "update-object",
     SW_WEB_PAGE_CHECK: "sw-web-page-check",
+    SW_WEB_PAGE_ACTIVATION: "sw-web-page-activation",
     CS_EXPAND_MODAL_ACTION: "web-ui-expand-modal-action",
   },
 
@@ -80,6 +81,7 @@ export const messageParams = {
 
   contentMetaData: {
     SW_WEB_PAGE_CHECKED: "sw-web-page-checked",
+    SW_WEB_PAGE_ACTIVATED: "sw-web-page-activated",
   },
 
   separator: "|",
@@ -95,6 +97,17 @@ export const checkCurrentTab = () => {
   });
 
 }
+
+export const activateInCurrentTab = (params) => {
+
+  // Sending a message to the service worker for extension activation in the current tab
+  chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_WEB_PAGE_ACTIVATION, data: params}, (response) => {
+    // Got an asynchronous response with the data from the service worker
+    console.log("Web page activation Request sent !");
+  });
+
+}
+
 
 export function saveCurrentPageTitle(pageTitle){
 

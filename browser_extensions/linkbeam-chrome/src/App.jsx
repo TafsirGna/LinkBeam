@@ -66,6 +66,8 @@ export default class App extends React.Component{
     this.setState({profileUrlValue: profileUrlValue});
     this.setState({calendarView: calendarView});
 
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
+
   }
 
   onSearchesDataReceived(message, sendResponse){
@@ -140,13 +142,36 @@ export default class App extends React.Component{
 
       }
 
-      case "notifications":{
-        
+      case "productID":{
+
+        var productID = message.data.objectData.value;
         this.setState(prevState => {
           let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.notifications = message.data.objectData.value;
+          globalData.settings.productID = productID;
           return { globalData };
         });
+        break;
+
+      }
+
+      case "notifications":{
+        
+        var notificationSetting = message.data.objectData.value;
+
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.settings.notifications = notificationSetting;
+          return { globalData };
+        });
+
+        if (notificationSetting){
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.currentTabWebPageData = null;
+            return { globalData };
+          });
+        }
+
         break;
 
       }

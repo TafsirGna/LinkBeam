@@ -240,7 +240,7 @@ export default class Activity extends React.Component{
 
         <div class="clearfix">
           {/*setting icon*/}
-          <HomeMenu envData={this.state.currentTabWebPageData} />
+          <HomeMenu envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">

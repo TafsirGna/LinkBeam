@@ -1153,25 +1153,33 @@ function processLinkedInData(linkedInData){
 
         if (notificationSetting){
 
-            chrome.scripting.executeScript({
-                target: { tabId: tabID },
-                files: ["./assets/web_ui.js"],
-            }, () => {
-
-                /*chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-                    chrome.tabs.sendMessage(tabs[0].id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: results[1]}}, (response) => {
-                      console.log('On load, productID sent', response);
-                    });  
-                });*/
-
-                chrome.tabs.sendMessage(tabID, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: results[1]}}, (response) => {
-                  console.log('On load, productID sent', response);
-                });  
-
-            });
+            injectWebApp(results[1]);
 
         }
     });
+}
+
+// Script for injecting web app into the current tab
+
+function injectWebApp(productID){
+
+    chrome.scripting.executeScript({
+        target: { tabId: tabID },
+        files: ["./assets/web_ui.js"],
+    }, () => {
+
+        /*chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            chrome.tabs.sendMessage(tabs[0].id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: results[1]}}, (response) => {
+              console.log('On load, productID sent', response);
+            });  
+        });*/
+
+        chrome.tabs.sendMessage(tabID, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: productID}}, (response) => {
+          console.log('On load, productID sent', response);
+        });  
+
+    });
+
 }
 
 // Script handling the message execution
@@ -1250,7 +1258,6 @@ function processMessageEvent(message, sender, sendResponse){
             
             // Saving the new notification setting state
             var linkedInData = message.data;
-            // console.log("+++++++++++++++++++ ", linkedInData);
             processLinkedInData(linkedInData);
             break;
         }
@@ -1272,6 +1279,19 @@ function processMessageEvent(message, sender, sendResponse){
             
             currentTabCheckContext = "popup";
             getAndCheckCurrentTab();
+
+            break;
+        }
+
+        case messageParams.requestHeaders.SW_WEB_PAGE_ACTIVATION:{
+            // acknowledge receipt
+            ack(sendResponse);
+        
+            var productID = message.data.productID;
+            injectWebApp(productID);
+
+            // notifying the web app activation
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED, null);
 
             break;
         }
