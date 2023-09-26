@@ -8,6 +8,7 @@ export const appParams = {
   sectionMarkerID: "linkbeam-extension-section-marker",
   commentModalContainerID: "web-ui-comment-modal",
   commentListModalContainerID: "web-ui-comment-list-modal",
+  commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
   sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
   PARSE_APPLICATION_ID: 'VmRGMxmuLVDVyfGBKTESkWkAjIdjS7WkIubjKXSA',
   PARSE_JAVASCRIPT_KEY: 'robF8N6XaqWscNKitZZeuTPcIkJI1ytJhjooUBOS',

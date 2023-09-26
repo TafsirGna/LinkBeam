@@ -16,10 +16,11 @@ export default class App extends React.Component{
     super(props);
     this.state = {
       commentListModalShow: false,
-      commentRepliesListModalShow: true,
+      commentRepliesListModalShow: false,
       queryToastShow: true,
       okToastShow: false,
       okToastText: "",
+      commentObject: null,
     };
 
     this.onToastOK = this.onToastOK.bind(this);
@@ -27,10 +28,43 @@ export default class App extends React.Component{
 
   componentDidMount() {
 
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = (function(event) {
+      
+      const $targetEl1 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
+      if (event.composedPath()[0] == $targetEl1) {
+        // if (!this.props.show){
+          this.handleCommentListModalClose();
+        // }
+      }
+
+      const $targetEl2 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
+      if (event.composedPath()[0] == $targetEl2) {
+        $targetEl2.classList.add("hidden");
+      }
+
+      const $targetEl3 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentRepliesListModalContainerID);
+      if (event.composedPath()[0] == $targetEl3) {
+        this.handleCommentRepliesListModalClose();
+      }
+    }).bind(this);
+
   }
 
-  handleCommentListModalClose = () => {this.setState({commentListModalShow: false});}
+  handleCommentListModalClose = (callback = null) => {this.setState({commentListModalShow: false}, callback);}
   handleCommentListModalShow = () => {this.setState({commentListModalShow: true});}
+
+  handleCommentRepliesListModalClose = () => {this.setState({commentRepliesListModalShow: false});}
+  handleCommentRepliesListModalShow = (comment) => {
+
+    // console.log("^^^^^^^^^^^^^^^^ 2 : ", comment);
+
+    this.setState(
+    {
+      commentObject: comment, 
+      commentRepliesListModalShow: true,
+    });
+  }
 
   handleQueryToastClose = () => {this.setState({queryToastShow: false});}
   handleQueryToastShow = () => {this.setState({queryToastShow: true});}
@@ -47,6 +81,14 @@ export default class App extends React.Component{
       okToastShow: true,
       okToastText: okToastText,
     }, callback);
+  }
+
+  onCommentRepliesClicked = (comment) => {
+
+    // console.log("^^^^^^^^^^^^^^^^ 1 : ", comment);
+
+    this.handleCommentListModalClose(this.handleCommentRepliesListModalShow(comment));
+
   }
 
   onToastOK(){
@@ -86,9 +128,9 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.commentListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
+        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ handleCommentRepliesClick={this.onCommentRepliesClicked}/>
         
-        <WebUiCommentRepliesListModal show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
+        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
 
         <WebUiCommentModal appSettingsData={this.props.appSettingsData}/>
 

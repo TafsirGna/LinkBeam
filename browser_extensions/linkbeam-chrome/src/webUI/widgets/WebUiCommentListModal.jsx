@@ -20,22 +20,6 @@ export default class WebUiCommentListModal extends React.Component{
 
   componentDidMount() {
 
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = (function(event) {
-      
-      const $targetEl1 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
-      if (event.composedPath()[0] == $targetEl1) {
-        // if (!this.props.show){
-          $targetEl1.classList.add("hidden");
-        // }
-      }
-
-      const $targetEl2 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
-      if (event.composedPath()[0] == $targetEl2) {
-        $targetEl2.classList.add("hidden");
-      }
-    });
-
     this.fetchCommentList();
 
     /*// set the drawer menu element
@@ -93,7 +77,7 @@ export default class WebUiCommentListModal extends React.Component{
     // query.equalTo('objectId', 'xKue915KBG');
     const results = await query.find();
     try {
-      console.log("--- ", results);
+      // console.log("--- ", results);
       this.setState({commentList: results});
     } catch (error) {
       console.error('Error while fetching Comment', error);
@@ -104,9 +88,9 @@ export default class WebUiCommentListModal extends React.Component{
   render(){
     return (
       <>
-        <div class={"modal-container-ac84bbb3728 " + ((this.props.show) ? "" : " hidden ")} id={appParams.commentListModalContainerID}>
+        <div class={"modal-container-ac84bbb3728 " + ((this.props.showOnMount || this.props.show) ? "" : " hidden ")} id={appParams.commentListModalContainerID}>
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-            {!this.props.show && <div class="p-4">
+            {!this.props.showOnMount && <div class="p-4">
                                     <div onClick={() => {expandToTab()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                                       <span class="inline-flex">
                                         Expand to tab 
@@ -121,7 +105,7 @@ export default class WebUiCommentListModal extends React.Component{
                     /></span></div>}
 
             { this.state.commentList != null &&  <>
-                                                    { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData}/> )}
+                                                    { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData} handleCommentRepliesClick={this.props.handleCommentRepliesClick} /> )}
                                                     <div class="p-4">
                                                       <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                                                         View more
