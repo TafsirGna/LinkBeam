@@ -29,8 +29,11 @@ export default class App extends React.Component{
   }
 
   componentWillUnmount() {
+
     eventBus.remove("showCommentModal");
+
     eventBus.remove("showCommentListModal");
+
   }
 
   componentDidMount() {
@@ -50,9 +53,7 @@ export default class App extends React.Component{
       
       const $targetEl1 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
       if (event.composedPath()[0] == $targetEl1) {
-        // if (!this.props.show){
-          this.handleCommentListModalClose();
-        // }
+        this.handleCommentListModalClose();
       }
 
       const $targetEl2 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
@@ -62,7 +63,7 @@ export default class App extends React.Component{
 
       const $targetEl3 = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentRepliesListModalContainerID);
       if (event.composedPath()[0] == $targetEl3) {
-        this.handleCommentRepliesListModalClose();
+        this.handleCommentRepliesListModalClose(this.handleCommentListModalShow);
       }
     }).bind(this);
 
@@ -74,7 +75,7 @@ export default class App extends React.Component{
   handleCommentModalClose = (callback = null) => {this.setState({commentModalShow: false}, callback);}
   handleCommentModalShow = () => {this.setState({commentModalShow: true});}
 
-  handleCommentRepliesListModalClose = () => {this.setState({commentRepliesListModalShow: false});}
+  handleCommentRepliesListModalClose = (callback = null) => {this.setState({commentRepliesListModalShow: false}, callback);}
   handleCommentRepliesListModalShow = (comment) => {
 
     this.setState(
@@ -123,17 +124,7 @@ export default class App extends React.Component{
 
   showSectionWidgets(){
 
-    /*try{
-      const sectionMarkerShadowHosts = document.getElementsByClassName(appParams.sectionMarkerShadowHostClassName);
-      Array.prototype.forEach.call(sectionMarkerShadowHosts, function(sectionMarkerShadowHost) {
-        // var sectionMarkerShadowHost = document.getElementById((sectionMarkerShadowHosts[i]).id);
-        var sectionMarker = sectionMarkerShadowHost.shadowRoot.getElementById(appParams.sectionMarkerID);
-        sectionMarker.classList.remove("hidden");
-      });
-    }
-    catch(err){
-      console.log("An error occured when revealing the section markers ! ", err);
-    }*/
+    // Array.prototype.forEach.call(sectionMarkerShadowHosts, function(sectionMarkerShadowHost) { // TODO});
 
     eventBus.dispatch("showSectionWidgets", null);
 
@@ -146,11 +137,11 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ handleCommentRepliesClick={this.onCommentRepliesClicked}/>
+        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} appSettingsData={this.props.appSettingsData} handleCommentRepliesClick={this.onCommentRepliesClicked}/>
         
-        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} /*handleClose={this.handleCommentListModalClose}*/ />
+        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} />
 
-        <WebUiCommentModal show={this.state.commentModalShow} appSettingsData={this.props.appSettingsData}/>
+        <WebUiCommentModal show={this.state.commentModalShow} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} />
 
         <WebUiNotificationToast show={this.state.okToastShow} handleClose={this.handleOkToastClose} text={this.state.okToastText} />    
 

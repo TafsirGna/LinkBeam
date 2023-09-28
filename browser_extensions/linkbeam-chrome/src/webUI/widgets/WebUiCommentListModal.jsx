@@ -5,6 +5,7 @@ import { appParams, messageParams, expandToTab } from "../../react_components/Lo
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiCommentItemView from "./WebUiCommentItemView";
+import eventBus from "./EventBus";
 
 export default class WebUiCommentListModal extends React.Component{
 
@@ -13,14 +14,43 @@ export default class WebUiCommentListModal extends React.Component{
     this.state = {
       // drawer: null,
       commentList: null,
+      prevListOffset: null,
+      listOffset: null,
+      loadingMore: false,
     };
 
     this.fetchCommentList = this.fetchCommentList.bind(this);
   }
 
+  componentWillUnmount() {
+
+    eventBus.remove("newCount");
+
+  }
+
   componentDidMount() {
 
-    this.fetchCommentList();
+    eventBus.on("newCount", (data) =>
+      // this.setState({ message: data.message });
+      {
+        if (this.state.listOffset == null){
+          var offset = data.count - appParams.WEB_APP_ITEM_LIMIT_NUM;
+          offset = (offset >= 0 ? offset : 0);
+        }
+        else{
+          offset = this.state.listOffset;
+        }
+
+        var prevOffset = data.count;
+
+        this.setState({
+          listOffset: offset, 
+          prevListOffset: prevOffset
+        }, () => {
+          this.fetchCommentList();
+        });
+      }
+    );
 
     /*// set the drawer menu element
     const $targetEl = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById('drawer-js-example');
@@ -72,16 +102,56 @@ export default class WebUiCommentListModal extends React.Component{
 
   async fetchCommentList(){
 
+    console.log("0000000000000000 : ", this.state.listOffset);
+
+    this.setState({loadingMore: true});
+
     const query = new Parse.Query('Comment');
     // You can also query by using a parameter of an object
     query.equalTo('parentObject', null);
-    const results = await query.find();
+    query.limit((this.state.prevListOffset - this.state.listOffset));
+    query.skip(this.state.listOffset);
+
     try {
-      // console.log("--- ", results);
-      this.setState({commentList: results});
+
+      const results = await query.find();
+
+      if (results.length < appParams.WEB_APP_ITEM_LIMIT_NUM){
+        this.setState({loadingMore: null});
+      }
+      else{
+        this.setState({loadingMore: false});
+      }
+
+      this.setCommentList(results);
+
     } catch (error) {
+      this.setState({loadingMore: false});
       console.error('Error while fetching Comment', error);
     }
+
+  }
+
+  setCommentList(results){
+
+    if (this.state.commentList == null){
+      this.setState({commentList: []});
+      this.setCommentList(results);
+      return;
+    }
+
+    results.reverse();
+
+    var commentList = this.state.commentList.concat(results);
+    var offset = this.state.listOffset - appParams.WEB_APP_ITEM_LIMIT_NUM;
+    offset = (offset >= 0 ? offset : 0);
+    var prevOffset = this.state.listOffset;
+
+    this.setState({
+      commentList: commentList, 
+      listOffset: offset,
+      prevListOffset: prevOffset,
+    });
 
   }
 
@@ -106,11 +176,18 @@ export default class WebUiCommentListModal extends React.Component{
 
             { this.state.commentList != null &&  <>
                                                     { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData} handleCommentRepliesClick={this.props.handleCommentRepliesClick} /> )}
-                                                    <div class="p-4">
-                                                      <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                                        View more
-                                                      </div>
-                                                    </div>
+                                                    
+                                                    { this.state.loadingMore != null && <div class="p-4">
+                                                                                          <div onClick={() => {this.fetchCommentList()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                                                                            { this.state.loadingMore == true && <div class="inline-flex items-center">
+                                                                                                                          <Spinner
+                                                                                                                            aria-label="Extra small spinner example"
+                                                                                                                            size="sm"
+                                                                                                                          />
+                                                                                                                        </div>}
+                                                                                            { this.state.loadingMore == false && <span>View more</span> }
+                                                                                          </div>
+                                                                                        </div>}
                                                 </> } 
             
             

@@ -4,6 +4,7 @@ import { appParams } from "../../react_components/Local_library";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiNotificationToast from "./WebUiNotificationToast";
+import eventBus from "./EventBus";
 
 
 export default class WebUiCommentModal extends React.Component{
@@ -61,8 +62,10 @@ export default class WebUiCommentModal extends React.Component{
         this.setState({sending: false});
 
         // Making the modal disappear
-        const $targetEl = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
-        $targetEl.classList.add("hidden");
+        this.props.handleClose();
+
+        // notifying the change to the rest of the app
+        eventBus.dispatch("commentAdded", null);
 
         // notifiying the success to the user
         this.handleToastShow("Comment sent successfully ! ", () => {

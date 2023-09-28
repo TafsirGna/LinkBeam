@@ -22,12 +22,23 @@ export default class WebUiSectionMenu extends React.Component{
       {this.setState({show: true});}
     );
 
+    eventBus.on("commentAdded", (data) =>
+      // this.setState({ message: data.message });
+      {
+        this.fetchCommentsCount();
+      }
+    );
+
     this.fetchCommentsCount();
 
   }
 
   componentWillUnmount() {
+
     eventBus.remove("showSectionWidgets");
+
+    eventBus.remove("commentAdded");
+
   }
 
   async fetchCommentsCount(){
@@ -39,7 +50,11 @@ export default class WebUiSectionMenu extends React.Component{
       // Uses 'count' instead of 'find' to retrieve the number of objects
       const count = await query.count();
       console.log(`ParseObjects found: ${count}`);
+
       this.setState({commentsCount: count});
+
+      eventBus.dispatch("newCount", {count: count});
+
     } catch (error) {
       console.log(`Error: ${error}`);
     }

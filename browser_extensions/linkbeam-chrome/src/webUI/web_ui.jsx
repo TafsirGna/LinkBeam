@@ -22,7 +22,6 @@ var appSettingsData = null;
 const checkWebPage = () => {
 
   // Making sure all the necessary tags are fully loaded first
-  console.log("iiiiiiiiiiiiiiiiiiiiiiiii");
   var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
 
   if (selectedTags.length == 0){

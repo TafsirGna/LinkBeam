@@ -18,6 +18,7 @@ export const appParams = {
   // SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
   WEB_PAGE_URL_PATTERN: /github.com/,
   INTERVAL_FEEDBACK: 5,
+  WEB_APP_ITEM_LIMIT_NUM: 3,
 }
 
 export const dbData = {

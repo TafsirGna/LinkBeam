@@ -114,7 +114,7 @@ export default function CommentItemView(props) {
               <Tooltip
                     content="Verified user"
                   >
-                <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-2 ml-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
               </Tooltip>
             </span>
             { (props.object.get("parentObject") != null && props.object.get("parentObject").get("createdBy") == props.object.get("createdBy")) && <span class="bg-blue-100 text-blue-800 text-xs font-medium mx-1 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Author</span>}

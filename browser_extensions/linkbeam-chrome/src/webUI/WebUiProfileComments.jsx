@@ -22,7 +22,7 @@ export default class WebUiProfileComments extends React.Component{
     return (
       <>
         <div class="pt-5">
-          <WebUiCommentListModal show={true} appSettingsData={this.props.appSettingsData}/>
+          <WebUiCommentListModal showOnMount={true} appSettingsData={this.props.appSettingsData}/>
         </div>
       </>
     );
