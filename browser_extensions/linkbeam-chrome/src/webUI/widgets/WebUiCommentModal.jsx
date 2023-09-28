@@ -23,14 +23,6 @@ export default class WebUiCommentModal extends React.Component{
 
   componentDidMount() {
 
-    // When the user clicks anywhere outside of the modal, close it
-    /*window.onclick = (function(event) {
-          const $targetEl = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
-          if (event.composedPath()[0] == $targetEl) {
-            $targetEl.classList.add("hidden");
-          }
-        });*/
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -98,7 +90,7 @@ export default class WebUiCommentModal extends React.Component{
     return (
       <>
 
-          <div class={"modal-container-ac84bbb3728 hidden"} id={appParams.commentModalContainerID}>
+          <div class={"modal-container-ac84bbb3728 " + (this.props.show ? "" : "hidden")} id={appParams.commentModalContainerID}>
             <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             <form class="p-4">
       				<label for="message" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your comment</label>

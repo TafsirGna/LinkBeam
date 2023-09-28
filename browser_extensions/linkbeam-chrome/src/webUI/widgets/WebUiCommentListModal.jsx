@@ -74,7 +74,7 @@ export default class WebUiCommentListModal extends React.Component{
 
     const query = new Parse.Query('Comment');
     // You can also query by using a parameter of an object
-    // query.equalTo('objectId', 'xKue915KBG');
+    query.equalTo('parentObject', null);
     const results = await query.find();
     try {
       // console.log("--- ", results);

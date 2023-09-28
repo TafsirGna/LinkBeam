@@ -18,7 +18,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       commentText: "",
       upVoting: false,
       downVoting: false,
-      sending: false,
+      sendingState: null,
     };
 
     this.fetchCommentRepliesList = this.fetchCommentRepliesList.bind(this);
@@ -40,13 +40,22 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       }
     }
 
+    if (prevProps.show != this.props.show){
+      if (!this.props.show){
+        this.setState({
+          commentRepliesList: null,
+          commentText: "",
+        });
+      }
+    }
+
   }
 
   async fetchCommentRepliesList(){
 
     const query = new Parse.Query('Comment');
     // You can also query by using a parameter of an object
-    query.equalTo('parentId', this.props.commentObject.id);
+    query.equalTo('parentObject', this.props.commentObject);
     const results = await query.find();
     try {
       console.log("--- ", results);
@@ -106,7 +115,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       return;
     }
 
-    if (this.state.commentText == "" || this.state.sending){
+    if (this.state.commentText == "" || this.state.sendingState == "sending"){
       return;
     }
 
@@ -115,7 +124,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       return;
     }
 
-    this.setState({sending: true});
+    this.setState({sendingState: "sending"});
 
     (async () => {
       const comment = new Parse.Object('Comment');
@@ -123,23 +132,24 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       comment.set('createdBy', this.props.appSettingsData.productID);
       comment.set('profileId', 'test');
       comment.set('sectionId', 'test');
-      comment.set('parentId', this.props.commentObject);
+      comment.set('parentObject', this.props.commentObject);
       try {
         const result = await comment.save();
         // Access the Parse Object attributes using the .GET method
         console.log('ParseObject created', result);
 
-        this.setState({sending: false});
+        this.setState({commentText: ""});
 
-        /*// notifiying the success to the user
-        this.handleToastShow("Comment sent successfully ! ", () => {
-          setTimeout(() => {
-            this.handleToastClose();
-          }, appParams.TIMER_VALUE);
-        });*/
+        this.fetchCommentRepliesList();
+
+        // notifiying the success to the user
+        this.setState({sendingState: "sent"});
+        setTimeout(() => {
+          this.setState({sendingState: null});
+        }, appParams.TIMER_VALUE);
 
       } catch (error) {
-        this.setState({sending: false});
+        this.setState({sendingState: null});
         console.error('Error while creating ParseObject: ', error);
       }
     })();
@@ -166,9 +176,16 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                                                                                         <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                                                                                       </svg>
                                                                                       <span class="sr-only">Info</span>*/}
-                              <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300">
-                                <span class="mr-2">
+                              <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 flex items-center">
+                                <span class="mr-2 flex items-center">
                                   {this.props.commentObject.get("createdBy")} 
+                                  <span>
+                                    <Tooltip
+                                          content="Verified user"
+                                        >
+                                      <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                    </Tooltip>
+                                  </span>
                                 </span>
                                 · 
                                 <span class="font-light text-xs ml-2">{LuxonDateTime.fromISO(this.props.commentObject.get("createdAt").toISOString()).toRelative()}</span>
@@ -210,6 +227,15 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                                   </span>
                                 </Tooltip>
                               </span>
+                              <span class="rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                                {this.state.commentRepliesList == null && <Spinner
+                                                            aria-label="Extra small spinner example"
+                                                            className="ml-1"
+                                                            size="xs"
+                                                          />}
+                                {this.state.commentRepliesList != null && <span>{this.state.commentRepliesList.length}</span>}
+                              </span>
             
                             </div>
                           </div>}
@@ -220,15 +246,20 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                 </div>
                 <div class="flex">
                   <button onClick={() => {this.sendComment()}} type="button" class="ml-auto mt-2 flex items-center py-1 px-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                    {this.state.sending && <div class="inline-flex items-center">
+                    {this.state.sendingState == "sending" && <div class="inline-flex items-center">
                             <Spinner
                               aria-label="Extra small spinner example"
                               size="sm"
                             />
                           </div>}
-                    {!this.state.sending && <span class="flex">
+                    {this.state.sendingState == null && <span class="flex">
                                           <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                                           Send
+                                        </span>}
+
+                    {this.state.sendingState == "sent" && <span class="flex text-green-500 items-center">
+                                          Sent
+                                          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-1"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                         </span>}
                   </button>
                 </div >

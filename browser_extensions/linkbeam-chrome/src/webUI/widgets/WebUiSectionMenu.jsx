@@ -3,6 +3,7 @@ import React from 'react';
 import { appParams } from "../../react_components/Local_library";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
+import eventBus from "./EventBus";
 
 export default class WebUiSectionMenu extends React.Component{
 
@@ -10,18 +11,29 @@ export default class WebUiSectionMenu extends React.Component{
     super(props);
     this.state = {
       commentsCount: null,
+      show: false,
     };
   }
 
   componentDidMount() {
 
+    eventBus.on("showSectionWidgets", (data) =>
+      // this.setState({ message: data.message });
+      {this.setState({show: true});}
+    );
+
     this.fetchCommentsCount();
 
+  }
+
+  componentWillUnmount() {
+    eventBus.remove("showSectionWidgets");
   }
 
   async fetchCommentsCount(){
 
     const query = new Parse.Query('Comment');
+    query.equalTo('parentObject', null);
 
     try {
       // Uses 'count' instead of 'find' to retrieve the number of objects
@@ -40,15 +52,13 @@ export default class WebUiSectionMenu extends React.Component{
       return;
     }
 
-    var commentListModalContainer = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentListModalContainerID);
-    commentListModalContainer.classList.remove("hidden");
+    eventBus.dispatch("showCommentListModal", null);
 
   }
 
   handleCommentModalShow(){
 
-    var commentModalContainer = document.getElementById(appParams.extShadowHostId).shadowRoot.getElementById(appParams.commentModalContainerID);
-    commentModalContainer.classList.remove("hidden");
+    eventBus.dispatch("showCommentModal", null);
 
   }
 
@@ -56,7 +66,7 @@ export default class WebUiSectionMenu extends React.Component{
     return (
       <>
         
-        <div id={appParams.sectionMarkerID} class={"shadow hidden w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 "} role="alert">
+        <div id={appParams.sectionMarkerID} class={"shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 " + (this.state.show ? "" : " hidden ")} role="alert">
           <div class="flex items-center">
             <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>

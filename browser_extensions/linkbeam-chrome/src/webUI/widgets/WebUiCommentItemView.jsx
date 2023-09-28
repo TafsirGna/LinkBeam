@@ -16,7 +16,7 @@ export default function CommentItemView(props) {
     
     (async () => {
       const query = new Parse.Query('Comment');
-      query.equalTo('parentId', props.object.id);
+      query.equalTo('parentObject', props.object);
 
       try {
         // Uses 'count' instead of 'find' to retrieve the number of objects
@@ -117,6 +117,7 @@ export default function CommentItemView(props) {
                 <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-2 ml-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
               </Tooltip>
             </span>
+            { (props.object.get("parentObject") != null && props.object.get("parentObject").get("createdBy") == props.object.get("createdBy")) && <span class="bg-blue-100 text-blue-800 text-xs font-medium mx-1 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Author</span>}
             · 
             <span class="font-light text-xs ml-2">{LuxonDateTime.fromISO(props.object.get("createdAt").toISOString()).toRelative()}</span>
           </div>
@@ -157,15 +158,15 @@ export default function CommentItemView(props) {
                 </span>
               </Tooltip>
             </span>
-            <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
-              {repliesCount == null && <Spinner
-                                          aria-label="Extra small spinner example"
-                                          className="ml-1"
-                                          size="xs"
-                                        />}
-              {repliesCount != null && <span>{repliesCount}</span>}
-            </span>
+            { props.object.get("parentObject") == null && <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
+                          {repliesCount == null && <Spinner
+                                                      aria-label="Extra small spinner example"
+                                                      className="ml-1"
+                                                      size="xs"
+                                                    />}
+                          {repliesCount != null && <span>{repliesCount}</span>}
+                        </span>}
 
           </div>
         </div>
