@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './WebUiApp.jsx';
-import { appParams, messageParams, ack } from "../react_components/Local_library";
+import { appParams, messageParams, ack, checkWebPage } from "../react_components/Local_library";
 import styles from "./styles.min.css";
 import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
 import WebUiProfileComments from "./WebUiProfileComments";
@@ -17,22 +17,6 @@ Parse.initialize(appParams.PARSE_APPLICATION_ID, appParams.PARSE_JAVASCRIPT_KEY)
 Parse.serverURL = appParams.PARSE_HOST_URL;
 
 var appSettingsData = null;
-
-
-const checkWebPage = () => {
-
-  // Making sure all the necessary tags are fully loaded first
-  var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
-
-  if (selectedTags.length == 0){
-    setTimeout(() => {
-      checkWebPage();
-    }, appParams.TIMER_VALUE);
-  }
-  else{
-    setUpAppWithinWebPage();
-  }
-};
 
 
 const setUpAppWithinWebPage = () => {
@@ -150,7 +134,7 @@ const setUpApp = () => {
             ack(sendResponse);
 
             appSettingsData = message.data;
-            checkWebPage();
+            checkWebPage(setUpAppWithinWebPage);
 
             break;
           }

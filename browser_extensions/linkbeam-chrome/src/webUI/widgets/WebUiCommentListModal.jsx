@@ -135,8 +135,9 @@ export default class WebUiCommentListModal extends React.Component{
   setCommentList(results){
 
     if (this.state.commentList == null){
-      this.setState({commentList: []});
-      this.setCommentList(results);
+      this.setState({commentList: []}, () => {
+        this.setCommentList(results);
+      });
       return;
     }
 

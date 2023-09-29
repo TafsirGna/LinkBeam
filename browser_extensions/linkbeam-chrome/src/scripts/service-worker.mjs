@@ -4,6 +4,7 @@ import {
   dbData,
   messageParams,
   ack,
+  testTabUrl
 } from "../react_components/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -1314,10 +1315,12 @@ function processTabEvent(tabId, changeInfo, tab){
 
 };
 
+
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    if (url && appParams.WEB_PAGE_URL_PATTERN.test(url)) 
+    console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
+    if (url && testTabUrl(url)) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;
@@ -1329,6 +1332,7 @@ function checkCurrentTab(tab, changeInfo){
     }
     else{
         if (currentTabCheckContext == "popup"){
+            console.log("ZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZ");
             sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, null);
         }
     }

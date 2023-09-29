@@ -16,7 +16,7 @@ export const appParams = {
   TIMER_VALUE: 3000,
   SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   // SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
-  WEB_PAGE_URL_PATTERN: /github.com/,
+  WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
   INTERVAL_FEEDBACK: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
 }
@@ -88,6 +88,28 @@ export const messageParams = {
 
   separator: "|",
 
+};
+
+export const testTabUrl = (url) => {
+
+  return (new RegExp(appParams.WEB_PAGE_URL_PATTERNS.join("|"))).test(url);
+
+}
+
+export const checkWebPage = (callback) => {
+
+  // Making sure all the necessary tags are fully loaded first
+  var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
+
+  if (selectedTags.length == 0){
+    setTimeout(() => {
+      checkWebPage(callback);
+    }, appParams.TIMER_VALUE);
+  }
+  else{
+    // setUpAppWithinWebPage();
+    callback();
+  }
 };
 
 export const checkCurrentTab = () => {

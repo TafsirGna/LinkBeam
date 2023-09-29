@@ -21,7 +21,7 @@ export default class HomeMenu extends React.Component{
     return (
       <>
         
-        { this.props.envData != null && <OverlayTrigger
+        { this.props.envData != null && this.props.envData.codeInjected == false && <OverlayTrigger
                   placement="bottom"
                   overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
                 >
