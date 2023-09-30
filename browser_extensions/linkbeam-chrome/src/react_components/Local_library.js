@@ -204,14 +204,16 @@ export function ack(sendResponse){
   });
 }
 
-function switchCaseFunction(message, sendResponse, responseParams, responseCallbacks){
+function executeCallback(message, sendResponse, responseParams, responseCallbacks){
 
   var param = [message.header, message.data.objectStoreName].join(messageParams.separator);
   var index = responseParams.indexOf(param);
   if (index >= 0){
     (responseCallbacks[index])(message, sendResponse);
+    return true;
   }
 
+  return false;
 }
 
 export function startMessageListener(listenerSettings){
@@ -227,181 +229,7 @@ export function startMessageListener(listenerSettings){
   // Listening for messages from the service worker
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
-    switch(message.header){
-
-      case messageParams.responseHeaders.OBJECT_LIST:{
-
-        switch(message.data.objectStoreName){
-
-          case dbData.objectStoreNames.SEARCHES:{
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-            
-            break;
-          }
-
-          case dbData.objectStoreNames.BOOKMARKS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.KEYWORDS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.REMINDERS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-        
-        break;
-      }
-      case messageParams.responseHeaders.OBJECT_COUNT:{
-
-        switch(message.data.objectStoreName){
-          /*case dbData.objectStoreNames.SEARCHES:{
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-            
-            break;
-          }*/
-
-          /*case dbData.objectStoreNames.BOOKMARKS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }*/
-
-          case dbData.objectStoreNames.KEYWORDS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.REMINDERS: {
-            
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-        
-        break;
-      }
-      case messageParams.responseHeaders.OBJECT_DATA:{
-
-        switch(message.data.objectStoreName){
-
-          case dbData.objectStoreNames.SETTINGS: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.PROFILES: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case "app-params": {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-
-        break;
-      }
-
-      case messageParams.responseHeaders.OBJECT_ADDED:{
-
-        switch(message.data.objectStoreName){
-
-          case dbData.objectStoreNames.BOOKMARKS: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.REMINDERS: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-
-        break;
-      }
-
-      case messageParams.responseHeaders.OBJECT_DELETED:{
-
-        switch(message.data.objectStoreName){
-
-          case dbData.objectStoreNames.BOOKMARKS: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-
-          case dbData.objectStoreNames.REMINDERS: {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-
-        break;
-      }
-
-      case messageParams.responseHeaders.PROCESSED_DATA:{
-
-        switch(message.data.objectStoreName){
-
-          case "views-timeline-chart": {
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-
-            break;
-          }
-        }
-
-        break;
-      }
-
-      case messageParams.responseHeaders.SW_CS_MESSAGE_SENT:{
-
-        switch(message.data.objectStoreName){
-
-          case messageParams.contentMetaData.SW_WEB_PAGE_CHECKED:{
-
-            switchCaseFunction(message, sendResponse, responseParams, responseCallbacks);
-            
-            break;
-          }
-
-        }
-        
-        break;
-      }
-    }
+    executeCallback(message, sendResponse, responseParams, responseCallbacks);
 
   });
 

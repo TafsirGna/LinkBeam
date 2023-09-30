@@ -38,6 +38,7 @@ export default class Activity extends React.Component{
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
+    this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
 
   }
 
@@ -155,6 +156,16 @@ export default class Activity extends React.Component{
 
   }
 
+  onExtensionCodeInjected(message, sendResponse){
+    
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // hiding the popup
+    window.close();
+
+  }
+
   listenToMessages(){
 
     startMessageListener([
@@ -173,6 +184,10 @@ export default class Activity extends React.Component{
       {
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
         callback: this.onSwResponseReceived
+      },
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED].join(messageParams.separator), 
+        callback: this.onExtensionCodeInjected
       },
     ]);
 

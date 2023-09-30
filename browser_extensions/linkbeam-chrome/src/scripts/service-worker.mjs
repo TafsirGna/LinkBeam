@@ -1319,7 +1319,7 @@ function processTabEvent(tabId, changeInfo, tab){
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
+    // console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
     if (url && testTabUrl(url)) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page
@@ -1332,7 +1332,6 @@ function checkCurrentTab(tab, changeInfo){
     }
     else{
         if (currentTabCheckContext == "popup"){
-            console.log("ZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAZ");
             sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, null);
         }
     }
