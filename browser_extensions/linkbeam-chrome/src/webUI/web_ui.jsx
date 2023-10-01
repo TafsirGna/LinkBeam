@@ -7,13 +7,14 @@ import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
 import WebUiProfileComments from "./WebUiProfileComments";
 import { v4 as uuidv4 } from 'uuid';
 import Parse from 'parse/dist/parse.min.js';
+import { env } from "../../.env.js";
 
 
 // Checking first if the user has expanded the comment list modal
 var webUiUrlRegex = /^chrome-extension:\/\/[\w.]+\/web_ui\.html\?profile-url-comment-list=/;
 
 // Parse initialization configuration goes here
-Parse.initialize(appParams.PARSE_APPLICATION_ID, appParams.PARSE_JAVASCRIPT_KEY);
+Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
 Parse.serverURL = appParams.PARSE_HOST_URL;
 
 var appSettingsData = null;

@@ -13,6 +13,7 @@ import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
+import { env } from "../.env.js";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   sendDatabaseActionMessage,
@@ -21,11 +22,12 @@ import {
   messageParams,
   dbData,
   appParams,
+  logInParseUser,
 } from "./react_components/Local_library";
 import Parse from 'parse/dist/parse.min.js';
 
 // Parse initialization configuration goes here
-Parse.initialize(appParams.PARSE_APPLICATION_ID, appParams.PARSE_JAVASCRIPT_KEY);
+Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
 Parse.serverURL = appParams.PARSE_HOST_URL;
 
 export default class App extends React.Component{
@@ -42,6 +44,7 @@ export default class App extends React.Component{
         searchList: null,
         settings: {},
         currentTabWebPageData: null,
+        currentParseUser: null,
       }
     };
 
@@ -150,6 +153,17 @@ export default class App extends React.Component{
           globalData.settings.productID = productID;
           return { globalData };
         });
+
+        // log in to the parse
+        logInParseUser(
+          Parse,
+          productID,
+          productID,
+          (currentParseUser) => {
+            this.setState({currentParseUser: currentParseUser});
+          }
+        );
+
         break;
 
       }
@@ -268,7 +282,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Profile" element={<Profile />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
-            <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
+            <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} currentParseUser={this.state.currentParseUser} handleParseUserLoggedIn={(currentParseUser) => { this.setState({currentParseUser: currentParseUser}); }} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>

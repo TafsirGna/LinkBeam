@@ -10,8 +10,6 @@ export const appParams = {
   commentListModalContainerID: "web-ui-comment-list-modal",
   commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
   sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
-  PARSE_APPLICATION_ID: 'VmRGMxmuLVDVyfGBKTESkWkAjIdjS7WkIubjKXSA',
-  PARSE_JAVASCRIPT_KEY: 'robF8N6XaqWscNKitZZeuTPcIkJI1ytJhjooUBOS',
   PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
   SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
@@ -52,6 +50,59 @@ export const chartData = {
         ],
 
 }
+
+export const logInParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
+
+  try {
+    const loggedInUser = await Parse.User.logIn(usernameValue, passwordValue);
+    // logIn returns the corresponding ParseUser object
+    console.log(
+      `Success! User ${loggedInUser.get(
+        'username'
+      )} has successfully signed in!`
+    );
+
+    var currentParseUser = await Parse.User.current();
+    callback(currentParseUser);
+    return true;
+
+  } catch (error) {
+    // Error can be caused by wrong parameters or lack of Internet connection
+    console.log(`Error! ${error.message}`);
+
+    if (errCallback){
+      errCallback();
+    }
+
+    return false;
+  }
+
+};
+
+export const registerParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
+
+    try {
+      // Since the signUp method returns a Promise, we need to call it using await
+      const createdUser = await Parse.User.signUp(usernameValue, passwordValue);
+      console.log(
+        `Success! User ${createdUser.getUsername()} was successfully created!`
+      );
+
+      callback(createdUser);
+
+      return true;
+    } catch (error) {
+      // signUp can fail if any parameter is blank or failed an uniqueness check on the server
+      console.log(`Error! ${error}`);
+
+      if (errCallback){
+        errCallback();
+      }
+
+      return false;
+    }
+
+  };
 
 export const messageParams = {
 

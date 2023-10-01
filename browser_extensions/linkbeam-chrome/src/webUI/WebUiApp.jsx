@@ -3,6 +3,7 @@ import {
   appParams,
   messageParams,
   ack,
+  logInParseUser,
 } from "../react_components/Local_library";
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
@@ -10,6 +11,7 @@ import WebUiCommentModal from "./widgets/WebUiCommentModal";
 import WebUiCommentRepliesListModal from "./widgets/WebUiCommentRepliesListModal";
 import WebUiNotificationToast from "./widgets/WebUiNotificationToast";
 import eventBus from "./widgets/EventBus";
+import Parse from 'parse/dist/parse.min.js';
 
 export default class App extends React.Component{
 
@@ -23,6 +25,7 @@ export default class App extends React.Component{
       okToastShow: false,
       okToastText: "",
       commentObject: null,
+      currentParseUser: null,
     };
 
     this.onToastOK = this.onToastOK.bind(this);
@@ -37,6 +40,16 @@ export default class App extends React.Component{
   }
 
   componentDidMount() {
+
+    // log in to the parse
+    logInParseUser(
+      Parse,
+      this.props.appSettingsData.productID,
+      this.props.appSettingsData.productID,
+      (currentParseUser) => {
+        this.setState({currentParseUser: currentParseUser});
+      }
+    );
 
     eventBus.on("showCommentModal", (data) =>
       // this.setState({ message: data.message });

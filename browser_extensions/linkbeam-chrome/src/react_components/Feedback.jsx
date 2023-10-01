@@ -9,6 +9,8 @@ import {
   messageParams,
   startMessageListener,
   dbData,
+  logInParseUser, 
+  registerParseUser,
   } from "./Local_library";
   import Parse from 'parse/dist/parse.min.js';
 
@@ -32,6 +34,7 @@ export default class Feedback extends React.Component{
     this.onSendButtonClick = this.onSendButtonClick.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    this.storeObjectInParse = this.storeObjectInParse.bind(this);
   }
 
   componentDidMount() {
@@ -96,9 +99,53 @@ export default class Feedback extends React.Component{
 
     this.setState({sending: true});
 
+    if (this.props.currentParseUser == null){
+
+      // log in to the parse
+      logInParseUser(
+        Parse,
+        this.state.productID,
+        this.state.productID,
+        (currentParseUser) => {
+
+          this.props.handleParseUserLoggedIn(currentParseUser);
+
+          this.storeObjectInParse(currentParseUser);
+
+        },
+        () => {
+          registerParseUser(
+            Parse, 
+            this.state.productID,
+            this.state.productID,
+            (currentParseUser) => {
+
+              this.props.handleParseUserLoggedIn(currentParseUser);
+
+              this.storeObjectInParse(currentParseUser);
+
+            },
+            () => {
+              alert("An error ocurred when sending the feedback. Try again later!");
+            },
+          );
+        }
+      );
+
+    }
+    else{
+
+      this.storeObjectInParse(this.props.currentParseUser);
+
+    }
+
+  }
+
+  storeObjectInParse = (currentParseUser) => {
+
     (async () => {
       const myNewObject = new Parse.Object('UsageFeedback');
-      myNewObject.set('createdBy', this.state.productID);
+      myNewObject.set('createdBy', currentParseUser);
       myNewObject.set('text', this.state.feedback.text);
       myNewObject.set('subject', this.state.feedback.title);
       try {
