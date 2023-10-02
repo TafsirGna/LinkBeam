@@ -110,8 +110,8 @@ export default class WebUiCommentRepliesListModal extends React.Component{
 
   sendComment(){
 
-    if (this.props.appSettingsData.productID == null){
-      console.log("No product ID specified ! ");
+    if (this.props.currentParseUser == null){
+      console.log("Product not registered in parse DB ! ");
       return;
     }
 
@@ -129,7 +129,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', this.props.appSettingsData.productID);
+      comment.set('createdBy', this.props.currentParseUser);
       comment.set('profileId', 'test');
       comment.set('sectionId', 'test');
       comment.set('parentObject', this.props.commentObject);
@@ -268,7 +268,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                       aria-label="Extra small spinner example"
                       size="lg"
                     /></span></div>}
-              { this.state.commentRepliesList != null && this.state.commentRepliesList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData}/> )}
+              { this.state.commentRepliesList != null && this.state.commentRepliesList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} currentParseUser={this.props.currentParseUser}/> )}
               <div class="p-4">
                 <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                   View more

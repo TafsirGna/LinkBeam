@@ -82,11 +82,8 @@ const setUpAppWithinWebPage = () => {
 
   ReactDOM.createRoot(shadowRoot).render(
     <React.StrictMode>
-      {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-      <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
       <style type="text/css">{styles}</style>
-      <App appSettingsData={appSettingsData}/>
+      <App appSettingsData={appSettingsData} />
     </React.StrictMode>
   );
 

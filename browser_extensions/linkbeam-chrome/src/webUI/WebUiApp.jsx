@@ -3,7 +3,6 @@ import {
   appParams,
   messageParams,
   ack,
-  logInParseUser,
 } from "../react_components/Local_library";
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
@@ -26,9 +25,11 @@ export default class App extends React.Component{
       okToastText: "",
       commentObject: null,
       currentParseUser: null,
+      pageProfileObject: null,
     };
 
     this.onToastOK = this.onToastOK.bind(this);
+    // this.setCurrentParseUser = this.setCurrentParseUser.bind(this);
   }
 
   componentWillUnmount() {
@@ -40,16 +41,6 @@ export default class App extends React.Component{
   }
 
   componentDidMount() {
-
-    // log in to the parse
-    logInParseUser(
-      Parse,
-      this.props.appSettingsData.productID,
-      this.props.appSettingsData.productID,
-      (currentParseUser) => {
-        this.setState({currentParseUser: currentParseUser});
-      }
-    );
 
     eventBus.on("showCommentModal", (data) =>
       // this.setState({ message: data.message });
@@ -123,6 +114,41 @@ export default class App extends React.Component{
 
   onToastOK(){
 
+    if (this.state.pageProfileObject == null){
+
+      // Querying the current wab page object
+      (async () => {
+        // Creates a new Query object to help us fetch MyCustomClass objects
+        const query = new Parse.Query('PageProfile');
+        var pageProfileUrlRoot = (window.location.href.split("?"))[0];
+        query.equalTo('identifier', pageProfileUrlRoot);
+        try {
+          // Executes the query, which returns an array of MyCustomClass
+          const results = await query.find();
+
+          if (results.length == 0){
+            this.createPageProfileObject(this.onToastOK);
+          }
+          else // results.length == 1
+          {
+            var pageProfileObject = results[0];
+            this.setState({pageProfileObject: pageProfileObject}, () => {
+              this.onToastOK();
+            });
+          }
+
+          // this.setState({pageProfileObject: results[0]})
+          console.log(`ParseObjects found: ${JSON.stringify(results)}`);
+        } catch (error) {
+          console.log(`Error: ${JSON.stringify(error)}`);
+        }
+      })();
+
+      return;
+
+    }
+
+
     this.handleQueryToastClose();
     
     this.handleOkToastShow(appParams.appName + " activated", () => {
@@ -135,11 +161,38 @@ export default class App extends React.Component{
 
   }
 
+  /*setCurrentParseUser(currentParseUser){
+
+  }*/
+
+  createPageProfileObject(callback = null){
+
+    (async () => {
+      const myNewObject = new Parse.Object('PageProfile');
+      var pageProfileUrlRoot = (window.location.href.split("?"))[0];
+      myNewObject.set('identifier', pageProfileUrlRoot);
+      try {
+        const result = await myNewObject.save();
+        this.setState({pageProfileObject: result});
+        // Access the Parse Object attributes using the .GET method
+        console.log('PageProfile created', result);
+
+        if (callback){
+          callback();
+        }
+
+      } catch (error) {
+        console.error('Error while creating PageProfile: ', error);
+      }
+    })();
+
+  }
+
   showSectionWidgets(){
 
     // Array.prototype.forEach.call(sectionMarkerShadowHosts, function(sectionMarkerShadowHost) { // TODO});
 
-    eventBus.dispatch("showSectionWidgets", null);
+    eventBus.dispatch("showSectionWidgets", {pageProfileObject: this.state.pageProfileObject});
 
   }
 
@@ -150,11 +203,11 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} appSettingsData={this.props.appSettingsData} handleCommentRepliesClick={this.onCommentRepliesClicked}/>
+        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} currentParseUser={this.state.currentParseUser} handleCommentRepliesClick={this.onCommentRepliesClicked}/>
         
-        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} />
+        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} currentParseUser={this.state.currentParseUser} />
 
-        <WebUiCommentModal show={this.state.commentModalShow} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} />
+        <WebUiCommentModal show={this.state.commentModalShow} currentParseUser={this.state.currentParseUser} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}}/>
 
         <WebUiNotificationToast show={this.state.okToastShow} handleClose={this.handleOkToastClose} text={this.state.okToastText} />    
 

@@ -1274,6 +1274,15 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case messageParams.requestHeaders.CS_NOTIFY_LOAD_ACTION:{
+            // acknowledge receipt
+            ack(sendResponse);
+            
+            // notifying the load of the web app
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_LOADED, null);
+            break;
+        }
+
         case messageParams.requestHeaders.SW_WEB_PAGE_CHECK:{
             // acknowledge receipt
             ack(sendResponse);

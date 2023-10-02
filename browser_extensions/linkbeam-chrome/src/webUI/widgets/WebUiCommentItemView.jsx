@@ -60,8 +60,8 @@ export default function CommentItemView(props) {
 
   const updateCommentItemVote = (property) => {
 
-    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(props.appSettingsData.productID) != -1)
-          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(props.appSettingsData.productID) != -1)){
+    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(props.currentParseUser.getUsername()) != -1)
+          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(props.currentParseUser.getUsername()) != -1)){
       return;
     }
 
@@ -76,10 +76,10 @@ export default function CommentItemView(props) {
       var votes = props.object.get(property);
 
       if (votes == null){
-        props.object.set(property, [props.appSettingsData.productID]);
+        props.object.set(property, [props.currentParseUser.getUsername()]);
       }
       else{
-        votes.push(props.appSettingsData.productID);
+        votes.push(props.currentParseUser.getUsername());
         props.object.set(property, votes);
       }
 

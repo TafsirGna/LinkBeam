@@ -114,6 +114,9 @@ export default class Feedback extends React.Component{
 
         },
         () => {
+
+          // if (error 404)
+          
           registerParseUser(
             Parse, 
             this.state.productID,

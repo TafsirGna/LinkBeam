@@ -1,6 +1,6 @@
 /*import './WebUiCommentModal.css'*/
 import React, { useState } from 'react';
-import { appParams } from "../../react_components/Local_library";
+import { appParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiNotificationToast from "./WebUiNotificationToast";
@@ -30,10 +30,45 @@ export default class WebUiCommentModal extends React.Component{
 
   }
 
-  sendComment(){
+  sendComment(currentParseUser = null){
 
-    if (this.props.appSettingsData.productID == null){
-      console.log("No product ID specified ! ");
+    var currentParseUser = (currentParseUser ? currentParseUser : this.props.currentParseUser);
+
+    if (currentParseUser == null){
+      console.log("No user available with these credentials ! ");
+
+      // log in to the parse
+      logInParseUser(
+        Parse,
+        this.props.appSettingsData.productID,
+        this.props.appSettingsData.productID,
+        (parseUser) => {
+
+          this.props.setCurrentParseUser(parseUser);
+          this.sendComment(parseUser);
+
+        },
+        () => {
+
+          // if (error 404)
+
+          registerParseUser(
+            Parse, 
+            this.props.appSettingsData.productID,
+            this.props.appSettingsData.productID,
+            (parseUser) => {
+
+              this.props.setCurrentParseUser(parseUser);
+              this.sendComment(parseUser);
+
+            },
+            () => {
+              alert("An error ocurred when registering parse user. Try again later!");
+            },
+          );
+        }
+      );
+
       return;
     }
 
@@ -51,8 +86,8 @@ export default class WebUiCommentModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', this.props.appSettingsData.productID);
-      comment.set('profileId', 'test');
+      comment.set('createdBy', currentParseUser);
+      comment.set('pageProfile', this.props.pageProfile);
       comment.set('sectionId', 'test');
       try {
         const result = await comment.save();
