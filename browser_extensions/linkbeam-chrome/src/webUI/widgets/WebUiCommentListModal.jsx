@@ -124,7 +124,7 @@ export default class WebUiCommentListModal extends React.Component{
         this.setState({loadingMore: false});
       }
 
-      // this.setCommentList(results);
+      this.setCommentList(results);
 
     } catch (error) {
       this.setState({loadingMore: false});
@@ -177,7 +177,7 @@ export default class WebUiCommentListModal extends React.Component{
                     /></span></div>}
 
             { this.state.commentList != null &&  <>
-                                                    { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} currentParseUser={this.props.currentParseUser} handleCommentRepliesClick={this.props.handleCommentRepliesClick} /> )}
+                                                    { this.state.commentList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} appSettingsData={this.props.appSettingsData} setCurrentParseUser={this.props.setCurrentParseUser} currentParseUser={this.props.currentParseUser} handleCommentRepliesClick={this.props.handleCommentRepliesClick} /> )}
                                                     
                                                     { this.state.loadingMore != null && <div class="p-4">
                                                                                           <div onClick={() => {this.fetchCommentList()}} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">

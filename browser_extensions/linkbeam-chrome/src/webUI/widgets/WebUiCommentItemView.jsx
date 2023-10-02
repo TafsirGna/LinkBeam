@@ -1,7 +1,7 @@
 import { Spinner, Tooltip } from 'flowbite-react';
 import { DateTime as LuxonDateTime } from "luxon";
 import React, { useState } from 'react';
-import { appParams, messageParams } from "../../react_components/Local_library";
+import { appParams, messageParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
 import user_icon from '../../assets/user_icon.png';
 import Parse from 'parse/dist/parse.min.js';
 
@@ -58,10 +58,50 @@ export default function CommentItemView(props) {
 
   }
 
-  const updateCommentItemVote = (property) => {
+  const updateCommentItemVote = (property, currentParseUser = null) => {
 
-    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(props.currentParseUser.getUsername()) != -1)
-          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(props.currentParseUser.getUsername()) != -1)){
+    var currentParseUser = (currentParseUser ? currentParseUser : props.currentParseUser);
+
+    if (currentParseUser == null){
+
+      // log in to the parse
+      logInParseUser(
+        Parse,
+        props.appSettingsData.productID,
+        props.appSettingsData.productID,
+        (parseUser) => {
+
+          props.setCurrentParseUser(parseUser);
+          updateCommentItemVote(property, parseUser);
+
+        },
+        () => {
+
+          // if (error 404)
+
+          registerParseUser(
+            Parse, 
+            props.appSettingsData.productID,
+            props.appSettingsData.productID,
+            (parseUser) => {
+
+              props.setCurrentParseUser(parseUser);
+              updateCommentItemVote(property, parseUser);
+
+            },
+            () => {
+              alert("An error ocurred when registering parse user. Try again later!");
+            },
+          );
+        }
+      );
+
+      return;
+
+    }
+
+    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(currentParseUser.getUsername()) != -1)
+          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(currentParseUser.getUsername()) != -1)){
       return;
     }
 
@@ -76,10 +116,10 @@ export default function CommentItemView(props) {
       var votes = props.object.get(property);
 
       if (votes == null){
-        props.object.set(property, [props.currentParseUser.getUsername()]);
+        props.object.set(property, [currentParseUser.getUsername()]);
       }
       else{
-        votes.push(props.currentParseUser.getUsername());
+        votes.push(currentParseUser.getUsername());
         props.object.set(property, votes);
       }
 
@@ -109,7 +149,7 @@ export default function CommentItemView(props) {
         <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
         <div class="ml-4 flex-auto">
           <div class="font-medium inline-flex items-center">
-            {props.object.get("createdBy")}
+            {props.object.get("createdBy").getUsername()}
             <span>
               <Tooltip
                     content="Verified user"

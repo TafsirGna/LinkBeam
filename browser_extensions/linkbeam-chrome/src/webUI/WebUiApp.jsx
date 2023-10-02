@@ -203,9 +203,9 @@ export default class App extends React.Component{
 
         <WebUiRequestToast show={this.state.queryToastShow} handleClose={this.handleQueryToastClose} onOK={this.onToastOK}/>
 
-        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} currentParseUser={this.state.currentParseUser} handleCommentRepliesClick={this.onCommentRepliesClicked}/>
+        <WebUiCommentListModal show={this.state.commentListModalShow} showOnMount={false} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} currentParseUser={this.state.currentParseUser} handleCommentRepliesClick={this.onCommentRepliesClicked} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}}/>
         
-        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} currentParseUser={this.state.currentParseUser} />
+        <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} pageProfile={this.state.pageProfileObject} currentParseUser={this.state.currentParseUser} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}} />
 
         <WebUiCommentModal show={this.state.commentModalShow} currentParseUser={this.state.currentParseUser} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}}/>
 

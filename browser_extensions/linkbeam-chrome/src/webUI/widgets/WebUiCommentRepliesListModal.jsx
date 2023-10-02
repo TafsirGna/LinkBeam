@@ -1,6 +1,6 @@
 /*import './WebUiCommentRepliesListModal.css'*/
 import React, { useState } from 'react';
-import { appParams, messageParams, expandToTab } from "../../react_components/Local_library";
+import { appParams, messageParams, expandToTab, logInParseUser, registerParseUser } from "../../react_components/Local_library";
 // import { Drawer } from 'flowbite';
 import user_icon from '../../assets/user_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
@@ -108,10 +108,45 @@ export default class WebUiCommentRepliesListModal extends React.Component{
 
   }
 
-  sendComment(){
+  sendComment(currentParseUser = null){
 
-    if (this.props.currentParseUser == null){
+    var currentParseUser = (currentParseUser ? currentParseUser : this.props.currentParseUser);
+
+    if (currentParseUser == null){
       console.log("Product not registered in parse DB ! ");
+
+      // log in to the parse
+      logInParseUser(
+        Parse,
+        this.props.appSettingsData.productID,
+        this.props.appSettingsData.productID,
+        (parseUser) => {
+
+          this.props.setCurrentParseUser(parseUser);
+          this.sendComment(parseUser);
+
+        },
+        () => {
+
+          // if (error 404)
+
+          registerParseUser(
+            Parse, 
+            this.props.appSettingsData.productID,
+            this.props.appSettingsData.productID,
+            (parseUser) => {
+
+              this.props.setCurrentParseUser(parseUser);
+              this.sendComment(parseUser);
+
+            },
+            () => {
+              alert("An error ocurred when registering parse user. Try again later!");
+            },
+          );
+        }
+      );
+
       return;
     }
 
@@ -129,8 +164,8 @@ export default class WebUiCommentRepliesListModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', this.props.currentParseUser);
-      comment.set('profileId', 'test');
+      comment.set('createdBy', currentParseUser);
+      comment.set('pageProfile', this.props.pageProfile);
       comment.set('sectionId', 'test');
       comment.set('parentObject', this.props.commentObject);
       try {
@@ -178,7 +213,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                                                                                       <span class="sr-only">Info</span>*/}
                               <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 flex items-center">
                                 <span class="mr-2 flex items-center">
-                                  {this.props.commentObject.get("createdBy")} 
+                                  {this.props.commentObject.get("createdBy").getUsername()} 
                                   <span>
                                     <Tooltip
                                           content="Verified user"
