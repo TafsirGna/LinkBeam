@@ -484,6 +484,10 @@ function add_search(search) {
 
     console.log("Initiating insertion");
 
+    if (search.profile == undefined){
+        return;
+    }
+
     add_profile(search.profile, search);
 
 }
@@ -1123,7 +1127,7 @@ function processLinkedInData(linkedInData){
         return;
     }
     
-    // add_search(linkedInData);
+    add_search(linkedInData);
 
     // checking that the setting allows the injection
     getSettingsData(["notifications", "productID"], (results) => {

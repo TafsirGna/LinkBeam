@@ -11,7 +11,6 @@ import WebUiCommentRepliesListModal from "./widgets/WebUiCommentRepliesListModal
 import WebUiNotificationToast from "./widgets/WebUiNotificationToast";
 import eventBus from "./widgets/EventBus";
 import Parse from 'parse/dist/parse.min.js';
-import { v4 as uuidv4 } from 'uuid';
 import ReactDOM from 'react-dom/client';
 import styles from "./styles.min.css";
 import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
@@ -197,17 +196,14 @@ export default class App extends React.Component{
   
     try {
     
-      var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
-      // core-section-container
+      var sectionContainerClassName = (/github.com/.test((window.location.href.split("?"))[0]) ? appParams.GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME : appParams.LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME);
 
-      /*for (var i = 0; i < selectedTags.length; i++){
-        var selectedTag = document.getElementsByClassName("pvs-header__container")[i];
-      }*/
+      var selectedTags = document.getElementsByClassName(sectionContainerClassName);
+      // var selectedTags = document.getElementsByClassName(appParams.GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME);
       
       Array.from(selectedTags).forEach((selectedTag) => {
 
         var newDivTag = document.createElement('div');
-        newDivTag.id = uuidv4();
         selectedTag.prepend(newDivTag);
         newDivTag.attachShadow({ mode: 'open' });
 
@@ -217,7 +213,7 @@ export default class App extends React.Component{
             <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
             <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
             <style type="text/css">{styles}</style>
-            <WebUiSectionMenu pageProfile={this.state.pageProfileObject} />
+            <WebUiSectionMenu pageProfile={this.state.pageProfileObject} sectionTag={selectedTag}/>
           </React.StrictMode>
         );
 

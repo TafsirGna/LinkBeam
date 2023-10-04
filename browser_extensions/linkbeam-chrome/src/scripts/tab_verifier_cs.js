@@ -9,20 +9,39 @@ function extractData(){
 
   let pageData = {};
 
-  /*// Setting datetime and page's url
+  // Setting datetime and page's url
   let dateTime = new Date().toISOString(),
       pageUrl = (window.location.href.split("?"))[0];
 
   // Setting profile fullName property
   // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
-  let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
-  let title = (document.getElementsByClassName("top-card-layout__headline")[0]).innerHTML;
-  let location = (document.getElementsByClassName("top-card-layout__first-subline")[0]).firstElementChild.innerHTML;
-  let nFollowers = document.querySelector('.top-card-layout__first-subline :nth-child(2)').innerHTML;
-  let nConnections = document.querySelector('.top-card-layout__first-subline :nth-child(3)').innerHTML;
+  let fullName = null, fullNameTagContainer = document.querySelector(".top-card-layout__title");
+  if (fullNameTagContainer){
+    fullName = fullNameTagContainer.firstChild.textContent;
+  }
 
-  let experience = [], experienceSectionTag = null;
-  experienceSectionTag = document.querySelector(".core-section-container.experience");
+  let title = null, titleTagContainer = document.querySelector(".top-card-layout__headline");
+  if (titleTagContainer){
+    title = titleTagContainer.innerHTML;
+  }
+
+
+  let location = null, locationTagContainer = document.querySelector(".top-card-layout__first-subline");
+  if (locationTagContainer){
+    location = locationTagContainer.firstElementChild.innerHTML;
+  }
+
+  let nFollowers = null; nFollowersTagContainer = document.querySelector('.top-card-layout__first-subline :nth-child(2)');
+  if (nFollowersTagContainer){
+    nFollowers = nFollowersTagContainer.innerHTML;
+  }
+
+  let nConnections = null, nConnectionsTagContainer = document.querySelector('.top-card-layout__first-subline :nth-child(3)');
+  if (nFollowersTagContainer){
+    nConnections = nConnectionsTagContainer.innerHTML;
+  }
+
+  let experience = [], experienceSectionTag = document.querySelector(".core-section-container.experience");
   if (experienceSectionTag){
 
     Array.from((document.querySelector(".core-section-container.experience .experience__list")).children).forEach((experienceLiTag) => {
@@ -35,27 +54,31 @@ function extractData(){
 
   }
 
-  pageData = {
-      date: dateTime,
-      url: pageUrl,
-      profile: {
-          url: pageUrl,
-          fullName: fullName,
-          title: title,
-          info: "About",
-          imageUrl: "ok",
-          coverImageUrl: "ok",
-          date: dateTime,
-          nFollowers: 1,
-          nConnections: 1, 
-          location: location,
-          education: {},
-          experience: experience,
-          certifications: {},
-          newsFeed: {},
-          languages: {},
-      },
-  };*/
+  if (fullName){
+    
+    pageData = {
+        date: dateTime,
+        url: pageUrl,
+        profile: {
+            url: pageUrl,
+            fullName: fullName,
+            title: title,
+            info: "About",
+            imageUrl: "ok",
+            coverImageUrl: "ok",
+            date: dateTime,
+            nFollowers: 1,
+            nConnections: 1, 
+            location: location,
+            education: {},
+            experience: experience,
+            certifications: {},
+            newsFeed: {},
+            languages: {},
+        },
+    };
+    
+  }
 
 
   // checking if a linkbeam code has already been injected

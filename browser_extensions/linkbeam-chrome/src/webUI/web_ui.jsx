@@ -17,14 +17,11 @@ Parse.serverURL = appParams.PARSE_HOST_URL;
 
 var appSettingsData = null;
 
-
 const setUpAppWithinWebPage = () => {
 
   /*
     Inserting the overlay interface
   */
-
-  console.log("***  Inserting overlay");
 
   var shadowHost = document.createElement('div');
   shadowHost.id = appParams.extShadowHostId;
@@ -95,6 +92,7 @@ const setUpApp = () => {
             checkWebPage(setUpAppWithinWebPage);
 
             break;
+            
           }
 
         }

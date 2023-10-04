@@ -13,6 +13,7 @@ export default class WebUiSectionMenu extends React.Component{
       commentsCount: null,
       show: true,
       currentParseUser: null,
+      pageSectionObject: null,
     };
   }
 
@@ -32,6 +33,38 @@ export default class WebUiSectionMenu extends React.Component{
   componentWillUnmount() {
 
     eventBus.remove("commentAdded");
+
+  }
+
+  async fetchPageSection(){
+
+    var sectionName = null;
+
+    var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
+    if (sectionTitleTag){
+      sectionName = sectionTitleTag.innerHTML;
+      console.log("%%%%%%%%%%%%%%% : ", sectionName);
+    }
+
+    const query = new Parse.Query('PageSection');
+    query.equalTo('name', sectionName);
+
+    try {
+      const results = await query.find();
+      if (results.length > 0){
+        var section = results[0];
+        this.setState({pageSectionObject: section});
+      }
+
+      /*for (const object of results) {
+        // Access the Parse Object attributes using the .GET method
+        const name = object.get('name')
+        console.log(name);
+      }*/
+
+    } catch (error) {
+      console.error('Error while fetching PageSection', error);
+    }
 
   }
 
