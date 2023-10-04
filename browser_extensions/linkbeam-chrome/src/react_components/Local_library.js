@@ -9,7 +9,6 @@ export const appParams = {
   commentModalContainerID: "web-ui-comment-modal",
   commentListModalContainerID: "web-ui-comment-list-modal",
   commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
-  sectionMarkerShadowHostClassName: "linkbeam-section-marker-shadow-host",
   PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
   SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",

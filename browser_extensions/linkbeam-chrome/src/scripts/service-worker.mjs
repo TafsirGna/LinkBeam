@@ -1122,31 +1122,8 @@ function processLinkedInData(linkedInData){
         console.log("Not a valid linkedin page");
         return;
     }
-
-    let datetime = new Date().toISOString();
-    let search = {
-        date: datetime,
-        url: datetime,
-        profile: {
-            url: datetime,
-            fullName: "John Doe",
-            title: "Software Engineer",
-            info: "About",
-            imageUrl: "ok",
-            coverImageUrl: "ok",
-            date: new Date().toISOString(),
-            nFollowers: 1,
-            nConnections: 1, 
-            location: "",
-            education: {},
-            experience: {},
-            certifications: {},
-            newsFeed: {},
-            languages: {},
-        },
-    };
     
-    // add_search(search);
+    // add_search(linkedInData);
 
     // checking that the setting allows the injection
     getSettingsData(["notifications", "productID"], (results) => {

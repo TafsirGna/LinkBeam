@@ -11,6 +11,10 @@ import WebUiCommentRepliesListModal from "./widgets/WebUiCommentRepliesListModal
 import WebUiNotificationToast from "./widgets/WebUiNotificationToast";
 import eventBus from "./widgets/EventBus";
 import Parse from 'parse/dist/parse.min.js';
+import { v4 as uuidv4 } from 'uuid';
+import ReactDOM from 'react-dom/client';
+import styles from "./styles.min.css";
+import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
 
 export default class App extends React.Component{
 
@@ -157,7 +161,8 @@ export default class App extends React.Component{
       }, appParams.TIMER_VALUE);
     });
 
-    this.showSectionWidgets();
+    // this.showSectionWidgets();
+    this.insertSectionWidgets();
 
   }
 
@@ -188,14 +193,51 @@ export default class App extends React.Component{
 
   }
 
-  showSectionWidgets(){
+  insertSectionWidgets(){
+  
+    try {
+    
+      var selectedTags = document.getElementsByClassName(appParams.SECTION_MARKER_CONTAINER_CLASS_NAME);
+      // core-section-container
+
+      /*for (var i = 0; i < selectedTags.length; i++){
+        var selectedTag = document.getElementsByClassName("pvs-header__container")[i];
+      }*/
+      
+      Array.from(selectedTags).forEach((selectedTag) => {
+
+        var newDivTag = document.createElement('div');
+        newDivTag.id = uuidv4();
+        selectedTag.prepend(newDivTag);
+        newDivTag.attachShadow({ mode: 'open' });
+
+        ReactDOM.createRoot(newDivTag.shadowRoot).render(
+          <React.StrictMode>
+            {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+            <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
+            <style type="text/css">{styles}</style>
+            <WebUiSectionMenu pageProfile={this.state.pageProfileObject} />
+          </React.StrictMode>
+        );
+
+      });
+
+    }
+    catch(err) {
+      console.log("An error occured when inserting the section markers ! ", err);
+    }    
+
+  }
+
+  /*showSectionWidgets(){
 
     // Array.prototype.forEach.call(sectionMarkerShadowHosts, function(sectionMarkerShadowHost) { // TODO});
 
     eventBus.dispatch("showSectionWidgets", {pageProfileObject: this.state.pageProfileObject});
 
   }
-
+*/
   render(){
 
     return(

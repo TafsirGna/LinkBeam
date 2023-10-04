@@ -11,23 +11,12 @@ export default class WebUiSectionMenu extends React.Component{
     super(props);
     this.state = {
       commentsCount: null,
-      show: false,
+      show: true,
       currentParseUser: null,
-      pageProfileObject: null,
     };
   }
 
   componentDidMount() {
-
-    eventBus.on("showSectionWidgets", (data) =>
-      // this.setState({ message: data.message });
-      {
-        this.setState({show: true, pageProfileObject: data.pageProfileObject}, () => {
-          this.fetchCommentsCount();
-        });
-        
-      }
-    );
 
     eventBus.on("commentAdded", (data) =>
       // this.setState({ message: data.message });
@@ -36,11 +25,11 @@ export default class WebUiSectionMenu extends React.Component{
       }
     );
 
+    this.fetchCommentsCount();
+
   }
 
   componentWillUnmount() {
-
-    eventBus.remove("showSectionWidgets");
 
     eventBus.remove("commentAdded");
 
@@ -50,7 +39,7 @@ export default class WebUiSectionMenu extends React.Component{
 
     const query = new Parse.Query('Comment');
     query.equalTo('parentObject', null);
-    query.equalTo('pageProfile', this.state.pageProfileObject);
+    query.equalTo('pageProfile', this.props.pageProfile);
 
     try {
       // Uses 'count' instead of 'find' to retrieve the number of objects
