@@ -5,6 +5,7 @@ import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiNotificationToast from "./WebUiNotificationToast";
 import eventBus from "./EventBus";
+import { genPassword } from "../../.private_library";
 
 
 export default class WebUiCommentModal extends React.Component{
@@ -41,7 +42,7 @@ export default class WebUiCommentModal extends React.Component{
       logInParseUser(
         Parse,
         this.props.appSettingsData.productID,
-        this.props.appSettingsData.productID,
+        genPassword(this.props.appSettingsData.productID),
         (parseUser) => {
 
           this.props.setCurrentParseUser(parseUser);
@@ -55,7 +56,7 @@ export default class WebUiCommentModal extends React.Component{
           registerParseUser(
             Parse, 
             this.props.appSettingsData.productID,
-            this.props.appSettingsData.productID,
+            genPassword(this.props.appSettingsData.productID),
             (parseUser) => {
 
               this.props.setCurrentParseUser(parseUser);

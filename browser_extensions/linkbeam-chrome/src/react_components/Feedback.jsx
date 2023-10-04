@@ -13,6 +13,7 @@ import {
   registerParseUser,
   } from "./Local_library";
   import Parse from 'parse/dist/parse.min.js';
+  import { genPassword } from "../.private_library";
 
 export default class Feedback extends React.Component{
 
@@ -105,7 +106,7 @@ export default class Feedback extends React.Component{
       logInParseUser(
         Parse,
         this.state.productID,
-        this.state.productID,
+        genPassword(this.state.productID),
         (currentParseUser) => {
 
           this.props.handleParseUserLoggedIn(currentParseUser);
@@ -120,7 +121,7 @@ export default class Feedback extends React.Component{
           registerParseUser(
             Parse, 
             this.state.productID,
-            this.state.productID,
+            genPassword(this.state.productID),
             (currentParseUser) => {
 
               this.props.handleParseUserLoggedIn(currentParseUser);

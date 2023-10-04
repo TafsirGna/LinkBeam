@@ -3,6 +3,8 @@ import {
   appParams,
   messageParams,
   ack,
+  logInParseUser,
+  registerParseUser
 } from "../react_components/Local_library";
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
@@ -14,6 +16,7 @@ import Parse from 'parse/dist/parse.min.js';
 import ReactDOM from 'react-dom/client';
 import styles from "./styles.min.css";
 import WebUiSectionMenu from "./widgets/WebUiSectionMenu";
+import { genPassword } from "../.private_library";
 
 export default class App extends React.Component{
 
@@ -170,6 +173,44 @@ export default class App extends React.Component{
   }*/
 
   createPageProfileObject(callback = null){
+
+    if (this.state.currentParseUser == null){
+
+      // log in to the parse
+      logInParseUser(
+        Parse,
+        this.props.appSettingsData.productID,
+        genPassword(this.props.appSettingsData.productID),
+        (parseUser) => {
+
+          this.setState({currentParseUser: parseUser});
+          this.createPageProfileObject(callback);
+
+        },
+        () => {
+
+          // if (error 404)
+
+          registerParseUser(
+            Parse, 
+            this.props.appSettingsData.productID,
+            genPassword(this.props.appSettingsData.productID),
+            (parseUser) => {
+
+              this.setState({currentParseUser: parseUser});
+              this.createPageProfileObject(callback);
+
+            },
+            () => {
+              alert("An error ocurred when registering parse user. Try again later!");
+            },
+          );
+        }
+      );
+
+      return;
+
+    }
 
     (async () => {
       const myNewObject = new Parse.Object('PageProfile');

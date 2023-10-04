@@ -1,5 +1,5 @@
-import React from 'react'
-import './App.css'
+import React from 'react';
+import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import About from "./react_components/About";
 import Activity from "./react_components/Activity";
@@ -25,6 +25,7 @@ import {
   logInParseUser,
 } from "./react_components/Local_library";
 import Parse from 'parse/dist/parse.min.js';
+import { genPassword } from "./.private_library";
 
 // Parse initialization configuration goes here
 Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
@@ -158,7 +159,7 @@ export default class App extends React.Component{
         logInParseUser(
           Parse,
           productID,
-          productID,
+          genPassword(productID),
           (currentParseUser) => {
             this.setState({currentParseUser: currentParseUser});
           }

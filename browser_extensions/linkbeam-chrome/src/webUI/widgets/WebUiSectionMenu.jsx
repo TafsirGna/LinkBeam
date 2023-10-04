@@ -36,37 +36,37 @@ export default class WebUiSectionMenu extends React.Component{
 
   }
 
-  async fetchPageSection(){
+  // async fetchPageSection(){
 
-    var sectionName = null;
+  //   var sectionName = null;
 
-    var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
-    if (sectionTitleTag){
-      sectionName = sectionTitleTag.innerHTML;
-      console.log("%%%%%%%%%%%%%%% : ", sectionName);
-    }
+  //   var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
+  //   if (sectionTitleTag){
+  //     sectionName = sectionTitleTag.innerHTML;
+  //     console.log("%%%%%%%%%%%%%%% : ", sectionName);
+  //   }
 
-    const query = new Parse.Query('PageSection');
-    query.equalTo('name', sectionName);
+  //   const query = new Parse.Query('PageSection');
+  //   query.equalTo('name', sectionName);
 
-    try {
-      const results = await query.find();
-      if (results.length > 0){
-        var section = results[0];
-        this.setState({pageSectionObject: section});
-      }
+  //   try {
+  //     const results = await query.find();
+  //     if (results.length > 0){
+  //       var section = results[0];
+  //       this.setState({pageSectionObject: section});
+  //     }
 
-      /*for (const object of results) {
-        // Access the Parse Object attributes using the .GET method
-        const name = object.get('name')
-        console.log(name);
-      }*/
+  //     /*for (const object of results) {
+  //       // Access the Parse Object attributes using the .GET method
+  //       const name = object.get('name')
+  //       console.log(name);
+  //     }*/
 
-    } catch (error) {
-      console.error('Error while fetching PageSection', error);
-    }
+  //   } catch (error) {
+  //     console.error('Error while fetching PageSection', error);
+  //   }
 
-  }
+  // }
 
   async fetchCommentsCount(){
 

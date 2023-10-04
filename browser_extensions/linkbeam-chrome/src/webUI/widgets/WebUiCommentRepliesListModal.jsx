@@ -7,6 +7,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiCommentItemView from "./WebUiCommentItemView";
+import { genPassword } from "../../.private_library";
 
 export default class WebUiCommentRepliesListModal extends React.Component{
 
@@ -119,7 +120,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       logInParseUser(
         Parse,
         this.props.appSettingsData.productID,
-        this.props.appSettingsData.productID,
+        genPassword(this.props.appSettingsData.productID),
         (parseUser) => {
 
           this.props.setCurrentParseUser(parseUser);
@@ -133,7 +134,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
           registerParseUser(
             Parse, 
             this.props.appSettingsData.productID,
-            this.props.appSettingsData.productID,
+            genPassword(this.props.appSettingsData.productID),
             (parseUser) => {
 
               this.props.setCurrentParseUser(parseUser);

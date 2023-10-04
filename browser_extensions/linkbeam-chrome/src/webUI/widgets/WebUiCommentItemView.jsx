@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { appParams, messageParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
 import user_icon from '../../assets/user_icon.png';
 import Parse from 'parse/dist/parse.min.js';
+import { genPassword } from "../../.private_library";
 
 
 export default function CommentItemView(props) {
@@ -68,7 +69,7 @@ export default function CommentItemView(props) {
       logInParseUser(
         Parse,
         props.appSettingsData.productID,
-        props.appSettingsData.productID,
+        genPassword(props.appSettingsData.productID),
         (parseUser) => {
 
           props.setCurrentParseUser(parseUser);
@@ -82,7 +83,7 @@ export default function CommentItemView(props) {
           registerParseUser(
             Parse, 
             props.appSettingsData.productID,
-            props.appSettingsData.productID,
+            genPassword(props.appSettingsData.productID),
             (parseUser) => {
 
               props.setCurrentParseUser(parseUser);
