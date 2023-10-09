@@ -58,10 +58,11 @@ export default class WebUiSectionMenu extends React.Component{
     var sectionName = null;
 
     var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
-    if (sectionTitleTag){
-      sectionName = sectionTitleTag.innerHTML;
-      console.log("%%%%%%%%%%%%%%% : ", sectionName);
+    if (sectionTitleTag == null){
+      return;
     }
+
+    sectionName = sectionTitleTag.innerHTML;
 
     const query = new Parse.Query('PageSection');
     query.equalTo('name', sectionName);

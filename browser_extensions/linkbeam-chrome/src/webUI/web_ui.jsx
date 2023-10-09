@@ -4,12 +4,14 @@ import App from './WebUiApp.jsx';
 import { appParams, messageParams, ack, checkWebPage } from "../react_components/Local_library";
 import styles from "./styles.min.css";
 import WebUiProfileComments from "./WebUiProfileComments";
+import WebUiProfilePage from "./WebUiProfilePage";
 import Parse from 'parse/dist/parse.min.js';
 import { env } from "../../.env.js";
 
 
 // Checking first if the user has expanded the comment list modal
-var webUiUrlRegex = /^chrome-extension:\/\/[\w.]+\/web_ui\.html\?profile-url-comment-list=/;
+// var webUiUrlRegex = /^chrome-extension:\/\/[\w.]+\/web_ui\.html\?profile-url-comment-list=/;
+var webUiUrlRegex = /^chrome-extension:\/\/[\w.]+\/web_ui\.html/;
 
 // Parse initialization configuration goes here
 Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
@@ -60,18 +62,38 @@ const setUpApp = () => {
   if (webUiUrlRegex.test(window.location.href)){
 
     const urlParams = new URLSearchParams(window.location.search);
-    const profileUrl = urlParams.get("profile-url-comment-list");
 
     var newDivTag = document.createElement('div');
     newDivTag.id = appParams.extShadowHostId;
     document.body.appendChild(newDivTag);
 
-    ReactDOM.createRoot(newDivTag).render(
-      <React.StrictMode>
-        {/*<style type="text/css">{styles}</style>*/}
-        <WebUiProfileComments/>
-      </React.StrictMode>
-    );
+    var mainParam = urlParams.get("profile-url-comment-list");
+
+    if (mainParam){
+
+      ReactDOM.createRoot(newDivTag).render(
+        <React.StrictMode>
+          {/*<style type="text/css">{styles}</style>*/}
+          <WebUiProfileComments/>
+        </React.StrictMode>
+      );
+
+    }
+    else{
+
+      mainParam = urlParams.get("web-ui-page-profile-id");
+      if (mainParam){
+
+        ReactDOM.createRoot(newDivTag).render(
+          <React.StrictMode>
+            {/*<style type="text/css">{styles}</style>*/}
+            <WebUiProfilePage objectId={mainParam} />
+          </React.StrictMode>
+        );
+
+      }
+
+    }
 
   }
   else{

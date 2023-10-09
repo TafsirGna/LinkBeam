@@ -167,7 +167,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
       comment.set('text', this.state.commentText);
       comment.set('createdBy', currentParseUser);
       comment.set('pageProfile', this.props.pageProfile);
-      comment.set('sectionId', 'test');
+      comment.set('pageSection', this.props.commentObject.get("pageSection"));
       comment.set('parentObject', this.props.commentObject);
       try {
         const result = await comment.save();
@@ -214,14 +214,16 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                                                                                       <span class="sr-only">Info</span>*/}
                               <h3 class="text-lg font-medium text-gray-800 dark:text-gray-300 flex items-center">
                                 <span class="mr-2 flex items-center">
-                                  {this.props.commentObject.get("createdBy").getUsername()} 
-                                  <span>
-                                    <Tooltip
-                                          content="Verified user"
-                                        >
-                                      <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                                    </Tooltip>
-                                  </span>
+                                  <a href="#" target="_blank">
+                                    {this.props.commentObject.get("createdBy").getUsername()} 
+                                  </a>
+                                  { this.props.commentObject.get("createdBy").get("accountVerified") == true && <span>
+                                                                      <Tooltip
+                                                                            content="Verified user"
+                                                                          >
+                                                                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 ml-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                                                      </Tooltip>
+                                                                    </span>}
                                 </span>
                                 · 
                                 <span class="font-light text-xs ml-2">{LuxonDateTime.fromISO(this.props.commentObject.get("createdAt").toISOString()).toRelative()}</span>

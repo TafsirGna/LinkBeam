@@ -248,15 +248,20 @@ export default class App extends React.Component{
         selectedTag.prepend(newDivTag);
         newDivTag.attachShadow({ mode: 'open' });
 
-        ReactDOM.createRoot(newDivTag.shadowRoot).render(
-          <React.StrictMode>
-            {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-            <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
-            <style type="text/css">{styles}</style>
-            <WebUiSectionMenu pageProfile={this.state.pageProfileObject} sectionTag={selectedTag}/>
-          </React.StrictMode>
-        );
+        // when a linkedin page, only put the section widget for titled section
+        if (selectedTag.querySelector(".core-section-container__title")){
+
+          ReactDOM.createRoot(newDivTag.shadowRoot).render(
+            <React.StrictMode>
+              {/*<link rel="preconnect" href="https://fonts.googleapis.com"/>
+              <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+              <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet"/>*/}
+              <style type="text/css">{styles}</style>
+              <WebUiSectionMenu pageProfile={this.state.pageProfileObject} sectionTag={selectedTag}/>
+            </React.StrictMode>
+          );
+          
+        }
 
       });
 
