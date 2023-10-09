@@ -89,7 +89,7 @@ export default class WebUiCommentModal extends React.Component{
       comment.set('text', this.state.commentText);
       comment.set('createdBy', currentParseUser);
       comment.set('pageProfile', this.props.pageProfile);
-      comment.set('sectionId', 'test');
+      comment.set('pageSection', this.props.pageSection);
       try {
         const result = await comment.save();
         // Access the Parse Object attributes using the .GET method

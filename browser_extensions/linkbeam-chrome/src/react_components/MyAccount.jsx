@@ -86,6 +86,10 @@ export default class MyAccount extends React.Component{
 
   }
 
+  verifyAccount(){
+
+  }
+
   render(){
     return (
       <>
@@ -107,6 +111,12 @@ export default class MyAccount extends React.Component{
               </OverlayTrigger>
             	<hr/>
             	<p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
+
+              <div class="text-center">
+                <button type="button" class="btn btn-primary badge mt-3" onClick={() => {this.verifyAccount()}} >
+                  Verify my account
+                </button>
+              </div>
             </div>
           </div>
         </div>

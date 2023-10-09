@@ -32,6 +32,7 @@ export default class App extends React.Component{
       commentObject: null,
       currentParseUser: null,
       pageProfileObject: null,
+      tmpPageSection: null,
     };
 
     this.onToastOK = this.onToastOK.bind(this);
@@ -49,8 +50,7 @@ export default class App extends React.Component{
   componentDidMount() {
 
     eventBus.on("showCommentModal", (data) =>
-      // this.setState({ message: data.message });
-      {this.handleCommentModalShow();}
+      {this.handleCommentModalShow(data.pageSection);}
     );
 
     eventBus.on("showCommentListModal", (data) =>
@@ -83,7 +83,7 @@ export default class App extends React.Component{
   handleCommentListModalShow = () => {this.setState({commentListModalShow: true});}
 
   handleCommentModalClose = (callback = null) => {this.setState({commentModalShow: false}, callback);}
-  handleCommentModalShow = () => {this.setState({commentModalShow: true});}
+  handleCommentModalShow = (pageSection) => {this.setState({commentModalShow: true, tmpPageSection: pageSection});}
 
   handleCommentRepliesListModalClose = (callback = null) => {this.setState({commentRepliesListModalShow: false}, callback);}
   handleCommentRepliesListModalShow = (comment) => {
@@ -286,7 +286,7 @@ export default class App extends React.Component{
         
         <WebUiCommentRepliesListModal commentObject={this.state.commentObject} show={this.state.commentRepliesListModalShow} appSettingsData={this.props.appSettingsData} pageProfile={this.state.pageProfileObject} currentParseUser={this.state.currentParseUser} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}} />
 
-        <WebUiCommentModal show={this.state.commentModalShow} currentParseUser={this.state.currentParseUser} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}}/>
+        <WebUiCommentModal show={this.state.commentModalShow} pageSection={this.state.tmpPageSection} currentParseUser={this.state.currentParseUser} pageProfile={this.state.pageProfileObject} appSettingsData={this.props.appSettingsData} handleClose={this.handleCommentModalClose} setCurrentParseUser={(currentParseUser) => {this.setState({currentParseUser: currentParseUser});}}/>
 
         <WebUiNotificationToast show={this.state.okToastShow} handleClose={this.handleOkToastClose} text={this.state.okToastText} />    
 

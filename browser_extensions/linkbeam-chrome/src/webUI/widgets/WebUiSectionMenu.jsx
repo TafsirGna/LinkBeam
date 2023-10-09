@@ -26,7 +26,7 @@ export default class WebUiSectionMenu extends React.Component{
       }
     );
 
-    this.fetchCommentsCount();
+    this.fetchPageSection();
 
   }
 
@@ -36,42 +36,68 @@ export default class WebUiSectionMenu extends React.Component{
 
   }
 
-  // async fetchPageSection(){
+  async createPageSection(sectionName){
+    const myNewObject = new Parse.Object('PageSection');
+    myNewObject.set('name', sectionName);
+    try {
+      const result = await myNewObject.save();
+      // Access the Parse Object attributes using the .GET method
+      console.log('PageSection created', result);
 
-  //   var sectionName = null;
+      this.setState({pageSectionObject: result}, () => {
+        this.fetchCommentsCount();
+      });
 
-  //   var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
-  //   if (sectionTitleTag){
-  //     sectionName = sectionTitleTag.innerHTML;
-  //     console.log("%%%%%%%%%%%%%%% : ", sectionName);
-  //   }
+    } catch (error) {
+      console.error('Error while creating PageSection: ', error);
+    }
+  }
 
-  //   const query = new Parse.Query('PageSection');
-  //   query.equalTo('name', sectionName);
+  async fetchPageSection(){
 
-  //   try {
-  //     const results = await query.find();
-  //     if (results.length > 0){
-  //       var section = results[0];
-  //       this.setState({pageSectionObject: section});
-  //     }
+    var sectionName = null;
 
-  //     /*for (const object of results) {
-  //       // Access the Parse Object attributes using the .GET method
-  //       const name = object.get('name')
-  //       console.log(name);
-  //     }*/
+    var sectionTitleTag = this.props.sectionTag.querySelector(".core-section-container__title");
+    if (sectionTitleTag){
+      sectionName = sectionTitleTag.innerHTML;
+      console.log("%%%%%%%%%%%%%%% : ", sectionName);
+    }
 
-  //   } catch (error) {
-  //     console.error('Error while fetching PageSection', error);
-  //   }
+    const query = new Parse.Query('PageSection');
+    query.equalTo('name', sectionName);
 
-  // }
+    try {
+      const results = await query.find();
+      if (results.length > 0){
+        var section = results[0];
+        this.setState({pageSectionObject: section}, () => {
+          this.fetchCommentsCount();
+        });
+      }
+      else{ // results.length == 0
+
+        // store this section name
+        this.createPageSection(sectionName);
+
+      }
+
+      /*for (const object of results) {
+        // Access the Parse Object attributes using the .GET method
+        const name = object.get('name')
+        console.log(name);
+      }*/
+
+    } catch (error) {
+      console.error('Error while fetching PageSection', error);
+    }
+
+  }
 
   async fetchCommentsCount(){
 
     const query = new Parse.Query('Comment');
     query.equalTo('parentObject', null);
+    query.equalTo('pageSection', this.state.pageSectionObject);
     query.equalTo('pageProfile', this.props.pageProfile);
 
     try {
@@ -101,7 +127,7 @@ export default class WebUiSectionMenu extends React.Component{
 
   handleCommentModalShow(){
 
-    eventBus.dispatch("showCommentModal", null);
+    eventBus.dispatch("showCommentModal", {pageSection: this.state.pageSectionObject});
 
   }
 

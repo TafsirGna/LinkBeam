@@ -25,9 +25,9 @@ export default class HomeMenu extends React.Component{
                   placement="bottom"
                   overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
                 >
-                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-light btn-sm float-start py-0 m-3"}>
+                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-light btn-sm float-start py-0 m-3 border border-warning"}>
                     Activate ?
-                    <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
+                    <div class="spinner-grow spinner-grow-sm text-warning ms-1" role="status">
                       <span class="visually-hidden">Loading...</span>
                     </div>
                   </button>
