@@ -150,8 +150,8 @@ export default function CommentItemView(props) {
         <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
         <div class="ml-4 flex-auto">
           <div class="font-medium inline-flex items-center">
-            <a href={ "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername() } target="_blank">
-              { props.object.get("createdBy").getUsername() }
+            <a class="mr-3" href={ "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername() } target="_blank">
+              { props.appSettingsData.productID == props.object.get("createdBy").getUsername() ? "You" : props.object.get("createdBy").getUsername() }
             </a>
             { props.object.get("createdBy").get("accountVerified") == true && <span>
                           <Tooltip
@@ -201,7 +201,7 @@ export default function CommentItemView(props) {
                 </span>
               </Tooltip>
             </span>
-            { props.object.get("parentObject") == null && <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+            { (props.object.get("parentObject") == null && props.handleCommentRepliesClick != null) && <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
                           {repliesCount == null && <Spinner
                                                       aria-label="Extra small spinner example"
