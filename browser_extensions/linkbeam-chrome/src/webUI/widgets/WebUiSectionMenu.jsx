@@ -12,7 +12,6 @@ export default class WebUiSectionMenu extends React.Component{
     this.state = {
       commentsCount: null,
       show: true,
-      currentParseUser: null,
       pageSectionObject: null,
     };
   }

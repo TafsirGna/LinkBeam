@@ -31,11 +31,9 @@ export default class WebUiCommentModal extends React.Component{
 
   }
 
-  sendComment(currentParseUser = null){
+  sendComment(){
 
-    var currentParseUser = (currentParseUser ? currentParseUser : this.props.currentParseUser);
-
-    if (currentParseUser == null){
+    if (Parse.User.current() == null){
       console.log("No user available with these credentials ! ");
 
       // log in to the parse
@@ -45,8 +43,7 @@ export default class WebUiCommentModal extends React.Component{
         genPassword(this.props.appSettingsData.productID),
         (parseUser) => {
 
-          this.props.setCurrentParseUser(parseUser);
-          this.sendComment(parseUser);
+          this.sendComment();
 
         },
         () => {
@@ -59,8 +56,7 @@ export default class WebUiCommentModal extends React.Component{
             genPassword(this.props.appSettingsData.productID),
             (parseUser) => {
 
-              this.props.setCurrentParseUser(parseUser);
-              this.sendComment(parseUser);
+              this.sendComment();
 
             },
             () => {
@@ -87,7 +83,7 @@ export default class WebUiCommentModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', currentParseUser);
+      comment.set('createdBy', Parse.User.current());
       comment.set('pageProfile', this.props.pageProfile);
       comment.set('pageSection', this.props.pageSection);
       try {

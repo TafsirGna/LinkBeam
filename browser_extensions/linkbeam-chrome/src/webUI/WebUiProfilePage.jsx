@@ -14,6 +14,8 @@ import Parse from 'parse/dist/parse.min.js';
 import user_icon from '../assets/user_icon.png';
 import { Tabs } from 'flowbite-react';
 import WebUiCommentItemView from "./widgets/WebUiCommentItemView";
+import WebUiCommentReactionView from "./widgets/WebUiCommentReactionView";
+import app_full_logo from '../assets/app_full_logo.png';
 // import "./styles.min.css";
 
 export default class WebUiProfilePage extends React.Component{
@@ -26,6 +28,7 @@ export default class WebUiProfilePage extends React.Component{
       profileReplies: null,
       profileComments: null,
       profileReactions: null,
+      followersCount: 0,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
@@ -73,6 +76,22 @@ export default class WebUiProfilePage extends React.Component{
 
   }
 
+  async fetchFollowersCount(){
+
+    const query = new Parse.Query('User');
+    // You can also query by using a parameter of an object
+    query.containsAll('following', [this.state.userObject.getUsername()]);
+    const results = await query.find();
+    try {
+
+      this.setState({followersCount: results.length});
+
+    } catch (error) {
+      console.error('Error while fetching Follower Count', error);
+    }
+
+  }
+
   async fetchUserObject(){
 
     const query = new Parse.Query('User');
@@ -88,6 +107,7 @@ export default class WebUiProfilePage extends React.Component{
 
       var user = results[0];
       this.setState({userObject: user}, () => {
+        this.fetchFollowersCount();
         this.fetchProfileComments();
         this.fetchProfileReplies();
         this.fetchProfileReactions();
@@ -136,6 +156,18 @@ export default class WebUiProfilePage extends React.Component{
 
   async fetchProfileReactions(){
 
+    const query = new Parse.Query('Reaction');
+    // You can also query by using a parameter of an object
+    query.equalTo('user', this.state.userObject);
+    const results = await query.find();
+    try {
+
+      this.setState({profileReactions: results});
+
+    } catch (error) {
+      console.error('Error while fetching Profile Reactions', error);
+    }
+
   }
 
   render(){
@@ -151,14 +183,21 @@ export default class WebUiProfilePage extends React.Component{
 
         { this.state.userObject &&  <div class="grid grid-cols-12 gap-4">
                   <div class="col-start-4 col-span-6">
+
+                    <div class="flex mt-14">
+                      <div class="mx-auto">
+                        <img src={app_full_logo} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
+                        <span class="text-lg">{appParams.appName}</span>
+                      </div>
+                    </div>
         
-                    <div class="pointer-events-auto mt-14 mb-8 rounded-lg bg-white p-4 text-[0.8125rem] leading-5 ring-1 ring-slate-700/10">
+                    <div class="shadow-md pointer-events-auto mt-4 mb-8 rounded-lg bg-white p-4 text-[0.8125rem] leading-5 ring-1 ring-slate-700/10">
 
                       <div class="flex justify-between items-center">
                         <div class="flex">
                           <img src={user_icon} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
                         </div>
-                        <div class="font-medium text-slate-900 ml-4">
+                        <div class="font-medium text-slate-900 ml-4 mr-auto">
                           { this.state.productID == this.state.userObject.get("username") ? "You" : this.state.userObject.get("username") }
                           { this.state.userObject.get("accountVerified") == true && <span>
                                                                                                 <Tooltip
@@ -171,10 +210,10 @@ export default class WebUiProfilePage extends React.Component{
                         { this.state.productID != this.state.userObject.get("username") && <button type="button" class="ml-auto py-1.5 px-3 mr-2 text-xs text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Follow</button>}
                       </div>
                       <div class="mt-2 text-slate-700">
-                        Joined on { LuxonDateTime.fromISO(this.state.userObject.get("createdAt").toISOString()).toLocaleString()  }
+                        Joined on { LuxonDateTime.fromISO(this.state.userObject.get("createdAt").toISOString()).toLocaleString({ month: 'long', year: 'numeric' })  }
                       </div>
                       <div class="mt-6 font-medium text-slate-900">
-                        1200 <span class="mt-1 text-slate-700 font-light">followers</span>   ·   60 <span class="mt-1 text-slate-700 font-light">following</span>
+                        {this.state.followersCount} <span class="mt-1 text-slate-700 font-light">followers</span>   ·   { this.state.userObject.get("following") == null ? 0 : this.state.userObject.get("following").length} <span class="mt-1 text-slate-700 font-light">following</span>
                       </div>
                     </div>
         
@@ -197,7 +236,7 @@ export default class WebUiProfilePage extends React.Component{
                                                                   </div> }
 
                           { this.state.profileComments && this.state.profileComments.map((commentItem) => (<div class="flex">
-                                                                                                        <WebUiCommentItemView object={commentItem} appSettingsData={{productID: this.state.productID}} />
+                                                                                                        <WebUiCommentItemView object={commentItem} appSettingsData={{productID: this.state.productID}} context="profile" />
                                                                                                       </div>)) }
 
                         </p>
@@ -214,7 +253,7 @@ export default class WebUiProfilePage extends React.Component{
                                                                   </div> }
 
                           { this.state.profileReplies && this.state.profileReplies.map((commentItem) => (<div class="flex">
-                                                                                                        <WebUiCommentItemView object={commentItem} appSettingsData={{productID: this.state.productID}} />
+                                                                                                        <WebUiCommentItemView object={commentItem} appSettingsData={{productID: this.state.productID}} context="profile" />
                                                                                                       </div>)) }
                         </p>
                       </Tabs.Item>
@@ -228,6 +267,11 @@ export default class WebUiProfilePage extends React.Component{
                                                                       <Spinner aria-label="Default status example" />
                                                                     </div>
                                                                   </div> }
+
+                          { this.state.profileReactions && this.state.profileReactions.map((commentReaction) => (<div class="flex">
+                                                                                                        <WebUiCommentReactionView object={commentReaction} appSettingsData={{productID: this.state.productID}} />
+                                                                                                      </div>)) }
+
                         </p>
                       </Tabs.Item>
                     </Tabs.Group>

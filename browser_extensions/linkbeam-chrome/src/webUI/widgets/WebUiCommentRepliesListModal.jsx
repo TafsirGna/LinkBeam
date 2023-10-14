@@ -109,11 +109,9 @@ export default class WebUiCommentRepliesListModal extends React.Component{
 
   }
 
-  sendComment(currentParseUser = null){
+  sendComment(){
 
-    var currentParseUser = (currentParseUser ? currentParseUser : this.props.currentParseUser);
-
-    if (currentParseUser == null){
+    if (arse.User.current() == null){
       console.log("Product not registered in parse DB ! ");
 
       // log in to the parse
@@ -123,8 +121,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
         genPassword(this.props.appSettingsData.productID),
         (parseUser) => {
 
-          this.props.setCurrentParseUser(parseUser);
-          this.sendComment(parseUser);
+          this.sendComment();
 
         },
         () => {
@@ -137,8 +134,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
             genPassword(this.props.appSettingsData.productID),
             (parseUser) => {
 
-              this.props.setCurrentParseUser(parseUser);
-              this.sendComment(parseUser);
+              this.sendComment();
 
             },
             () => {
@@ -165,7 +161,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
     (async () => {
       const comment = new Parse.Object('Comment');
       comment.set('text', this.state.commentText);
-      comment.set('createdBy', currentParseUser);
+      comment.set('createdBy', Parse.User.current());
       comment.set('pageProfile', this.props.pageProfile);
       comment.set('pageSection', this.props.commentObject.get("pageSection"));
       comment.set('parentObject', this.props.commentObject);
@@ -306,7 +302,7 @@ export default class WebUiCommentRepliesListModal extends React.Component{
                       aria-label="Extra small spinner example"
                       size="lg"
                     /></span></div>}
-              { this.state.commentRepliesList != null && this.state.commentRepliesList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} currentParseUser={this.props.currentParseUser}/> )}
+              { this.state.commentRepliesList != null && this.state.commentRepliesList.map((commentItem, index) => <WebUiCommentItemView object={commentItem} /> )}
               <div class="p-4">
                 <div class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                   View more

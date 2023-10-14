@@ -9,8 +9,8 @@ import { genPassword } from "../../.private_library";
 
 export default function CommentItemView(props) {
 
-  const [upVoting, setUpVoting] = useState(false);
-  const [downVoting, setDownVoting] = useState(false);
+  const [voting, setVoting] = useState(false);
+  const [reactions, setReactions] = useState(null);
   const [repliesCount, setRepliesCount] = useState(null);
 
   const fetchRepliesCount = () => {
@@ -31,39 +31,31 @@ export default function CommentItemView(props) {
 
   }
 
+  const fetchReactions = () => {
+    
+    (async () => {
+      const query = new Parse.Query('Reaction');
+      query.equalTo('comment', props.object);
+
+      try {
+        const results = await query.find();
+        setReactions(results);
+        console.log('Reaaaaaaaaaaaactions found: ', results);
+        // console.log('ParseObjects found: ', results);
+      } catch (error) {
+        console.log(`Error: ${error}`);
+      }
+    })();
+
+  }
+
   fetchRepliesCount();
 
-  const showSpinner = (property) => {
+  fetchReactions();
 
+  const storeReaction = (action) => {
 
-    if (property == "upvotes"){
-      setUpVoting(true);
-    }
-
-    if (property == "downvotes"){
-      setDownVoting(true);
-    }
-
-  }
-
-  const hideSpinner = (property) => {
-
-
-    if (property == "upvotes"){
-      setUpVoting(false);
-    }
-
-    if (property == "downvotes"){
-      setDownVoting(false);
-    }
-
-  }
-
-  const updateCommentItemVote = (property, currentParseUser = null) => {
-
-    var currentParseUser = (currentParseUser ? currentParseUser : props.currentParseUser);
-
-    if (currentParseUser == null){
+    if (Parse.User.current() == null){
 
       // log in to the parse
       logInParseUser(
@@ -72,8 +64,7 @@ export default function CommentItemView(props) {
         genPassword(props.appSettingsData.productID),
         (parseUser) => {
 
-          props.setCurrentParseUser(parseUser);
-          updateCommentItemVote(property, parseUser);
+          storeReaction(action);
 
         },
         () => {
@@ -86,8 +77,7 @@ export default function CommentItemView(props) {
             genPassword(props.appSettingsData.productID),
             (parseUser) => {
 
-              props.setCurrentParseUser(parseUser);
-              updateCommentItemVote(property, parseUser);
+              storeReaction(action);
 
             },
             () => {
@@ -101,38 +91,29 @@ export default function CommentItemView(props) {
 
     }
 
-    if ((props.object.get("upvotes") != null && props.object.get("upvotes").indexOf(currentParseUser.getUsername()) != -1)
-          || (props.object.get("downvotes") != null && props.object.get("downvotes").indexOf(currentParseUser.getUsername()) != -1)){
-      return;
+    // check that this user hasn't voted this comment yet
+
+    for (let reaction in reactions){
+      if (reaction.get("user") == Parse.User.current()){
+        return;
+      }
     }
 
     (async () => {
-      // const query = new Parse.Query('Comment');
-      showSpinner(property);
 
-      // here you put the objectId that you want to update
-      // const object = await query.get(objectId);
-      // object.set(property, value);
+      setVoting(true);
 
-      var votes = props.object.get(property);
-
-      if (votes == null){
-        props.object.set(property, [currentParseUser.getUsername()]);
-      }
-      else{
-        votes.push(currentParseUser.getUsername());
-        props.object.set(property, votes);
-      }
-
+      const myNewObject = new Parse.Object('Reaction');
+      myNewObject.set('comment', props.object);
+      myNewObject.set('action', action);
+      myNewObject.set('user', Parse.User.current());
       try {
-        // const response = await object.save();
-        const response = await props.object.save();
-
-        console.log('CommentItem updated', response);
-        hideSpinner(property)
-
+        const result = await myNewObject.save();
+        // Access the Parse Object attributes using the .GET method
+        setVoting(false);
+        console.log('Reaction created', result);
       } catch (error) {
-        console.error('Error while updating ', error);
+        console.error('Error while creating Reaction: ', error);
       }
 
     })();
@@ -147,10 +128,10 @@ export default function CommentItemView(props) {
 
     <>
       <div class="flex items-center p-4">
-        <img src={user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+        <img src={user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
         <div class="ml-4 flex-auto">
           <div class="font-medium inline-flex items-center">
-            <a class="mr-3" href={ "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername() } target="_blank">
+            <a class="mr-3" href={ props.appSettingsData.productID == props.object.get("createdBy").getUsername() ? "#" :  "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername() } target="_blank">
               { props.appSettingsData.productID == props.object.get("createdBy").getUsername() ? "You" : props.object.get("createdBy").getUsername() }
             </a>
             { props.object.get("createdBy").get("accountVerified") == true && <span>
@@ -169,39 +150,25 @@ export default function CommentItemView(props) {
           </div>
           <div class="mt-2">
             
-            <span onClick={() => {updateCommentItemVote("upvotes")}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-500">
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="18 15 12 9 6 15"></polyline></svg>
-              { !upVoting && <span>{ props.object.get("upvotes") == null ? "0" : props.object.get("upvotes").length }</span>}
-              { upVoting && <Spinner
-                                aria-label="Extra small spinner example"
-                                className="ml-1"
-                                size="xs"
-                              />}
+            <span class="shadow-md rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-500">
+              <span title="Upvote" onClick={() => {storeReaction("upvote")}} class="handy-cursor"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-1"><polyline points="18 15 12 9 6 15"></polyline></svg></span>
+              <span class="px-1 inline-flex">
+                { !voting && <Tooltip
+                                content={ "You and 3 users" }
+                              >
+                              <span>
+                                { reactions == null ? "0" : reactions.length }
+                              </span>
+                            </Tooltip>}
+                { voting && <Spinner
+                                  aria-label="Extra small spinner example"
+                                  className="ml-1"
+                                  size="xs"
+                                />}
+              </span>
+              <span title="Downvote" onClick={() => {storeReaction("downvote")}} class="handy-cursor"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-1"><polyline points="6 9 12 15 18 9"></polyline></svg></span>
             </span>
-            
-            <span class="inline-flex">
-              <Tooltip
-                  content={ !downVoting ? "You and 3 users" : "" }
-                >
-                <span onClick={() => {updateCommentItemVote("downvotes")}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  { 
-                    !downVoting &&  
-                                      <span>
-                                        { props.object.get("downvotes") == null ? "0" : props.object.get("downvotes").length }
-                                      </span>
-                  }
-                  { 
-                    downVoting && <Spinner
-                                    aria-label="Extra small spinner example"
-                                    className="ml-1"
-                                    size="xs"
-                                  />
-                  }
-                </span>
-              </Tooltip>
-            </span>
-            { (props.object.get("parentObject") == null && props.handleCommentRepliesClick != null) && <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+            { (props.object.get("parentObject") == null && props.handleCommentRepliesClick != null) && <span onClick={() => {props.handleCommentRepliesClick(props.object)}} class="shadow-md handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mr-1"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg>
                           {repliesCount == null && <Spinner
                                                       aria-label="Extra small spinner example"
@@ -210,6 +177,10 @@ export default function CommentItemView(props) {
                                                     />}
                           {repliesCount != null && <span>{repliesCount}</span>}
                         </span>}
+
+            { (props.context == "profile") && <a title="See in profile" href={ props.object.get("pageProfile").get("identifier") } class="shadow-md handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </a>}
 
           </div>
         </div>
