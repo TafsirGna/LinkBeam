@@ -11,7 +11,32 @@ export default function CommentItemView(props) {
 
   const [voting, setVoting] = useState(false);
   const [reactions, setReactions] = useState(null);
+  const [pageProfileObject, setPageProfileObject] = useState(null);
   const [repliesCount, setRepliesCount] = useState(null);
+
+  const fetchPageProfileObject = () => {
+    
+    (async () => {
+      const PageProfile = Parse.Object.extend('PageProfile');
+      const query = new Parse.Query(PageProfile);
+      // You can also query by using a parameter of an object
+      query.equalTo('objectId', props.object.get("pageProfile").id);
+      try {
+        const results = await query.find();
+        /*for (const object of results) {
+          // Access the Parse Object attributes using the .GET method
+          const url = object.get('url')
+          console.log(url);
+        }*/
+
+        setPageProfileObject(results[0]);
+
+      } catch (error) {
+        console.error('Error while fetching PageProfile', error);
+      }
+    })();
+
+  }
 
   const fetchRepliesCount = () => {
     
@@ -40,8 +65,7 @@ export default function CommentItemView(props) {
       try {
         const results = await query.find();
         setReactions(results);
-        console.log('Reaaaaaaaaaaaactions found: ', results);
-        // console.log('ParseObjects found: ', results);
+        console.log('ParseObjects found: ', results);
       } catch (error) {
         console.log(`Error: ${error}`);
       }
@@ -52,6 +76,8 @@ export default function CommentItemView(props) {
   fetchRepliesCount();
 
   fetchReactions();
+
+  fetchPageProfileObject();
 
   const storeReaction = (action) => {
 
@@ -93,8 +119,9 @@ export default function CommentItemView(props) {
 
     // check that this user hasn't voted this comment yet
 
-    for (let reaction in reactions){
-      if (reaction.get("user") == Parse.User.current()){
+    for (let index in reactions){
+      var reaction = reactions[index];
+      if (reaction.get("user").id == Parse.User.current().id){
         return;
       }
     }
@@ -120,8 +147,27 @@ export default function CommentItemView(props) {
 
   }
 
-  const getTooltipContent = () => {
-    
+  const reactionsCountTooltipText = () => {
+    if (reactions == null || reactions.length == 0){
+      return "No reactions";
+    }
+
+    var text = "";
+    for (let index in reactions){
+      var reaction = reactions[index];
+      if (reaction.get("user").id == Parse.User.current().id){
+        text += "You";
+      }
+    }
+
+    if (reactions.length > 1){
+      text += " and " + (reactions.length - 1) + " reacted";
+    }
+    else{
+      text += " reacted";
+    }
+
+    return text;
   }
 
   return (
@@ -154,7 +200,7 @@ export default function CommentItemView(props) {
               <span title="Upvote" onClick={() => {storeReaction("upvote")}} class="handy-cursor"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-1"><polyline points="18 15 12 9 6 15"></polyline></svg></span>
               <span class="px-1 inline-flex">
                 { !voting && <Tooltip
-                                content={ "You and 3 users" }
+                                content={ reactionsCountTooltipText() }
                               >
                               <span>
                                 { reactions == null ? "0" : reactions.length }
@@ -178,7 +224,7 @@ export default function CommentItemView(props) {
                           {repliesCount != null && <span>{repliesCount}</span>}
                         </span>}
 
-            { (props.context == "profile") && <a title="See in profile" href={ props.object.get("pageProfile").get("identifier") } class="shadow-md handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
+            { (props.context == "profile" && pageProfileObject) && <a title="See in profile" target="_blank" href={ pageProfileObject.get("url") + "?linkbeam-page-section=" + props.object.get("pageSection").id } class="shadow-md handy-cursor rounded-full bg-gray-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-gray-700 dark:text-gray-400 border border-gray-400">
                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                         </a>}
 

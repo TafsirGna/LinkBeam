@@ -29,6 +29,7 @@ export default class WebUiProfilePage extends React.Component{
       profileComments: null,
       profileReactions: null,
       followersCount: 0,
+      followingCount: 0,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
@@ -40,8 +41,6 @@ export default class WebUiProfilePage extends React.Component{
     this.listenToMessages();
 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
-
-    // this.fetchUserObject();
 
   }
 
@@ -78,9 +77,10 @@ export default class WebUiProfilePage extends React.Component{
 
   async fetchFollowersCount(){
 
-    const query = new Parse.Query('User');
+    const query = new Parse.Query("UserRelation");
     // You can also query by using a parameter of an object
-    query.containsAll('following', [this.state.userObject.getUsername()]);
+    query.equalTo("following", Parse.User.current());
+    // query.containsAll('following', [this.state.userObject.getUsername()]);
     const results = await query.find();
     try {
 
@@ -92,9 +92,26 @@ export default class WebUiProfilePage extends React.Component{
 
   }
 
+  async fetchFollowingCount(){
+
+    const query = new Parse.Query("UserRelation");
+    // You can also query by using a parameter of an object
+    query.equalTo("user", Parse.User.current());
+    const results = await query.find();
+    try {
+
+      this.setState({followingCount: results.length});
+
+    } catch (error) {
+      console.error('Error while fetching Following Count', error);
+    }
+
+  }
+
   async fetchUserObject(){
 
-    const query = new Parse.Query('User');
+    const User = new Parse.User();
+    const query = new Parse.Query(User);
     // You can also query by using a parameter of an object
     query.equalTo('username', this.props.objectId);
     const results = await query.find();
@@ -121,7 +138,8 @@ export default class WebUiProfilePage extends React.Component{
 
   async fetchProfileComments(){
 
-    const query = new Parse.Query('Comment');
+    const Comment = Parse.Object.extend('Comment');
+    const query = new Parse.Query(Comment);
     // You can also query by using a parameter of an object
     query.equalTo('createdBy', this.state.userObject);
     query.equalTo('parentObject', null);
@@ -132,6 +150,21 @@ export default class WebUiProfilePage extends React.Component{
 
     } catch (error) {
       console.error('Error while fetching Profile Comments', error);
+    }
+
+  }
+
+  async followUser(){
+
+    const myNewObject = new Parse.Object('UserRelation');
+    myNewObject.set('user', Parse.User.current());
+    myNewObject.set('following', this.state.userObject);
+    try {
+      const result = await myNewObject.save();
+      // Access the Parse Object attributes using the .GET method
+      console.log('UserRelation created', result);
+    } catch (error) {
+      console.error('Error while creating UserRelation: ', error);
     }
 
   }
@@ -207,13 +240,13 @@ export default class WebUiProfilePage extends React.Component{
                                                                                                 </Tooltip>
                                                                                               </span>}
                         </div>
-                        { this.state.productID != this.state.userObject.get("username") && <button type="button" class="ml-auto py-1.5 px-3 mr-2 text-xs text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Follow</button>}
+                        { this.state.productID != this.state.userObject.get("username") && <button type="button" onClick={ () => {this.followUser()} } class="ml-auto py-1.5 px-3 mr-2 text-xs text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Follow</button>}
                       </div>
                       <div class="mt-2 text-slate-700">
                         Joined on { LuxonDateTime.fromISO(this.state.userObject.get("createdAt").toISOString()).toLocaleString({ month: 'long', year: 'numeric' })  }
                       </div>
                       <div class="mt-6 font-medium text-slate-900">
-                        {this.state.followersCount} <span class="mt-1 text-slate-700 font-light">followers</span>   ·   { this.state.userObject.get("following") == null ? 0 : this.state.userObject.get("following").length} <span class="mt-1 text-slate-700 font-light">following</span>
+                        { this.state.followersCount } <span class="mt-1 text-slate-700 font-light">followers</span>   ·   { this.state.followingCount } <span class="mt-1 text-slate-700 font-light">following</span>
                       </div>
                     </div>
         

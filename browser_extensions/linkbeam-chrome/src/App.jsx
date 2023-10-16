@@ -13,6 +13,7 @@ import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
+import LicenseCreditsView from "./react_components/LicenseCredits";
 import { env } from "../.env.js";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
@@ -285,6 +286,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} currentParseUser={this.state.currentParseUser} handleParseUserLoggedIn={(currentParseUser) => { this.setState({currentParseUser: currentParseUser}); }} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
+            <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>

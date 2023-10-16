@@ -125,7 +125,7 @@ export default class App extends React.Component{
         // Creates a new Query object to help us fetch MyCustomClass objects
         const query = new Parse.Query('PageProfile');
         var pageProfileUrlRoot = (window.location.href.split("?"))[0];
-        query.equalTo('identifier', pageProfileUrlRoot);
+        query.equalTo('url', pageProfileUrlRoot);
         try {
           // Executes the query, which returns an array of MyCustomClass
           const results = await query.find();
@@ -207,7 +207,7 @@ export default class App extends React.Component{
     (async () => {
       const myNewObject = new Parse.Object('PageProfile');
       var pageProfileUrlRoot = (window.location.href.split("?"))[0];
-      myNewObject.set('identifier', pageProfileUrlRoot);
+      myNewObject.set('url', pageProfileUrlRoot);
       try {
         const result = await myNewObject.save();
         this.setState({pageProfileObject: result});
