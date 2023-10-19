@@ -11,9 +11,15 @@ import {
   dbData,
   logInParseUser, 
   registerParseUser,
-  } from "./Local_library";
-  import Parse from 'parse/dist/parse.min.js';
-  import { genPassword } from "../.private_library";
+  appParams,
+} from "./Local_library";
+import { env } from "../../.env.js";
+import Parse from 'parse/dist/parse.min.js';
+import { genPassword } from "../.private_library";
+
+// Parse initialization configuration goes here
+Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
+Parse.serverURL = appParams.PARSE_HOST_URL;
 
 export default class Feedback extends React.Component{
 
@@ -100,18 +106,18 @@ export default class Feedback extends React.Component{
 
     this.setState({sending: true});
 
-    if (this.props.currentParseUser == null){
+    if (Parse.User.current() == null){
 
       // log in to the parse
       logInParseUser(
         Parse,
         this.state.productID,
         genPassword(this.state.productID),
-        (currentParseUser) => {
+        (parseUser) => {
 
-          this.props.handleParseUserLoggedIn(currentParseUser);
+          this.props.handleParseUserLoggedIn(parseUser);
 
-          this.storeObjectInParse(currentParseUser);
+          this.storeObjectInParse();
 
         },
         () => {
@@ -122,11 +128,11 @@ export default class Feedback extends React.Component{
             Parse, 
             this.state.productID,
             genPassword(this.state.productID),
-            (currentParseUser) => {
+            (parseUser) => {
 
-              this.props.handleParseUserLoggedIn(currentParseUser);
+              this.props.handleParseUserLoggedIn(parseUser);
 
-              this.storeObjectInParse(currentParseUser);
+              this.storeObjectInParse();
 
             },
             () => {
@@ -139,17 +145,17 @@ export default class Feedback extends React.Component{
     }
     else{
 
-      this.storeObjectInParse(this.props.currentParseUser);
+      this.storeObjectInParse();
 
     }
 
   }
 
-  storeObjectInParse = (currentParseUser) => {
+  storeObjectInParse = () => {
 
     (async () => {
       const myNewObject = new Parse.Object('UsageFeedback');
-      myNewObject.set('createdBy', currentParseUser);
+      myNewObject.set('createdBy', Parse.User.current());
       myNewObject.set('text', this.state.feedback.text);
       myNewObject.set('subject', this.state.feedback.title);
       try {
@@ -204,11 +210,11 @@ export default class Feedback extends React.Component{
 
             <div class="mb-2 mt-2">
               <label for="exampleFormControlInput1" class="form-label text-muted small fst-italic">Subject</label>
-              <input type="email" class="form-control shadow-sm" id="exampleFormControlInput1" placeholder="" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
+              <input type="email" class="form-control shadow border border-primary" id="exampleFormControlInput1" placeholder="" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
             </div>
             <div class="mb-3">
               <label for="exampleFormControlTextarea1" class="form-label text-muted small fst-italic">Text</label>
-              <textarea class="form-control shadow-sm" id="exampleFormControlTextarea1" rows="3" value={this.state.feedback.text} onChange={this.onFeedbackTextInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" }></textarea>
+              <textarea class="form-control shadow border border-primary" id="exampleFormControlTextarea1" rows="3" value={this.state.feedback.text} onChange={this.onFeedbackTextInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" }></textarea>
             </div>
 
             { this.state.dataRequestDone && this.state.dataRequestDone == "N/A" &&
