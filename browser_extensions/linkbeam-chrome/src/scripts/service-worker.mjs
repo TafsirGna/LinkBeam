@@ -19,6 +19,7 @@ const settingData = [{
     installedOn: new Date().toISOString(),
     productID: uuidv4(), 
     currentPageTitle: "Activity",
+    userIcon: "default",
 }];
 
 function createDatabase(context) {

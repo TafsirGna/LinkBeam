@@ -210,7 +210,7 @@ export default class Feedback extends React.Component{
 
             <div class="mb-2 mt-2">
               <label for="exampleFormControlInput1" class="form-label text-muted small fst-italic">Subject</label>
-              <input type="email" class="form-control shadow border border-primary" id="exampleFormControlInput1" placeholder="" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
+              <input type="email" class="form-control shadow border border-primary" id="exampleFormControlInput1" placeholder="Enter a subject" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
             </div>
             <div class="mb-3">
               <label for="exampleFormControlTextarea1" class="form-label text-muted small fst-italic">Text</label>

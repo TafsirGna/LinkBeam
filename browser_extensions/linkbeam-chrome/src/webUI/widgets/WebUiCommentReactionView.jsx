@@ -4,7 +4,7 @@ import { appParams, logInParseUser, registerParseUser } from "../../react_compon
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import eventBus from "./EventBus";
-import user_icon from '../../assets/user_icon.png';
+import default_user_icon from '../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 
 
@@ -31,7 +31,7 @@ export default class WebUiCommentReactionView extends React.Component{
 
         <div class="flex p-4">
           <span>
-            <img src={user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
+            <img src={default_user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
           </span>
           <div class="ml-4 flex-auto">
             <div class="font-medium inline-flex items-center">

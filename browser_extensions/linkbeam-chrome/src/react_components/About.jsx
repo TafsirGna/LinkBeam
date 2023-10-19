@@ -1,6 +1,6 @@
 /*import './About.css'*/
 import React from 'react';
-import app_logo from '../assets/app_logo.svg';
+import app_logo from '../assets/app_logo.png';
 import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
@@ -30,7 +30,7 @@ export default class About extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle="Activity"/>
           <div class="text-center">
-            <img src={app_logo}  alt=""/>
+            <img src={app_logo}  alt="" width="40" height="40"/>
             <p class="fw-bold mt-2">
               {appParams.appName}
               <span class="badge text-bg-primary ms-1 shadow">{appParams.appVersion}</span>

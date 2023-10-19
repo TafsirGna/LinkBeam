@@ -11,11 +11,11 @@ import {
 import { Spinner, Tooltip } from 'flowbite-react';
 import { DateTime as LuxonDateTime } from "luxon";
 import Parse from 'parse/dist/parse.min.js';
-import user_icon from '../assets/user_icon.png';
+import default_user_icon from '../assets/user_icons/default.png';
 import { Tabs } from 'flowbite-react';
 import WebUiCommentItemView from "./widgets/WebUiCommentItemView";
 import WebUiCommentReactionView from "./widgets/WebUiCommentReactionView";
-import app_full_logo from '../assets/app_full_logo.png';
+import app_logo from '../assets/app_logo.png';
 // import "./styles.min.css";
 
 export default class WebUiProfilePage extends React.Component{
@@ -219,7 +219,7 @@ export default class WebUiProfilePage extends React.Component{
 
                     <div class="flex mt-14">
                       <div class="mx-auto">
-                        <img src={app_full_logo} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
+                        <img src={app_logo} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
                         <span class="text-lg">{appParams.appName}</span>
                       </div>
                     </div>
@@ -228,7 +228,7 @@ export default class WebUiProfilePage extends React.Component{
 
                       <div class="flex justify-between items-center">
                         <div class="flex">
-                          <img src={user_icon} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
+                          <img src={default_user_icon} alt="twbs" width="40" height="40" class="mx-auto flex-shrink-0"/>
                         </div>
                         <div class="font-medium text-slate-900 ml-4 mr-auto">
                           { this.state.productID == this.state.userObject.get("username") ? "You" : this.state.userObject.get("username") }

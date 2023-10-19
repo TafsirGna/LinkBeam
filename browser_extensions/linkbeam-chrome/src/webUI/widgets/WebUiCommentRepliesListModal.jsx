@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { appParams, messageParams, expandToTab, logInParseUser, registerParseUser } from "../../react_components/Local_library";
 // import { Drawer } from 'flowbite';
-import user_icon from '../../assets/user_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';

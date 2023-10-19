@@ -1,6 +1,6 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
-import user_icon from '../../assets/user_icon.png';
+import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
@@ -25,7 +25,7 @@ export default class ProfileViewHeader extends React.Component{
       <>
         <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
-            <img src={user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4"/>
+            <img src={default_user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4"/>
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>

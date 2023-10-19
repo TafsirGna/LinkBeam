@@ -1,9 +1,15 @@
 /*import './Profile.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
-import user_icon from '../assets/user_icon.png';
+import default_user_icon from '../assets/user_icons/default.png';
+import boy_user_icon from '../assets/user_icons/boy.png';
+import gamer_user_icon from '../assets/user_icons/gamer.png';
+import man_user_icon from '../assets/user_icons/man.png';
+import mom_user_icon from '../assets/user_icons/mom.png';
+import lady_user_icon from '../assets/user_icons/lady.png';
+import woman_user_icon from '../assets/user_icons/woman.png';
 import moment from 'moment';
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, Offcanvas } from "react-bootstrap";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
 	saveCurrentPageTitle, 
@@ -13,6 +19,7 @@ import {
   dbData, 
 	startMessageListener
 } from "./Local_library";
+// import Offcanvas from 'react-bootstrap/Offcanvas';
 
 export default class MyAccount extends React.Component{
 
@@ -21,11 +28,16 @@ export default class MyAccount extends React.Component{
     this.state = {
     	productID: "",
     	installedOn: "",
+      userIcon: "default",
+      userIconOffCanvasShow: false,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
+
+  handleOffCanvasClose = () => {this.setState({userIconOffCanvasShow: false})};
+  handleOffCanvasShow = () => {this.setState({userIconOffCanvasShow: true})};
 
   componentDidMount() {
 
@@ -46,6 +58,15 @@ export default class MyAccount extends React.Component{
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
   		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["installedOn", "productID"]);
   	}
+
+    // Getting the user icon to display
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["userIcon"]);
+
+  }
+
+  changeUserIcon(icon_title){
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "userIcon", value: icon_title});
 
   }
 
@@ -71,6 +92,19 @@ export default class MyAccount extends React.Component{
 				this.setState({productID: productID});
 		  	break;
 		  }
+
+    case "userIcon":{
+
+        // acknowledge receipt
+        ack(sendResponse);
+
+        let userIcon = message.data.objectData.value;
+        this.setState({userIcon: userIcon});
+
+        this.handleOffCanvasClose();
+
+        break;
+      }
 		}
 
   }
@@ -90,6 +124,37 @@ export default class MyAccount extends React.Component{
 
   }
 
+  getUserIcon(){
+
+    userIcon = null;
+
+    switch(this.state.userIcon){
+      case "default":
+        userIcon = default_user_icon;
+        break;
+      case "man":
+        userIcon = man_user_icon;
+        break;
+      case "boy":
+        userIcon = boy_user_icon;
+        break;
+      case "lady":
+        userIcon = lady_user_icon;
+        break;
+      case "woman":
+        userIcon = woman_user_icon;
+        break;
+      case "gamer":
+        userIcon = gamer_user_icon;
+        break;
+      case "mom":
+        userIcon = mom_user_icon;
+        break;
+    }
+
+    return userIcon;
+  }
+
   render(){
     return (
       <>
@@ -97,7 +162,7 @@ export default class MyAccount extends React.Component{
           <BackToPrev prevPageTitle="Settings"/>
           <div class="">
             <div class="text-center">
-            	<img src={user_icon} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0"/>
+            	<img src={default_user_icon} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
             </div>
             <div class="mx-auto w-75 mt-4">
             	<OverlayTrigger
@@ -120,6 +185,29 @@ export default class MyAccount extends React.Component{
             </div>
           </div>
         </div>
+
+        <Offcanvas show={this.state.userIconOffCanvasShow} onHide={this.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>User Icons</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            <div class="row">
+              <div class="col text-center">
+                <img width="60" height="60" src={default_user_icon} onClick={() => {this.changeUserIcon("default")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Default"/>
+                <img width="60" height="60" src={boy_user_icon} onClick={() => {this.changeUserIcon("boy")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Boy"/>
+                <img width="60" height="60" src={gamer_user_icon} onClick={() => {this.changeUserIcon("gamer")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Gamer"/>
+              </div>
+              <div class="col text-center">
+                <img width="60" height="60" src={man_user_icon} onClick={() => {this.changeUserIcon("man")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Man"/>
+                <img width="60" height="60" src={mom_user_icon} onClick={() => {this.changeUserIcon("mom")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Mom"/>
+              </div>
+              <div class="col text-center">
+                <img width="60" height="60" src={lady_user_icon} onClick={() => {this.changeUserIcon("lady")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Lady"/>
+                <img width="60" height="60" src={woman_user_icon} onClick={() => {this.changeUserIcon("woman")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Woman"/>
+              </div>
+            </div>
+          </Offcanvas.Body>
+        </Offcanvas>
       </>
     );
   }

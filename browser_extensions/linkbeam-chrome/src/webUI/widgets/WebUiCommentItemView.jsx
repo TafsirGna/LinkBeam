@@ -2,7 +2,7 @@ import { Spinner, Tooltip } from 'flowbite-react';
 import { DateTime as LuxonDateTime } from "luxon";
 import React, { useState } from 'react';
 import { appParams, messageParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
-import user_icon from '../../assets/user_icon.png';
+import default_user_icon from '../../assets/user_icons/default.png';
 import Parse from 'parse/dist/parse.min.js';
 import { genPassword } from "../../.private_library";
 
@@ -174,7 +174,7 @@ export default function CommentItemView(props) {
 
     <>
       <div class="flex items-center p-4">
-        <img src={user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
+        <img src={default_user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0"/>
         <div class="ml-4 flex-auto">
           <div class="font-medium inline-flex items-center">
             <a class="mr-3" href={ props.appSettingsData.productID == props.object.get("createdBy").getUsername() ? "#" :  "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername() } target="_blank">
