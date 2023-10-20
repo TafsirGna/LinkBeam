@@ -24,12 +24,13 @@ export default class Activity extends React.Component{
       searchList: null,
       searchLeft: true,
       bookmarkList: null,
-      currentPageTitle: "Activity",
+      currentPageTitle: null,
       currentTabIndex: 0,
       loadingSearches: false,
       currentTabWebPageData: null,
     };
 
+    // Binding all the needed functions
     this.setListData = this.setListData.bind(this);
     this.getSearchList = this.getSearchList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
@@ -48,10 +49,19 @@ export default class Activity extends React.Component{
     // Start the message listener
     this.listenToMessages();
 
-    // Setting bookmark list if possible
-    if (this.props.globalData.bookmarkList){
-      this.setState({bookmarkList: this.props.globalData.bookmarkList});
+    // Getting the window url params
+    const urlParams = new URLSearchParams(window.location.search);
+    const origin = urlParams.get("origin");
+
+    if (origin == null){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle"]);
+      return;
     }
+
+    saveCurrentPageTitle("Activity");
+
+    // Setting bookmark list if possible
+    this.setState({bookmarkList: this.props.globalData.bookmarkList});
 
     // Setting current tab info if possible
     if (this.props.globalData.currentTabWebPageData){
@@ -59,25 +69,12 @@ export default class Activity extends React.Component{
     }
 
     // setting the local variable with the global data
-    var offset = 0;
-    if (this.props.globalData.searchList){
-      offset = this.props.globalData.searchList.length;
-      this.setState({searchList: this.props.globalData.searchList});
-    }
-
-    // Getting the window url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const origin = urlParams.get("origin");
-
-    // Getting the current page title in order to switch to it
-    if (origin){
-      saveCurrentPageTitle("Activity");
-      this.getSearchList(offset);
-    }
-    else{
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle", "notifications"]);
-    }
-
+    this.setState({searchList: this.props.globalData.searchList}, () => {
+      if (this.state.searchList == null){
+        this.getSearchList();
+      }
+    });
+    
   }
 
   onSearchesDataReceived(message, sendResponse){
@@ -116,14 +113,18 @@ export default class Activity extends React.Component{
 
       case "currentPageTitle":{
         
-        var currentPageTitle = message.data.objectData.value;
-        if (currentPageTitle == "Activity"){
-          var offset = (this.props.globalData.searchList ? this.props.globalData.searchList.length : 0);
-          this.getSearchList(offset);
-        }
-        else{
-          this.setState({currentPageTitle: currentPageTitle});
-        }
+        var pageTitle = message.data.objectData.value;
+        this.setState({currentPageTitle: pageTitle}, () => {
+          if (this.state.currentPageTitle == "Activity"){
+            // Getting the list of all searches
+            if (this.state.searchList == null){
+              this.getSearchList();
+            }
+
+            // Requesting the notification settings
+            sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+          }
+        });
 
         break;
 
@@ -208,24 +209,27 @@ export default class Activity extends React.Component{
 
   }
 
+  // Function for switching between tabs
   switchCurrentTab(index){
 
     this.setState({currentTabIndex: index});
 
     switch(index){
       case 0:{
-        // this.getSearchList();
         break;
       }
       case 1: {
-        this.getBookmarkList();
+        if (!this.state.bookmarkList){
+          this.getBookmarkList();
+        }
         break;
       }
     }
 
   }
 
-  getSearchList(offset = 0){
+  // Function requesting the list of all searches made
+  getSearchList(){
 
     if (this.state.searchLeft){
       this.setState({loadingSearches: true});
@@ -260,39 +264,46 @@ export default class Activity extends React.Component{
 
   render(){
 
+    if (!this.state.currentPageTitle){
+      return (<></>)
+    }
+
     // Redirecting to a different interface depending on the url params
     if (this.state.currentPageTitle != "Activity"){
       return <Navigate replace to={"/index.html/" + this.state.currentPageTitle} />;
     }
 
-    return (
-      <>
+    if (this.state.currentPageTitle == "Activity"){
+      return (
+        <>
 
-        <div class="clearfix">
-          {/*setting icon*/}
-          <HomeMenu envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
-        </div>
-        <div class="text-center">
-          <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
-            <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "")} onClick={() => {this.switchCurrentTab(0)}}>
-              All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
-            </button>
-            <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
-              Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}
-            </button>
+          <div class="clearfix">
+            {/*setting icon*/}
+            <HomeMenu envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
           </div>
-        </div>
+          <div class="text-center">
+            <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
+              <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "")} onClick={() => {this.switchCurrentTab(0)}}>
+                All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
+              </button>
+              <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
+                Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}
+              </button>
+            </div>
+          </div>
 
-        {/* Search List Tab */}
+          {/* Search List Tab */}
 
-        { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.searchList} seeMore={this.getSearchList} loading={this.state.loadingSearches} searchLeft={this.state.searchLeft}/>}
+          { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.searchList} seeMore={this.getSearchList} loading={this.state.loadingSearches} searchLeft={this.state.searchLeft}/>}
 
-        {/* Bookmark List Tab */}
+          {/* Bookmark List Tab */}
 
-        { this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}
+          { this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}
 
-      </>
-    )
+        </>
+      )
+    }
+
   }
 }
 

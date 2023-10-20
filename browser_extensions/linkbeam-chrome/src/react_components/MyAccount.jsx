@@ -126,7 +126,7 @@ export default class MyAccount extends React.Component{
 
   getUserIcon(){
 
-    userIcon = null;
+    var userIcon = null;
 
     switch(this.state.userIcon){
       case "default":
@@ -162,7 +162,7 @@ export default class MyAccount extends React.Component{
           <BackToPrev prevPageTitle="Settings"/>
           <div class="">
             <div class="text-center">
-            	<img src={default_user_icon} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
+            	<img src={this.getUserIcon()} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
             </div>
             <div class="mx-auto w-75 mt-4">
             	<OverlayTrigger
