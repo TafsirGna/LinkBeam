@@ -3,6 +3,7 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
@@ -35,6 +36,7 @@ export default class Settings extends React.Component{
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
+    this.onAllDataReceived = this.onAllDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -79,6 +81,28 @@ export default class Settings extends React.Component{
 
     // setting the new value
     this.setState({reminderCount: message.data.objectData});
+
+  }
+
+  onAllDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    try {
+      
+      const url = window.URL.createObjectURL(new Blob([message.data.objectData])) 
+      const link = document.createElement('a')
+      link.href = url
+      const fileName = `LinkBeam_Export_${moment(new Date()).format("DD MMM YY")}.csv`;
+      link.setAttribute('download', fileName)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+
+    } catch (error) {
+      console.error('Error while downloading the received data: ', error);
+    }
 
   }
 
@@ -128,6 +152,10 @@ export default class Settings extends React.Component{
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, "all"].join(messageParams.separator), 
+        callback: this.onAllDataReceived
+      },
     ]);
 
   }
@@ -151,6 +179,19 @@ export default class Settings extends React.Component{
       // Initiate data removal
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", null);
     }
+  }
+
+  exportData(){
+
+  }
+
+  initDataExport(){
+    const response = confirm("You are about to download all your data. Do you confirm ?");
+
+    if (response){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", null);
+    }
+
   }
 
   render(){
@@ -211,6 +252,15 @@ export default class Settings extends React.Component{
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">My identity</strong>
                   <Link to="/index.html/MyAccount" class="text-primary badge" title="View My ID">View</Link>
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Export my data (csv)</strong>
+                  <a href="#" onClick={() => {this.initDataExport()}} class="text-primary badge" title="Export all my data">Export</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

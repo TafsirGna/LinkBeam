@@ -363,6 +363,55 @@ function getKeywordList() {
     };
 }
 
+// Script for getting all db data
+
+function getAllData(){
+
+    const data = db.objectStoreNames;
+    var results = [], objectStoreNames = [];
+
+    for (var key in data){
+        if (typeof data[key] === "string"){
+            objectStoreNames.push(data[key]);
+        }
+    }
+
+    getObjectStoresBareData(objectStoreNames, results);
+
+}
+
+function getObjectStoresBareData(objectStoreNames, results){
+
+    if (objectStoreNames.length == 0){
+        // Sending the data back to the content script
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, "all", results);
+        return;
+    }
+
+    let request = db
+        .transaction(objectStoreNames[0], "readonly")
+        .objectStore(objectStoreNames[0])
+        .getAll();
+
+    request.onsuccess = (event) => {
+        console.log('Got all data ['+objectStoreNames[0]+']:', event.target.result);
+        // Sending the retrieved data
+        results.push(event.target.result);
+
+        objectStoreNames.shift()
+
+        // looping
+        getObjectStoresBareData(objectStoreNames, results);
+        // if (Object.keys(results).length == objectStoreNames.length){
+
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving all data ["+objectStoreNames[0]+"] : ", event);
+    };
+
+}
+
 // Script for getting any objectStore list
 
 function getList(objectStoreName, objectData){
@@ -385,6 +434,11 @@ function getList(objectStoreName, objectData){
 
         case dbData.objectStoreNames.REMINDERS:{
             getReminderList();
+            break;
+        }
+
+        case "all":{
+            getAllData();
             break;
         }
     }
@@ -757,7 +811,7 @@ function clearObjectStores(objectStoreNames){
     const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
     objectStore.clear().onsuccess = (event) => {
         // Clearing the next objectStore
-        getList(objectStoreNames[0], null);
+        // getList(objectStoreNames[0], null);
         objectStoreNames.shift()
         clearObjectStores(objectStoreNames)
     }
