@@ -91,14 +91,16 @@ export default class Settings extends React.Component{
 
     try {
       
-      const url = window.URL.createObjectURL(new Blob([message.data.objectData])) 
-      const link = document.createElement('a')
-      link.href = url
-      const fileName = `LinkBeam_Export_${moment(new Date()).format("DD MMM YY")}.csv`;
-      link.setAttribute('download', fileName)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      var jsonData = JSON.stringify(message.data.objectData);
+
+      const url = window.URL.createObjectURL(new Blob([jsonData]));
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = `LinkBeam_Data_Export_${moment(new Date()).format("DD_MMM_YY")}.json`;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
     } catch (error) {
       console.error('Error while downloading the received data: ', error);

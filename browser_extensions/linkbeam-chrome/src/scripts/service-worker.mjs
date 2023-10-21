@@ -110,8 +110,13 @@ function createDatabase(context) {
 // Extension installation script
 
 chrome.runtime.onInstalled.addListener(details => {
-    createDatabase({status: "INSTALL"})
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+
+        // on install, create the database
+        createDatabase({status: "INSTALL"});
+
+        // on install, open a web page for information
+        chrome.tabs.create({ url: "index.html/Install" });
         // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
     }
 });
@@ -368,7 +373,7 @@ function getKeywordList() {
 function getAllData(){
 
     const data = db.objectStoreNames;
-    var results = [], objectStoreNames = [];
+    var results = {}, objectStoreNames = [];
 
     for (var key in data){
         if (typeof data[key] === "string"){
@@ -396,7 +401,7 @@ function getObjectStoresBareData(objectStoreNames, results){
     request.onsuccess = (event) => {
         console.log('Got all data ['+objectStoreNames[0]+']:', event.target.result);
         // Sending the retrieved data
-        results.push(event.target.result);
+        results[objectStoreNames[0]] = (event.target.result);
 
         objectStoreNames.shift()
 
