@@ -14,7 +14,8 @@ export default class Calendar extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      searchList: null,
+      monthSearchList: null,
+      daySearchList: null,
       selectedDate: (new Date()).toISOString().split("T")[0],
     };
 
@@ -27,23 +28,51 @@ export default class Calendar extends React.Component{
 
     this.listenToMessages();
 
-    this.getSearchList(this.state.selectedDate);
+    // Requesting this month's search list
+    this.getMonthSearchList(this.state.selectedDate);
 
   }
 
   componentDidUpdate(prevProps, prevState){
 
     if (this.state.selectedDate != prevState.selectedDate){
-      this.setState({searchList: null});
-      this.getSearchList(this.state.selectedDate);
+      this.setState({daySearchList: null});
+      this.setDaySearchList();
     }
 
   }
 
-  getSearchList(dateString){
+  setDaySearchList(){
+
+    this.setState({daySearchList: []}, () => {
+
+      var daySearchList = [];
+      for (var search of monthSearchList){
+        if (search.date.split("T")[0] == this.state.selectedDate){
+          daySearchList.push(search);
+        }
+      }
+
+      this.setState({daySearchList: daySearchList});
+
+    });
+
+  }
+
+  getMonthSearchList(dateString){
+
+    // Reformatting the date string before sending the request
+    var separator = "-";
+    dateString = dateString.split(separator);
+    dateString[dateString.length - 1] = "?";
+    dateString = dateString.join(separator);
 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: dateString, context: "Calendar"});
 
+  }
+
+  tileDisabled({ activeStartDate, date, view }){
+    return date.getDay() === 0;
   }
 
   onClickDay(value, event){
@@ -62,8 +91,10 @@ export default class Calendar extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var searchList = message.data.objectData.list;
-    this.setState({searchList: searchList});
+    var monthSearchList = message.data.objectData.list;
+    this.setState({monthSearchList: monthSearchList}, () => {
+      this.setDaySearchList();
+    });
 
   }
 
@@ -85,8 +116,8 @@ export default class Calendar extends React.Component{
           <span class="badge text-bg-primary shadow">Calendar View</span>
         </div>
 				<div class="offset-1 col-10 mt-4 row">
-          <Cal onClickDay={this.onClickDay} value={new Date()} className="rounded shadow col-4"/>
-          <div class="col-8 ps-3">
+          <Cal onClickDay={this.onClickDay} tileDisabled={this.tileDisabled} value={new Date()} className="rounded shadow col-4"/>
+          <div class="col-7 ps-3">
             <Card className="shadow">
               <Card.Header>
                 <Nav variant="tabs" defaultActiveKey="#first">
@@ -103,7 +134,7 @@ export default class Calendar extends React.Component{
                 <Card.Text>
                   With supporting text below as a natural lead-in to additional content.
                 </Card.Text>*/}
-                <SearchListView objects={this.state.searchList} seeMore={() => {}} loading={false} searchLeft={false}/>
+                <SearchListView objects={this.state.monthSearchList} seeMore={() => {}} loading={false} searchLeft={false}/>
               </Card.Body>
             </Card>
           </div>

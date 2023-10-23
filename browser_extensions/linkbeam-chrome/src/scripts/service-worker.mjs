@@ -113,11 +113,15 @@ chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
 
         // on install, create the database
-        createDatabase({status: "INSTALL"});
+        // createDatabase({status: "INSTALL"});
 
         // on install, open a web page for information
-        chrome.tabs.create({ url: "index.html/Install" });
+        chrome.tabs.create({ url: "install.html" });
         // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
+    }
+
+    if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
+
     }
 });
 
@@ -248,10 +252,11 @@ function getBookmarkList(){
 function getSearchList(params) {
 
 
-    var params = (params ? params : {});
-    var offset = (params.offset ? params.offset : 0);
-    var date = (params.date ? params.date : null);
-    var context = params.context;
+    var params = (params ? params : {}),
+        offset = (params.offset ? params.offset : 0),
+        date = (params.date ? params.date : null),
+        dateInnerSeparator = "-",
+        context = params.context;
 
     let searches = [];
     var offsetApplied = false;
@@ -272,8 +277,18 @@ function getSearchList(params) {
 
         let search = cursor.value;
         if (date){
-            if (date == search.date.split("T")[0]){
-                searches.push(search);
+            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$ : ", date);
+            if (date.split(dateInnerSeparator)[2] != "?"){
+                if (date == search.date.split("T")[0]){
+                    searches.push(search);
+                }
+            }
+            else{
+                date = date.split(dateInnerSeparator);
+                var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
+                if (date[0] == searchDate[0] && date[1] == searchDate[1]){
+                    searches.push(search);
+                }
             }
         }
         else{

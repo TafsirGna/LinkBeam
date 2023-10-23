@@ -14,7 +14,6 @@ import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
 import LicenseCreditsView from "./react_components/LicenseCredits";
-import InstallView from "./react_components/InstallView";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   sendDatabaseActionMessage,
@@ -270,7 +269,6 @@ export default class App extends React.Component{
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Install" element={<InstallView />} />
             {/*<Route path="*" element={<NoPage />} />*/}
           </Routes>
         </BrowserRouter>

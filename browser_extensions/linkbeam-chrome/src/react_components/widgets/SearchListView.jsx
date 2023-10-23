@@ -55,7 +55,7 @@ export default class SearchListView extends React.Component{
                                   <div>
                                     <h6 class="mb-0">{search.profile.fullName}</h6>
                                     <p class="mb-0 opacity-75">{search.profile.title}</p>
-                                    <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.profile.nFollowers} followers · {search.profile.nConnections} connections</p>
+                                    <p class="shadow fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.profile.nFollowers} followers · {search.profile.nConnections} connections</p>
                                   </div>
                                   <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
                                 </div>

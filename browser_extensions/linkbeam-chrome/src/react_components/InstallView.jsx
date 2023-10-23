@@ -5,7 +5,9 @@ import import_icon from '../assets/import_icon.png';
 import party_popper_icon from '../assets/party-popper_icon.png';
 import new_icon from '../assets/new_icon.png';
 import { 
-  appParams
+  appParams, 
+  messageParams,
+  startMessageListener
 } from "./Local_library";
 
 export default class About extends React.Component{
@@ -19,12 +21,30 @@ export default class About extends React.Component{
 
   componentDidMount() {
 
+    // Starting the message listener
+    this.listenToMessages();
+
   }
 
   onNewInstanceClicked(){
 
     this.setState({opDone: true});
 
+  }
+
+  onNewInstanceSetUp(){
+    
+  }
+
+  listenToMessages(){
+
+    /*startMessageListener([
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        callback: this.onNewInstanceSetUp
+      }
+    ]);*/
+    
   }
 
   onImportDataClicked(){
@@ -49,18 +69,18 @@ export default class About extends React.Component{
             <h5 class="mt-4 text-center">Thank you for installing <b>{appParams.appName}</b>. Let's get you started</h5>
 
             {!this.state.opDone && <div class="mt-5 text-center row">
-                          <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor">
+                          <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor border border-secondary-subtle">
                             <img src={import_icon} alt="twbs" width="40" height="40" class=""/>
                             <p class="mt-3">Import data</p>
                           </div>
-                          <div onClick={() => {this.onNewInstanceClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor">
+                          <div onClick={() => {this.onNewInstanceClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor border border-secondary-subtle">
                             <img src={new_icon} alt="twbs" width="40" height="40" class=""/>
                             <p class="mt-3">New Instance</p>
                           </div>
                         </div>}
 
             { this.state.opDone && <div class="mt-5 text-center row">
-                          <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor">
+                          <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 border border-secondary-subtle">
                             <img src={party_popper_icon} alt="twbs" width="40" height="40" class=""/>
                             <p class="mt-3">Your app is ready for use</p>
                           </div>
