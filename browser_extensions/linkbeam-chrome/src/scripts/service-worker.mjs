@@ -254,9 +254,14 @@ function getSearchList(params) {
 
     var params = (params ? params : {}),
         offset = (params.offset ? params.offset : 0),
-        date = (params.date ? params.date : null),
+        argDate = (params.date ? params.date : null),
         dateInnerSeparator = "-",
-        context = params.context;
+        context = params.context,
+        monthSearchRequest = null;
+
+    if (argDate){
+        var monthSearchRequest = argDate.split(dateInnerSeparator)[2] == "?";
+    }
 
     let searches = [];
     var offsetApplied = false;
@@ -276,17 +281,18 @@ function getSearchList(params) {
         }
 
         let search = cursor.value;
-        if (date){
-            console.log("$$$$$$$$$$$$$$$$$$$$$$$$$ : ", date);
-            if (date.split(dateInnerSeparator)[2] != "?"){
-                if (date == search.date.split("T")[0]){
+        if (argDate){
+            if (!monthSearchRequest){ // Then, it's a day search request 
+                if (argDate == search.date.split("T")[0]){
                     searches.push(search);
                 }
             }
             else{
-                date = date.split(dateInnerSeparator);
+                if (typeof argDate === "string"){
+                    argDate = argDate.split(dateInnerSeparator);
+                }
                 var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
-                if (date[0] == searchDate[0] && date[1] == searchDate[1]){
+                if (argDate[0] == searchDate[0] && argDate[1] == searchDate[1]){
                     searches.push(search);
                 }
             }
