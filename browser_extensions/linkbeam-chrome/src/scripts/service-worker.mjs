@@ -92,7 +92,7 @@ function createDatabase(context) {
 
         // once, the database obtained, execute the sent request in a runtime context
         if (context.status == "INSTALL"){
-            initializeDatabase();
+            initializeDatabase(context.params.data);
         }
         if (context.status == "RUNTIME-MESSAGE-EVENT"){
             processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
@@ -112,9 +112,6 @@ function createDatabase(context) {
 chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
 
-        // on install, create the database
-        // createDatabase({status: "INSTALL"});
-
         // on install, open a web page for information
         chrome.tabs.create({ url: "install.html" });
         // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
@@ -127,10 +124,15 @@ chrome.runtime.onInstalled.addListener(details => {
 
 // Script for initializing the database
 
-function initializeDatabase(){
+function initializeDatabase(initialData = null){
 
-    // initialize settings
-    initSettings();
+    if (initialData){
+        // initialize settings
+        initSettings();
+    }
+    else{
+        initDBWithData(initialData);
+    }
 }
 
 // Script for intializing the "Setting" object store
@@ -147,6 +149,19 @@ function initSettings(){
         console.log("Setting data set");
       };
     });
+}
+
+// Script for intializing the "Setting" object store
+
+function initDBWithData(initialData){
+
+    for (var objectStoreIndex in initialData){
+
+        var objectStoreName = initialData[objectStoreIndex];
+        console.log("00000000 : ", objectStoreName);
+
+    }
+
 }
 
 
@@ -1368,6 +1383,19 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case messageParams.requestHeaders.SW_CREATE_DB:{
+
+            // acknowledge receipt
+            ack(sendResponse);
+
+            var data = message.data;
+
+            // on install, create the database
+            createDatabase({status: "INSTALL", params:{data: data}});
+
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED, null);
+        }
+
         default:{
             // TODO
         }
@@ -1428,14 +1456,14 @@ function getAndCheckCurrentTab(){
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
     // making sure the database is up and running
-    if (!db){
-        // sending a response
-        sendResponse({
-            status: "ACK"
-        });
-        createDatabase({status: "RUNTIME-MESSAGE-EVENT", params: {message: message, sender: sender, sendResponse: sendResponse}});
-        return;
-    }
+    // if (!db){
+    //     // sending a response
+    //     sendResponse({
+    //         status: "ACK"
+    //     });
+    //     createDatabase({status: "RUNTIME-MESSAGE-EVENT", params: {message: message, sender: sender, sendResponse: sendResponse}});
+    //     return;
+    // }
 
     processMessageEvent(message, sender, sendResponse)    
 });
@@ -1444,11 +1472,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
-    // making the database is up and running
-    if (!db){
-        createDatabase({status: "RUNTIME-TAB-EVENT", params: {tabId: tabId, changeInfo: changeInfo, tab: tab}});
-        return;
-    }
+    // making sure the database is up and running
+    // if (!db){
+    //     createDatabase({status: "RUNTIME-TAB-EVENT", params: {tabId: tabId, changeInfo: changeInfo, tab: tab}});
+    //     return;
+    // }
 
     processTabEvent(tabId, changeInfo, tab);
   }

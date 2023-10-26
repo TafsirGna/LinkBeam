@@ -120,6 +120,7 @@ export const messageParams = {
     SW_WEB_PAGE_ACTIVATION: "sw-web-page-activation",
     CS_EXPAND_MODAL_ACTION: "web-ui-expand-modal-action",
     CS_NOTIFY_LOAD_ACTION: "web-ui-notify-load-action",
+    SW_CREATE_DB: "sw-create-db",
   },
 
   responseHeaders: {
@@ -139,6 +140,7 @@ export const messageParams = {
     SW_WEB_PAGE_CHECKED: "sw-web-page-checked",
     SW_WEB_PAGE_ACTIVATED: "sw-web-page-activated",
     SW_WEB_PAGE_LOADED: "sw-web-page-loaded",
+    SW_DB_CREATED: "sw-db-created",
   },
 
   separator: "|",

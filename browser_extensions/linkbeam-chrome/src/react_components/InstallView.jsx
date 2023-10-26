@@ -7,7 +7,9 @@ import new_icon from '../assets/new_icon.png';
 import { 
   appParams, 
   messageParams,
-  startMessageListener
+  startMessageListener,
+  sendDatabaseActionMessage,
+  ack,
 } from "./Local_library";
 
 export default class About extends React.Component{
@@ -16,7 +18,10 @@ export default class About extends React.Component{
     super(props);
     this.state = {
       opDone: false,
+      formFile: null,
     };
+
+    this.onNewInstanceSetUp = this.onNewInstanceSetUp.bind(this);
   }
 
   componentDidMount() {
@@ -24,33 +29,70 @@ export default class About extends React.Component{
     // Starting the message listener
     this.listenToMessages();
 
+    // listening for an input change event
+    const formFileElement = document.getElementById("formFile");
+    formFileElement.onchange = (e => { 
+    
+      var file = e.target.files[0]; 
+      // this.setState({formFile: file});
+
+      // setting up the reader
+      var reader = new FileReader();
+      reader.readAsText(file,'UTF-8');
+
+      // here we tell the reader what to do when it's done reading...
+      reader.onload = readerEvent => {
+        var content = readerEvent.target.result; // this is the content!
+        content = JSON.parse(content);
+        console.log( content );
+
+        // Sending the content for initializing the db
+        // Send message to the background
+        chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: content}, (response) => {
+          // Got an asynchronous response with the data from the service worker
+          console.log("Create db Request sent !");
+        });
+
+      }
+
+    }).bind(this);
+
   }
 
   onNewInstanceClicked(){
 
+    // Send message to the background
+    chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: null}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log("Create db Request sent !");
+    });
+
+  }
+
+  onNewInstanceSetUp(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+    
     this.setState({opDone: true});
 
   }
 
-  onNewInstanceSetUp(){
-    
-  }
-
   listenToMessages(){
 
-    /*startMessageListener([
+    startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED].join(messageParams.separator), 
         callback: this.onNewInstanceSetUp
-      }
-    ]);*/
+      },
+    ]);
     
   }
 
   onImportDataClicked(){
 
-    const formFile = document.getElementById("formFile");
-    formFile.click();
+    const formFileElement = document.getElementById("formFile");
+    formFileElement.click();
 
     this.setState({opDone: true});
 
