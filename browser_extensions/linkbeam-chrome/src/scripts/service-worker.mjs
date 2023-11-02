@@ -12,6 +12,8 @@ let db = null,
     tabID = null,
     currentTabCheckContext = null;
 
+const dbName = "LinkBeamDB";
+
 const settingData = [{
     id: 1,
     notifications: true,
@@ -24,7 +26,6 @@ const settingData = [{
 
 function createDatabase(context) {
 
-    const dbName = "LinkBeamDB";
     const request = indexedDB.open(dbName, 1);
 
     request.onerror = function (event) {
@@ -94,12 +95,13 @@ function createDatabase(context) {
         if (context.status == "INSTALL"){
             initializeDatabase(context.params.data);
         }
-        if (context.status == "RUNTIME-MESSAGE-EVENT"){
-            processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
-        }
-        else if (context.status == "RUNTIME-TAB-EVENT"){
-            processTabEvent(context.params.tabId, context.params.changeInfo, context.params.tab);
-        }
+
+        // if (context.status == "RUNTIME-MESSAGE-EVENT"){
+        //     processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
+        // }
+        // if (context.status == "RUNTIME-TAB-EVENT"){
+        //     processTabEvent(context.params.tabId, context.params.changeInfo, context.params.tab);
+        // }
 
         db.onerror = function (event) {
             console.log("Failed to open database.")
@@ -114,7 +116,22 @@ chrome.runtime.onInstalled.addListener(details => {
 
         // on install, open a web page for information
         chrome.tabs.create({ url: "install.html" });
-        // chrome.runtime.setUninstallURL('https://example.com/extension-survey');
+
+        // Setting the process when uninstalling the extension
+        chrome.runtime.setUninstallURL(null, () => {
+
+            var req = indexedDB.deleteDatabase(dbName);
+            req.onsuccess = function () {
+                console.log("Deleted database successfully");
+            };
+            req.onerror = function () {
+                console.log("Couldn't delete database");
+            };
+            req.onblocked = function () {
+                console.log("Couldn't delete database due to the operation being blocked");
+            };
+
+        });
     }
 
     if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
@@ -126,7 +143,7 @@ chrome.runtime.onInstalled.addListener(details => {
 
 function initializeDatabase(initialData = null){
 
-    if (initialData){
+    if (!initialData){
         // initialize settings
         initSettings();
     }
@@ -147,6 +164,7 @@ function initSettings(){
       const request = objectStore.add(setting);
       request.onsuccess = (event) => {
         console.log("Setting data set");
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED, null);
       };
     });
 }
@@ -155,12 +173,38 @@ function initSettings(){
 
 function initDBWithData(initialData){
 
-    for (var objectStoreIndex in initialData){
+    var objectStoreNames = Object.keys(initialData);
+    recursiveDbInit(objectStoreNames, initialData);
 
-        var objectStoreName = initialData[objectStoreIndex];
-        console.log("00000000 : ", objectStoreName);
+}
 
+function recursiveDbInit(objectStoreNames, initialData){
+
+    if (objectStoreNames.length == 0){
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED, null);
+        return;
     }
+
+    var objectStoreName = objectStoreNames[0];
+    var objectStoreData = initialData[objectStoreName];
+
+    let objectStoreTransaction = db
+        .transaction(objectStoreName, "readwrite");
+
+    for (var rowIndex in objectStoreData){
+        var rowData = objectStoreData[rowIndex];
+        console.log("******* ", objectStoreName, rowIndex, rowData);
+        let request = objectStoreTransaction.objectStore(objectStoreName).add(rowData);
+    }   
+
+    objectStoreTransaction.oncomplete = (event) => {
+        console.log("Successfull data addition to ["+objectStoreName+"] : ", event);
+
+        objectStoreNames.shift();
+
+        // looping
+        recursiveDbInit(objectStoreNames, initialData);
+    }; 
 
 }
 
@@ -429,17 +473,19 @@ function getObjectStoresBareData(objectStoreNames, results){
         return;
     }
 
+    var objectStoreName = objectStoreNames[0];
+
     let request = db
-        .transaction(objectStoreNames[0], "readonly")
-        .objectStore(objectStoreNames[0])
+        .transaction(objectStoreName, "readonly")
+        .objectStore(objectStoreName)
         .getAll();
 
     request.onsuccess = (event) => {
-        console.log('Got all data ['+objectStoreNames[0]+']:', event.target.result);
+        console.log('Got all data ['+objectStoreName+']:', event.target.result);
         // Sending the retrieved data
-        results[objectStoreNames[0]] = (event.target.result);
+        results[objectStoreName] = (event.target.result);
 
-        objectStoreNames.shift()
+        objectStoreNames.shift();
 
         // looping
         getObjectStoresBareData(objectStoreNames, results);
@@ -448,7 +494,7 @@ function getObjectStoresBareData(objectStoreNames, results){
     };
 
     request.onerror = (event) => {
-        console.log("An error occured when retrieving all data ["+objectStoreNames[0]+"] : ", event);
+        console.log("An error occured when retrieving all data ["+objectStoreName+"] : ", event);
     };
 
 }
@@ -849,10 +895,12 @@ function clearObjectStores(objectStoreNames){
         return;
     }
 
-    const objectStore = db.transaction(objectStoreNames[0], "readwrite").objectStore(objectStoreNames[0]);
+    var objectStoreName = objectStoreNames[0];
+
+    const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
     objectStore.clear().onsuccess = (event) => {
         // Clearing the next objectStore
-        // getList(objectStoreNames[0], null);
+        // getList(objectStoreName, null);
         objectStoreNames.shift()
         clearObjectStores(objectStoreNames)
     }
@@ -1393,7 +1441,6 @@ function processMessageEvent(message, sender, sendResponse){
             // on install, create the database
             createDatabase({status: "INSTALL", params:{data: data}});
 
-            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED, null);
         }
 
         default:{

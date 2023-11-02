@@ -17,8 +17,9 @@ export default class About extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      alertMessage: "",
+      alertTagShow: false,
       opDone: false,
-      formFile: null,
     };
 
     this.onNewInstanceSetUp = this.onNewInstanceSetUp.bind(this);
@@ -34,7 +35,6 @@ export default class About extends React.Component{
     formFileElement.onchange = (e => { 
     
       var file = e.target.files[0]; 
-      // this.setState({formFile: file});
 
       // setting up the reader
       var reader = new FileReader();
@@ -43,7 +43,22 @@ export default class About extends React.Component{
       // here we tell the reader what to do when it's done reading...
       reader.onload = readerEvent => {
         var content = readerEvent.target.result; // this is the content!
-        content = JSON.parse(content);
+
+        try{
+          content = JSON.parse(content);
+        } catch (error) {
+          var message = "Something wrong happent with the uploaded file. Check the file and try again! ";
+          console.error(message+': ', error);
+          
+          this.setState({alertMessage: message, alertTagShow: true}, () => {
+              setTimeout(() => {
+                this.setState({alertMessage: "", alertTagShow: false});
+              }, appParams.TIMER_VALUE);
+          });
+
+          return;
+        }
+
         console.log( content );
 
         // Sending the content for initializing the db
@@ -94,8 +109,6 @@ export default class About extends React.Component{
     const formFileElement = document.getElementById("formFile");
     formFileElement.click();
 
-    this.setState({opDone: true});
-
   }
 
   render(){
@@ -109,6 +122,13 @@ export default class About extends React.Component{
               <h6 class="mt-3">{appParams.appName}</h6>
             </div>
             <h5 class="mt-4 text-center">Thank you for installing <b>{appParams.appName}</b>. Let's get you started</h5>
+
+            { this.state.alertTagShow && <div class="alert alert-warning d-flex align-items-center my-3 small fst-italic" role="alert">
+                          {/*<svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>*/}
+                          <div>
+                            {this.state.alertMessage}
+                          </div>
+                        </div>}
 
             {!this.state.opDone && <div class="mt-5 text-center row">
                           <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor border border-secondary-subtle">
