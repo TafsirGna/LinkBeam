@@ -47,7 +47,7 @@ export default class HomeMenu extends React.Component{
                 </div>*/}
               </Link>
             </li>
-            <li><Link class="dropdown-item small" to="/index.html?calendar-view=true" target="_blank">Calendar</Link></li>
+            <li><Link class="dropdown-item small" to="/index.html?redirect_to=CalendarView" target="_blank">Calendar</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Statistics">Statistics</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Settings">Settings</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/About">About</Link></li>

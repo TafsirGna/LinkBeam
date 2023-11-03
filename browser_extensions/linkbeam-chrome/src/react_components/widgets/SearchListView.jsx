@@ -49,7 +49,7 @@ export default class SearchListView extends React.Component{
         { this.props.objects != null && this.props.objects.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((search) => (<Link to={"/index.html?profile-url=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    this.props.objects.map((search) => (<Link to={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                 <img src={default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>

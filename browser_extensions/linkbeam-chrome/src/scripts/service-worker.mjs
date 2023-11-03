@@ -1512,6 +1512,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     //     return;
     // }
 
+    // if the database is not defined yet and the user tries to query the database, an error is sent back
+    if (!db && message.header != messageParams.requestHeaders.SW_CREATE_DB){
+
+        // acknowledge receipt
+        ack(sendResponse);
+
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET, null);
+
+        return;
+    }
+
     processMessageEvent(message, sender, sendResponse)    
 });
 

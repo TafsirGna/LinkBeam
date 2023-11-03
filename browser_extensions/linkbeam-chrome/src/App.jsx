@@ -14,6 +14,7 @@ import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
 import Feedback from "./react_components/Feedback";
 import LicenseCreditsView from "./react_components/LicenseCredits";
+import ErrorPageView from "./react_components/ErrorPageView";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   sendDatabaseActionMessage,
@@ -30,8 +31,8 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      profileUrlValue: null,
-      calendarView: null,
+      redirect_to: null,
+      swDbStatus: null,
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -57,11 +58,10 @@ export default class App extends React.Component{
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
-    const profileUrlValue = urlParams.get("profile-url");
-    const calendarView = urlParams.get("calendar-view");
-
-    this.setState({profileUrlValue: profileUrlValue});
-    this.setState({calendarView: calendarView});
+    if (urlParams.get("redirect-to") != null){
+      var redirect_to = {view: urlParams.get("redirect-to"), data: urlParams.get("data")};
+      this.setState({redirect_to: redirect_to});
+    }
 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
 
@@ -182,6 +182,14 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    if (message.data.objectStoreName == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET){
+      var alertMessage = "Database not created yet!";
+      console.log(alertMessage);
+      // alert(alertMessage);
+      this.setState({swDbStatus: messageParams.contentMetaData.SW_DB_NOT_CREATED_YET});
+      return;
+    }
+
     // setting the new value
     let currentTabWebPageData = message.data.objectData;
     this.setState(prevState => {
@@ -219,6 +227,11 @@ export default class App extends React.Component{
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
         callback: this.onSwResponseReceived
       },
+
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET].join(messageParams.separator), 
+        callback: this.onSwResponseReceived
+      },
     ]);
 
   }
@@ -252,11 +265,13 @@ export default class App extends React.Component{
         <BrowserRouter>
           <Routes>
             <Route path="/index.html" element={
-              this.state.profileUrlValue ? 
-                <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.profileUrlValue} />
-                : this.state.calendarView ?
-                    <Navigate replace to={"/index.html/Calendar"} />
-                    : <Activity globalData={this.state.globalData} />
+              this.state.swDbStatus == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET ?
+                <Navigate replace to={"/index.html/Error?data="+this.state.swDbStatus} />
+                : this.state.redirect_to && this.state.redirect_to.view == "ProfileView" ? 
+                  <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.redirect_to.data} />
+                  : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
+                      <Navigate replace to={"/index.html/Calendar"} />
+                      : <Activity globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
@@ -269,7 +284,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />
-            {/*<Route path="*" element={<NoPage />} />*/}
+            <Route path="/index.html/Error" element={<ErrorPageView />} />
           </Routes>
         </BrowserRouter>
 

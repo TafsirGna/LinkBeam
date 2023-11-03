@@ -141,6 +141,7 @@ export const messageParams = {
     SW_WEB_PAGE_ACTIVATED: "sw-web-page-activated",
     SW_WEB_PAGE_LOADED: "sw-web-page-loaded",
     SW_DB_CREATED: "sw-db-created",
+    SW_DB_NOT_CREATED_YET: "sw-db-not-created-yet",
   },
 
   separator: "|",
