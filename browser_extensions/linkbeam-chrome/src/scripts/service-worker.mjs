@@ -1512,18 +1512,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     //     return;
     // }
 
-    // if the database is not defined yet and the user tries to query the database, an error is sent back
-    if (!db && message.header != messageParams.requestHeaders.SW_CREATE_DB){
+    // acknowledge receipt
+    ack(sendResponse);
 
-        // acknowledge receipt
-        ack(sendResponse);
+    // initialize db object
+    // var dbExists = true;
+    var request = indexedDB.open(dbName);
+    request.onupgradeneeded = function (e){
+        e.target.transaction.abort();
+        // dbExists = false;
+        if (message.header != messageParams.requestHeaders.SW_CREATE_DB){
 
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET, null);
-
-        return;
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET, null);
+            return;
+        }
+        else{
+            processMessageEvent(message, sender, sendResponse);
+        }
     }
 
-    processMessageEvent(message, sender, sendResponse)    
+    request.onsuccess = function (event) {
+        db = event.target.result;
+
+        processMessageEvent(message, sender, sendResponse);
+
+        db.onerror = function (event) {
+            console.log("Failed to open database.")
+        }
+    }
+
 });
 
 // Script for linstening to all tab updates
