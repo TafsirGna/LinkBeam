@@ -142,6 +142,8 @@ export const messageParams = {
     SW_WEB_PAGE_LOADED: "sw-web-page-loaded",
     SW_DB_CREATED: "sw-db-created",
     SW_DB_NOT_CREATED_YET: "sw-db-not-created-yet",
+    SW_DB_INIT_FAILED:"sw-db-init-failed",
+    SW_DB_CREATION_FAILED:"sw-db-creation-failed",
   },
 
   separator: "|",

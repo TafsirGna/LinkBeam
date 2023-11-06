@@ -4,6 +4,7 @@ import app_logo from '../assets/app_logo.png';
 import import_icon from '../assets/import_icon.png';
 import party_popper_icon from '../assets/party-popper_icon.png';
 import new_icon from '../assets/new_icon.png';
+import Alert from 'react-bootstrap/Alert';
 import { 
   appParams, 
   messageParams,
@@ -19,6 +20,7 @@ export default class About extends React.Component{
     this.state = {
       alertMessage: "",
       alertTagShow: false,
+      alertVariant: "warning",
       opDone: false,
     };
 
@@ -50,7 +52,7 @@ export default class About extends React.Component{
           var message = "Something wrong happent with the uploaded file. Check the file and try again! ";
           console.error(message+': ', error);
           
-          this.setState({alertMessage: message, alertTagShow: true}, () => {
+          this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
               setTimeout(() => {
                 this.setState({alertMessage: "", alertTagShow: false});
               }, appParams.TIMER_VALUE);
@@ -84,6 +86,25 @@ export default class About extends React.Component{
 
   }
 
+  onSwResponseReceived(message, sendResponse){
+    // acknowledge receipt
+    ack(sendResponse);
+
+    switch(message.data.objectData){
+      case  messageParams.contentMetaData.SW_DB_INIT_FAILED:{
+        var message = "Failed to initialized the app with the uploaded data. Try again later!";
+        this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
+        break;
+      }
+
+      case  messageParams.contentMetaData.SW_DB_CREATION_FAILED:{
+        var message = "Failed to initialized the app. Try again later!";
+        this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
+        break;
+      }
+    }
+  }
+
   onNewInstanceSetUp(message, sendResponse){
 
     // acknowledge receipt
@@ -99,6 +120,14 @@ export default class About extends React.Component{
       {
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATED].join(messageParams.separator), 
         callback: this.onNewInstanceSetUp
+      },
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_INIT_FAILED].join(messageParams.separator), 
+        callback: this.onSwResponseReceived
+      },
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATION_FAILED].join(messageParams.separator), 
+        callback: this.onSwResponseReceived
       },
     ]);
     
@@ -123,12 +152,9 @@ export default class About extends React.Component{
             </div>
             <h5 class="mt-4 text-center">Thank you for installing <b>{appParams.appName}</b>. Let's get you started</h5>
 
-            { this.state.alertTagShow && <div class="alert alert-warning d-flex align-items-center my-3 small fst-italic" role="alert">
-                          {/*<svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>*/}
-                          <div>
-                            {this.state.alertMessage}
-                          </div>
-                        </div>}
+            { this.state.alertTagShow && <Alert className="my-3 small fst-italic" key={this.state.alertVariant} variant={this.state.alertVariant} dismissible>
+                                            {this.state.alertMessage}
+                                          </Alert>}
 
             {!this.state.opDone && <div class="mt-5 text-center row">
                           <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor border border-secondary-subtle">

@@ -13,6 +13,7 @@ let db = null,
     currentTabCheckContext = null;
 
 const dbName = "LinkBeamDB";
+const dbVersion = 1;
 
 const settingData = [{
     id: 1,
@@ -26,10 +27,13 @@ const settingData = [{
 
 function createDatabase(context) {
 
-    const request = indexedDB.open(dbName, 1);
+    const request = indexedDB.open(dbName, dbVersion);
 
     request.onerror = function (event) {
         console.log("An error occured when opening the database");
+
+        // notifying the user of this error
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATION_FAILED, null);
     }
 
     request.onupgradeneeded = function (event) {
@@ -120,16 +124,7 @@ chrome.runtime.onInstalled.addListener(details => {
         // Setting the process when uninstalling the extension
         chrome.runtime.setUninstallURL(null, () => {
 
-            var req = indexedDB.deleteDatabase(dbName);
-            req.onsuccess = function () {
-                console.log("Deleted database successfully");
-            };
-            req.onerror = function () {
-                console.log("Couldn't delete database");
-            };
-            req.onblocked = function () {
-                console.log("Couldn't delete database due to the operation being blocked");
-            };
+            deleteDatabase();
 
         });
     }
@@ -138,6 +133,27 @@ chrome.runtime.onInstalled.addListener(details => {
 
     }
 });
+
+// Script for deleting the whole database
+
+function deleteDatabase(onSuccessCallback = null){
+
+    var req = indexedDB.deleteDatabase(dbName);
+
+    req.onsuccess = function () {
+        console.log("Deleted database successfully");
+        if (onSuccessCallback){
+            onSuccessCallback();
+        }
+    };
+    req.onerror = function () {
+        console.log("Couldn't delete database");
+    };
+    req.onblocked = function () {
+        console.log("Couldn't delete database due to the operation being blocked");
+    };
+
+}
 
 // Script for initializing the database
 
@@ -174,6 +190,10 @@ function initSettings(){
 function initDBWithData(initialData){
 
     var objectStoreNames = Object.keys(initialData);
+
+    // removing dbVersion from the list
+    objectStoreNames.splice(objectStoreNames.indexOf("dbVersion"), 1);
+
     recursiveDbInit(objectStoreNames, initialData);
 
 }
@@ -193,7 +213,6 @@ function recursiveDbInit(objectStoreNames, initialData){
 
     for (var rowIndex in objectStoreData){
         var rowData = objectStoreData[rowIndex];
-        console.log("******* ", objectStoreName, rowIndex, rowData);
         let request = objectStoreTransaction.objectStore(objectStoreName).add(rowData);
     }   
 
@@ -205,6 +224,17 @@ function recursiveDbInit(objectStoreNames, initialData){
         // looping
         recursiveDbInit(objectStoreNames, initialData);
     }; 
+
+    objectStoreTransaction.onerror = () => {
+    console.log(`Error adding items`);
+
+    // then, the whole db is deleted for the process to restart
+    deleteDatabase(
+        onSuccessCallback = () => {
+            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_INIT_FAILED, null);
+    });
+
+  };
 
 }
 
@@ -453,7 +483,7 @@ function getKeywordList() {
 function getAllData(){
 
     const data = db.objectStoreNames;
-    var results = {}, objectStoreNames = [];
+    var results = {dbVersion: dbVersion}, objectStoreNames = [];
 
     for (var key in data){
         if (typeof data[key] === "string"){
