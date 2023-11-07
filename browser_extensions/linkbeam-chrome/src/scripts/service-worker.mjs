@@ -257,6 +257,8 @@ function getSearchProfiles(searches, context){
         return;
     }
 
+    console.log("%%%%%%%%%%%%%%%%%%%% : ", searches);
+
     // For each url, create a request to retrieve the corresponding profile
     let objectStore = db
                         .transaction(dbData.objectStoreNames.PROFILES, "readonly")
@@ -382,6 +384,7 @@ function getSearchList(params) {
                 }
                 var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
                 if (argDate[0] == searchDate[0] && argDate[1] == searchDate[1]){
+                    console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", search.profile);
                     searches.push(search);
                 }
             }
@@ -390,12 +393,18 @@ function getSearchList(params) {
             searches.push(search);
         }
 
-        if(searches.length < appParams.searchPageLimit) {
-            cursor.continue();
+        // if an argument about a specific time is not passed then
+        if (!argDate){
+            if(searches.length < appParams.searchPageLimit) {
+                cursor.continue();
+            }
+            else{
+                getSearchProfiles(searches, context);
+                return;
+            }
         }
         else{
-            getSearchProfiles(searches, context);
-            return;
+            cursor.continue();
         }
     }
 
@@ -1495,7 +1504,7 @@ function processTabEvent(tabId, changeInfo, tab){
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    // console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
+    console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
     if (url && testTabUrl(url)) 
     {
         // Starting the verifier script in order to make sure this is a linkedin page

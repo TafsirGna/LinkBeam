@@ -58,8 +58,8 @@ export default class App extends React.Component{
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("redirect-to") != null){
-      var redirect_to = {view: urlParams.get("redirect-to"), data: urlParams.get("data")};
+    if (urlParams.get("redirect_to") != null){
+      var redirect_to = {view: urlParams.get("redirect_to"), data: urlParams.get("data")};
       this.setState({redirect_to: redirect_to});
     }
 
