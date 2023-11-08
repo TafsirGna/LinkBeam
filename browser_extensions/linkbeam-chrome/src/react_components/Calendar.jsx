@@ -160,12 +160,14 @@ export default class Calendar extends React.Component{
           <span class="badge text-bg-primary shadow">Calendar View</span>
         </div>
 				<div class="offset-1 col-10 mt-4 row">
-          <Cal onClickDay={this.onClickDay} 
-               // tileDisabled={this.tileDisabled} 
-               onActiveStartDateChange={this.onActiveStartDateChange} 
-               value={new Date()} 
-               tileClassName={this.tileClassName}
-               className="rounded shadow col-4"/>
+          <div class="col-4">
+            <Cal onClickDay={this.onClickDay} 
+              // tileDisabled={this.tileDisabled} 
+              onActiveStartDateChange={this.onActiveStartDateChange} 
+              value={new Date()} 
+              tileClassName={this.tileClassName}
+              className="rounded shadow"/>
+          </div>
           <div class="col-7 ps-3">
             <Card className="shadow">
               <Card.Header>

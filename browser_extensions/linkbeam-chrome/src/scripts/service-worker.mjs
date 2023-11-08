@@ -89,6 +89,13 @@ function createDatabase(context) {
         bookmarkObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Bookmark' created.");
         }
+
+        // NewsFeed object store
+        let newsFeedObjectStore = db.createObjectStore(dbData.objectStoreNames.NEWSFEED, { keyPath: "id" });
+
+        newsFeedObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Newsfeed' created.");
+        }
     }
 
     request.onsuccess = function (event) {
@@ -384,7 +391,7 @@ function getSearchList(params) {
                 }
                 var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
                 if (argDate[0] == searchDate[0] && argDate[1] == searchDate[1]){
-                    console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", search.profile);
+                    // console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", search.profile, search);
                     searches.push(search);
                 }
             }
@@ -487,6 +494,27 @@ function getKeywordList() {
     };
 }
 
+// Script for getting the newsfeed
+
+function getNewsFeedList() {
+
+    let request = db
+                .transaction(dbData.objectStoreNames.NEWSFEED, "readonly")
+                .objectStore(dbData.objectStoreNames.NEWSFEED)
+                .getAll();
+
+    request.onsuccess = (event) => {
+        console.log('Got all newsfeed:', event.target.result);
+        // Sending the retrieved data
+        let results = event.target.result;
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when retrieving newsfeed list : ", event);
+    };
+}
+
 // Script for getting all db data
 
 function getAllData(){
@@ -563,6 +591,11 @@ function getList(objectStoreName, objectData){
             break;
         }
 
+        case dbData.objectStoreNames.NEWSFEED:{
+            getNewsFeedList();
+            break;
+        }
+
         case "all":{
             getAllData();
             break;
@@ -587,65 +620,26 @@ function getList(objectStoreName, objectData){
 
 function getObjectCount(objectStoreName, objectData){
 
-    switch(objectStoreName){
+    var request = db
+                .transaction(objectStoreName, "readonly")
+                .objectStore(objectStoreName)
+                .count();
+    request.onsuccess = (event) => {
+        console.log('Got '+objectStoreName+' count:', event.target.result);
+        // Sending the retrieved data
+        var result = event.target.result;
+        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, objectStoreName, result);
+    };
 
-        case dbData.objectStoreNames.KEYWORDS:{
-            getKeywordCount(objectData);
-            break;
-        }
-
-        case dbData.objectStoreNames.REMINDERS:{
-            getReminderCount(objectData);
-            break;
-        }
-    }
+    request.onerror = (event) => {
+        console.log("An error occured when counting "+objectStoreName+" : ", event);
+    };
 
 }
 
 // Sorting the list before sending it
 // searches.sort((a,b) => a.date - b.date);
 // searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
-
-// Script for getting reminder count
-
-function getReminderCount() {
-
-    var request = db
-                    .transaction(dbData.objectStoreNames.REMINDERS, "readonly")
-                    .objectStore(dbData.objectStoreNames.REMINDERS)
-                    .count();
-    request.onsuccess = (event) => {
-        console.log('Got reminder count:', event.target.result);
-        // Sending the retrieved data
-        var result = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.REMINDERS, result);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when counting reminders : ", event);
-    };
-}
-
-
-// Script for getting keyword count
-
-function getKeywordCount() {
-
-    var request = db
-                    .transaction(dbData.objectStoreNames.KEYWORDS, "readonly")
-                    .objectStore(dbData.objectStoreNames.KEYWORDS)
-                    .count();
-    request.onsuccess = (event) => {
-        console.log('Got keyword count:', event.target.result);
-        // Sending the retrieved data
-        var result = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.KEYWORDS, result);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when counting keywords : ", event);
-    };
-}
 
 
 

@@ -30,6 +30,7 @@ export const dbData = {
     KEYWORDS: "keywords",
     PROFILES: "profiles",
     NOTIFICATIONS: "notifications",
+    NEWSFEED: "newsfeed",
   }
 }
 
