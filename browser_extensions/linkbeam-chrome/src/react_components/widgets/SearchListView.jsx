@@ -53,11 +53,15 @@ export default class SearchListView extends React.Component{
                                 <img src={default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
-                                    <h6 class="mb-0">{search.profile.fullName}</h6>
+                                    <div class="d-flex gap-2">
+                                      <h6 class="mb-0">{search.profile.fullName}</h6>
+                                      <span>·</span>
+                                      <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
+                                    </div>
                                     <p class="mb-0 opacity-75">{search.profile.title}</p>
-                                    <p class="shadow fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.profile.nFollowers} followers · {search.profile.nConnections} connections</p>
+                                    <p class="shadow fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">{search.profile.nFollowers} · {search.profile.nConnections}</p>
                                   </div>
-                                  <small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>
+                                  {/*<small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>*/}
                                 </div>
                               </Link>))
                   }

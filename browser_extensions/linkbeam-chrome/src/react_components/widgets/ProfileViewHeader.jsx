@@ -29,7 +29,7 @@ export default class ProfileViewHeader extends React.Component{
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
-            <p class="shadow card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-info-subtle"><small class="text-body-secondary">{this.props.profile.nFollowers} followers · {this.props.profile.nConnections} connections</small></p>
+            <p class="shadow card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-info-subtle"><small class="text-body-secondary">{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small></p>
             <p class="card-text mb-1 text-center text-muted">
               <OverlayTrigger
                 placement="bottom"

@@ -59,7 +59,7 @@ function extractData(){
   }
 
   let experience = [], experienceSectionTag = document.querySelector(".core-section-container.experience");
-  if (experienceSectionTag){
+  /*if (experienceSectionTag){
 
     Array.from((document.querySelector(".core-section-container.experience .experience__list")).children).forEach((experienceLiTag) => {
       var experienceItem = {};
@@ -69,7 +69,7 @@ function extractData(){
       experience.push(experienceItem);
     });
 
-  }
+  }*/
 
   let newsFeed = [], newsFeedTagContainer = document.querySelector(".core-section-container.activities");
   if (newsFeedTagContainer){
@@ -102,7 +102,7 @@ function extractData(){
             nConnections: nConnections, 
             location: location,
             featuredSchool: featuredSchool,
-            company: company
+            company: company,
             education: {},
             experience: experience,
             certifications: {},
