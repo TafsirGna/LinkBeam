@@ -663,13 +663,14 @@ function add_search(search) {
         return;
     }
 
-    add_profile(search.profile, search);
+    add_profile_data(search.profile, search);
 
 }
 
 function add_search_data(searchData){
 
     delete searchData.profile;
+    delete searchData.codeInjected;
 
     const objectStore = db.transaction(dbData.objectStoreNames.SEARCHES, "readwrite").objectStore(dbData.objectStoreNames.SEARCHES);
     const request = objectStore.add(searchData);
@@ -744,9 +745,49 @@ function addObject(objectStoreName, objectData){
 
 }
 
+// Function for adding a profile object
+
+function addProfileObject(profile, callback = null){
+
+    // then adding the given profile into the database
+    const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+    const request = objectStore.add(profile);
+    request.onsuccess = (event) => {
+        console.log("New profile added");
+        if (callback){
+            callback();
+        }
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when adding a new profile");
+    };
+
+}
+
+// Function for updating a profile object
+
+function updateProfileObject(profile, callback = null){
+
+    // then adding the given profile into the database
+    const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+    const request = objectStore.put(profile);
+    request.onsuccess = (event) => {
+        console.log("Profile updated");
+        if (callback){
+            callback();
+        }
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when updating a new profile");
+    };
+
+}
+
 // Script for adding the new profile
 
-function add_profile(profile, search){
+function add_profile_data(profile, search){
 
     // checking first that a profile with the same id doesn't exist yet
     let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
@@ -756,23 +797,18 @@ function add_profile(profile, search){
         console.log('Got profile:', event.target.result);
 
         if (event.target.result){
-            let dbProfile = event.target.result;
-            // then add the search object
-            add_search_data(search);
+            
+            updateProfileObject(profile, () => {
+                // then add the search object
+                add_search_data(search);
+            });
+            
         }
         else{
 
-            // then adding the given profile into the database
-            const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-            const request = objectStore.add(profile);
-            request.onsuccess = (event) => {
-                console.log("New profile added");
+            addProfileObject(profile, () => {
                 add_search_data(search);
-            };
-
-            request.onerror = (event) => {
-                console.log("An error occured when adding a new profile");
-            };
+            });
 
         }
         
@@ -1171,7 +1207,7 @@ function updateObject(objectStoreName, objectData){
         }
 
         case dbData.objectStoreNames.PROFILES: {
-            updateProfileObject(objectData);
+            // updateProfileObject(objectData);
             break;
         }
     }
@@ -1180,54 +1216,54 @@ function updateObject(objectStoreName, objectData){
 
 // Script for updating a profile object
 
-function updateProfileObject(params){
+// function updateProfileObject(params){
 
-    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-    let request = objectStore.get(params.url);
+//     let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+//     let request = objectStore.get(params.url);
 
-    request.onsuccess = (event) => {
-        console.log('Got profile object:', event.target.result);
+//     request.onsuccess = (event) => {
+//         console.log('Got profile object:', event.target.result);
 
-        let profile = event.target.result;
-        for (var i = 0; i < params.properties.length; i++){
-            let property = params.properties[i];
-            let value = params.values[i];
+//         let profile = event.target.result;
+//         for (var i = 0; i < params.properties.length; i++){
+//             let property = params.properties[i];
+//             let value = params.values[i];
 
-            profile[property] = value;
+//             profile[property] = value;
 
-            /*switch(property){
-                case "": {
-                    break;
-                }
-            };*/
-        }
+//             /*switch(property){
+//                 case "": {
+//                     break;
+//                 }
+//             };*/
+//         }
 
-        let updateRequest = objectStore.put(profile);
-        updateRequest.onsuccess = (event) => {
+//         let updateRequest = objectStore.put(profile);
+//         updateRequest.onsuccess = (event) => {
 
-            for (var i = 0; i < params.properties.length; i++){
+//             for (var i = 0; i < params.properties.length; i++){
 
-                let property = params.properties[i];
-                let value = params.values[i];
-                chrome.runtime.sendMessage({header: 'profile-updated', data: {url: params.url, property: property, value: value}}, (response) => {
-                  console.log('Update profile response sent', response);
-                });
+//                 let property = params.properties[i];
+//                 let value = params.values[i];
+//                 chrome.runtime.sendMessage({header: 'profile-updated', data: {url: params.url, property: property, value: value}}, (response) => {
+//                   console.log('Update profile response sent', response);
+//                 });
 
-            }
-        };
+//             }
+//         };
 
-        updateRequest.onerror = (event) => {
-            console.log("An error occured when updating the profile with url : ", params.url);
-        };
+//         updateRequest.onerror = (event) => {
+//             console.log("An error occured when updating the profile with url : ", params.url);
+//         };
 
-    };
+//     };
 
-    request.onerror = (event) => {
-        // Handle errors!
-        console.log("An error occured when retrieving the profile with url : ", params.url);
-    };
+//     request.onerror = (event) => {
+//         // Handle errors!
+//         console.log("An error occured when retrieving the profile with url : ", params.url);
+//     };
 
-}
+// }
 
 // Script for setting the new date of data reset
 

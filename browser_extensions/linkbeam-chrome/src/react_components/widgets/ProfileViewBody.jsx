@@ -74,38 +74,71 @@ const barOptions = {
 
 const labels = ["a", "b", "c", "d"];
 
-const barData = {
-  // labels,
-  datasets: [
-    {
-      label: 'Dataset',
-      //data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
-      data: [
-        {x: ["2022-01-01", "2022-12-01"], y: "ENEAM"},  
-        {x: ["2022-02-01", "2022-12-01"], y: "IFRI"},  
-        {x: ["2022-03-01", "2022-12-01"], y: "FAUCON"},  
-        {x: ["2022-04-01", "2022-12-01"], y: "ASSI"},  
-        {x: ["2022-05-01", "2022-12-01"], y: "CELTIIS"},  
-      ],
-      backgroundColor: 'rgba(255, 99, 132, 1)',
-      borderColor: 'rgba(255, 99, 132, 1)',
-      borderWidth: 1,
-      borderSkipped: false,
-      borderRadius: 10,
-      barPercentage: .7,
-    },
-  ],
-};
-
 export default class ProfileViewBody extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+
+      barData: {
+        // labels,
+        datasets: [
+          {
+            label: 'Dataset',
+            data: [],
+            backgroundColor: 'rgba(255, 99, 132, 1)',
+            borderColor: 'rgba(255, 99, 132, 1)',
+            borderWidth: 1,
+            borderSkipped: false,
+            borderRadius: 10,
+            barPercentage: .7,
+          },
+        ],
+      },
+
     };
   }
 
   componentDidMount() {
+
+    // Setting the data for the chart
+    this.setBarData();
+  }
+
+  setBarData(){
+
+    var data = [];
+
+    for (var experience of this.props.profile.experience){
+
+      var company = experience.company;
+      console.log("/////////////// : ", company);
+      data.push({x: ["2022-01-01", "2022-12-01"], y: company});
+
+    }
+
+    this.setState({barData: {
+      // labels,
+      datasets: [
+        {
+          label: 'Dataset',
+          data: data,
+          // [
+          //   {x: ["2022-01-01", "2022-12-01"], y: "ENEAM"},  
+          //   {x: ["2022-02-01", "2022-12-01"], y: "IFRI"},  
+          //   {x: ["2022-03-01", "2022-12-01"], y: "FAUCON"},  
+          //   {x: ["2022-04-01", "2022-12-01"], y: "ASSI"},  
+          //   {x: ["2022-05-01", "2022-12-01"], y: "CELTIIS"},  
+          // ],
+          backgroundColor: 'rgba(255, 99, 132, 1)',
+          borderColor: 'rgba(255, 99, 132, 1)',
+          borderWidth: 1,
+          borderSkipped: false,
+          borderRadius: 10,
+          barPercentage: .7,
+        },
+      ],
+    }});
 
   }
 
@@ -139,7 +172,7 @@ export default class ProfileViewBody extends React.Component{
             </Nav>
           </Card.Header>
           <Card.Body>
-            <Bar options={barOptions} data={barData} plugins={[todayLinePlugin]}/>
+            <Bar options={barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
           </Card.Body>
         </Card>
       </>
