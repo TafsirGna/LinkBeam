@@ -125,8 +125,17 @@ function createDatabase(context) {
 chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
 
-        // on install, open a web page for information
-        chrome.tabs.create({ url: "install.html" });
+        // checking if a previous instance already exists before showing the setup page
+
+        dbExists(
+            null,
+            () => {
+
+                // on install, open a web page for information
+                chrome.tabs.create({ url: "install.html" });
+
+            }
+        );
 
         // Setting the process when uninstalling the extension
         chrome.runtime.setUninstallURL(null, () => {
@@ -1584,33 +1593,54 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     // acknowledge receipt
     ack(sendResponse);
 
+    dbExists(
+        () => {
+
+            processMessageEvent(message, sender, sendResponse);
+
+        },
+        () => {
+
+            if (message.header != messageParams.requestHeaders.SW_CREATE_DB){
+                sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET, null);
+                return;
+            }
+            
+            processMessageEvent(message, sender, sendResponse);
+
+        }
+    );
+
+});
+
+// Function for checking if the db already exists
+
+function dbExists(onExistStatus = null, onNotExistStatus = null){
+
     // initialize db object
     // var dbExists = true;
     var request = indexedDB.open(dbName);
     request.onupgradeneeded = function (e){
         e.target.transaction.abort();
         // dbExists = false;
-        if (message.header != messageParams.requestHeaders.SW_CREATE_DB){
-
-            sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET, null);
-            return;
-        }
-        else{
-            processMessageEvent(message, sender, sendResponse);
+        if (onNotExistStatus){
+            onNotExistStatus();
         }
     }
 
     request.onsuccess = function (event) {
         db = event.target.result;
 
-        processMessageEvent(message, sender, sendResponse);
+        if (onExistStatus){
+            onExistStatus();
+        }
 
         db.onerror = function (event) {
             console.log("Failed to open database.")
         }
     }
 
-});
+}
 
 // Script for linstening to all tab updates
 

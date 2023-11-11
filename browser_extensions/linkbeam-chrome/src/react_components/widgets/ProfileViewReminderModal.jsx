@@ -63,6 +63,7 @@ export default class ProfileViewReminderModal extends React.Component{
                   autoFocus
                   value={this.state.reminderDate}
                   onChange={this.handleReminderDateInputChange}
+                  className="shadow"
                 />
               </Form.Group>
               <Form.Group
@@ -70,15 +71,15 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control as="textarea" rows={3} value={this.state.reminderText} onChange={this.handleReminderTextAreaChange} />
+                <Form.Control as="textarea" rows={3} value={this.state.reminderText} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
               </Form.Group>
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.props.onHide}>
+            <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
-            <Button variant="primary" size="sm" onClick={this.saveReminder}>
+            <Button variant="primary" size="sm" onClick={this.saveReminder} className="shadow">
               Save 
             </Button>
           </Modal.Footer>
