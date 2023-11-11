@@ -19,6 +19,7 @@ export const appParams = {
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
   INTERVAL_FEEDBACK: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
+  DATE_RANGE_SEPARATOR: "-",
 }
 
 export const dbData = {

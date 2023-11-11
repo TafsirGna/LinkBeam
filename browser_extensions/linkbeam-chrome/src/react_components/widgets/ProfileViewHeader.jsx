@@ -31,19 +31,21 @@ export default class ProfileViewHeader extends React.Component{
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
             <p class="shadow card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-info-subtle"><small class="text-body-secondary">{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small></p>
             <p class="card-text mb-1 text-center text-muted">
-              <OverlayTrigger
-                placement="bottom"
-                overlay={<ReactTooltip id="tooltip1">Cotonou, Littoral, Benin</ReactTooltip>}
-              >
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              </OverlayTrigger>
-              ·
-              <OverlayTrigger
-                placement="bottom"
-                overlay={<ReactTooltip id="tooltip1">View Cover Image</ReactTooltip>}
-              >
-                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2" onClick={this.handleCoverImageModalShow}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-              </OverlayTrigger>
+              { this.props.profile.location && <OverlayTrigger
+                              placement="bottom"
+                              overlay={<ReactTooltip id="tooltip1">{this.props.profile.location}</ReactTooltip>}
+                            >
+                              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            </OverlayTrigger>}
+              { this.props.profile.coverImage && <span>
+                              ·
+                              <OverlayTrigger
+                                placement="bottom"
+                                overlay={<ReactTooltip id="tooltip1">View Cover Image</ReactTooltip>}
+                              >
+                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2" onClick={this.handleCoverImageModalShow}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                              </OverlayTrigger>
+                            </span>}
               { this.props.profile.bookmark && <span>
                   ·
                   <OverlayTrigger
@@ -69,9 +71,13 @@ export default class ProfileViewHeader extends React.Component{
         {/* Cover Image Modal */}
         <Modal size="lg" show={this.state.coverImageModalShow} onHide={this.handleCoverImageModalClose}>
           <Modal.Header closeButton>
-            <Modal.Title>Modal heading</Modal.Title>
+            <Modal.Title>Cover Image</Modal.Title>
           </Modal.Header>
-          <Modal.Body>Woohoo, you are reading this text in a modal!</Modal.Body>
+          <Modal.Body>
+            
+            <img src={this.props.profile.coverImage} class="rounded shadow"/>
+
+          </Modal.Body>
         </Modal>
       </>
     );

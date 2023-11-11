@@ -19,6 +19,8 @@ import { OverlayTrigger } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar } from 'react-chartjs-2';
+import { appParams } from "../Local_library";
+import moment from 'moment';
 
 ChartJS.register(
   CategoryScale,
@@ -51,34 +53,34 @@ const todayLinePlugin = {
   },
 };
 
-const barOptions = {
-  indexAxis: 'y',
-  responsive: true,
-  scales: {
-    x: {
-      position: "top",
-      type: "time",
-      time: {
-        unit: "day",
-      },
-      min: "2021-12-31",
-      max: "2023-12-31",
-    },
-  },
-  plugins: {
-    legend: {
-      display: false,
-    }
-  }
-};
-
-const labels = ["a", "b", "c", "d"];
+// const labels = ["a", "b", "c", "d"];
 
 export default class ProfileViewBody extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+
+      barOptions: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: {
+          x: {
+            position: "top",
+            type: "time",
+            time: {
+              unit: "day",
+            },
+            min: "1900-01-01",
+            max: "1900-01-01",
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          }
+        }
+      },
 
       barData: {
         // labels,
@@ -107,15 +109,57 @@ export default class ProfileViewBody extends React.Component{
 
   setBarData(){
 
-    var data = [];
+    var data = [], minDate = moment();
 
     for (var experience of this.props.profile.experience){
 
       var company = experience.company;
-      console.log("/////////////// : ", company);
-      data.push({x: ["2022-01-01", "2022-12-01"], y: company});
+
+      // handling date range
+      var dateRange = experience.period.replaceAll("\n", "").split(appParams.DATE_RANGE_SEPARATOR);
+      var startDateRange = dateRange[0], endDateRange = dateRange[1];
+
+      // starting with the start date
+      startDateRange = moment(startDateRange, "MMM YYYY");
+
+      // Setting the minDate object
+      if (startDateRange < minDate){
+        minDate = startDateRange;
+      }
+
+      // then the end date
+      if (endDateRange.indexOf("Present") > -1){ // contains Present 
+        endDateRange = moment().format("YYYY-MM-DD");
+      }
+      else{
+        endDateRange = moment(endDateRange, "MMM YYYY").format("YYYY-MM-DD");
+      }
+
+      data.push({x: [startDateRange.format("YYYY-MM-DD"), endDateRange], y: company});
 
     }
+
+    this.setState({barOptions: {
+        indexAxis: 'y',
+        responsive: true,
+        scales: {
+          x: {
+            position: "top",
+            type: "time",
+            time: {
+              unit: "day",
+            },
+            min: minDate.format("YYYY-MM-DD"),
+            max: moment().format("YYYY-MM-DD"),
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          }
+        }
+      }
+    });
 
     this.setState({barData: {
       // labels,
@@ -123,13 +167,6 @@ export default class ProfileViewBody extends React.Component{
         {
           label: 'Dataset',
           data: data,
-          // [
-          //   {x: ["2022-01-01", "2022-12-01"], y: "ENEAM"},  
-          //   {x: ["2022-02-01", "2022-12-01"], y: "IFRI"},  
-          //   {x: ["2022-03-01", "2022-12-01"], y: "FAUCON"},  
-          //   {x: ["2022-04-01", "2022-12-01"], y: "ASSI"},  
-          //   {x: ["2022-05-01", "2022-12-01"], y: "CELTIIS"},  
-          // ],
           backgroundColor: 'rgba(255, 99, 132, 1)',
           borderColor: 'rgba(255, 99, 132, 1)',
           borderWidth: 1,
@@ -172,7 +209,7 @@ export default class ProfileViewBody extends React.Component{
             </Nav>
           </Card.Header>
           <Card.Body>
-            <Bar options={barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
+            <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
           </Card.Body>
         </Card>
       </>

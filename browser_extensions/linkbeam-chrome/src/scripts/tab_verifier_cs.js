@@ -20,6 +20,21 @@ function extractData(){
     fullName = fullNameTagContainer.firstChild.textContent;
   }
 
+  let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
+  if (userAboutTagContainer){
+    userAbout = userAboutTagContainer.textContent;
+  }
+
+  let avatar = null, avatarTagContainer = (document.querySelector(".top-card__profile-image"));
+  if (avatarTagContainer){
+    avatar = avatarTagContainer.src;
+  }
+
+  let coverImage = null, coverImageTagContainer = (document.querySelector(".cover-img__image"));
+  if (coverImageTagContainer){
+    coverImage = coverImageTagContainer.src;
+  }
+
   let title = null, titleTagContainer = document.querySelector(".top-card-layout__headline");
   if (titleTagContainer){
     title = titleTagContainer.innerHTML;
@@ -43,12 +58,12 @@ function extractData(){
   let company = null, featuredSchool = null, topCardLinksContainer = document.querySelector('.top-card__links-container');
   if (topCardLinksContainer){
 
-    compagnyTagContainer = topCardLinksContainer.querySelector('div[data-section="currentPositionsDetails"]');
-    if (compagnyTagContainer){
+    companyTagContainer = topCardLinksContainer.querySelector('div[data-section="currentPositionsDetails"]');
+    if (companyTagContainer){
       company = {
-        name: (compagnyTagContainer.firstElementChild.querySelector(":nth-child(2)") ? compagnyTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
-        logo: (compagnyTagContainer.firstElementChild.firstElementChild ? compagnyTagContainer.firstElementChild.firstElementChild.src : null), 
-        link: (compagnyTagContainer.firstElementChild ? compagnyTagContainer.firstElementChild.href : null),
+        name: (companyTagContainer.firstElementChild.querySelector(":nth-child(2)") ? companyTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
+        logo: (companyTagContainer.firstElementChild.firstElementChild ? companyTagContainer.firstElementChild.firstElementChild.src : null), 
+        link: (companyTagContainer.firstElementChild ? companyTagContainer.firstElementChild.href : null),
       };
     }
 
@@ -118,9 +133,9 @@ function extractData(){
             url: pageUrl,
             fullName: fullName,
             title: title,
-            info: null,
-            avatar: null,
-            coverImage: null,
+            info: userAbout,
+            avatar: avatar,
+            coverImage: coverImage,
             date: dateTime,
             nFollowers: nFollowers,
             nConnections: nConnections, 
