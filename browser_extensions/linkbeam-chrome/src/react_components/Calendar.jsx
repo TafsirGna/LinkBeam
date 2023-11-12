@@ -1,7 +1,7 @@
 /*import './Calendar.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { sendDatabaseActionMessage, ack, startMessageListener, messageParams, dbData } from "./Local_library";
+import { sendDatabaseActionMessage, ack, startMessageListener, messageParams, dbData, appParams } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
@@ -67,7 +67,7 @@ export default class Calendar extends React.Component{
     dateString[dateString.length - 1] = "?";
     dateString = dateString.join(separator);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: dateString, context: "Calendar"});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: dateString, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
 
   }
 
@@ -117,7 +117,7 @@ export default class Calendar extends React.Component{
   onSearchesDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
-    if (context != "Calendar"){
+    if (context != appParams.COMPONENT_CONTEXT_NAMES.CALENDAR){
       return;
     }
 

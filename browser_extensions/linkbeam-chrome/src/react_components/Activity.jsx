@@ -21,12 +21,13 @@ export default class Activity extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      searchList: null,
-      searchLeft: true,
-      bookmarkList: null,
+      allSearchList: null,
+      todaySearchList: null,
+      allSearchLeft: true,
+      // bookmarkList: null,
       currentPageTitle: null,
       currentTabIndex: 0,
-      loadingSearches: false,
+      loadingAllSearches: false,
       currentTabWebPageData: null,
     };
 
@@ -37,7 +38,7 @@ export default class Activity extends React.Component{
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
+    // this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
     this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
     this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
@@ -58,10 +59,10 @@ export default class Activity extends React.Component{
       return;
     }
 
-    saveCurrentPageTitle("Activity");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY);
 
     // Setting bookmark list if possible
-    this.setState({bookmarkList: this.props.globalData.bookmarkList});
+    // this.setState({bookmarkList: this.props.globalData.bookmarkList});
 
     // Setting current tab info if possible
     if (this.props.globalData.currentTabWebPageData){
@@ -69,9 +70,11 @@ export default class Activity extends React.Component{
     }
 
     // setting the local variable with the global data
-    this.setState({searchList: this.props.globalData.searchList}, () => {
-      if (this.state.searchList == null){
-        this.getSearchList();
+    this.setState({allSearchList: this.props.globalData.allSearchList});
+
+    this.setState({todaySearchList: this.props.globalData.todaySearchList}, () => {
+      if (this.state.todaySearchList == null){
+        this.getSearchList("today");
       }
     });
     
@@ -80,7 +83,7 @@ export default class Activity extends React.Component{
   onSearchesDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
-    if (context != "Activity"){
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY) == -1){
       return;
     }
 
@@ -88,21 +91,22 @@ export default class Activity extends React.Component{
     ack(sendResponse);
 
     // setting the new value
-    var listData = message.data.objectData.list;
-    this.setListData(listData);
+    var listData = message.data.objectData.list,
+        scope = context.split("-")[1];
+    this.setListData(listData, scope);
 
   }
 
-  onBookmarksDataReceived(message, sendResponse){
+  // onBookmarksDataReceived(message, sendResponse){
     
-    // acknowledge receipt
-    ack(sendResponse);
+  //   // acknowledge receipt
+  //   ack(sendResponse);
 
-    // setting the new value
-    let listData = message.data.objectData;
-    this.setState({bookmarkList: listData});
+  //   // setting the new value
+  //   let listData = message.data.objectData;
+  //   this.setState({bookmarkList: listData});
 
-  }
+  // }
 
   onSettingsDataReceived(message, sendResponse){
     
@@ -115,10 +119,10 @@ export default class Activity extends React.Component{
         
         var pageTitle = message.data.objectData.value;
         this.setState({currentPageTitle: pageTitle}, () => {
-          if (this.state.currentPageTitle == "Activity"){
+          if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
             // Getting the list of all searches
-            if (this.state.searchList == null){
-              this.getSearchList();
+            if (this.state.todaySearchList == null){
+              this.getSearchList("today");
             }
 
             // Requesting the notification settings
@@ -219,8 +223,8 @@ export default class Activity extends React.Component{
         break;
       }
       case 1: {
-        if (!this.state.bookmarkList){
-          this.getBookmarkList();
+        if (!this.state.allSearchList){
+          this.getSearchList("all");
         }
         break;
       }
@@ -229,11 +233,16 @@ export default class Activity extends React.Component{
   }
 
   // Function requesting the list of all searches made
-  getSearchList(){
+  getSearchList(scope){
 
-    if (this.state.searchLeft){
-      this.setState({loadingSearches: true});
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.state.searchList ? this.state.searchList.length : 0), context: "Activity"});
+    if (scope == "all"){
+      if (this.state.allSearchLeft){
+        this.setState({loadingAllSearches: true});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.state.allSearchList ? this.state.allSearchList.length : 0), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+      }
+    }
+    else{ // today
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: ((new Date()).toISOString().split("T")[0]), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
     }
 
   }
@@ -244,21 +253,30 @@ export default class Activity extends React.Component{
 
   }
 
-  setListData(listData){
+  setListData(listData, scope){
 
-    if (this.state.searchList == null){
-      this.setState({searchList: []}, () => {
-        this.setListData(listData);
-      });
-      return;
+    if (scope == "all"){
+
+      if (this.state.allSearchList == null){
+        this.setState({allSearchList: []}, () => {
+          this.setListData(listData, scope);
+        });
+        return;
+      }
+
+      if (listData.length < appParams.searchPageLimit){
+        this.setState({allSearchLeft: false});
+      }
+
+      listData = this.state.allSearchList.concat(listData);
+      this.setState({allSearchList: listData, loadingAllSearches: false});
+
     }
+    else{ // today
 
-    if (listData.length < appParams.searchPageLimit){
-      this.setState({searchLeft: false});
+      this.setState({todaySearchList: listData});
+
     }
-
-    listData = this.state.searchList.concat(listData);
-    this.setState({searchList: listData, loadingSearches: false});
 
   }
 
@@ -269,11 +287,11 @@ export default class Activity extends React.Component{
     }
 
     // Redirecting to a different interface depending on the url params
-    if (this.state.currentPageTitle != "Activity"){
+    if (this.state.currentPageTitle != appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
       return <Navigate replace to={"/index.html/" + this.state.currentPageTitle} />;
     }
 
-    if (this.state.currentPageTitle == "Activity"){
+    if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
       return (
         <>
 
@@ -283,22 +301,29 @@ export default class Activity extends React.Component{
           </div>
           <div class="text-center">
             <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
-              <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "")} onClick={() => {this.switchCurrentTab(0)}}>
-                All {(this.state.searchList && this.state.searchList.length != 0) ? "("+this.state.searchList.length+")" : null}
+              <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's searches" onClick={() => {this.switchCurrentTab(0)}} >
+                Today {(this.state.todaySearchList && this.state.todaySearchList.length != 0) ? "("+this.state.todaySearchList.length+")" : null}
               </button>
-              <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
+              <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All searches" onClick={() => {this.switchCurrentTab(1)}}>
+                All {(this.state.allSearchList && this.state.allSearchList.length != 0) ? "("+this.state.allSearchList.length+")" : null}
+              </button>
+              {/*<button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
                 Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}
-              </button>
+              </button>*/}
             </div>
           </div>
 
-          {/* Search List Tab */}
+          {/* Today Search List Tab */}
 
-          { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.searchList} seeMore={this.getSearchList} loading={this.state.loadingSearches} searchLeft={this.state.searchLeft}/>}
+          { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
+
+          {/* All Search List Tab */}
+
+          { this.state.currentTabIndex == 1 && <SearchListView objects={this.state.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>}
 
           {/* Bookmark List Tab */}
 
-          { this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}
+          {/*{ this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}*/}
 
         </>
       )

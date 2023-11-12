@@ -400,7 +400,6 @@ function getSearchList(params) {
                 }
                 var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
                 if (argDate[0] == searchDate[0] && argDate[1] == searchDate[1]){
-                    // console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", search.profile, search);
                     searches.push(search);
                 }
             }

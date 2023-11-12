@@ -20,6 +20,10 @@ export const appParams = {
   INTERVAL_FEEDBACK: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
   DATE_RANGE_SEPARATOR: "-",
+  COMPONENT_CONTEXT_NAMES: {
+    ACTIVITY: "Activity",
+    CALENDAR: "Calendar",
+  },
 }
 
 export const dbData = {
