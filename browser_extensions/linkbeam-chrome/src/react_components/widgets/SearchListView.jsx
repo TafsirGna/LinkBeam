@@ -42,8 +42,9 @@ export default class SearchListView extends React.Component{
               </div> }
 
         { this.props.objects != null && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
-                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
+                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
+                    <p><span class="badge text-bg-light fst-italic shadow text-muted">Get started by visiting a linkedin profile</span></p>
                   </div> }
 
         { this.props.objects != null && this.props.objects.length != 0 && <div>

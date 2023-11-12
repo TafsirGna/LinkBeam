@@ -41,12 +41,14 @@ export const dbData = {
 
 export const chartData = {
 
-  stickColors: ['rgba(255, 26, 104, 0.2)',
+  stickColors: [
+          'rgba(255, 26, 104, 0.2)',
           'rgba(54, 162, 235, 0.2)',
           'rgba(255, 206, 86, 0.2)',
           'rgba(75, 192, 192, 0.2)',
           'rgba(153, 102, 255, 0.2)',
-          'rgba(255, 159, 64, 0.2)'],
+          'rgba(255, 159, 64, 0.2)'
+        ],
 
   stickBorderColors: [
           'rgba(255, 26, 104, 1)',
@@ -238,18 +240,27 @@ export function shuffle(array) {
 
 export function getChartColors(length){
 
+  let backgrounds = [], borders = [];
+
   var indices = [];
   for (var i = 0; i < chartData.stickColors.length; i++){
     indices.push(i);
   }
 
-  shuffle(indices);
+  while(backgrounds.length < length){
 
-  let backgrounds = []; let borders = [];
-  for (var i = 0; i < length; i++){
-    backgrounds.push(chartData.stickColors.at(i));
-    borders.push(chartData.stickBorderColors.at(i));
-  }
+    shuffle(indices);
+
+    for (var i of indices){
+      backgrounds.push(chartData.stickColors.at(i));
+      borders.push(chartData.stickBorderColors.at(i));
+
+      if (backgrounds.length == length){
+        break;
+      }
+    }
+
+  } 
   
   return {borders: borders, backgrounds: backgrounds};
 

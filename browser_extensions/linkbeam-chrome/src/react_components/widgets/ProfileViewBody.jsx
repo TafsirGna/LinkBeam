@@ -14,12 +14,13 @@ import {
   Tooltip,
   Legend,
   TimeScale,
+  Colors,
 } from 'chart.js';
 import { OverlayTrigger } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar } from 'react-chartjs-2';
-import { appParams } from "../Local_library";
+import { appParams, getChartColors } from "../Local_library";
 import moment from 'moment';
 
 ChartJS.register(
@@ -31,7 +32,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  TimeScale
+  TimeScale, 
+  Colors,
 );
 
 // Today line plugin block 
@@ -69,7 +71,9 @@ export default class ProfileViewBody extends React.Component{
             position: "top",
             type: "time",
             time: {
-              unit: "day",
+                displayFormats: {
+                    quarter: 'MMM YYYY'
+                }
             },
             min: "1900-01-01",
             max: "1900-01-01",
@@ -88,8 +92,8 @@ export default class ProfileViewBody extends React.Component{
           {
             label: 'Dataset',
             data: [],
-            backgroundColor: 'rgba(255, 99, 132, 1)',
-            borderColor: 'rgba(255, 99, 132, 1)',
+            // backgroundColor: 'rgba(255, 99, 132, 1)',
+            // borderColor: 'rgba(255, 99, 132, 1)',
             borderWidth: 1,
             borderSkipped: false,
             borderRadius: 10,
@@ -146,8 +150,8 @@ export default class ProfileViewBody extends React.Component{
           x: {
             position: "top",
             type: "time",
-            time: {
-              unit: "day",
+            time:{
+                unit: 'month'
             },
             min: minDate.format("YYYY-MM-DD"),
             max: moment().format("YYYY-MM-DD"),
@@ -156,10 +160,18 @@ export default class ProfileViewBody extends React.Component{
         plugins: {
           legend: {
             display: false,
+            labels: {
+                // This more specific font property overrides the global property
+                font: {
+                    weight: "bolder"
+                }
+            }
           }
         }
       }
     });
+
+    var chartColors = getChartColors(data.length);
 
     this.setState({barData: {
       // labels,
@@ -167,8 +179,8 @@ export default class ProfileViewBody extends React.Component{
         {
           label: 'Dataset',
           data: data,
-          backgroundColor: 'rgba(255, 99, 132, 1)',
-          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: chartColors.backgrounds,
+          borderColor: chartColors.borders,
           borderWidth: 1,
           borderSkipped: false,
           borderRadius: 10,

@@ -10,6 +10,7 @@ export default class ProfileViewHeader extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      coverImageLoaded: false,
     };
   }
 
@@ -74,8 +75,14 @@ export default class ProfileViewHeader extends React.Component{
             <Modal.Title>Cover Image</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
+            {!this.state.coverImageLoaded && <div class="text-center">
+                                              <div class={"spinner-border text-secondary "} role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                              </div>
+                                            </div>}
             
-            <img src={this.props.profile.coverImage} class="rounded shadow"/>
+            <img src={this.props.profile.coverImage} class="rounded shadow w-100" onLoad={() => {this.setState({coverImageLoaded: true});}} onerror={() => {console.log("Error loading cover image!")}}/>
 
           </Modal.Body>
         </Modal>
