@@ -68,7 +68,7 @@ export default class SearchListView extends React.Component{
                   }
                 </div>
                 <div class="text-center my-2 ">
-                    <button class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm " + (this.state.seeMoreButtonShow ? "" : "d-none")} onClick={() => this.props.seeMore()} type="button">See more</button>
+                    <button class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " + (this.state.seeMoreButtonShow ? "" : "d-none")} onClick={() => this.props.seeMore()} type="button">See more</button>
                     <div class={"spinner-border spinner-border-sm text-secondary " + (this.props.loading ? "" : "d-none")} role="status">
                       <span class="visually-hidden">Loading...</span>
                     </div>

@@ -29,13 +29,13 @@ export default class ProfileAboutSectionView extends React.Component{
         { this.props.profile.info && <div class="m-4">
 
                                       <div class="row">
-                                        <div class="card mb-3 shadow small text-muted col mx-2">
+                                        <div class="card mb-3 shadow small text-muted col mx-2 border border-warning">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.props.profile.info.split(" ").length}</h5>
                                             <p class="card-text">Word count</p>
                                           </div>
                                         </div>
-                                        <div class="card mb-3 shadow small text-muted col mx-2">
+                                        <div class="card mb-3 shadow small text-muted col mx-2 border border-info">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.props.profile.info.length}</h5>
                                             <p class="card-text">Character count</p>

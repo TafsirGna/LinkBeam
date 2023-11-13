@@ -52,7 +52,9 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 1 && <div class="">
-                                                  <ProfileGanttChart profile={this.props.profile}/>
+                                                  <div class="shadow border border-success rounded p-2 m-5">
+                                                    <ProfileGanttChart profile={this.props.profile}/>
+                                                  </div>
                                                 </div>}
 
           </div>
