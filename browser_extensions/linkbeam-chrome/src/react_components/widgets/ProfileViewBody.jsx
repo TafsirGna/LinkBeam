@@ -1,229 +1,62 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
-import Card from 'react-bootstrap/Card';
-import Nav from 'react-bootstrap/Nav';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale,
-  Colors,
-} from 'chart.js';
 import { OverlayTrigger } from "react-bootstrap";
-import { faker } from '@faker-js/faker';
-import 'chartjs-adapter-date-fns';
-import { Line, Bar } from 'react-chartjs-2';
-import { appParams, getChartColors } from "../Local_library";
-import moment from 'moment';
+import { appParams } from "../Local_library";
+import ProfileGanttChart from "./ProfileGanttChart";
+import ProfileAboutSectionView from "./ProfileAboutSectionView";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  TimeScale, 
-  Colors,
-);
-
-// Today line plugin block 
-const todayLinePlugin = {
-  id: "todayLine",
-  afterDatasetsDraw(chart, args, pluginOptions){
-    const { ctx, data, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "rgba(255, 99, 132, 1)";
-    ctx.setLineDash([6, 6]);
-    ctx.moveTo(x.getPixelForValue(new Date()), top);
-    ctx.lineTo(x.getPixelForValue(new Date()), bottom);
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-  },
-};
-
-// const labels = ["a", "b", "c", "d"];
 
 export default class ProfileViewBody extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-
-      barOptions: {
-        indexAxis: 'y',
-        responsive: true,
-        scales: {
-          x: {
-            position: "top",
-            type: "time",
-            time: {
-                displayFormats: {
-                    quarter: 'MMM YYYY'
-                }
-            },
-            min: "1900-01-01",
-            max: "1900-01-01",
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          }
-        }
-      },
-
-      barData: {
-        // labels,
-        datasets: [
-          {
-            label: 'Dataset',
-            data: [],
-            // backgroundColor: 'rgba(255, 99, 132, 1)',
-            // borderColor: 'rgba(255, 99, 132, 1)',
-            borderWidth: 1,
-            borderSkipped: false,
-            borderRadius: 10,
-            barPercentage: .7,
-          },
-        ],
-      },
-
+      currentTabIndex: 0,
+      navTabTitles: [
+        "About User",
+        "Experience",
+        "Education",
+        "Activity",
+      ],
     };
   }
 
   componentDidMount() {
 
     // Setting the data for the chart
-    this.setBarData();
   }
 
-  setBarData(){
+  switchToTabIndex(tabIndex){
 
-    var data = [], minDate = moment();
-
-    for (var experience of this.props.profile.experience){
-
-      var company = experience.company;
-
-      // handling date range
-      var dateRange = experience.period.replaceAll("\n", "").split(appParams.DATE_RANGE_SEPARATOR);
-      var startDateRange = dateRange[0], endDateRange = dateRange[1];
-
-      // starting with the start date
-      startDateRange = moment(startDateRange, "MMM YYYY");
-
-      // Setting the minDate object
-      if (startDateRange < minDate){
-        minDate = startDateRange;
-      }
-
-      // then the end date
-      if (endDateRange.indexOf("Present") > -1){ // contains Present 
-        endDateRange = moment().format("YYYY-MM-DD");
-      }
-      else{
-        endDateRange = moment(endDateRange, "MMM YYYY").format("YYYY-MM-DD");
-      }
-
-      data.push({x: [startDateRange.format("YYYY-MM-DD"), endDateRange], y: company});
-
-    }
-
-    this.setState({barOptions: {
-        indexAxis: 'y',
-        responsive: true,
-        scales: {
-          x: {
-            position: "top",
-            type: "time",
-            time:{
-                unit: 'month'
-            },
-            min: minDate.format("YYYY-MM-DD"),
-            max: moment().format("YYYY-MM-DD"),
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-            labels: {
-                // This more specific font property overrides the global property
-                font: {
-                    weight: "bolder"
-                }
-            }
-          }
-        }
-      }
-    });
-
-    var chartColors = getChartColors(data.length);
-
-    this.setState({barData: {
-      // labels,
-      datasets: [
-        {
-          label: 'Dataset',
-          data: data,
-          backgroundColor: chartColors.backgrounds,
-          borderColor: chartColors.borders,
-          borderWidth: 1,
-          borderSkipped: false,
-          borderRadius: 10,
-          barPercentage: .7,
-        },
-      ],
-    }});
+    this.setState({currentTabIndex: tabIndex});
 
   }
 
   render(){
     return (
       <>
-        <Card className="shadow mt-4">
-          <Card.Header>
-            <Nav variant="tabs" defaultActiveKey="#first">
-              <Nav.Item>
-                <Nav.Link href="#about">About</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link href="#background">Background</Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link href="#news">
-                  News
-                </Nav.Link>
-              </Nav.Item>
-              {/*<Nav.Item>
-                <Nav.Link href="#projects">
-                  Projects
-                </Nav.Link>
-              </Nav.Item>
-              <Nav.Item>
-                <Nav.Link href="#disabled">
-                  Others
-                </Nav.Link>
-              </Nav.Item>*/}
-            </Nav>
-          </Card.Header>
-          <Card.Body>
-            <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
-          </Card.Body>
-        </Card>
+        <div class="card mt-4 shadow">
+          <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+              {this.state.navTabTitles.map((tabTitle, index) => (
+                                                    <li class="nav-item">
+                                                    <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>{tabTitle}</a>
+                                                  </li>
+                                                  ))}
+            </ul>
+          </div>
+          <div class="card-body">
+
+            { this.state.currentTabIndex == 0 && <div class="">
+                                                    <ProfileAboutSectionView profile={this.props.profile} />
+                                                </div>}
+
+            { this.state.currentTabIndex == 1 && <div class="">
+                                                  <ProfileGanttChart profile={this.props.profile}/>
+                                                </div>}
+
+          </div>
+        </div>
       </>
     );
   }
