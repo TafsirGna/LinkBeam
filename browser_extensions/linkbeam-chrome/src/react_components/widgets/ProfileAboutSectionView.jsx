@@ -3,6 +3,7 @@ import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import { appParams } from "../Local_library";
 import Collapse from 'react-bootstrap/Collapse';
+import ProfileAboutSectionBubbleChart from './ProfileAboutSectionBubbleChart'
 
 
 export default class ProfileAboutSectionView extends React.Component{
@@ -11,10 +12,91 @@ export default class ProfileAboutSectionView extends React.Component{
     super(props);
     this.state = {
       collapseInfoOpen: false,
+      uniqueWordsCount: null,
+      oneUseWordCount: 0,
     };
+
+    this.setOneUseWordCount = this.setOneUseWordCount.bind(this);
+    // this.getChartData = this.getChartData.bind(this);
   }
 
   componentDidMount() {
+
+    this.setOneUseWordCount();
+
+  }
+
+  characterCount(){
+
+    return this.props.profile.info.length;
+
+  }
+
+  averageWordLength(){
+
+    var words = this.props.profile.info.split(" "), 
+        sum = 0;
+
+    for (var word of words){
+      sum += word.length;
+    }
+
+    return (sum / words.length).toFixed(2);
+
+  }
+
+  setOneUseWordCount(){
+
+    if (!this.state.uniqueWordsCount){
+     
+      this.wordsFrequency(this.setOneUseWordCount);
+      return;
+
+    }
+
+    var count = 0;
+    for (var wordCount of this.state.uniqueWordsCount){
+      if (wordCount.count == 1){
+        count += 1;
+      }
+    }
+
+    count /= this.props.profile.info.split(" ").length;
+    count = (count * 100).toFixed(2);
+    this.setState({oneUseWordCount: count});
+
+  }
+
+  wordsFrequency(callback = null){
+
+    if (this.state.uniqueWordsCount){
+      return;
+    }
+
+    var words = this.props.profile.info.split(" "),
+        uniqueWordsCount = [];
+
+    for (var word of words){
+      var wordIndex = uniqueWordsCount.map(e => e.word).indexOf(word);
+      if (wordIndex >= 0){
+        (uniqueWordsCount[wordIndex]).count += 1;
+      }
+      else{
+        uniqueWordsCount.push({word: word, count: 0});
+      }
+    }
+
+    this.setState({uniqueWordsCount: uniqueWordsCount}, () => {
+      if (callback){
+        callback();
+      }
+    });
+
+  }
+
+  wordCount(){
+
+    return this.props.profile.info.split(" ").length;
 
   }
 
@@ -29,18 +111,34 @@ export default class ProfileAboutSectionView extends React.Component{
         { this.props.profile.info && <div class="m-4">
 
                                       <div class="row">
-                                        <div class="card mb-3 shadow small text-muted col mx-2 border border-warning">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-warning border-2">
                                           <div class="card-body">
-                                            <h5 class="card-title">{this.props.profile.info.split(" ").length}</h5>
+                                            <h5 class="card-title">{this.wordCount()}</h5>
                                             <p class="card-text">Word count</p>
                                           </div>
                                         </div>
-                                        <div class="card mb-3 shadow small text-muted col mx-2 border border-info">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-info border-2">
                                           <div class="card-body">
-                                            <h5 class="card-title">{this.props.profile.info.length}</h5>
+                                            <h5 class="card-title">{this.characterCount()}</h5>
                                             <p class="card-text">Character count</p>
                                           </div>
                                         </div>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-secondary border-2">
+                                          <div class="card-body">
+                                            <h5 class="card-title">{this.averageWordLength()}</h5>
+                                            <p class="card-text">Average word length</p>
+                                          </div>
+                                        </div>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-success border-2">
+                                          <div class="card-body">
+                                            <h5 class="card-title">{this.state.oneUseWordCount}%</h5>
+                                            <p class="card-text">Unique words</p>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div class="border border-warning border-2">
+                                        <ProfileAboutSectionBubbleChart />
                                       </div>
 
                                       <div>
