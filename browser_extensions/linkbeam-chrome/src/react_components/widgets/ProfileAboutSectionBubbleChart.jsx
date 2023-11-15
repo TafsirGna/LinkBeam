@@ -49,7 +49,7 @@ export default class ProfileAboutSectionBubbleChart extends React.Component{
     // Create the pack layout.
     const pack = d3.pack()
         .size([width - margin * 2, height - margin * 2])
-        .padding(3);
+        .padding(1);
 
     // Compute the hierarchy from the (flat) data; expose the values
     // for each node; lastly apply the pack layout.

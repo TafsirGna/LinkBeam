@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { activateInCurrentTab } from "../Local_library";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
+import bell_icon from '../../assets/bell_icon.png';
 
 export default class HomeMenu extends React.Component{
 
@@ -25,8 +25,8 @@ export default class HomeMenu extends React.Component{
                   placement="bottom"
                   overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
                 >
-                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-light btn-sm float-start py-0 m-3 border border-warning"}>
-                    Activate ?
+                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-sm float-start py-0 m-3"}>
+                    <img src={bell_icon} alt="twbs" width="20" height="20" class=""/>
                     <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
                       <span class="visually-hidden">Loading...</span>
                     </div>

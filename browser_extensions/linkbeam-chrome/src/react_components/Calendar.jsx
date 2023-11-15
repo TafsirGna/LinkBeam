@@ -101,7 +101,7 @@ export default class Calendar extends React.Component{
 
     date = date.toISOString().split("T")[0];
     if (date in this.state.monthSearchList){
-      return "bg-secondary text-white shadow";
+      return "bg-warning text-black shadow text-muted";
     }
 
     return null;
@@ -175,9 +175,9 @@ export default class Calendar extends React.Component{
                   <Nav.Item>
                     <Nav.Link href="#searches" active>Searches</Nav.Link>
                   </Nav.Item>
-                  {/*<Nav.Item>
-                    <Nav.Link href="#link">Link</Nav.Link>
-                  </Nav.Item>*/}
+                  <Nav.Item>
+                    <Nav.Link href="#link">Reminders</Nav.Link>
+                  </Nav.Item>
                 </Nav>
               </Card.Header>
               <Card.Body>
