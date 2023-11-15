@@ -4,6 +4,7 @@ import { OverlayTrigger } from "react-bootstrap";
 import { appParams } from "../Local_library";
 import ProfileGanttChart from "./ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
+import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -11,9 +12,10 @@ export default class ProfileViewBody extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      currentTabIndex: 0,
+      currentTabIndex: 1,
       navTabTitles: [
-        "About User",
+        "Overview",
+        "About",
         "Experience",
         "Education",
         "Activity",
@@ -47,14 +49,12 @@ export default class ProfileViewBody extends React.Component{
           </div>
           <div class="card-body">
 
-            { this.state.currentTabIndex == 0 && <div class="">
+            { this.state.currentTabIndex == 1 && <div class="">
                                                     <ProfileAboutSectionView profile={this.props.profile} />
                                                 </div>}
 
-            { this.state.currentTabIndex == 1 && <div class="">
-                                                  <div class="shadow border border-success rounded p-2 m-5 border-2">
-                                                    <ProfileGanttChart profile={this.props.profile}/>
-                                                  </div>
+            { this.state.currentTabIndex == 2 && <div class="">
+                                                  <ProfileExperienceSectionView profile={this.props.profile}/>
                                                 </div>}
 
           </div>

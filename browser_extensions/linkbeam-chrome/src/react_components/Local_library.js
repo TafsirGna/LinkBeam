@@ -2,7 +2,7 @@ export const appParams = {
   appName: "LinkBeam",
   appVersion: "0.1.0", 
   keywordCountLimit: 5, 
-  searchPageLimit: 2, 
+  searchPageLimit: 3, 
   bookmarkCountLimit: 5,
   extShadowHostId: "linkBeamExtensionMainRoot",
   sectionMarkerID: "linkbeam-extension-section-marker",

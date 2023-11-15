@@ -111,25 +111,25 @@ export default class ProfileAboutSectionView extends React.Component{
         { this.props.profile.info && <div class="m-4">
 
                                       <div class="row">
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-warning border-2">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-warning border-1">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.wordCount()}</h5>
                                             <p class="card-text">Word count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-info border-2">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-info border-1">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.characterCount()}</h5>
                                             <p class="card-text">Character count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-secondary border-2">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-secondary border-1">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.averageWordLength()}</h5>
                                             <p class="card-text">Average word length</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-success border-2">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-success border-1">
                                           <div class="card-body">
                                             <h5 class="card-title">{this.state.oneUseWordCount}%</h5>
                                             <p class="card-text">Unique words</p>
@@ -137,8 +137,8 @@ export default class ProfileAboutSectionView extends React.Component{
                                         </div>
                                       </div>
 
-                                      <div class="border border-warning border-2">
-                                        <ProfileAboutSectionBubbleChart />
+                                      <div class="border border-info border-1 mb-3 mt-2 shadow rounded">
+                                        <ProfileAboutSectionBubbleChart objectData={this.state.uniqueWordsCount} />
                                       </div>
 
                                       <div>
@@ -158,7 +158,7 @@ export default class ProfileAboutSectionView extends React.Component{
                                         </div>
                                         <Collapse in={this.state.collapseInfoOpen}>
                                           <div id="collapseInfo">
-                                            <div class="border border-primary fw-light border-2 text-muted rounded shadow p-3 small mt-2">
+                                            <div class="border border-primary fw-light border-1 text-muted rounded shadow p-3 small mt-2">
                                               {this.props.profile.info}
                                             </div>
                                           </div>
