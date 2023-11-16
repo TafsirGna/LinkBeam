@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { activateInCurrentTab } from "../Local_library";
+import { activateInCurrentTab } from "../../Local_library";
 import * as d3 from "d3";
 
 export default class ProfileAboutSectionBubbleChart extends React.Component{

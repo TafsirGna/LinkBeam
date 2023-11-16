@@ -23,6 +23,8 @@ export const appParams = {
   COMPONENT_CONTEXT_NAMES: {
     ACTIVITY: "Activity",
     CALENDAR: "Calendar",
+    REMINDERS: "Reminders",
+    SETTINGS: "Settings", 
   },
 }
 

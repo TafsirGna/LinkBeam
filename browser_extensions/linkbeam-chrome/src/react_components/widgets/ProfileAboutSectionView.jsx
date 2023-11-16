@@ -3,7 +3,7 @@ import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import { appParams } from "../Local_library";
 import Collapse from 'react-bootstrap/Collapse';
-import ProfileAboutSectionBubbleChart from './ProfileAboutSectionBubbleChart'
+import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
 
 
 export default class ProfileAboutSectionView extends React.Component{

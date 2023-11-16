@@ -2,9 +2,9 @@
 import React from 'react'
 import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
-import ViewsTimelineChart from "./widgets/ViewsTimelineChart";
-import ViewsKeywordsBarChart from "./widgets/ViewsKeywordsBarChart";
-import ViewsGeoMapChart from "./widgets/ViewsGeoMapChart";
+import ViewsTimelineChart from "./widgets/charts/ViewsTimelineChart";
+import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
+import ViewsGeoMapChart from "./widgets/charts/ViewsGeoMapChart";
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
@@ -13,6 +13,7 @@ import {
   startMessageListener,
   messageParams,
   dbData,
+  appParams,
 } from "./Local_library";
 
 export default class Settings extends React.Component{

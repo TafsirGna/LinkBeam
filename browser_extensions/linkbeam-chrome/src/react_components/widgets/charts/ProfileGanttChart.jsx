@@ -2,7 +2,6 @@
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,7 +19,7 @@ import { OverlayTrigger } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar } from 'react-chartjs-2';
-import { appParams, getChartColors } from "../Local_library";
+import { appParams, getChartColors } from "../../Local_library";
 import moment from 'moment';
 
 ChartJS.register(

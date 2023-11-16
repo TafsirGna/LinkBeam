@@ -2,7 +2,7 @@
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import { appParams } from "../Local_library";
-import ProfileGanttChart from "./ProfileGanttChart";
+import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 

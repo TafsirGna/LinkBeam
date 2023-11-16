@@ -16,6 +16,8 @@ export default class Calendar extends React.Component{
     this.state = {
       monthSearchList: null,
       selectedDate: (new Date()).toISOString().split("T")[0],
+      tabTitles: ["Searches", "Reminders"],
+      tabActiveKey: "",
     };
 
     this.onClickDay = this.onClickDay.bind(this);
@@ -27,6 +29,8 @@ export default class Calendar extends React.Component{
   }
 
   componentDidMount() {
+
+    this.setState({tabActiveKey: this.state.tabTitles[0]});
 
     this.listenToMessages();
 
@@ -153,6 +157,12 @@ export default class Calendar extends React.Component{
 
   }
 
+  onNavSelectKey = (selectedKey) => {
+
+    this.setState({tabActiveKey: selectedKey});
+
+  }
+
   render(){
     return (
 			<>
@@ -171,13 +181,17 @@ export default class Calendar extends React.Component{
           <div class="col-7 ps-3">
             <Card className="shadow">
               <Card.Header>
-                <Nav variant="tabs" defaultActiveKey="#first">
-                  <Nav.Item>
-                    <Nav.Link href="#searches" active>Searches</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link href="#link">Reminders</Nav.Link>
-                  </Nav.Item>
+                <Nav 
+                  variant="tabs" 
+                  activeKey={this.state.tabActiveKey}
+                  onSelect={this.onNavSelectKey}>
+
+                  {this.state.tabTitles.map((tabTitle, index) => (
+                                                    <Nav.Item>
+                                                      <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>{tabTitle}</Nav.Link>
+                                                    </Nav.Item>
+                                                  ))}
+
                 </Nav>
               </Card.Header>
               <Card.Body>
@@ -185,7 +199,10 @@ export default class Calendar extends React.Component{
                 <Card.Text>
                   With supporting text below as a natural lead-in to additional content.
                 </Card.Text>*/}
-                <SearchListView objects={this.getDaySearchList()} seeMore={() => {}} loading={false} searchLeft={false}/>
+                { this.state.tabActiveKey == this.state.tabTitles[0] && 
+                        <SearchListView objects={this.getDaySearchList()} seeMore={() => {}} loading={false} searchLeft={false}/>}
+
+                {/*{ this.state.tabActiveKey == this.state.tabTitles[1] && }*/}
               </Card.Body>
             </Card>
           </div>

@@ -2,7 +2,6 @@
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart } from "react-chartjs-2";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,7 +34,6 @@ export default class ViewsGeoMapChart extends React.Component{
 
     fetch('https://unpkg.com/world-atlas/countries-50m.json').then((r) => r.json()).then((data) => {
       
-      // console.log("********************************************");
       this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
 
     });

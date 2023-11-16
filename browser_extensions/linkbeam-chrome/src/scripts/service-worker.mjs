@@ -466,7 +466,7 @@ function getReminderList() {
                 }
                 results.push(reminder);
 
-                sendBackResponse("OBJECT-LIST", dbData.objectStoreNames.REMINDERS, results);
+                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
             };
 
             profileRequest.onerror = (event) => {
