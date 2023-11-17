@@ -23,10 +23,10 @@ export default class CustomToast extends React.Component{
         {/*Bookmark Toast*/}
         <ToastContainer
           className="p-3"
-          position="bottom-end"
+          position={this.props.position}
           style={{ zIndex: 1 }}
         >
-          <Toast show={this.props.show} onClose={this.props.onClose} delay={3000} autohide>
+          <Toast show={this.props.show} onClose={this.props.onClose} delay={ this.props.delay ? 3600000 : appParams.TIMER_VALUE} autohide>
             <Toast.Header>
               <img
                 src="holder.js/20x20?text=%20"

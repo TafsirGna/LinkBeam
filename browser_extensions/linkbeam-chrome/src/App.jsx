@@ -37,6 +37,7 @@ export default class App extends React.Component{
         keywordList: null,
         bookmarkList: null,
         reminderList: null,
+        todayReminderList: null,
         allSearchList: null,
         todaySearchList: null,
         settings: {},
@@ -64,7 +65,11 @@ export default class App extends React.Component{
       this.setState({redirect_to: redirect_to});
     }
 
+    // Sending a request for getting some settings
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
+
+    // Sending a request to know if some reminders are set for today
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {date: (new Date()).toISOString().split("T")[0], context: "Notifications"});
 
   }
 
@@ -115,12 +120,29 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    // Setting the search list here too
-    this.setState(prevState => {
-      let globalData = Object.assign({}, prevState.globalData);
-      globalData.reminderList = message.data.objectData;
-      return { globalData };
-    });
+    var context = message.data.objectData.context; 
+    if (context == appParams.COMPONENT_CONTEXT_NAMES.REMINDERS){
+
+      // Setting the reminder list here too
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.reminderList = message.data.objectData;
+        return { globalData };
+      }); 
+
+    }
+    else if (context == "Notifications"){
+
+      var todayReminderList = message.data.objectData.list;
+
+      // Setting the reminder list here too
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.todayReminderList = todayReminderList;
+        return { globalData };
+      }); 
+
+    }
 
   }
 
@@ -293,7 +315,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
             <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
-            <Route path="/index.html/Profile" element={<Profile />} />
+            <Route path="/index.html/Profile" element={<Profile />} globalData={this.state.globalData} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />

@@ -440,78 +440,9 @@ function getReminderList(params) {
 
     getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS);
 
-    // var params = (params ? params : {});
-    // var argDate = (params.date ? params.date : null),
-    //     offset = (params.offset ? params.offset : 0),
-    //     dateInnerSeparator = "-",
-    //     context = params.context,
-    //     monthRequest = null;
-
-    // if (argDate){
-    //     var monthRequest = argDate.split(dateInnerSeparator)[2] == "?";
-    // }
-
-    // let results = [],
-    //     offsetApplied = false;
-
-    // let cursor = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS).openCursor(null, 'prev');
-    // cursor.onsuccess = function(event) {
-    //     let cursor = event.target.result;
-        
-    //     if(!cursor) {
-    //         getAssociatedProfiles(results, dbData.objectStoreNames.REMINDERS, context);
-    //         return;
-    //     }
-
-    //     if(offset != 0 && !offsetApplied) {
-    //       offsetApplied = true;
-    //       cursor.advance(offset);
-    //       return;
-    //     }
-
-    //     let reminder = cursor.value;
-    //     if (argDate){
-    //         if (!monthRequest){ // Then, it's a day request 
-    //             if (argDate == reminder.date.split("T")[0]){
-    //                 reminders.push(reminder);
-    //             }
-    //         }
-    //         else{
-    //             if (typeof argDate === "string"){
-    //                 argDate = argDate.split(dateInnerSeparator);
-    //             }
-    //             var reminderDate = (reminder.date.split("T")[0]).split(dateInnerSeparator);
-    //             if (argDate[0] == reminderDate[0] && argDate[1] == reminderDate[1]){
-    //                 results.push(reminder);
-    //             }
-    //         }
-    //     }
-    //     else{
-    //         reminders.push(reminder);
-    //     }
-
-    //     // if an argument about a specific time is not passed then
-    //     if (!argDate){
-    //         if(reminders.length < appParams.searchPageLimit) {
-    //             cursor.continue();
-    //         }
-    //         else{
-    //             getAssociatedProfiles(results, dbData.objectStoreNames.REMINDERS, context);
-    //             return;
-    //         }
-    //     }
-    //     else{
-    //         cursor.continue();
-    //     }
-    // }
-
-    // cursor.onerror = (event) => {
-    //     console.log("Failed to acquire the cursor !");
-    // };
-
 }
 
-// Script for getting all saved searches
+// Script for getting all saved keywords
 
 function getKeywordList() {
 

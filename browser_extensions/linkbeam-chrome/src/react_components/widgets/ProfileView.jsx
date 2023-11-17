@@ -149,7 +149,7 @@ export default class ProfileView extends React.Component{
 
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
 
-        <CustomToast message={this.state.toastMessage} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} />
+        <CustomToast message={this.state.toastMessage} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} position="bottom-end"/>
 
       </>
     );  

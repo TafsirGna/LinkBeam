@@ -9,6 +9,7 @@ import Nav from 'react-bootstrap/Nav';
 import SearchListView from "./widgets/SearchListView";
 import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
+import CustomToast from "./widgets/CustomToast";
 
 export default class Calendar extends React.Component{
 
@@ -20,6 +21,8 @@ export default class Calendar extends React.Component{
       selectedDate: (new Date()).toISOString().split("T")[0],
       tabTitles: ["Searches", "Reminders"],
       tabActiveKey: "",
+      toastMessage: "",
+      toastShow: false,
     };
 
     this.onClickDay = this.onClickDay.bind(this);
@@ -33,6 +36,7 @@ export default class Calendar extends React.Component{
 
   componentDidMount() {
 
+    // Setting the nav default active key
     this.setState({tabActiveKey: this.state.tabTitles[0]});
 
     this.listenToMessages();
@@ -46,7 +50,19 @@ export default class Calendar extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
+    if (prevProps.globalData.todayReminderList != this.props.globalData.todayReminderList){
+
+      // Setting the toast
+      if (this.props.globalData.todayReminderList){
+        var message = this.props.globalData.todayReminderList.length + " Reminders set for today !";
+        this.toggleToastShow(message);
+      }
+
+    }
+
   }
+
+  toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
   getDayObjectList(monthObjectList){
 
@@ -111,14 +127,28 @@ export default class Calendar extends React.Component{
 
   tileClassName({ activeStartDate, date, view }){
 
-    if (view != "month" || !this.state.monthSearchList){
+    if (view != "month"){
       return null;
     }
 
+    if (!this.state.monthReminderList && !this.state.monthSearchList){
+      return null
+    }
+
     date = date.toISOString().split("T")[0];
-    if (date in this.state.monthSearchList){
+
+    // month reminder list
+
+    if (this.state.monthReminderList && date in this.state.monthReminderList){
+      return "bg-info text-white shadow";
+    }
+
+    // month search list
+
+    if (this.state.monthSearchList && date in this.state.monthSearchList){
       return "bg-warning text-black shadow text-muted";
     }
+
 
     return null;
 
@@ -247,6 +277,8 @@ export default class Calendar extends React.Component{
             </Card>
           </div>
         </div>
+
+        <CustomToast message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} position="top-end" delay="true"/>
 	    </>
     );
   }

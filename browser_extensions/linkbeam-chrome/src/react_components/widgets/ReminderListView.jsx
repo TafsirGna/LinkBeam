@@ -36,7 +36,7 @@ export default class ReminderListView extends React.Component{
                   <p><span class="badge text-bg-primary fst-italic shadow">No reminders yet</span></p>
                 </div>}
 
-        { this.props.objects && this.props.objects.length != 0 && <div class="list-group small mt-1 shadow-sm">
+        { this.props.objects && this.props.objects.length != 0 && <div class="list-group small mt-1 shadow">
               {this.props.objects.map((reminder, index) =>
                                         (<a key={index} href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                             <div class="d-flex gap-2 w-100 justify-content-between">

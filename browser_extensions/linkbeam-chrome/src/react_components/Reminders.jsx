@@ -38,11 +38,16 @@ export default class Reminders extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {context: appParams.COMPONENT_CONTEXT_NAMES.REMINDERS});
 
   }
 
   onRemindersDataReceived(message, sendResponse){
+
+    var context = message.data.objectData.context; 
+    if (context != appParams.COMPONENT_CONTEXT_NAMES.REMINDERS){
+      return;
+    }
 
     // acknowledge receipt
     ack(sendResponse);
