@@ -8,6 +8,7 @@ import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
 import SearchListView from "./widgets/SearchListView";
 import moment from 'moment';
+import ReminderListView from "./widgets/ReminderListView";
 
 export default class Calendar extends React.Component{
 
@@ -15,6 +16,7 @@ export default class Calendar extends React.Component{
     super(props);
     this.state = {
       monthSearchList: null,
+      monthReminderList: null,
       selectedDate: (new Date()).toISOString().split("T")[0],
       tabTitles: ["Searches", "Reminders"],
       tabActiveKey: "",
@@ -23,6 +25,7 @@ export default class Calendar extends React.Component{
     this.onClickDay = this.onClickDay.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.tileDisabled = this.tileDisabled.bind(this);
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
     this.tileClassName = this.tileClassName.bind(this);
@@ -35,7 +38,9 @@ export default class Calendar extends React.Component{
     this.listenToMessages();
 
     // Requesting this month's search list
-    this.getMonthSearchList(this.state.selectedDate);
+    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.SEARCHES);
+
+    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
 
   }
 
@@ -43,13 +48,13 @@ export default class Calendar extends React.Component{
 
   }
 
-  getDaySearchList(){
+  getDayObjectList(monthObjectList){
 
     var list = null;
 
-    if (this.state.monthSearchList){
-      if (this.state.selectedDate in this.state.monthSearchList){
-        list = this.state.monthSearchList[this.state.selectedDate]
+    if (monthObjectList){
+      if (this.state.selectedDate in monthObjectList){
+        list = monthObjectList[this.state.selectedDate]
       }
       else{
         list = [];
@@ -63,7 +68,7 @@ export default class Calendar extends React.Component{
 
   }
 
-  getMonthSearchList(dateString){
+  getMonthObjectList(dateString, objectStoreName){
 
     // Reformatting the date string before sending the request
     var separator = "-";
@@ -71,7 +76,7 @@ export default class Calendar extends React.Component{
     dateString[dateString.length - 1] = "?";
     dateString = dateString.join(separator);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: dateString, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {date: dateString, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
 
   }
 
@@ -90,9 +95,16 @@ export default class Calendar extends React.Component{
     console.log('Changed view to: ', activeStartDate, view, activeStartDate.getMonth());
     
     if (view === "month"){
+
       var month = activeStartDate.getMonth() + 1;
       month = (month >= 10 ? "" : "0") + month;
-      this.getMonthSearchList(activeStartDate.getFullYear()+"-"+month+"-01");
+
+      var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
+
+      this.getMonthObjectList(activeDate, dbData.objectStoreNames.SEARCHES);
+
+      this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+
     }
 
   }
@@ -128,21 +140,45 @@ export default class Calendar extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var monthSearchList = message.data.objectData.list, 
-        results = {};
+    var monthSearchList = message.data.objectData.list;
 
-    // Preprocessing the month's search list
-    for (var search of monthSearchList){
-      var searchDate = search.date.split("T")[0];
-      if (searchDate in results){
-        (results[searchDate]).push(search);
+    // Grouping the searches by date
+    var results = this.groupObjectsByDate(monthSearchList);
+
+    this.setState({monthSearchList: results});
+
+  }
+
+  groupObjectsByDate(objectList){
+
+    var results = {};
+
+    // Grouping the searches by date
+    for (var object of objectList){
+      var objectDate = object.date.split("T")[0];
+      if (objectDate in results){
+        (results[objectDate]).push(object);
       }
       else{
-        results[searchDate] = [search];
+        results[objectDate] = [object];
       }
     }
 
-    this.setState({monthSearchList: results});
+    return results;
+
+  }
+
+  onRemindersDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var monthReminderList = message.data.objectData.list;
+
+    // Grouping the reminders by date
+    var results = this.groupObjectsByDate(monthReminderList);
+
+    this.setState({monthReminderList: results});
 
   }
 
@@ -152,6 +188,10 @@ export default class Calendar extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
+        callback: this.onRemindersDataReceived
       },
     ]);
 
@@ -200,9 +240,9 @@ export default class Calendar extends React.Component{
                   With supporting text below as a natural lead-in to additional content.
                 </Card.Text>*/}
                 { this.state.tabActiveKey == this.state.tabTitles[0] && 
-                        <SearchListView objects={this.getDaySearchList()} seeMore={() => {}} loading={false} searchLeft={false}/>}
+                        <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
 
-                {/*{ this.state.tabActiveKey == this.state.tabTitles[1] && }*/}
+                { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
               </Card.Body>
             </Card>
           </div>

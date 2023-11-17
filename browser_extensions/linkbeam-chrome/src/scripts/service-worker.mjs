@@ -266,14 +266,12 @@ function recursiveDbInit(objectStoreNames, initialData){
 
 
 
-function getSearchProfiles(searches, context){
+function getAssociatedProfiles(objects, objectStoreName, context){
 
-    if (searches.length == 0){
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: searches});
+    if (objects.length == 0){
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: objects});
         return;
     }
-
-    console.log("%%%%%%%%%%%%%%%%%%%% : ", searches);
 
     // For each url, create a request to retrieve the corresponding profile
     let objectStore = db
@@ -281,20 +279,20 @@ function getSearchProfiles(searches, context){
                         .objectStore(dbData.objectStoreNames.PROFILES);
     let results = [];
 
-    searches.forEach((search) => {
+    objects.forEach((object) => {
         
-        let profileRequest = objectStore.get(search.url);
+        let profileRequest = objectStore.get(object.url);
         profileRequest.onsuccess = (event) => {
             let profile = event.target.result;
             console.log('Got corresponding profile: ', profile);
             
-            search.profile = profile;
-            results.push(search);
+            object.profile = profile;
+            results.push(object);
 
-            // keep going to the next search
-            if(results.length == searches.length) {
+            // keep going to the next object
+            if(results.length == objects.length) {
                 // only continue if under limit
-                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: results});
+                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: results});
             }
 
         };
@@ -358,26 +356,33 @@ function getBookmarkList(){
 
 function getSearchList(params) {
 
+    getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES)
+
+}
+
+
+function getOffsetLimitList(params, objectStoreName) {
+
 
     var params = (params ? params : {}),
         offset = (params.offset ? params.offset : 0),
         argDate = (params.date ? params.date : null),
         dateInnerSeparator = "-",
         context = params.context,
-        monthSearchRequest = null;
+        monthRequest = null;
 
     if (argDate){
-        var monthSearchRequest = argDate.split(dateInnerSeparator)[2] == "?";
+        var monthRequest = argDate.split(dateInnerSeparator)[2] == "?";
     }
 
-    let searches = [];
+    let results = [];
     var offsetApplied = false;
-    let cursor = db.transaction(dbData.objectStoreNames.SEARCHES, "readonly").objectStore(dbData.objectStoreNames.SEARCHES).openCursor(null, 'prev');
+    let cursor = db.transaction(objectStoreName, "readonly").objectStore(objectStoreName).openCursor(null, 'prev');
     cursor.onsuccess = function(event) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            getSearchProfiles(searches, context);
+            getAssociatedProfiles(results, objectStoreName, context);
             return;
         }
 
@@ -387,34 +392,34 @@ function getSearchList(params) {
           return;
         }
 
-        let search = cursor.value;
+        let object = cursor.value;
         if (argDate){
-            if (!monthSearchRequest){ // Then, it's a day search request 
-                if (argDate == search.date.split("T")[0]){
-                    searches.push(search);
+            if (!monthRequest){ // Then, it's a day request 
+                if (argDate == object.date.split("T")[0]){
+                    results.push(object);
                 }
             }
             else{
                 if (typeof argDate === "string"){
                     argDate = argDate.split(dateInnerSeparator);
                 }
-                var searchDate = (search.date.split("T")[0]).split(dateInnerSeparator);
-                if (argDate[0] == searchDate[0] && argDate[1] == searchDate[1]){
-                    searches.push(search);
+                var objectDate = (object.date.split("T")[0]).split(dateInnerSeparator);
+                if (argDate[0] == objectDate[0] && argDate[1] == objectDate[1]){
+                    results.push(object);
                 }
             }
         }
         else{
-            searches.push(search);
+            results.push(object);
         }
 
         // if an argument about a specific time is not passed then
         if (!argDate){
-            if(searches.length < appParams.searchPageLimit) {
+            if(results.length < appParams.searchPageLimit) {
                 cursor.continue();
             }
             else{
-                getSearchProfiles(searches, context);
+                getAssociatedProfiles(results, objectStoreName, context);
                 return;
             }
         }
@@ -429,56 +434,81 @@ function getSearchList(params) {
 }
 
 
-// Script for getting all saved searches
+// Script for getting all saved reminders
 
-function getReminderList() {
+function getReminderList(params) {
 
-    let results = [];
-    let request = db
-                .transaction(dbData.objectStoreNames.REMINDERS, "readonly")
-                .objectStore(dbData.objectStoreNames.REMINDERS)
-                .getAll();
+    getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS);
 
-    request.onsuccess = (event) => {
-        console.log('Got all reminders:', event.target.result);
-        // Sending the retrieved data
-        let reminders = event.target.result;
+    // var params = (params ? params : {});
+    // var argDate = (params.date ? params.date : null),
+    //     offset = (params.offset ? params.offset : 0),
+    //     dateInnerSeparator = "-",
+    //     context = params.context,
+    //     monthRequest = null;
 
-        if (reminders.length == 0){
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
-        }
+    // if (argDate){
+    //     var monthRequest = argDate.split(dateInnerSeparator)[2] == "?";
+    // }
 
-        reminders.forEach((reminder) => {
+    // let results = [],
+    //     offsetApplied = false;
 
-            reminder.profile = null;
+    // let cursor = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS).openCursor(null, 'prev');
+    // cursor.onsuccess = function(event) {
+    //     let cursor = event.target.result;
+        
+    //     if(!cursor) {
+    //         getAssociatedProfiles(results, dbData.objectStoreNames.REMINDERS, context);
+    //         return;
+    //     }
 
-            let profileRequest = db
-                .transaction(dbData.objectStoreNames.PROFILES, "readonly")
-                .objectStore(dbData.objectStoreNames.PROFILES)
-                .get(reminder.url);
+    //     if(offset != 0 && !offsetApplied) {
+    //       offsetApplied = true;
+    //       cursor.advance(offset);
+    //       return;
+    //     }
 
-            profileRequest.onsuccess = (event) => {
-                // console.log('Got all reminders:', event.target.result);
-                // Sending the retrieved data
-                let profile = event.target.result;
-                if (profile != undefined){
-                    reminder.profile = profile;
-                }
-                results.push(reminder);
+    //     let reminder = cursor.value;
+    //     if (argDate){
+    //         if (!monthRequest){ // Then, it's a day request 
+    //             if (argDate == reminder.date.split("T")[0]){
+    //                 reminders.push(reminder);
+    //             }
+    //         }
+    //         else{
+    //             if (typeof argDate === "string"){
+    //                 argDate = argDate.split(dateInnerSeparator);
+    //             }
+    //             var reminderDate = (reminder.date.split("T")[0]).split(dateInnerSeparator);
+    //             if (argDate[0] == reminderDate[0] && argDate[1] == reminderDate[1]){
+    //                 results.push(reminder);
+    //             }
+    //         }
+    //     }
+    //     else{
+    //         reminders.push(reminder);
+    //     }
 
-                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
-            };
+    //     // if an argument about a specific time is not passed then
+    //     if (!argDate){
+    //         if(reminders.length < appParams.searchPageLimit) {
+    //             cursor.continue();
+    //         }
+    //         else{
+    //             getAssociatedProfiles(results, dbData.objectStoreNames.REMINDERS, context);
+    //             return;
+    //         }
+    //     }
+    //     else{
+    //         cursor.continue();
+    //     }
+    // }
 
-            profileRequest.onerror = (event) => {
-                console.log("An error occured when retrieving profile with url : ", event);
-            };
+    // cursor.onerror = (event) => {
+    //     console.log("Failed to acquire the cursor !");
+    // };
 
-        });
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when retrieving reminder list : ", event);
-    };
 }
 
 // Script for getting all saved searches
@@ -595,7 +625,7 @@ function getList(objectStoreName, objectData){
         }
 
         case dbData.objectStoreNames.REMINDERS:{
-            getReminderList();
+            getReminderList(objectData);
             break;
         }
 
@@ -644,10 +674,6 @@ function getObjectCount(objectStoreName, objectData){
     };
 
 }
-
-// Sorting the list before sending it
-// searches.sort((a,b) => a.date - b.date);
-// searches.sort((a,b) => (new Date(a.date)) - (new Date(b.date)));
 
 
 
