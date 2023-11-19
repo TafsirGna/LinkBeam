@@ -1,5 +1,5 @@
 import React from 'react';
-import HomeMenu from "./widgets/HomeMenu";
+import HomeMenu from "./widgets/HomeMenuView";
 import SearchListView from "./widgets/SearchListView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { Navigate } from "react-router-dom";
@@ -300,7 +300,7 @@ export default class Activity extends React.Component{
             <HomeMenu envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
           </div>
           <div class="text-center">
-            <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">
+            <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
               <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's searches" onClick={() => {this.switchCurrentTab(0)}} >
                 Today {(this.state.todaySearchList && this.state.todaySearchList.length != 0) ? "("+this.state.todaySearchList.length+")" : null}
               </button>

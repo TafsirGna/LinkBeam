@@ -315,7 +315,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
             <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
-            <Route path="/index.html/Profile" element={<Profile />} globalData={this.state.globalData} />
+            <Route path="/index.html/Profile" element={<Profile globalData={this.state.globalData} />} />
             <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />

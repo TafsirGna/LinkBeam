@@ -45,7 +45,7 @@ export default class About extends React.Component{
               LinkBeam is a light app designed to vizualize in a different way all publicly available linkedin profiles.
             </p>
             <p class="mt-2 small">
-              Designed by Tafsir GNA.
+              Designed by {appParams.appAuthor}.
             </p>
             <div>
               <a href="https://github.com/TafsirGna/LinkBeam" target="_blank" title="View on github" class="mx-2">

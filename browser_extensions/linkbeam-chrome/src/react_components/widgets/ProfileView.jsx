@@ -1,11 +1,10 @@
 /*import './ProfileView.css'*/
 import React from 'react';
-import CustomToast from "./CustomToast";
+import CustomToast from "./toasts/CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
-import ProfileViewReminderModal from "./ProfileViewReminderModal";
+import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class ProfileView extends React.Component{
 
@@ -13,7 +12,7 @@ export default class ProfileView extends React.Component{
     super(props);
     this.state = {
       coverImageModalShow: false,
-      bookmarkToastShow: false,
+      toastShow: false,
       reminderModalShow: false,
       toastMessage: "",
     };
@@ -39,7 +38,7 @@ export default class ProfileView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    this.toggleBookmarkToastShow("Profile bookmarked !");
+    this.toggleToastShow("Profile bookmarked !");
 
   }
 
@@ -49,7 +48,7 @@ export default class ProfileView extends React.Component{
     ack(sendResponse);
 
     this.handleReminderModalClose();
-    this.toggleBookmarkToastShow("Reminder added !");
+    this.toggleToastShow("Reminder added !");
 
   }
 
@@ -58,7 +57,7 @@ export default class ProfileView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    this.toggleBookmarkToastShow("Profile unbookmarked !");
+    this.toggleToastShow("Profile unbookmarked !");
 
   }
 
@@ -68,7 +67,7 @@ export default class ProfileView extends React.Component{
     ack(sendResponse);
 
     this.handleReminderModalClose();
-    this.toggleBookmarkToastShow("Reminder deleted !");
+    this.toggleToastShow("Reminder deleted !");
 
   }
 
@@ -97,7 +96,7 @@ export default class ProfileView extends React.Component{
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
-  toggleBookmarkToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, bookmarkToastShow: !prevState.bookmarkToastShow}));
+  toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
 
   onReminderMenuActionClick(){
@@ -149,7 +148,7 @@ export default class ProfileView extends React.Component{
 
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
 
-        <CustomToast message={this.state.toastMessage} show={this.state.bookmarkToastShow} onClose={this.toggleBookmarkToastShow} position="bottom-end"/>
+        <CustomToast globalData={this.props.globalData} message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} />
 
       </>
     );  

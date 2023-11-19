@@ -9,7 +9,7 @@ import Nav from 'react-bootstrap/Nav';
 import SearchListView from "./widgets/SearchListView";
 import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
-import CustomToast from "./widgets/CustomToast";
+import CustomToast from "./widgets/toasts/CustomToast";
 
 export default class Calendar extends React.Component{
 
@@ -50,19 +50,7 @@ export default class Calendar extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData.todayReminderList != this.props.globalData.todayReminderList){
-
-      // Setting the toast
-      if (this.props.globalData.todayReminderList){
-        var message = this.props.globalData.todayReminderList.length + " Reminders set for today !";
-        this.toggleToastShow(message);
-      }
-
-    }
-
   }
-
-  toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
   getDayObjectList(monthObjectList){
 
@@ -273,12 +261,14 @@ export default class Calendar extends React.Component{
                         <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
 
                 { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
+
               </Card.Body>
             </Card>
           </div>
         </div>
 
-        <CustomToast message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} position="top-end" delay="true"/>
+        <CustomToast globalData={this.props.globalData} />
+        
 	    </>
     );
   }

@@ -3,8 +3,13 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { sendDatabaseActionMessage, startMessageListener, messageParams, ack, dbData } from "../Local_library";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
+import { 
+  sendDatabaseActionMessage, 
+  startMessageListener, 
+  messageParams, 
+  ack, 
+  dbData 
+} from "../../Local_library";
 
 export default class ProfileViewReminderModal extends React.Component{
 

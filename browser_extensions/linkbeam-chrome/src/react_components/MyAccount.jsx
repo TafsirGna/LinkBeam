@@ -21,6 +21,8 @@ import {
 } from "./Local_library";
 // import Offcanvas from 'react-bootstrap/Offcanvas';
 
+const productIdOverlayText = "Your unique identifier";
+
 export default class MyAccount extends React.Component{
 
   constructor(props){
@@ -30,6 +32,7 @@ export default class MyAccount extends React.Component{
     	installedOn: "",
       userIcon: "default",
       userIconOffCanvasShow: false,
+      productIdOverlayText: productIdOverlayText,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
@@ -124,6 +127,19 @@ export default class MyAccount extends React.Component{
 
   }
 
+  copyToClipboard(){
+
+    navigator.clipboard.writeText(this.state.productID);
+
+    this.setState({productIdOverlayText: "Copied!"}, () => {
+      setTimeout(() => {
+          this.setState({productIdOverlayText: productIdOverlayText});
+        }, appParams.TIMER_VALUE
+      );
+    });
+
+  }
+
   getUserIcon(){
 
     var userIcon = null;
@@ -167,21 +183,21 @@ export default class MyAccount extends React.Component{
             <div class="mx-auto w-75 mt-4">
             	<OverlayTrigger
                 placement="bottom"
-                overlay={<Tooltip id="tooltip1">Your unique identifier</Tooltip>}
+                overlay={<Tooltip id="tooltip1">{this.state.productIdOverlayText}</Tooltip>}
               >
                 <div class="input-group mb-3 shadow input-group-sm">
 								  <span class="input-group-text" id="basic-addon1">ID</span>
-								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID}/>
+								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID} onFocus={() => {this.copyToClipboard()}} />
 								</div>
               </OverlayTrigger>
             	<hr/>
             	<p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
 
-              <div class="text-center">
+              {/*<div class="text-center">
                 <button type="button" class="btn btn-primary badge mt-3" onClick={() => {this.verifyAccount()}} >
                   Verify my account
                 </button>
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>

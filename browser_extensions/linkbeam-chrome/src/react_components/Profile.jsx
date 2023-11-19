@@ -137,7 +137,7 @@ export default class Profile extends React.Component{
                   </div>
                 </div>}
 
-          {this.state.profile && <ProfileView profile={this.state.profile}/>}
+          {this.state.profile && <ProfileView profile={this.state.profile} globalData={this.props.globalData} />}
 
         </div>
       </>
