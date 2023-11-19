@@ -10,7 +10,6 @@ import lady_user_icon from '../assets/user_icons/lady.png';
 import woman_user_icon from '../assets/user_icons/woman.png';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip, Offcanvas } from "react-bootstrap";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
 	saveCurrentPageTitle, 
 	sendDatabaseActionMessage,

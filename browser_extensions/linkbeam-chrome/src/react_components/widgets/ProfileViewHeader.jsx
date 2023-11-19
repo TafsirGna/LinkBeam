@@ -3,7 +3,6 @@ import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class ProfileViewHeader extends React.Component{
 

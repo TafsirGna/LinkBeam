@@ -3,8 +3,8 @@ import HomeMenuView from "./widgets/HomeMenuView";
 import SearchListView from "./widgets/SearchListView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { Navigate } from "react-router-dom";
-import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
+import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
+import ReminderListView from "./widgets/ReminderListView";
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage, 
@@ -29,6 +29,7 @@ export default class Activity extends React.Component{
       currentTabIndex: 0,
       loadingAllSearches: false,
       currentTabWebPageData: null,
+      offCanvasShow: false,
     };
 
     // Binding all the needed functions
@@ -79,6 +80,9 @@ export default class Activity extends React.Component{
     });
     
   }
+
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
+  handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
 
   onSearchesDataReceived(message, sendResponse){
 
@@ -297,7 +301,7 @@ export default class Activity extends React.Component{
 
           <div class="clearfix">
             {/*setting icon*/}
-            <HomeMenuView envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
+            <HomeMenuView envData={this.state.currentTabWebPageData} globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
           </div>
           <div class="text-center">
             <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
@@ -324,6 +328,15 @@ export default class Activity extends React.Component{
           {/* Bookmark List Tab */}
 
           {/*{ this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}*/}
+
+          <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+            <Offcanvas.Header closeButton>
+              <Offcanvas.Title>Reminders</Offcanvas.Title>
+            </Offcanvas.Header>
+            <Offcanvas.Body>
+              { this.props.globalData.todayReminderList && <ReminderListView objects={this.props.globalData.todayReminderList} />}
+            </Offcanvas.Body>
+          </Offcanvas>
 
         </>
       )

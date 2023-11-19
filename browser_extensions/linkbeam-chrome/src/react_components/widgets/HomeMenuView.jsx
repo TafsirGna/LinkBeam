@@ -32,7 +32,7 @@ export default class HomeMenu extends React.Component{
                             </div>
                             <ul class="dropdown-menu shadow-lg border border-secondary">
                               { (this.props.envData != null && this.props.envData.codeInjected == false) && <li><Link class="dropdown-item small">Show UI</Link></li>}
-                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><Link class="dropdown-item small" to="#" target="_blank">{this.props.globalData.todayReminderList.length} unchecked reminder(s)</Link></li>}
+                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><Link class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow()}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</Link></li>}
                             </ul>
                           </div>}
 

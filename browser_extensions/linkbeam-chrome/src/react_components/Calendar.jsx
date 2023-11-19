@@ -188,6 +188,11 @@ export default class Calendar extends React.Component{
 
   onRemindersDataReceived(message, sendResponse){
 
+    var context = message.data.objectData.context; 
+    if (context != appParams.COMPONENT_CONTEXT_NAMES.CALENDAR){
+      return;
+    }
+
     // acknowledge receipt
     ack(sendResponse);
 
