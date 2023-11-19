@@ -1,5 +1,5 @@
 import React from 'react';
-import HomeMenu from "./widgets/HomeMenuView";
+import HomeMenuView from "./widgets/HomeMenuView";
 import SearchListView from "./widgets/SearchListView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { Navigate } from "react-router-dom";
@@ -297,7 +297,7 @@ export default class Activity extends React.Component{
 
           <div class="clearfix">
             {/*setting icon*/}
-            <HomeMenu envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
+            <HomeMenuView envData={this.state.currentTabWebPageData} globalData={this.props.globalData} />
           </div>
           <div class="text-center">
             <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">

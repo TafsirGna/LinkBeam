@@ -20,18 +20,21 @@ export default class HomeMenu extends React.Component{
   render(){
     return (
       <>
-        
-        { this.props.envData != null && this.props.envData.codeInjected == false && <OverlayTrigger
-                  placement="bottom"
-                  overlay={<Tooltip id="tooltip1">Activate in this tab</Tooltip>}
-                >
-                  <button onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}} type="button" class={"btn btn-sm float-start py-0 m-3"}>
-                    <img src={bell_icon} alt="twbs" width="20" height="20" class=""/>
-                    <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                  </button>
-                </OverlayTrigger>}
+
+        { ((this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0)
+            || (this.props.envData != null && this.props.envData.codeInjected == false))
+          && <div class="dropdown">
+                            <div /*onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}*/ data-bs-toggle="dropdown" aria-expanded="false" class={"float-start py-0 m-3 handy-cursor"}>
+                              <img src={bell_icon} alt="twbs" width="20" height="20" class=""/>
+                              <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                              </div>
+                            </div>
+                            <ul class="dropdown-menu shadow-lg border border-secondary">
+                              { (this.props.envData != null && this.props.envData.codeInjected == false) && <li><Link class="dropdown-item small">Show UI</Link></li>}
+                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><Link class="dropdown-item small" to="#" target="_blank">{this.props.globalData.todayReminderList.length} unchecked reminder(s)</Link></li>}
+                            </ul>
+                          </div>}
 
 
         <div class="dropdown float-end m-3 mt-2 bd-gray">

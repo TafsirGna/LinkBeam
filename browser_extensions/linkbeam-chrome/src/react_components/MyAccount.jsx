@@ -17,7 +17,8 @@ import {
 	ack,
 	messageParams,
   dbData, 
-	startMessageListener
+	startMessageListener,
+  appParams,
 } from "./Local_library";
 // import Offcanvas from 'react-bootstrap/Offcanvas';
 
@@ -129,14 +130,24 @@ export default class MyAccount extends React.Component{
 
   copyToClipboard(){
 
-    navigator.clipboard.writeText(this.state.productID);
+    if (!navigator.clipboard) {
+      console.error('Async: Could not copy text: 1');
+      // fallbackCopyTextToClipboard(text);
+      return;
+    }
 
-    this.setState({productIdOverlayText: "Copied!"}, () => {
-      setTimeout(() => {
-          this.setState({productIdOverlayText: productIdOverlayText});
-        }, appParams.TIMER_VALUE
-      );
-    });
+    navigator.clipboard.writeText(this.state.productID).then((function() {
+      this.setState({productIdOverlayText: "Copied!"}, () => {
+          setTimeout(() => {
+              this.setState({productIdOverlayText: productIdOverlayText});
+            }, appParams.TIMER_VALUE
+          );
+        });
+      }).bind(this), 
+      function(err) {
+        console.error('Async: Could not copy text: ', err);
+      }
+    );
 
   }
 
@@ -185,9 +196,9 @@ export default class MyAccount extends React.Component{
                 placement="bottom"
                 overlay={<Tooltip id="tooltip1">{this.state.productIdOverlayText}</Tooltip>}
               >
-                <div class="input-group mb-3 shadow input-group-sm">
-								  <span class="input-group-text" id="basic-addon1">ID</span>
-								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID} onFocus={() => {this.copyToClipboard()}} />
+                <div class="input-group mb-3 shadow input-group-sm" onClick={() => {this.copyToClipboard();}}>
+								  <span class="input-group-text handy-cursor" id="basic-addon1">ID</span>
+								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID} />
 								</div>
               </OverlayTrigger>
             	<hr/>
