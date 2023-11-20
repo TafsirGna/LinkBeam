@@ -364,15 +364,14 @@ function getSearchList(params) {
 function getOffsetLimitList(params, objectStoreName) {
 
 
-    var params = (params ? params : {}),
-        offset = (params.offset ? params.offset : 0),
-        argDate = (params.date ? params.date : null),
-        dateInnerSeparator = "-",
-        context = params.context,
-        monthRequest = null;
+    var params = (params ? params : {});
+    params.date = (params.date ? params.date : null);
+    params.monthRequest = null;
+    params.dateInnerSeparator = "-";
+    params.offset = (params.offset ? params.offset : 0)
 
-    if (argDate){
-        var monthRequest = argDate.split(dateInnerSeparator)[2] == "?";
+    if (params.date){
+        params.monthRequest = params.date.split(params.dateInnerSeparator)[2] == "?";
     }
 
     let results = [];
@@ -382,55 +381,86 @@ function getOffsetLimitList(params, objectStoreName) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            getAssociatedProfiles(results, objectStoreName, context);
+            getAssociatedProfiles(results, objectStoreName, params.context);
             return;
         }
 
-        if(offset != 0 && !offsetApplied) {
+        if(params.offset != 0 && !offsetApplied) {
           offsetApplied = true;
-          cursor.advance(offset);
+          cursor.advance(params.offset);
           return;
         }
 
         let object = cursor.value;
-        if (argDate){
-            if (!monthRequest){ // Then, it's a day request 
-                if (argDate == object.date.split("T")[0]){
-                    results.push(object);
-                }
-            }
-            else{
-                if (typeof argDate === "string"){
-                    argDate = argDate.split(dateInnerSeparator);
-                }
-                var objectDate = (object.date.split("T")[0]).split(dateInnerSeparator);
-                if (argDate[0] == objectDate[0] && argDate[1] == objectDate[1]){
-                    results.push(object);
-                }
-            }
-        }
-        else{
-            results.push(object);
-        }
+        results = addToOffsetLimitList(object, results, objectStoreName, params);
 
         // if an argument about a specific time is not passed then
-        if (!argDate){
-            if(results.length < appParams.searchPageLimit) {
-                cursor.continue();
-            }
-            else{
-                getAssociatedProfiles(results, objectStoreName, context);
-                return;
-            }
+        if (isOffsetLimitReached(results, objectStoreName, params)){
+
+            getAssociatedProfiles(results, objectStoreName, params.context);
+            return;
+
         }
-        else{
-            cursor.continue();
-        }
+        
+        cursor.continue();
     }
 
     cursor.onerror = (event) => {
         console.log("Failed to acquire the cursor !");
     };
+}
+
+function addToOffsetLimitList(object, list, objectStoreName, params){
+
+    // if the user is requesting all the reminders set for today then only activated reminders are selected
+    if (objectStoreName == dbData.objectStoreNames.REMINDERS && params.context == "Notifications"){
+        if (object.activated && (new Date()).toISOString().split("T")[0] == object.date.split("T")[0]){
+            list.push(object);
+        }
+        return list;
+    }
+
+    if (!params.date){
+        list.push(object);
+        return list;
+    }
+
+    if (!params.monthRequest){ // Then, it's a day request 
+        if (params.date == object.date.split("T")[0]){
+            list.push(object);
+        }
+        return list
+    }
+    
+    // Month request
+    if (typeof params.date === "string"){
+        params.date = params.date.split(params.dateInnerSeparator);
+    }
+    var objectDate = (object.date.split("T")[0]).split(params.dateInnerSeparator);
+    if (params.date[0] == objectDate[0] && params.date[1] == objectDate[1]){
+        list.push(object);
+    }
+
+    return list
+}
+
+function isOffsetLimitReached(list, objectStoreName, params){
+
+    // if the user is requesting all the reminders set for today then there's no limit
+    if (objectStoreName == dbData.objectStoreNames.REMINDERS && params.context == "Notifications"){
+        return false;
+    }
+
+    if (params.date){
+        return false;
+    }
+
+    if (list.length < appParams.searchPageLimit) {
+        return false;
+    }
+    
+    return true;
+
 }
 
 
@@ -654,6 +684,7 @@ function add_search_data(searchData){
 function addReminderObject(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
+    reminder.activated = true;
 
     const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
     const request = objectStore.add(reminder);

@@ -120,25 +120,25 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var context = message.data.objectData.context; 
+    var context = message.data.objectData.context,
+        reminderList = message.data.objectData.list;
+
     if (context == appParams.COMPONENT_CONTEXT_NAMES.REMINDERS){
 
       // Setting the reminder list here too
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.reminderList = message.data.objectData;
+        globalData.reminderList = reminderList;
         return { globalData };
       }); 
 
     }
     else if (context == "Notifications"){
 
-      var todayReminderList = message.data.objectData.list;
-
       // Setting the reminder list here too
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.todayReminderList = todayReminderList;
+        globalData.todayReminderList = reminderList;
         return { globalData };
       }); 
 

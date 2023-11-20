@@ -24,14 +24,14 @@ export default class HomeMenu extends React.Component{
         { ((this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0)
             || (this.props.envData != null && this.props.envData.codeInjected == false))
           && <div class="dropdown">
-                            <div /*onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}*/ data-bs-toggle="dropdown" aria-expanded="false" class={"float-start py-0 m-3 handy-cursor"}>
+                            <div data-bs-toggle="dropdown" aria-expanded="false" class={"float-start py-0 m-3 handy-cursor"}>
                               <img src={bell_icon} alt="twbs" width="20" height="20" class=""/>
                               <div class="spinner-grow spinner-grow-sm text-secondary ms-1" role="status">
                                 <span class="visually-hidden">Loading...</span>
                               </div>
                             </div>
                             <ul class="dropdown-menu shadow-lg border border-secondary">
-                              { (this.props.envData != null && this.props.envData.codeInjected == false) && <li><Link class="dropdown-item small">Show UI</Link></li>}
+                              { (this.props.envData != null && this.props.envData.codeInjected == false) && <li><Link class="dropdown-item small" onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}>Show ui in page</Link></li>}
                               { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><Link class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow()}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</Link></li>}
                             </ul>
                           </div>}
