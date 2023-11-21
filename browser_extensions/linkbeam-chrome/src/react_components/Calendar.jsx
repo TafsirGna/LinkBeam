@@ -18,7 +18,7 @@ export default class Calendar extends React.Component{
     this.state = {
       monthSearchList: null,
       monthReminderList: null,
-      selectedDate: (new Date()).toISOString().split("T")[0],
+      selectedDate: (new Date()),
       tabTitles: ["Searches", "Reminders"],
       tabActiveKey: "",
       toastMessage: "",
@@ -55,10 +55,11 @@ export default class Calendar extends React.Component{
   getDayObjectList(monthObjectList){
 
     var list = null;
+    var dateString = moment(this.state.selectedDate).format("YYYY-MM-DD");
 
     if (monthObjectList){
-      if (this.state.selectedDate in monthObjectList){
-        list = monthObjectList[this.state.selectedDate]
+      if (dateString in monthObjectList){
+        list = monthObjectList[dateString];
       }
       else{
         list = [];
@@ -72,10 +73,11 @@ export default class Calendar extends React.Component{
 
   }
 
-  getMonthObjectList(dateString, objectStoreName){
+  getMonthObjectList(date, objectStoreName){
 
     // Reformatting the date string before sending the request
-    var separator = "-";
+    var separator = "-",
+      dateString = moment(date).format("YYYY-MM-DD");
     dateString = dateString.split(separator);
     dateString[dateString.length - 1] = "?";
     dateString = dateString.join(separator);
@@ -123,16 +125,15 @@ export default class Calendar extends React.Component{
       return null
     }
 
-    date = date.toISOString().split("T")[0];
+    var date = date.toLocaleString().split(",")[0];
+    date = moment(new Date(date)).format("YYYY-MM-DD");
 
     // month reminder list
-
     if (this.state.monthReminderList && date in this.state.monthReminderList){
       return "bg-info text-white shadow";
     }
 
     // month search list
-
     if (this.state.monthSearchList && date in this.state.monthSearchList){
       return "bg-warning text-black shadow text-muted";
     }
@@ -144,7 +145,23 @@ export default class Calendar extends React.Component{
 
   onClickDay(value, event){
     
-    this.setState({selectedDate: value.toISOString().split("T")[0]});
+    var date = value.toLocaleString().split(",")[0];
+    date = new Date(date);
+
+    this.setState({selectedDate: date}, () => {
+
+      var searchList = this.getDayObjectList(this.state.monthSearchList),
+          reminderList = this.getDayObjectList(this.state.monthReminderList);
+
+      if (searchList.length == 0){
+        this.onNavSelectKey(this.state.tabTitles[1]);
+      }
+
+      if (reminderList.length == 0){
+        this.onNavSelectKey(this.state.tabTitles[0]);
+      }
+
+    });
 
   }
 
@@ -242,6 +259,9 @@ export default class Calendar extends React.Component{
               className="rounded shadow"/>
           </div>
           <div class="col-7 ps-3">
+            <div>
+              <span class="badge shadow text-muted border border-warning mb-2">{this.state.selectedDate.toString()}</span>
+            </div>
             <Card className="shadow">
               <Card.Header>
                 <Nav 
