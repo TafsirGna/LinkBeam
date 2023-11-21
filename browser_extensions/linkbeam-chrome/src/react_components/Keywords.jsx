@@ -1,8 +1,6 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import KeywordListView from "./widgets/KeywordListView";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
-// import { uid } from 'uid';
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -19,38 +17,26 @@ export default class Keywords extends React.Component{
     super(props);
     this.state = {
       keyword: "",
-      keywordList: null,
       processingState:{
         status: "NO",
         info: ""
       },
       alertBadgeContent: "",
-      keywordCountLimit: 0,
     };
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
     this.deleteKeyword = this.deleteKeyword.bind(this);
-    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.checkInputKeyword = this.checkInputKeyword.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
+    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
   }
 
   componentDidMount() {
 
-    // setting the keyword count limit
-    this.setState({
-      keywordCountLimit: appParams.keywordCountLimit
-    }); 
-
-    // setting the local variable with the global data
-    if (this.props.globalData.keywordList){
-      this.setState({keywordList: this.props.globalData.keywordList});
-    }
-
     this.listenToMessages();
 
-    saveCurrentPageTitle("Keywords");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS);
 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, null);
 
@@ -59,11 +45,7 @@ export default class Keywords extends React.Component{
   onKeywordsDataReceived(message, sendResponse){
 
     // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var keywords = message.data.objectData;
-    this.setState({keywordList: keywords});
+    // ack(sendResponse);
 
     // Displaying the alertBadge
     if (this.state.processingState.status == "YES"){
@@ -108,56 +90,56 @@ export default class Keywords extends React.Component{
 
   // Function for initiating the deletion of a keyword
   deleteKeyword(keyword){
+
     const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
     if (response){
-      // Displaying the spinner
-      this.setState({processingState: {status: "YES", info: "DELETING"}});
 
-      if (response){
+      // Displaying the spinner
+      this.setState({processingState: {status: "YES", info: "DELETING"}}, () => {
         sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, keyword.name);
-      }
+      });
+
     }
   }
 
   // Function for initiating the insertion of a keyword
   addKeyword(){
-    if (this.state.keyword != ""){
 
-      if (this.checkInputKeyword() == false){
-        console.log("exiting function ");
-        return;
-      }
-
-      // Displaying the spinner
-      this.setState({processingState: {status: "YES", info: "ADDING"}});
-
-      console.log("Adding keyword", this.state.keyword);
-
-      // cleaning the keyword input
-      this.setState({keyword: ""});
-      
-      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, this.state.keyword)
+    if (this.state.keyword == ""){
+      return;
     }
+
+    if (!this.checkInputKeyword()){
+      console.log("Check of input returned false");
+      return;
+    }
+
+    // Displaying the spinner and cleaning the keyword input
+    this.setState({processingState: {status: "YES", info: "ADDING"}}, () => {
+      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, this.state.keyword);
+      this.setState({keyword: ""});
+    });
+
   }
 
   checkInputKeyword(){
 
     // Enforcing the limit constraint on the list length
-    if (this.state.keywordList.length == this.state.keywordCountLimit){
-      alert("You can not add more than "+this.state.keywordCountLimit+" keywords !");
+    if (this.props.globalData.keywordList.length == appParams.keywordCountLimit){
+      alert("You can not add more than " + appParams.keywordCountLimit + " keywords !");
       return false;
     }
 
     // Making sure that there's no duplicates
-    for (let i = 0; i < this.state.keywordList.length; i++){
-      let keyword = this.state.keywordList[i];
+    for (let keyword of this.props.globalData.keywordList){
+      
       if (keyword.name === this.state.keyword){
         alert("Duplicated keywords are not allowed !");
         return false;
       }
+
     }
 
-    console.log("returning true");
     return true;
   }
 
@@ -170,7 +152,7 @@ export default class Keywords extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Settings"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
           <div class="clearfix">
             <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
               <span class="visually-hidden">Loading...</span>
@@ -192,7 +174,7 @@ export default class Keywords extends React.Component{
             
             {/* Keyword list view */}
 
-            <KeywordListView objects={this.state.keywordList} onItemDeletion={this.deleteKeyword} />
+            <KeywordListView objects={this.props.globalData.keywordList} onItemDeletion={this.deleteKeyword} />
 
           </div>
         </div>

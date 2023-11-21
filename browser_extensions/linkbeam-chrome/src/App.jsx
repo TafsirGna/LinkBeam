@@ -106,10 +106,12 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    var keywordList = message.data.objectData;
+
     // Setting the search list here too
     this.setState(prevState => {
       let globalData = Object.assign({}, prevState.globalData);
-      globalData.keywordList = message.data.objectData;
+      globalData.keywordList = keywordList;
       return { globalData };
     });
 

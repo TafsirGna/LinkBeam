@@ -26,6 +26,7 @@ export const appParams = {
     CALENDAR: "Calendar",
     REMINDERS: "Reminders",
     SETTINGS: "Settings", 
+    KEYWORDS: "Keywords",
   },
 }
 
