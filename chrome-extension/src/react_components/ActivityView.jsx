@@ -1,7 +1,6 @@
 import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
 import SearchListView from "./widgets/SearchListView";
-import BookmarkListView from "./widgets/BookmarkListView";
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
@@ -16,7 +15,7 @@ import {
   checkCurrentTab,
   } from "./Local_library";
 
-export default class Activity extends React.Component{
+export default class ActivityView extends React.Component{
 
   constructor(props){
     super(props);
@@ -24,7 +23,6 @@ export default class Activity extends React.Component{
       allSearchList: null,
       todaySearchList: null,
       allSearchLeft: true,
-      // bookmarkList: null,
       currentPageTitle: null,
       currentTabIndex: 0,
       loadingAllSearches: false,
@@ -39,7 +37,6 @@ export default class Activity extends React.Component{
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    // this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
     this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
     this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
@@ -61,9 +58,6 @@ export default class Activity extends React.Component{
     }
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY);
-
-    // Setting bookmark list if possible
-    // this.setState({bookmarkList: this.props.globalData.bookmarkList});
 
     // Setting current tab info if possible
     if (this.props.globalData.currentTabWebPageData){
@@ -100,17 +94,6 @@ export default class Activity extends React.Component{
     this.setListData(listData, scope);
 
   }
-
-  // onBookmarksDataReceived(message, sendResponse){
-    
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   // setting the new value
-  //   let listData = message.data.objectData;
-  //   this.setState({bookmarkList: listData});
-
-  // }
 
   onSettingsDataReceived(message, sendResponse){
     
@@ -194,10 +177,6 @@ export default class Activity extends React.Component{
         callback: this.onSearchesDataReceived
       },
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarksDataReceived
-      },
-      {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
@@ -248,12 +227,6 @@ export default class Activity extends React.Component{
     else{ // today
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: ((new Date()).toISOString().split("T")[0]), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
     }
-
-  }
-
-  getBookmarkList(){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.BOOKMARKS, null);
 
   }
 
@@ -311,23 +284,14 @@ export default class Activity extends React.Component{
               <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All searches" onClick={() => {this.switchCurrentTab(1)}}>
                 All {(this.state.allSearchList && this.state.allSearchList.length != 0) ? "("+this.state.allSearchList.length+")" : null}
               </button>
-              {/*<button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "") } title="See Bookmarks" onClick={() => {this.switchCurrentTab(1)}} >
-                Bookmarks {(this.state.bookmarkList && this.state.bookmarkList.length != 0) ? "("+this.state.bookmarkList.length+")" : null}
-              </button>*/}
             </div>
           </div>
 
           {/* Today Search List Tab */}
-
           { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
 
           {/* All Search List Tab */}
-
           { this.state.currentTabIndex == 1 && <SearchListView objects={this.state.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>}
-
-          {/* Bookmark List Tab */}
-
-          {/*{ this.state.currentTabIndex == 1 && <BookmarkListView objects={this.state.bookmarkList} />}*/}
 
           <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
             <Offcanvas.Header closeButton>

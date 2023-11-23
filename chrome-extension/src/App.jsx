@@ -2,13 +2,14 @@ import React from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import About from "./react_components/About";
-import Activity from "./react_components/Activity";
+import ActivityView from "./react_components/ActivityView";
 import Settings from "./react_components/Settings";
 import Statistics from "./react_components/Statistics";
-import Keywords from "./react_components/Keywords";
+import KeywordView from "./react_components/KeywordView";
 import Profile from "./react_components/Profile";
 import MyAccount from "./react_components/MyAccount";
-import Reminders from "./react_components/Reminders";
+import ReminderView from "./react_components/ReminderView";
+import BookmarkView from "./react_components/BookmarkView";
 import Feed from "./react_components/Feed";
 import NewsFeed from "./react_components/NewsFeed";
 import Calendar from "./react_components/Calendar";
@@ -92,10 +93,12 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    var bookmarkList = message.data.objectData;
+
     // Setting the search list here too
     this.setState(prevState => {
       let globalData = Object.assign({}, prevState.globalData);
-      globalData.bookmarkList = message.data.objectData;
+      globalData.bookmarkList = bookmarkList;
       return { globalData };
     });
 
@@ -310,16 +313,17 @@ export default class App extends React.Component{
                   <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.redirect_to.data} />
                   : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
                       <Navigate replace to={"/index.html/Calendar"} />
-                      : <Activity globalData={this.state.globalData} />
+                      : <ActivityView globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<About />} />
             <Route path="/index.html/Settings" element={<Settings globalData={this.state.globalData} />} />
             <Route path="/index.html/Statistics" element={<Statistics globalData={this.state.globalData}/>} />
-            <Route path="/index.html/Keywords" element={<Keywords globalData={this.state.globalData} />} />
+            <Route path="/index.html/Keywords" element={<KeywordView globalData={this.state.globalData} />} />
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
             <Route path="/index.html/Profile" element={<Profile globalData={this.state.globalData} />} />
-            <Route path="/index.html/Reminders" element={<Reminders globalData={this.state.globalData} />} />
+            <Route path="/index.html/Reminders" element={<ReminderView globalData={this.state.globalData} />} />
             <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
+            <Route path="/index.html/Bookmarks" element={<BookmarkView globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<Feedback globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<Calendar globalData={this.state.globalData} />} />
             <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />

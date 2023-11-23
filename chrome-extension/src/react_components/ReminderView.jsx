@@ -12,7 +12,7 @@ import {
 } from "./Local_library";
 import ReminderListView from "./widgets/ReminderListView";
 
-export default class Reminders extends React.Component{
+export default class ReminderView extends React.Component{
 
   constructor(props){
     super(props);

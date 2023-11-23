@@ -59,7 +59,7 @@ export default class LicenseCreditsView extends React.Component{
 
           { this.state.currentTabIndex == 1 && <div class="">
 
-                                                <p>Copyright (C) 2023 Tafsir GNA</p>
+                                                <p>Copyright (C) 2023 {appParams.appAuthor}</p>
 
                                                 <p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.</p>
 

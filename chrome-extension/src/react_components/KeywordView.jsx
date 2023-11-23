@@ -11,7 +11,7 @@ import {
 } from "./Local_library";
 
 
-export default class Keywords extends React.Component{
+export default class KeywordView extends React.Component{
 
   constructor(props){
     super(props);

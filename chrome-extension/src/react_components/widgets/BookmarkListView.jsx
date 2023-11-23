@@ -1,16 +1,15 @@
-/*import './SearchListView.css'*/
+/*import './BookmarkListView.css'*/
 import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class BookmarkListView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      objectTags: null,
+
     };
   }
 
@@ -20,6 +19,17 @@ export default class BookmarkListView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
+  }
+
+  // Function for initiating the deletion of a keyword
+  deleteBookmark(bookmark){
+
+    const response = confirm("Do you confirm the deletion of the bookmark on '"+bookmark.profile.fullName+"' ?");
+    if (response){
+
+      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.BOOKMARKS, bookmark.url);
+
+    }
   }
 
   render(){
@@ -33,7 +43,7 @@ export default class BookmarkListView extends React.Component{
 
         { this.props.objects != null && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
                     <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
+                    <p><span class="badge text-bg-primary fst-italic shadow">No bookmarked profiles yet</span></p>
                   </div> }
 
         { this.props.objects != null && this.props.objects.length != 0 && 
