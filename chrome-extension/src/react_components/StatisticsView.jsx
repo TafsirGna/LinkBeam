@@ -5,7 +5,6 @@ import BackToPrev from "./widgets/BackToPrev";
 import ViewsTimelineChart from "./widgets/charts/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
 import ViewsGeoMapChart from "./widgets/charts/ViewsGeoMapChart";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -16,7 +15,7 @@ import {
   appParams,
 } from "./Local_library";
 
-export default class Settings extends React.Component{
+export default class StatisticsView extends React.Component{
 
   constructor(props){
     super(props);
@@ -41,7 +40,7 @@ export default class Settings extends React.Component{
     // Requesting the last reset date
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
 
-    saveCurrentPageTitle("Statistics");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS);
   }
 
   onSettingsDataReceived(message, sendResponse){
@@ -79,7 +78,7 @@ export default class Settings extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Activity"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY}/>
 
           {/*View dropdown*/}
           <div class="clearfix">

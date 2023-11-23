@@ -28,6 +28,7 @@ export const appParams = {
     SETTINGS: "Settings", 
     KEYWORDS: "Keywords",
     BOOKMARKS: "Bookmarks",
+    STATISTICS: "Statistics",
   },
 }
 

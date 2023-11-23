@@ -15,13 +15,11 @@ import {
   checkCurrentTab,
   } from "./Local_library";
 
-export default class ActivityView extends React.Component{
+export default class HomeView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      allSearchList: null,
-      todaySearchList: null,
       allSearchLeft: true,
       currentPageTitle: null,
       currentTabIndex: 0,
@@ -31,11 +29,9 @@ export default class ActivityView extends React.Component{
     };
 
     // Binding all the needed functions
-    this.setListData = this.setListData.bind(this);
     this.getSearchList = this.getSearchList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
     this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
@@ -52,7 +48,7 @@ export default class ActivityView extends React.Component{
     const urlParams = new URLSearchParams(window.location.search);
     const origin = urlParams.get("origin");
 
-    if (origin == null){
+    if (!origin){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle"]);
       return;
     }
@@ -64,36 +60,14 @@ export default class ActivityView extends React.Component{
       this.setState({currentTabWebPageData: this.props.globalData.currentTabWebPageData});
     }
 
-    // setting the local variable with the global data
-    this.setState({allSearchList: this.props.globalData.allSearchList});
-
-    this.setState({todaySearchList: this.props.globalData.todaySearchList}, () => {
-      if (this.state.todaySearchList == null){
-        this.getSearchList("today");
-      }
-    });
+    if (!this.props.globalData.todaySearchList){
+      this.getSearchList("today");
+    }
     
   }
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
   handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
-
-  onSearchesDataReceived(message, sendResponse){
-
-    var context = message.data.objectData.context; 
-    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY) == -1){
-      return;
-    }
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var listData = message.data.objectData.list,
-        scope = context.split("-")[1];
-    this.setListData(listData, scope);
-
-  }
 
   onSettingsDataReceived(message, sendResponse){
     
@@ -108,7 +82,7 @@ export default class ActivityView extends React.Component{
         this.setState({currentPageTitle: pageTitle}, () => {
           if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
             // Getting the list of all searches
-            if (this.state.todaySearchList == null){
+            if (this.props.globalData.todaySearchList == null){
               this.getSearchList("today");
             }
 
@@ -173,10 +147,6 @@ export default class ActivityView extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
-      },
-      {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
@@ -206,7 +176,7 @@ export default class ActivityView extends React.Component{
         break;
       }
       case 1: {
-        if (!this.state.allSearchList){
+        if (!this.props.globalData.allSearchList){
           this.getSearchList("all");
         }
         break;
@@ -221,38 +191,11 @@ export default class ActivityView extends React.Component{
     if (scope == "all"){
       if (this.state.allSearchLeft){
         this.setState({loadingAllSearches: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.state.allSearchList ? this.state.allSearchList.length : 0), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.props.globalData.allSearchList ? this.props.globalData.allSearchList.length : 0), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
       }
     }
     else{ // today
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: ((new Date()).toISOString().split("T")[0]), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
-    }
-
-  }
-
-  setListData(listData, scope){
-
-    if (scope == "all"){
-
-      if (this.state.allSearchList == null){
-        this.setState({allSearchList: []}, () => {
-          this.setListData(listData, scope);
-        });
-        return;
-      }
-
-      if (listData.length < appParams.searchPageLimit){
-        this.setState({allSearchLeft: false});
-      }
-
-      listData = this.state.allSearchList.concat(listData);
-      this.setState({allSearchList: listData, loadingAllSearches: false});
-
-    }
-    else{ // today
-
-      this.setState({todaySearchList: listData});
-
     }
 
   }
@@ -279,19 +222,19 @@ export default class ActivityView extends React.Component{
           <div class="text-center">
             <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
               <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's searches" onClick={() => {this.switchCurrentTab(0)}} >
-                Today {(this.state.todaySearchList && this.state.todaySearchList.length != 0) ? "("+this.state.todaySearchList.length+")" : null}
+                Today {(this.props.globalData.todaySearchList && this.props.globalData.todaySearchList.length != 0) ? "("+this.props.globalData.todaySearchList.length+")" : null}
               </button>
               <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All searches" onClick={() => {this.switchCurrentTab(1)}}>
-                All {(this.state.allSearchList && this.state.allSearchList.length != 0) ? "("+this.state.allSearchList.length+")" : null}
+                All {(this.props.globalData.allSearchList && this.props.globalData.allSearchList.length != 0) ? "("+this.props.globalData.allSearchList.length+")" : null}
               </button>
             </div>
           </div>
 
           {/* Today Search List Tab */}
-          { this.state.currentTabIndex == 0 && <SearchListView objects={this.state.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
+          { this.state.currentTabIndex == 0 && <SearchListView objects={this.props.globalData.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
 
           {/* All Search List Tab */}
-          { this.state.currentTabIndex == 1 && <SearchListView objects={this.state.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>}
+          { this.state.currentTabIndex == 1 && <SearchListView objects={this.props.globalData.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>}
 
           <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
             <Offcanvas.Header closeButton>

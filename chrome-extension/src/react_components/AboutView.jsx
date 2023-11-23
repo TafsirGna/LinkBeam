@@ -8,9 +8,8 @@ import {
   appParams,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
-export default class About extends React.Component{
+export default class AboutView extends React.Component{
 
   constructor(props){
     super(props);

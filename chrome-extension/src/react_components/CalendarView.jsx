@@ -11,7 +11,7 @@ import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
 import CustomToast from "./widgets/toasts/CustomToast";
 
-export default class Calendar extends React.Component{
+export default class CalendarView extends React.Component{
 
   constructor(props){
     super(props);

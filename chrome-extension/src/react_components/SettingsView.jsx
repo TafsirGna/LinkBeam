@@ -4,7 +4,6 @@ import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -14,7 +13,7 @@ import {
   dbData, 
 } from "./Local_library";
 
-export default class Settings extends React.Component{
+export default class SettingsView extends React.Component{
   
   constructor(props){
     super(props);

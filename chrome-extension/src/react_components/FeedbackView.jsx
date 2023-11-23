@@ -1,7 +1,6 @@
 /*import './About.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -21,7 +20,7 @@ import { genPassword } from "../.private_library";
 Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
 Parse.serverURL = appParams.PARSE_HOST_URL;
 
-export default class Feedback extends React.Component{
+export default class FeedbackView extends React.Component{
 
   constructor(props){
     super(props);

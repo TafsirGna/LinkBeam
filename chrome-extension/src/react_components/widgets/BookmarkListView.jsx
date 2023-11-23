@@ -21,17 +21,6 @@ export default class BookmarkListView extends React.Component{
 
   }
 
-  // Function for initiating the deletion of a keyword
-  deleteBookmark(bookmark){
-
-    const response = confirm("Do you confirm the deletion of the bookmark on '"+bookmark.profile.fullName+"' ?");
-    if (response){
-
-      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.BOOKMARKS, bookmark.url);
-
-    }
-  }
-
   render(){
     return (
       <>
