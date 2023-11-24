@@ -95,6 +95,12 @@ export const logInParseUser = async function (Parse, usernameValue, passwordValu
 
 };
 
+export const deactivateTodayReminders = () => {
+
+  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, {criteria: "today"/*, property: "activated", value: false*/});
+
+}
+
 export const registerParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
 
     try {
@@ -156,8 +162,7 @@ export const messageParams = {
     SW_WEB_PAGE_LOADED: "sw-web-page-loaded",
     SW_DB_CREATED: "sw-db-created",
     SW_DB_NOT_CREATED_YET: "sw-db-not-created-yet",
-    SW_DB_INIT_FAILED:"sw-db-init-failed",
-    SW_DB_CREATION_FAILED:"sw-db-creation-failed",
+    SW_PROCESS_FAILED: "sw-process-failed",
   },
 
   separator: "|",

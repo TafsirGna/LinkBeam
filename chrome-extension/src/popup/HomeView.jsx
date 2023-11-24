@@ -13,7 +13,9 @@ import {
   dbData,
   appParams, 
   checkCurrentTab,
+  deactivateTodayReminders,
   } from "./Local_library";
+  import eventBus from "./EventBus";
 
 export default class HomeView extends React.Component{
 
@@ -85,8 +87,18 @@ export default class HomeView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
-  handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
+      () => {
+        deactivateTodayReminders();
+        eventBus.dispatch("resetTodayReminderList", null);
+      }
+    )
+  };
+
+  handleOffCanvasShow = () => {
+      this.setState({offCanvasShow: true}
+    )
+  };
 
   onSettingsDataReceived(message, sendResponse){
     

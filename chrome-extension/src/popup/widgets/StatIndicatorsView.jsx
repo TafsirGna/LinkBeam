@@ -100,25 +100,25 @@ export default class StatIndicatorsView extends React.Component{
     return (
       <>
         <div class="row mx-4 my-3">
-          <button type="button" class="btn border border-warning-subtle shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-warning ms-3">{this.state.searchCount}</h4>
+          <button type="button" class="btn  shadow col mx-2 text-muted fw-light text-start">
+            <h4 class="text-warning ms-3 my-0">{this.state.searchCount}</h4>
             <p class="ms-3 my-0">Searches </p>
             {/*<span class="badge text-bg-warning">{this.state.searchCount}</span>*/}
           </button>
-          <button type="button" class="btn border shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="ms-3">{this.state.profileCount}</h4>
+          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
+            <h4 class="ms-3 my-0">{this.state.profileCount}</h4>
             <p class="ms-3 my-0">Profiles </p>
             {/*<span class="badge text-bg-secondary">{this.state.profileCount}</span>*/}
           </button>
         </div>
         <div class="row mx-4 my-3">
-          <button type="button" class="btn border border-success-subtle shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-success ms-3">{this.state.searchCount}</h4>
+          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
+            <h4 class="text-success ms-3 my-0">{this.state.searchCount}</h4>
             <p class="ms-3 my-0">News </p>
             {/*<span class="badge text-bg-success">{this.state.searchCount}</span>*/}
           </button>
-          <button type="button" class="btn border border-info-subtle shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-info ms-3">{this.state.searchCount}</h4>
+          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
+            <h4 class="text-info ms-3 my-0">{this.state.searchCount}</h4>
             <p class="ms-3 my-0">Profiles </p>
             {/*<span class="badge text-bg-info">{this.state.profileCount}</span>*/}
           </button>

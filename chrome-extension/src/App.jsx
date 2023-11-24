@@ -25,6 +25,7 @@ import {
   appParams,
 } from "./popup/Local_library";
 import { genPassword } from "./.private_library";
+import eventBus from "./popup/EventBus";
 
 export default class App extends React.Component{
 
@@ -58,6 +59,17 @@ export default class App extends React.Component{
 
     this.listenToMessages();
 
+    eventBus.on("resetTodayReminderList", (data) =>
+      {
+        // Resetting the today reminder list here too
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.todayReminderList = null;
+          return { globalData };
+        });
+      }
+    );
+
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("redirect_to") != null){
@@ -70,6 +82,21 @@ export default class App extends React.Component{
 
     // Sending a request to know if some reminders are set for today
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {date: (new Date()).toISOString().split("T")[0], context: "Notifications"});
+
+  }
+
+  componentWillUnmount() {
+
+    eventBus.remove("resetTodayReminderList");
+
+  }
+
+  onProcessingErrorReport(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+    
+    alert("Something went wrong when performing this operation!. Try again later." );
 
   }
 
@@ -259,7 +286,10 @@ export default class App extends React.Component{
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
         callback: this.onSwResponseReceived
       },
-
+      {
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED].join(messageParams.separator), 
+        callback: this.onProcessingErrorReport
+      },
       {
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_NOT_CREATED_YET].join(messageParams.separator), 
         callback: this.onSwResponseReceived

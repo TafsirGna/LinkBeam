@@ -91,17 +91,13 @@ export default class About extends React.Component{
     ack(sendResponse);
 
     switch(message.data.objectData){
-      case  messageParams.contentMetaData.SW_DB_INIT_FAILED:{
-        var message = "Failed to initialized the app with the uploaded data. Try again later!";
-        this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
-        break;
-      }
 
-      case  messageParams.contentMetaData.SW_DB_CREATION_FAILED:{
+      case  messageParams.contentMetaData.SW_PROCESS_FAILED:{
         var message = "Failed to initialized the app. Try again later!";
         this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
         break;
       }
+      
     }
   }
 
@@ -122,11 +118,7 @@ export default class About extends React.Component{
         callback: this.onNewInstanceSetUp
       },
       {
-        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_INIT_FAILED].join(messageParams.separator), 
-        callback: this.onSwResponseReceived
-      },
-      {
-        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_DB_CREATION_FAILED].join(messageParams.separator), 
+        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED].join(messageParams.separator), 
         callback: this.onSwResponseReceived
       },
     ]);
