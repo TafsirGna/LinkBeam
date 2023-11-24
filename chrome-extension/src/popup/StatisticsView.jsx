@@ -5,6 +5,7 @@ import BackToPrev from "./widgets/BackToPrev";
 import ViewsTimelineChart from "./widgets/charts/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
 import ViewsGeoMapChart from "./widgets/charts/ViewsGeoMapChart";
+import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -106,6 +107,9 @@ export default class StatisticsView extends React.Component{
               </div>
               <div class="carousel-item">
                 <ViewsKeywordsBarChart viewChoice={this.state.viewChoice} />
+              </div>
+              <div class="carousel-item">
+                <StatIndicatorsView />
               </div>
               <div class="carousel-item">
                 <ViewsGeoMapChart viewChoice={this.state.viewChoice} />

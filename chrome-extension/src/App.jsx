@@ -292,7 +292,6 @@ export default class App extends React.Component{
 
     }
     else{ // today
-      console.log("'''''''''''''''''''''''''''''''''''000000000000000000000000");
 
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);

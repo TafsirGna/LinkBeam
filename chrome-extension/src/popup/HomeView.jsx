@@ -66,6 +66,25 @@ export default class HomeView extends React.Component{
     
   }
 
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData.allSearchList != this.props.globalData.allSearchList){
+
+      this.setState({loadingAllSearches: false});
+
+      if (prevProps.globalData.allSearchList){
+        // check if the end of the all searches list has been hit
+        var hit = ((this.props.globalData.allSearchList.length - prevProps.globalData.allSearchList.length) < appParams.searchPageLimit);
+        if (hit){
+          this.setState({allSearchLeft: false});
+        }
+
+      }
+
+    }
+
+  }
+
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
   handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
 

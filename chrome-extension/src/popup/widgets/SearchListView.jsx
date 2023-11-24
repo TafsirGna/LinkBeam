@@ -3,7 +3,6 @@ import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class SearchListView extends React.Component{
 
@@ -13,13 +12,18 @@ export default class SearchListView extends React.Component{
       seeMoreButtonShow: true,
       seeMoreSpinnerShow: false,
       objectTags: null,
+      seeMoreButtonRef: React.createRef(),
     };
   }
 
   componentDidMount() {
 
+    window.addEventListener('scroll', this.seeMoreVisibilityHandler);
+
     var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
-    this.setState({seeMoreButtonShow: seeMoreButtonShow});
+    this.setState({seeMoreButtonShow: seeMoreButtonShow}, () => {
+      this.seeMoreVisibilityHandler();
+    });
 
   }
 
@@ -29,6 +33,23 @@ export default class SearchListView extends React.Component{
     if (seeMoreButtonShow != prevState.seeMoreButtonShow){
       this.setState({seeMoreButtonShow: seeMoreButtonShow});
     }
+
+  }
+
+  seeMoreVisibilityHandler(){
+
+    if (!this.state.seeMoreButtonRef.current){
+      return;
+    }
+
+    if(window.pageYOffset + window.innerHeight >= /*document.getElementById("seeMoreButton").offsetTop*/ this.state.seeMoreButtonRef.current.offsetTop)
+      console.log(`Hidden element is now visible`);
+
+  }
+
+  componentWillUnmount(){
+
+    window.removeEventListener('scroll', this.seeMoreVisibilityHandler);
 
   }
 
@@ -68,7 +89,7 @@ export default class SearchListView extends React.Component{
                   }
                 </div>
                 <div class="text-center my-2 ">
-                    <button class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " + (this.state.seeMoreButtonShow ? "" : "d-none")} onClick={() => this.props.seeMore()} type="button">See more</button>
+                    <button ref={this.state.seeMoreButtonRef} /*id="seeMoreButton"*/ class={"btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " + (this.state.seeMoreButtonShow ? "" : "d-none")} onClick={() => this.props.seeMore()} type="button">See more</button>
                     <div class={"spinner-border spinner-border-sm text-secondary " + (this.props.loading ? "" : "d-none")} role="status">
                       <span class="visually-hidden">Loading...</span>
                     </div>
