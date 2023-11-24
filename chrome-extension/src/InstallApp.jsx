@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import InstallView from "./react_components/InstallView";
+import InstallView from "./popup/InstallView";
 
 export default class App extends React.Component{
 

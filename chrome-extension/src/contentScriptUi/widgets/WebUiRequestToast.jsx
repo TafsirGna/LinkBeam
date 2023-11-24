@@ -1,6 +1,6 @@
 /*import './WebUiRequestToast.css'*/
 import React from 'react';
-import { appParams, messageParams } from "../../react_components/Local_library";
+import { appParams, messageParams } from "../../popup/Local_library";
 import { Spinner } from 'flowbite-react';
 
 export default class WebUiRequestToast extends React.Component{

@@ -1,21 +1,21 @@
 import React from 'react';
 import './App.css';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AboutView from "./react_components/AboutView";
-import HomeView from "./react_components/HomeView";
-import SettingsView from "./react_components/SettingsView";
-import StatisticsView from "./react_components/StatisticsView";
-import KeywordView from "./react_components/KeywordView";
-import MainProfileView from "./react_components/MainProfileView";
-import MyAccount from "./react_components/MyAccount";
-import ReminderView from "./react_components/ReminderView";
-import BookmarkView from "./react_components/BookmarkView";
-import Feed from "./react_components/Feed";
-import NewsFeed from "./react_components/NewsFeed";
-import CalendarView from "./react_components/CalendarView";
-import FeedbackView from "./react_components/FeedbackView";
-import LicenseCreditsView from "./react_components/LicenseCredits";
-import ErrorPageView from "./react_components/ErrorPageView";
+import AboutView from "./popup/AboutView";
+import HomeView from "./popup/HomeView";
+import SettingsView from "./popup/SettingsView";
+import StatisticsView from "./popup/StatisticsView";
+import KeywordView from "./popup/KeywordView";
+import MainProfileView from "./popup/MainProfileView";
+import MyAccount from "./popup/MyAccount";
+import ReminderView from "./popup/ReminderView";
+import BookmarkView from "./popup/BookmarkView";
+import Feed from "./popup/Feed";
+import NewsFeed from "./popup/NewsFeed";
+import CalendarView from "./popup/CalendarView";
+import FeedbackView from "./popup/FeedbackView";
+import LicenseCreditsView from "./popup/LicenseCredits";
+import ErrorPageView from "./popup/ErrorPageView";
 import { 
   sendDatabaseActionMessage,
   ack,
@@ -23,7 +23,7 @@ import {
   messageParams,
   dbData,
   appParams,
-} from "./react_components/Local_library";
+} from "./popup/Local_library";
 import { genPassword } from "./.private_library";
 
 export default class App extends React.Component{

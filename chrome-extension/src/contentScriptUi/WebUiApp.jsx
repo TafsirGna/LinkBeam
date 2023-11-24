@@ -5,13 +5,13 @@ import {
   ack,
   logInParseUser,
   registerParseUser
-} from "../react_components/Local_library";
+} from "../popup/Local_library";
 import WebUiRequestToast from "./widgets/WebUiRequestToast";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
 import WebUiCommentModal from "./widgets/WebUiCommentModal";
 import WebUiCommentRepliesListModal from "./widgets/WebUiCommentRepliesListModal";
 import WebUiNotificationToast from "./widgets/WebUiNotificationToast";
-import eventBus from "./widgets/EventBus";
+import eventBus from "../popup/EventBus";
 import Parse from 'parse/dist/parse.min.js';
 import ReactDOM from 'react-dom/client';
 import styles from "./styles.min.css";

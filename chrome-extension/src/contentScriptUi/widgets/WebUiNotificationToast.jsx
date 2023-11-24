@@ -1,6 +1,6 @@
 /*import './WebUiNotificationToast.css'*/
 import React from 'react';
-import { appParams } from "../../react_components/Local_library";
+import { appParams } from "../../popup/Local_library";
 
 export default class WebUiNotificationToast extends React.Component{
 

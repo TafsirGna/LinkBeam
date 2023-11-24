@@ -5,7 +5,7 @@ import {
   messageParams,
   ack,
   testTabUrl
-} from "../react_components/Local_library";
+} from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 
 let db = null,

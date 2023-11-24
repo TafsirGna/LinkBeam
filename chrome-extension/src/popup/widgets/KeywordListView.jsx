@@ -1,7 +1,12 @@
 /*import './SearchListView.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
+import eventBus from "../EventBus";
+import { 
+  sendDatabaseActionMessage,
+  messageParams,
+  dbData,
+} from "../Local_library";
 
 export default class KeywordListView extends React.Component{
 
@@ -14,10 +19,40 @@ export default class KeywordListView extends React.Component{
 
   componentDidMount() {
 
+    eventBus.on("deleteKeyword", (data) =>
+      {
+        var keyword = data.payload;
+        this.deleteKeyword(keyword);
+      }
+    );
+
   }
 
   componentDidUpdate(prevProps, prevState){
 
+
+  }
+
+  componentWillUnmount() {
+
+    eventBus.remove("deleteKeyword");
+
+  }
+
+  // Function for initiating the deletion of a keyword
+  initKeywordDeletion(keyword){
+
+    const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
+    if (response){
+
+      this.props.onPreDeletion(keyword);
+
+    }
+  }
+
+  deleteKeyword(keyword){
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, keyword.name);
 
   }
 
@@ -40,7 +75,7 @@ export default class KeywordListView extends React.Component{
                 <ul class="list-unstyled mb-0 rounded shadow p-2">
                   {
                     this.props.objects.map((keyword, index) => (<li key={index}>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.props.onItemDeletion(keyword)}}>
+                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.initKeywordDeletion(keyword)}}>
                               <span class="d-inline-block bg-success rounded-circle p-1"></span>
                               {keyword.name}
                               <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>

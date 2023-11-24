@@ -9,7 +9,7 @@ import {
   dbData,
   appParams
 } from "./Local_library";
-
+import eventBus from "./EventBus";
 
 export default class KeywordView extends React.Component{
 
@@ -26,7 +26,7 @@ export default class KeywordView extends React.Component{
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
-    this.deleteKeyword = this.deleteKeyword.bind(this);
+    this.onPreDeletion = this.onPreDeletion.bind(this);
     this.checkInputKeyword = this.checkInputKeyword.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
@@ -80,26 +80,7 @@ export default class KeywordView extends React.Component{
         callback: this.onKeywordsDataReceived
       }
     ]);
-
-    /*case "add-keyword-error":{
-      alert(message.data);
-      break;
-    }*/
     
-  }
-
-  // Function for initiating the deletion of a keyword
-  deleteKeyword(keyword){
-
-    const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
-    if (response){
-
-      // Displaying the spinner
-      this.setState({processingState: {status: "YES", info: "DELETING"}}, () => {
-        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, keyword.name);
-      });
-
-    }
   }
 
   // Function for initiating the insertion of a keyword
@@ -143,6 +124,15 @@ export default class KeywordView extends React.Component{
     return true;
   }
 
+  onPreDeletion(keyword){
+
+    // Displaying the spinner
+    this.setState({processingState: {status: "YES", info: "DELETING"}}, () => {
+      eventBus.dispatch("deleteKeyword", {payload: keyword});
+    });
+
+  }
+
   handleKeywordInputChange(event) {
     this.setState({keyword: event.target.value});
   }
@@ -174,7 +164,7 @@ export default class KeywordView extends React.Component{
             
             {/* Keyword list view */}
 
-            <KeywordListView objects={this.props.globalData.keywordList} onItemDeletion={this.deleteKeyword} />
+            <KeywordListView objects={this.props.globalData.keywordList} onPreDeletion={this.onPreDeletion} />
 
           </div>
         </div>

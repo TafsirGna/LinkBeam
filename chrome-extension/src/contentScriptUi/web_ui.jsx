@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './WebUiApp.jsx';
-import { appParams, messageParams, ack, checkWebPage } from "../react_components/Local_library";
+import { appParams, messageParams, ack, checkWebPage } from "../popup/Local_library";
 import styles from "./styles.min.css";
 import WebUiProfileComments from "./WebUiProfileComments";
 import WebUiProfilePage from "./WebUiProfilePage";

@@ -1,7 +1,7 @@
 import { Spinner, Tooltip } from 'flowbite-react';
 import { DateTime as LuxonDateTime } from "luxon";
 import React, { useState } from 'react';
-import { appParams, messageParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
+import { appParams, messageParams, logInParseUser, registerParseUser } from "../../popup/Local_library";
 import default_user_icon from '../../assets/user_icons/default.png';
 import Parse from 'parse/dist/parse.min.js';
 import { genPassword } from "../../.private_library";

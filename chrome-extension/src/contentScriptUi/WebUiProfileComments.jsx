@@ -2,7 +2,7 @@
 import React from 'react';
 import { 
   appParams,
-} from "../react_components/Local_library";
+} from "../popup/Local_library";
 import WebUiCommentListModal from "./widgets/WebUiCommentListModal";
 // import "./styles.min.css";
 

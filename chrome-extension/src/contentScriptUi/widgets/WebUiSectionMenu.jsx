@@ -1,9 +1,9 @@
 /*import './WebUiSectionMenu.css'*/
 import React from 'react';
-import { appParams } from "../../react_components/Local_library";
+import { appParams } from "../../popup/Local_library";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
-import eventBus from "./EventBus";
+import eventBus from "../../popup/EventBus";
 
 export default class WebUiSectionMenu extends React.Component{
 

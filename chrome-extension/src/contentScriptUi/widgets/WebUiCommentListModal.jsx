@@ -1,11 +1,11 @@
 /*import './WebUiCommentListModal.css'*/
 import React, { useState } from 'react';
-import { appParams, messageParams, expandToTab } from "../../react_components/Local_library";
+import { appParams, messageParams, expandToTab } from "../../popup/Local_library";
 // import { Drawer } from 'flowbite';
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiCommentItemView from "./WebUiCommentItemView";
-import eventBus from "./EventBus";
+import eventBus from "../../popup/EventBus";
 
 export default class WebUiCommentListModal extends React.Component{
 

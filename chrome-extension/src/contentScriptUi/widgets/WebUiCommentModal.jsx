@@ -1,10 +1,10 @@
 /*import './WebUiCommentModal.css'*/
 import React, { useState } from 'react';
-import { appParams, logInParseUser, registerParseUser } from "../../react_components/Local_library";
+import { appParams, logInParseUser, registerParseUser } from "../../popup/Local_library";
 import { Spinner } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';
 import WebUiNotificationToast from "./WebUiNotificationToast";
-import eventBus from "./EventBus";
+import eventBus from "../../popup/EventBus";
 import { genPassword } from "../../.private_library";
 
 
