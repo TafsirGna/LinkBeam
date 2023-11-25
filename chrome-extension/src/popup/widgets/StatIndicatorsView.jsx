@@ -11,17 +11,70 @@ import {
   dbData, 
 } from "../Local_library";
 
+const PROFILE_LABEL = "Profiles",
+      TIME_SPENT_LABEL = "Time spent",
+      PROFILES_NEWS_LABEL = "Profiles' News",
+      SEARCH_LABEL = "Searches";
+
+
+class IndicatorWidget extends React.Component {
+
+  constructor(props){
+    super(props);
+    this.state = {
+
+    }
+  }
+
+  render() {
+    return (
+      <>
+        <button type="button" class="btn shadow col mx-2 mt-3 text-muted fw-light text-start">
+          <h4 class={"ms-3 my-0 " + this.props.object.color}>{this.props.object.count}</h4>
+          <p class="ms-3 my-0">{this.props.object.label}</p>
+        </button>
+      </>
+    );
+  }
+}
+
+
 export default class StatIndicatorsView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      profileCount: 0,
-      searchCount: 0,
+      indicatorData: {
+        profileData: {
+          label: PROFILE_LABEL,
+          count: 0,
+          color: "text-warning",
+        },
+        searchData: {
+          label: SEARCH_LABEL,
+          count: 0,
+          color: "text-success",
+        },
+        timeSpentData: {
+          label: TIME_SPENT_LABEL,
+          count: 0,
+          color: "text-secondary",
+        },
+        newsData: {
+          label: PROFILES_NEWS_LABEL,
+          count: 0,
+          color: "text-primary",
+        },
+      },
+      // indicatorStyles: [
+
+      // ],
     };
 
     this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onTimeDataReceived = this.onTimeDataReceived.bind(this);
+    this.onProfileNewsDataReceived = this.onProfileNewsDataReceived.bind(this);
 
   }
 
@@ -32,6 +85,10 @@ export default class StatIndicatorsView extends React.Component{
     this.getProfileCount();
 
     this.getSearchCount();
+
+    this.getProfileNewsCount();
+
+    this.getTimeSpent();
 
   }
 
@@ -47,6 +104,18 @@ export default class StatIndicatorsView extends React.Component{
 
   }
 
+  getTimeSpent(){
+
+
+
+  }
+
+  getProfileNewsCount(){
+
+    
+    
+  }
+
   getProfileCount(){
 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.PROFILES, null);
@@ -59,6 +128,20 @@ export default class StatIndicatorsView extends React.Component{
 
   }
 
+  onProfileNewsDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+  }
+
+  onTimeDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+    
+  }
+
   onProfilesDataReceived(message, sendResponse){
 
     // acknowledge receipt
@@ -66,7 +149,12 @@ export default class StatIndicatorsView extends React.Component{
 
     // setting the new value
     var profileCount = message.data.objectData;
-    this.setState({profileCount: profileCount});
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.profileData.count = profileCount;
+      return { indicatorData };
+    }); 
 
   }
 
@@ -77,7 +165,12 @@ export default class StatIndicatorsView extends React.Component{
 
     // setting the new value
     var searchCount = message.data.objectData;
-    this.setState({searchCount: searchCount});
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.searchData.count = searchCount;
+      return { indicatorData };
+    }); 
 
   }
 
@@ -100,28 +193,11 @@ export default class StatIndicatorsView extends React.Component{
     return (
       <>
         <div class="row mx-4 my-3">
-          <button type="button" class="btn  shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-warning ms-3 my-0">{this.state.searchCount}</h4>
-            <p class="ms-3 my-0">Searches </p>
-            {/*<span class="badge text-bg-warning">{this.state.searchCount}</span>*/}
-          </button>
-          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="ms-3 my-0">{this.state.profileCount}</h4>
-            <p class="ms-3 my-0">Profiles </p>
-            {/*<span class="badge text-bg-secondary">{this.state.profileCount}</span>*/}
-          </button>
-        </div>
-        <div class="row mx-4 my-3">
-          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-success ms-3 my-0">{this.state.searchCount}</h4>
-            <p class="ms-3 my-0">News </p>
-            {/*<span class="badge text-bg-success">{this.state.searchCount}</span>*/}
-          </button>
-          <button type="button" class="btn shadow col mx-2 text-muted fw-light text-start">
-            <h4 class="text-info ms-3 my-0">{this.state.searchCount}</h4>
-            <p class="ms-3 my-0">Profiles </p>
-            {/*<span class="badge text-bg-info">{this.state.profileCount}</span>*/}
-          </button>
+
+          { Object.keys(this.state.indicatorData).map((key) => 
+              <IndicatorWidget object={this.state.indicatorData[key]} />
+            )}
+
         </div>
       </>
     );
