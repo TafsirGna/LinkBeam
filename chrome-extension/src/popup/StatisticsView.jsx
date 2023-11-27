@@ -1,4 +1,4 @@
-/*import './Statistics.css'*/
+/*import './StatisticsView.css'*/
 import React from 'react'
 import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
@@ -6,6 +6,8 @@ import ViewsTimelineChart from "./widgets/charts/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
 import ViewsGeoMapChart from "./widgets/charts/ViewsGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
+import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
+
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -113,6 +115,9 @@ export default class StatisticsView extends React.Component{
               </div>
               <div class="carousel-item">
                 <ViewsGeoMapChart viewChoice={this.state.viewChoice} />
+              </div>
+              <div class="carousel-item">
+                <BubbleProfileRelationMetricsChart viewChoice={this.state.viewChoice} />
               </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">

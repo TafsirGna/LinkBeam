@@ -365,14 +365,8 @@ function getOffsetLimitList(params, objectStoreName) {
 
 
     var params = (params ? params : {});
-    params.date = (params.date ? params.date : null);
-    params.monthRequest = null;
-    params.dateInnerSeparator = "-";
-    params.offset = (params.offset ? params.offset : 0)
-
-    if (params.date){
-        params.monthRequest = params.date.split(params.dateInnerSeparator)[2] == "?";
-    }
+    params.timePeriod = (params.timePeriod ? params.timePeriod : null);
+    params.offset = (params.offset ? params.offset : 0);
 
     let results = [];
     var offsetApplied = false;
@@ -420,25 +414,30 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
         return list;
     }
 
-    if (!params.date){
+    if (!params.timePeriod){
         list.push(object);
         return list;
     }
 
-    if (!params.monthRequest){ // Then, it's a day request 
-        if (params.date == object.date.split("T")[0]){
+    if (typeof params.timePeriod == "string"){ // a specific date
+        if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
             list.push(object);
         }
         return list
     }
-    
-    // Month request
-    if (typeof params.date === "string"){
-        params.date = params.date.split(params.dateInnerSeparator);
-    }
-    var objectDate = (object.date.split("T")[0]).split(params.dateInnerSeparator);
-    if (params.date[0] == objectDate[0] && params.date[1] == objectDate[1]){
-        list.push(object);
+
+    // it's an array of date objects
+
+    // if it is a range of dates
+    if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+        var objectDate = (new Date(object.date)),
+            startDate = new Date(params.timePeriod[0]),
+            endDate = new Date(params.timePeriod[2]);
+        // console.log("55555555555555555555555 : ", startDate, objectDate, endDate);
+        if (startDate < objectDate && objectDate <= endDate){
+            list.push(object);
+        }
+        return list;
     }
 
     return list
@@ -451,7 +450,7 @@ function isOffsetLimitReached(list, objectStoreName, params){
         return false;
     }
 
-    if (params.date){
+    if (params.timePeriod){
         return false;
     }
 

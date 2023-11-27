@@ -75,14 +75,12 @@ export default class CalendarView extends React.Component{
 
   getMonthObjectList(date, objectStoreName){
 
-    // Reformatting the date string before sending the request
-    var separator = "-",
-      dateString = moment(date).format("YYYY-MM-DD");
-    dateString = dateString.split(separator);
-    dateString[dateString.length - 1] = "?";
-    dateString = dateString.join(separator);
+    const startOfMonth = moment(date).startOf('month').toDate();
+    const endOfMonth   = moment(date).endOf('month').toDate();
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {date: dateString, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
+    var timePeriod = [startOfMonth, "to", endOfMonth];
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {timePeriod: timePeriod, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
 
   }
 

@@ -67,7 +67,50 @@ export const chartData = {
 
 }
 
-export const logInParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
+export const dbDataSanitizer = {
+
+  followers: function(str) {
+    str = str.replace("followers", "");
+
+    let newstr = "";
+    // Loop and traverse string
+    for (let i = 0; i < str.length; i++)
+        if (!(str[i] == "\n" || str[i] == "\r" || str[i] == " " || str[i] == "+")){
+          if (str[i] == "K"){
+            newstr += "000"
+          }
+          else{
+            newstr += str[i];
+          }
+        }
+
+    return parseInt(newstr);
+
+  },
+
+  connections: function(str) {
+
+    str = str.replace("connections", "");
+
+    let newstr = "";
+    // Loop and traverse string
+    for (let i = 0; i < str.length; i++)
+        if (!(str[i] == "\n" || str[i] == "\r" || str[i] == " " || str[i] == "+")){
+          if (str[i] == "K"){
+            newstr += "000"
+          }
+          else{
+            newstr += str[i];
+          }
+        }
+
+    return parseInt(newstr);
+
+  }
+
+};
+
+export const logInParseUser = async function(Parse, usernameValue, passwordValue, callback, errCallback = null) {
 
   try {
     const loggedInUser = await Parse.User.logIn(usernameValue, passwordValue);

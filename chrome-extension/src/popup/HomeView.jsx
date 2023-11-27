@@ -226,7 +226,7 @@ export default class HomeView extends React.Component{
       }
     }
     else{ // today
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {date: ((new Date()).toISOString().split("T")[0]), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {timePeriod: (new Date()), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
     }
 
   }
