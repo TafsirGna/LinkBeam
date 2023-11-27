@@ -4,6 +4,7 @@ import CustomToast from "./toasts/CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
+import ProfileSearchesChartModal from "./modals/ProfileSearchesChartModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
 
 export default class MainProfileView extends React.Component{
@@ -14,6 +15,7 @@ export default class MainProfileView extends React.Component{
       coverImageModalShow: false,
       toastShow: false,
       reminderModalShow: false,
+      searchesChartModalShow: false,
       toastMessage: "",
     };
 
@@ -96,6 +98,10 @@ export default class MainProfileView extends React.Component{
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
+
+  handleSearchesChartModalClose = () => this.setState({searchesChartModalShow: false});
+  handleSearchesChartModalShow = () => this.setState({searchesChartModalShow: true});
+
   toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
 
@@ -138,7 +144,7 @@ export default class MainProfileView extends React.Component{
             <ul class="dropdown-menu shadow-lg">
               <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark" : "Bookmark" }</a></li>
               <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
-              <li><a class="dropdown-item small" href="#" onClick={this.onReminderMenuActionClick}>List all searches</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.handleSearchesChartModalShow}>List all searches</a></li>
             </ul>
           </div>
         </div>          
@@ -148,6 +154,8 @@ export default class MainProfileView extends React.Component{
         <ProfileViewBody profile={this.props.profile} />
 
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
+        
+        <ProfileSearchesChartModal profile={this.props.profile} show={this.state.searchesChartModalShow} onHide={this.handleSearchesChartModalClose} />
 
         <CustomToast globalData={this.props.globalData} message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} />
 

@@ -180,7 +180,7 @@ export default class ViewsTimelineChart extends React.Component{
 	getChartData(){
 
 		// Requesting search chart data
-		sendDatabaseActionMessage(messageParams.requestHeaders.GET_PROCESSED_DATA, "views-timeline-chart", this.state.lineLabels.values);
+		sendDatabaseActionMessage(messageParams.requestHeaders.GET_PROCESSED_DATA, "views-timeline-chart", {labelValues: this.state.lineLabels.values, specificUrl: (this.props.specificProfile ? this.props.specificProfile.url : null)});
 
 	}
 

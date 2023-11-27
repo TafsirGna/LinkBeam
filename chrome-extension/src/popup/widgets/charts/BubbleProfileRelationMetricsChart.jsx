@@ -98,13 +98,19 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 
 	getLastMonthTimePeriod(){
 
+		var endDate = (new Date()),
+				startDate = moment().subtract(1, 'months').toDate();
 
+		return [startDate, "to", endDate];
 
 	}
 
 	getLastYearTimePeriod(){
 
+		var endDate = (new Date()),
+				startDate = moment().subtract(1, 'years').toDate();
 
+		return [startDate, "to", endDate];
 
 	}
 
@@ -162,8 +168,6 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 			    },
 			  ],
 			}});
-
-    console.log("------------------------- : ", results);
 
 	}
 

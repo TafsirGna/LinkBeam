@@ -81,7 +81,7 @@ export default class App extends React.Component{
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
 
     // Sending a request to know if some reminders are set for today
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {timePeriod: new Date(), context: "Notifications"});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {context: "Notifications"});
 
   }
 

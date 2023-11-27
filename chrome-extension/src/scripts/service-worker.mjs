@@ -367,6 +367,7 @@ function getOffsetLimitList(params, objectStoreName) {
     var params = (params ? params : {});
     params.timePeriod = (params.timePeriod ? params.timePeriod : null);
     params.offset = (params.offset ? params.offset : 0);
+    // params.inArea = (params.timePeriod ? [false, false] : null);
 
     let results = [];
     var offsetApplied = false;
@@ -390,10 +391,8 @@ function getOffsetLimitList(params, objectStoreName) {
 
         // if an argument about a specific time is not passed then
         if (isOffsetLimitReached(results, objectStoreName, params)){
-
             getAssociatedProfiles(results, objectStoreName, params.context);
             return;
-
         }
         
         cursor.continue();
@@ -433,7 +432,6 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
         var objectDate = (new Date(object.date)),
             startDate = new Date(params.timePeriod[0]),
             endDate = new Date(params.timePeriod[2]);
-        // console.log("55555555555555555555555 : ", startDate, objectDate, endDate);
         if (startDate < objectDate && objectDate <= endDate){
             list.push(object);
         }
@@ -1131,7 +1129,7 @@ function getSettingsData(properties, callback = null){
 function getViewsTimelineData(chartData){
 
     let results = [];
-    for (let i = 0; i < chartData.length; i++){
+    for (let i = 0; i < chartData.labelValues.length; i++){
         results.push(0);
     }
 
@@ -1145,24 +1143,40 @@ function getViewsTimelineData(chartData){
             return;
         }
 
-        let searchDate = cursor.value.date.split("T")[0];
-        if (typeof chartData[0] == "string"){
+        let searchObject = cursor.value;
+        let searchDate = searchObject.date.split("T")[0];
+        if (typeof chartData.labelValues[0] == "string"){
 
-            let index = chartData.indexOf(searchDate);
+            let index = chartData.labelValues.indexOf(searchDate);
 
             if (index == -1){
                 sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
                 return;
             }
             
-            results[index]++;
+            if (chartData.specificUrl){
+                if (searchObject.url == chartData.specificUrl){
+                    results[index]++;
+                }
+            }
+            else{
+                results[index]++;
+            }
+            
         }
         else{ // if object
             searchDate = new Date(searchDate);
             var found = false;
-            for (var i = (chartData.length - 1); i >= 0 ; i--){
-                if ((new Date((chartData[i]).beg)) < searchDate && searchDate <= (new Date((chartData[i]).end))){
-                    results[i]++;
+            for (var i = (chartData.labelValues.length - 1); i >= 0 ; i--){
+                if ((new Date((chartData.labelValues[i]).beg)) < searchDate && searchDate <= (new Date((chartData.labelValues[i]).end))){
+                    if (chartData.specificUrl){
+                        if (searchObject.url == chartData.specificUrl){
+                            results[i]++;
+                        }
+                    }
+                    else{
+                        results[i]++;
+                    }
                     found = true;
                 }
             }
