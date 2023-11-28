@@ -144,7 +144,7 @@ export default class MainProfileView extends React.Component{
             <ul class="dropdown-menu shadow-lg">
               <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark" : "Bookmark" }</a></li>
               <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
-              <li><a class="dropdown-item small" href="#" onClick={this.handleSearchesChartModalShow}>List all searches</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.handleSearchesChartModalShow}>Chart all searches</a></li>
             </ul>
           </div>
         </div>          

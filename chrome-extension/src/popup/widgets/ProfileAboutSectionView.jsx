@@ -4,6 +4,7 @@ import { OverlayTrigger } from "react-bootstrap";
 import { appParams } from "../Local_library";
 import Collapse from 'react-bootstrap/Collapse';
 import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
+import { dbDataSanitizer } from "../Local_library";
 
 
 export default class ProfileAboutSectionView extends React.Component{
@@ -14,6 +15,7 @@ export default class ProfileAboutSectionView extends React.Component{
       collapseInfoOpen: false,
       uniqueWordsCount: null,
       oneUseWordCount: 0,
+      profileAbout: "",
     };
 
     this.setOneUseWordCount = this.setOneUseWordCount.bind(this);
@@ -22,19 +24,30 @@ export default class ProfileAboutSectionView extends React.Component{
 
   componentDidMount() {
 
-    this.setOneUseWordCount();
+    // setting profileAbout
+    var profileAbout = dbDataSanitizer.profileAbout(this.props.profile.info);
+    // console.log("****************** 1 : ", this.props.profile.info);
+    // console.log("****************** 2 : ", profileAbout);
+
+    this.setState({profileAbout: profileAbout}, () => {
+      this.setOneUseWordCount();
+    });
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
 
   }
 
   characterCount(){
 
-    return this.props.profile.info.length;
+    return this.state.profileAbout.length;
 
   }
 
   averageWordLength(){
 
-    var words = this.props.profile.info.split(" "), 
+    var words = this.state.profileAbout.split(" "), 
         sum = 0;
 
     for (var word of words){
@@ -61,7 +74,7 @@ export default class ProfileAboutSectionView extends React.Component{
       }
     }
 
-    count /= this.props.profile.info.split(" ").length;
+    count /= this.state.profileAbout.split(" ").length;
     count = (count * 100).toFixed(2);
     this.setState({oneUseWordCount: count});
 
@@ -73,20 +86,21 @@ export default class ProfileAboutSectionView extends React.Component{
       return;
     }
 
-    var words = this.props.profile.info.split(" "),
+    var words = this.state.profileAbout.split(" "),
         uniqueWordsCount = [];
 
     for (var word of words){
-      var wordIndex = uniqueWordsCount.map(e => e.word).indexOf(word);
+      var wordIndex = uniqueWordsCount.map(e => e.word).indexOf(word.toLowerCase());
       if (wordIndex >= 0){
         (uniqueWordsCount[wordIndex]).count += 1;
       }
       else{
-        uniqueWordsCount.push({word: word, count: 0});
+        uniqueWordsCount.push({word: word.toLowerCase(), count: 1});
       }
     }
 
     this.setState({uniqueWordsCount: uniqueWordsCount}, () => {
+      console.log("*************** : ", uniqueWordsCount);
       if (callback){
         callback();
       }
@@ -96,7 +110,7 @@ export default class ProfileAboutSectionView extends React.Component{
 
   wordCount(){
 
-    return this.props.profile.info.split(" ").length;
+    return this.state.profileAbout.split(" ").length;
 
   }
 
@@ -137,9 +151,9 @@ export default class ProfileAboutSectionView extends React.Component{
                                         </div>
                                       </div>
 
-                                      <div class="border border-info border-1 mb-3 mt-2 shadow rounded">
-                                        <ProfileAboutSectionBubbleChart objectData={this.state.uniqueWordsCount} />
-                                      </div>
+                                      {this.state.uniqueWordsCount && <div class="border border-info border-1 mb-3 mt-2 shadow rounded">
+                                                                              <ProfileAboutSectionBubbleChart objectData={this.state.uniqueWordsCount} />
+                                                                            </div>}
 
                                       <div>
                                         <div>

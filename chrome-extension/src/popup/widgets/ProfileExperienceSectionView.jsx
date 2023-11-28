@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { activateInCurrentTab } from "../Local_library";
+import ProfileGanttChart from "./charts/ProfileGanttChart";
 
 export default class ProfileExperienceSectionView extends React.Component{
 

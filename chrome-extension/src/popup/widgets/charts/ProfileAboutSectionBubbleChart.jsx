@@ -33,7 +33,7 @@ export default class ProfileAboutSectionBubbleChart extends React.Component{
       return;
     }
 
-    console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", this.props.objectData);
+    // console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", this.props.objectData);
 
     // Specify the dimensions of the chart.
     const width = 928;

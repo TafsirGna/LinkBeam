@@ -69,7 +69,7 @@ export const chartData = {
 
 export const dbDataSanitizer = {
 
-  followers: function(str) {
+  profileFollowers: function(str) {
     str = str.replace("followers", "");
 
     let newstr = "";
@@ -88,7 +88,7 @@ export const dbDataSanitizer = {
 
   },
 
-  connections: function(str) {
+  profileConnections: function(str) {
 
     str = str.replace("connections", "");
 
@@ -106,7 +106,23 @@ export const dbDataSanitizer = {
 
     return parseInt(newstr);
 
-  }
+  },
+
+  profileAbout: function(str ){
+
+    // clean the front
+    var startIndex = 0, endIndex = str.length - 1;
+    while(str[startIndex] == " " || str[startIndex] == "\n"){
+      startIndex++;
+    }
+
+    while(str[endIndex] == " " || str[endIndex] == "\n"){
+      endIndex--;
+    }
+
+    return str.slice(startIndex, endIndex + 1);
+
+  },
 
 };
 

@@ -145,8 +145,8 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     			(results[itemIndex]).r += 1;
     		}
     		else{
-    			var followerCount = search.profile.nFollowers ? dbDataSanitizer.followers(search.profile.nFollowers) : 0,
-    					connectionCount = search.profile.nConnections ? dbDataSanitizer.connections(search.profile.nConnections) : 0;
+    			var followerCount = search.profile.nFollowers ? dbDataSanitizer.profileFollowers(search.profile.nFollowers) : 0,
+    					connectionCount = search.profile.nConnections ? dbDataSanitizer.profileConnections(search.profile.nConnections) : 0;
 
     			results.push({
     				url: search.profile.url,
