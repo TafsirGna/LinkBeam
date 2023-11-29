@@ -14,6 +14,7 @@ let db = null,
 
 const dbName = "LinkBeamDB";
 const dbVersion = 1;
+const timeCountInterval = null;
 
 const settingData = [{
     id: 1,
@@ -23,7 +24,9 @@ const settingData = [{
     productID: uuidv4(), 
     currentPageTitle: "Activity",
     userIcon: "default",
+    timeCount: {value: 0, lastCheck: (new Date()).toISOString()},
 }];
+
 
 function createDatabase(context) {
 
@@ -1343,7 +1346,6 @@ function updateSettingObject(propKey, propValue){
         let settings = event.target.result;
 
         settings[propKey] = propValue;
-
         let requestUpdate = objectStore.put(settings);
         requestUpdate.onerror = (event) => {
             // Do something with the error
@@ -1598,9 +1600,29 @@ function processTabEvent(tabId, changeInfo, tab){
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
+    // console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
     if (url && testTabUrl(url)) 
     {
+
+        // start counting the time spent on the tab
+        getSettingsData(["timeCount"], (results) => {
+            var timeCount = results[0];
+            timeCount.lastCheck = (new Date()).toISOString();
+            updateSettingObject("timeCount", timeCount);
+
+            setInterval(() => {
+                getSettingsData(["timeCount"], (results) => {
+                    var timeCount = results[0],
+                        lastCheck = new Date();
+                    timeCount.value += (lastCheck - (new Date(timeCount.lastCheck))) / 1000;
+                    timeCount.lastCheck = lastCheck;
+                    updateSettingObject("timeCount", timeCount);
+                });
+            }, appParams.TIMER_VALUE);
+
+        });
+
+
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;
         chrome.scripting.executeScript({
@@ -1634,16 +1656,6 @@ function getAndCheckCurrentTab(){
 // Script for listening to all events related to the content scripts
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  
-    // making sure the database is up and running
-    // if (!db){
-    //     // sending a response
-    //     sendResponse({
-    //         status: "ACK"
-    //     });
-    //     createDatabase({status: "RUNTIME-MESSAGE-EVENT", params: {message: message, sender: sender, sendResponse: sendResponse}});
-    //     return;
-    // }
 
     // acknowledge receipt
     ack(sendResponse);
@@ -1697,16 +1709,19 @@ function dbExists(onExistStatus = null, onNotExistStatus = null){
 
 }
 
-// Script for linstening to all tab updates
+// Script for listening to all tab updates
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
-    // making sure the database is up and running
-    // if (!db){
-    //     createDatabase({status: "RUNTIME-TAB-EVENT", params: {tabId: tabId, changeInfo: changeInfo, tab: tab}});
-    //     return;
-    // }
+    // check first if the app has been correctly set up before proceeding
+    dbExists(
+        () => {
+            processTabEvent(tabId, changeInfo, tab);
+        },
+        () => {
+            // then nothing is done
+        }
+    );
 
-    processTabEvent(tabId, changeInfo, tab);
   }
 );

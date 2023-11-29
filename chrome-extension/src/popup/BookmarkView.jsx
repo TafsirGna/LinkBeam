@@ -43,6 +43,10 @@ export default class BookmarkView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY}/>
             
+            <div class="text-center mt-2">
+              <span class="badge text-bg-primary shadow">Bookmarks</span>
+            </div>
+
             <div class="mt-3">
 
               {/* Bookmark list view */}

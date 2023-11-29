@@ -40,7 +40,7 @@ export default class ProfileViewHeader extends React.Component{
         </p>
         <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
-            <img src={this.props.profile.avatar ? this.props.profile.avatar : default_user_icon} onClick={() => {this.handleImageModalShow(AVATAR_IMAGE_MODAL_TITLE)}} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4"/>
+            <img src={this.props.profile.avatar ? this.props.profile.avatar : default_user_icon} onClick={() => {this.handleImageModalShow(AVATAR_IMAGE_MODAL_TITLE)}} alt="twbs" width="60" height="60" class="shadow rounded-circle flex-shrink-0 mb-4 handy-cursor"/>
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
@@ -95,7 +95,7 @@ export default class ProfileViewHeader extends React.Component{
         </div>
 
         {/* Cover Image Modal */}
-        <Modal size="lg" show={this.state.imageModalShow} onHide={this.handleImageModalClose}>
+        <Modal size={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? "sm" : "lg"} show={this.state.imageModalShow} onHide={this.handleImageModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>{this.state.imageModalTitle}</Modal.Title>
           </Modal.Header>
@@ -107,7 +107,7 @@ export default class ProfileViewHeader extends React.Component{
                                               </div>
                                             </div>}
             
-            <img src={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? this.props.profile.avatar : this.props.profile.coverImage} class="rounded shadow w-100" onLoad={() => {this.setState({imageLoaded: true});}} onerror={() => {console.log("Error loading cover image!")}}/>
+            <img src={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? this.props.profile.avatar : ((this.state.imageModalTitle == COVER_IMAGE_MODAL_TITLE) ? this.props.profile.coverImage : "")} class="rounded shadow w-100" onLoad={() => {this.setState({imageLoaded: true});}} onerror={() => {console.log("Error loading cover image!")}}/>
 
           </Modal.Body>
         </Modal>
