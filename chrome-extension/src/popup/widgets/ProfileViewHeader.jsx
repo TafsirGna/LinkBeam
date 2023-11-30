@@ -3,6 +3,7 @@ import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
+import ProfileGeoMapModal from "./modals/ProfileGeoMapModal";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
@@ -16,6 +17,7 @@ export default class ProfileViewHeader extends React.Component{
       imageLoaded: false,
       imageModalTitle: "",
       imageModalShow: false,
+      geoMapModalShow: false,
     };
   }
 
@@ -25,6 +27,9 @@ export default class ProfileViewHeader extends React.Component{
 
   handleImageModalClose = () => this.setState({imageModalShow: false, imageModalTitle: "", imageLoaded: false});
   handleImageModalShow = (modalTitle) => this.setState({imageModalShow: true, imageModalTitle: modalTitle});
+
+  handleGeoMapModalClose = () => this.setState({geoMapModalShow: false});
+  handleGeoMapModalShow = () => this.setState({geoMapModalShow: true});
 
   render(){
     return (
@@ -50,7 +55,7 @@ export default class ProfileViewHeader extends React.Component{
                               placement="bottom"
                               overlay={<ReactTooltip id="tooltip1">{this.props.profile.location}</ReactTooltip>}
                             >
-                              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.handleGeoMapModalShow()}}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             </OverlayTrigger>}
               { this.props.profile.coverImage && <span>
                               ·
@@ -93,6 +98,8 @@ export default class ProfileViewHeader extends React.Component{
             </p>
           </div>
         </div>
+
+        <ProfileGeoMapModal profile={this.props.profile} show={this.state.geoMapModalShow} onHide={this.handleGeoMapModalClose} />
 
         {/* Cover Image Modal */}
         <Modal size={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? "sm" : "lg"} show={this.state.imageModalShow} onHide={this.handleImageModalClose}>

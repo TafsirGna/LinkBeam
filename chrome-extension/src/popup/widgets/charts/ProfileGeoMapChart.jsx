@@ -1,4 +1,4 @@
-/*import './ViewsGeoMapChart.css'*/
+/*import './ProfileGeoMapChart.css'*/
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart } from "react-chartjs-2";
@@ -21,7 +21,7 @@ ChartJS.register(
   ChartGeo.GeoFeature
 );
 
-export default class ViewsGeoMapChart extends React.Component{
+export default class ProfileGeoMapChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -47,6 +47,13 @@ export default class ViewsGeoMapChart extends React.Component{
   render(){
     return (
       <>
+
+        { !this.state.countries && <div class="text-center">
+                                              <div class={"spinner-border text-secondary "} role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                              </div>
+                                            </div>}
+
       	{ this.state.countries && <Chart
                   type="choropleth"
                   data={{
