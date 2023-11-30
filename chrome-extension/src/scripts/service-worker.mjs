@@ -14,7 +14,8 @@ let db = null,
 
 const dbName = "LinkBeamDB";
 const dbVersion = 1;
-const timeCountInterval = null;
+let timeCountInterval = null;
+let tabIds = [];
 
 const settingData = [{
     id: 1,
@@ -1334,7 +1335,7 @@ function deactivateTodayReminders(){
 
 // Script for setting the new date of data reset
 
-function updateSettingObject(propKey, propValue){
+function updateSettingObject(propKey, propValue, callback = null){
 
     // Retrieving the data first for later update
     let objectStore = db.transaction(dbData.objectStoreNames.SETTINGS, "readwrite").objectStore(dbData.objectStoreNames.SETTINGS);
@@ -1355,7 +1356,13 @@ function updateSettingObject(propKey, propValue){
             // Success - the data is updated!
             console.log(propKey+" update processed successfully !");
 
+            if (callback){
+                callback();
+                return;
+            }
+
             getSettingsData([propKey]);
+
         };
     };
 
@@ -1596,6 +1603,35 @@ function processTabEvent(tabId, changeInfo, tab){
 
 };
 
+function timeCountIntervalFunction(){
+
+    getSettingsData(["timeCount"], (results) => {
+        var timeCount = results[0],
+            lastCheck = new Date();
+        timeCount.value += (lastCheck - (new Date(timeCount.lastCheck))) / 1000;
+        timeCount.lastCheck = lastCheck;
+        updateSettingObject("timeCount", timeCount);
+    });
+
+} 
+
+// Script for starting the time counter
+function startTimeCounter(){
+
+    // start counting the time spent on the tab
+    getSettingsData(["timeCount"], (results) => {
+        var timeCount = results[0];
+        timeCount.lastCheck = (new Date()).toISOString();
+        updateSettingObject("timeCount", timeCount, () => {
+
+            timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
+
+        });
+
+    });
+
+}
+
 
 function checkCurrentTab(tab, changeInfo){
 
@@ -1604,24 +1640,11 @@ function checkCurrentTab(tab, changeInfo){
     if (url && testTabUrl(url)) 
     {
 
-        // start counting the time spent on the tab
-        getSettingsData(["timeCount"], (results) => {
-            var timeCount = results[0];
-            timeCount.lastCheck = (new Date()).toISOString();
-            updateSettingObject("timeCount", timeCount);
+        startTimeCounter();
 
-            setInterval(() => {
-                getSettingsData(["timeCount"], (results) => {
-                    var timeCount = results[0],
-                        lastCheck = new Date();
-                    timeCount.value += (lastCheck - (new Date(timeCount.lastCheck))) / 1000;
-                    timeCount.lastCheck = lastCheck;
-                    updateSettingObject("timeCount", timeCount);
-                });
-            }, appParams.TIMER_VALUE);
-
-        });
-
+        if (tabIds.indexOf(tab.id) == -1){
+            tabIds.push(tab.id);
+        }
 
         // Starting the verifier script in order to make sure this is a linkedin page
         tabID = tab.id;
@@ -1632,6 +1655,7 @@ function checkCurrentTab(tab, changeInfo){
 
     }
     else{
+
         if (currentTabCheckContext == "popup"){
             sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, null);
         }
@@ -1725,3 +1749,23 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
   }
 );
+
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+    // console.log(activeInfo.tabId);
+
+    if (tabIds.indexOf(activeInfo.tabId) >= 0){
+
+        startTimeCounter();
+
+    }
+    else{
+
+        // resetting the interval
+        if (timeCountInterval){
+            clearInterval(timeCountInterval);
+            timeCountInterval = null;
+        }
+
+    }
+
+});

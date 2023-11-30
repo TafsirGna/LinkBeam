@@ -31,7 +31,7 @@ class IndicatorWidget extends React.Component {
       <>
         <button type="button" class="btn shadow col mx-2 mt-3 text-muted fw-light text-start">
           <h4 class={"ms-3 my-0 " + this.props.object.color}>{this.props.object.count}</h4>
-          <p class="ms-3 my-0">{this.props.object.label}</p>
+          <p class="ms-3 my-0 small">{this.props.object.label}</p>
         </button>
       </>
     );
@@ -106,7 +106,7 @@ export default class StatIndicatorsView extends React.Component{
 
   getTimeSpent(){
 
-
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["timeCount"]);
 
   }
 
@@ -139,6 +139,18 @@ export default class StatIndicatorsView extends React.Component{
 
     // acknowledge receipt
     ack(sendResponse);
+
+    switch(message.data.objectData.property){
+      case "timeCount": {
+        var timeCount = message.data.objectData.value;
+        this.setState(prevState => {
+          let indicatorData = Object.assign({}, prevState.indicatorData);
+          indicatorData.timeSpentData.count = timeCount.value.toFixed(2) + "s";
+          return { indicatorData };
+        }); 
+        break;
+      }         
+    }
     
   }
 
@@ -185,6 +197,10 @@ export default class StatIndicatorsView extends React.Component{
         param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
       },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
+        callback: this.onTimeDataReceived
+      }
     ]);
 
   }
