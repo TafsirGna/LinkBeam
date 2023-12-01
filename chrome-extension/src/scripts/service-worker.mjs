@@ -1000,11 +1000,39 @@ function getObject(objectStoreName, objectData){
             break;
         }
 
+        case dbData.objectStoreNames.REMINDERS:{
+            getReminderObject(objectData);
+            break;
+        }
+
         case "feedback": {
             getFeedbackData(objectData);
             break;
         }
     }
+
+}
+
+// Script for getting a specific reminder object
+
+function getReminderObject(params){
+
+    var url = params.url;
+
+    let objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS);
+    let request = objectStore.get(url);
+
+    request.onsuccess = (event) => {
+
+        let reminder = event.target.result;
+        sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.REMINDERS, reminder);
+        
+    };
+
+    request.onerror = (event) => {
+        // Handle errors!
+        console.log("An error occured when retrieving the reminder with url : ", profile.url);
+    };
 
 }
 

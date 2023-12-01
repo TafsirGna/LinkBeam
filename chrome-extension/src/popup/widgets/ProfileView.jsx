@@ -6,6 +6,7 @@ import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileSearchesChartModal from "./modals/ProfileSearchesChartModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
+import eventBus from "../EventBus";
 
 export default class MainProfileView extends React.Component{
 
@@ -32,6 +33,18 @@ export default class MainProfileView extends React.Component{
   componentDidMount() {
 
     this.listenToMessages();
+
+    eventBus.on("showReminder", (data) =>
+      {
+        this.handleReminderModalShow();
+      }
+    );
+
+  }
+
+  componentWillUnmount() {
+
+    eventBus.remove("showReminder");
 
   }
 
@@ -142,7 +155,7 @@ export default class MainProfileView extends React.Component{
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
             </div>
             <ul class="dropdown-menu shadow-lg">
-              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark" : "Bookmark" }</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }</a></li>
               <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
               <li><a class="dropdown-item small" href="#" onClick={this.handleSearchesChartModalShow}>Chart searches</a></li>
             </ul>

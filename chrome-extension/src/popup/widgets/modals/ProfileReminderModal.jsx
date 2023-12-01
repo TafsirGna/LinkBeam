@@ -16,8 +16,10 @@ export default class ProfileViewReminderModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      reminderDate: (new Date()).toISOString().split("T")[0],
-      reminderText: "",
+      reminder: {
+        date: (new Date()).toISOString().split("T")[0],
+        text: "",
+      }
     };
 
     this.saveReminder = this.saveReminder.bind(this);
@@ -28,7 +30,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
   saveReminder(){
 
-    var reminder = {url: this.props.profile.url, text: this.state.reminderText, date: this.state.reminderDate};
+    var reminder = {url: this.props.profile.url, text: this.state.reminder.text, date: this.state.reminder.date};
     sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.REMINDERS, reminder);
 
   }
@@ -36,19 +38,56 @@ export default class ProfileViewReminderModal extends React.Component{
   componentDidMount() {
 
     this.listenToMessages();
+
+    this.getProfileReminderObject();
   }
 
   listenToMessages(){
 
+    startMessageListener([
+      {
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
+        callback: this.onRemindersDataReceived
+      },
+    ]);
     
   }
 
+  onRemindersDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var reminder = message.data.objectData;
+    reminder.date = new Date(reminder.date);
+    this.setState({reminder: reminder});
+
+  }
+
+  getProfileReminderObject(){
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.REMINDERS, {url: this.props.profile.url});
+
+  }
+
   handleReminderTextAreaChange(event) {
-    this.setState({reminderText: event.target.value});
+
+    this.setState(prevState => {
+      let reminder = Object.assign({}, prevState.reminder);
+      reminder.text = event.target.value;
+      return { reminder };
+    }); 
+
   }
 
   handleReminderDateInputChange(event) {
-    this.setState({reminderDate: event.target.value});
+
+    this.setState(prevState => {
+      let reminder = Object.assign({}, prevState.reminder);
+      reminder.date = event.target.value;
+      return { reminder };
+    }); 
+
   }
 
   render(){
@@ -66,7 +105,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 <Form.Control
                   type="date"
                   autoFocus
-                  value={this.state.reminderDate}
+                  value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
                 />
@@ -76,7 +115,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control as="textarea" rows={3} value={this.state.reminderText} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
+                <Form.Control as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -84,9 +123,9 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
-            <Button variant="primary" size="sm" onClick={this.saveReminder} className="shadow">
-              Save 
-            </Button>
+            { <Button variant="primary" size="sm" onClick={this.saveReminder} className="shadow">
+                          Save 
+                        </Button>}
           </Modal.Footer>
         </Modal>
       </>

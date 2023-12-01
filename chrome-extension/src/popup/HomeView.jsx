@@ -265,7 +265,12 @@ export default class HomeView extends React.Component{
           { this.state.currentTabIndex == 0 && <SearchListView objects={this.props.globalData.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
 
           {/* All Search List Tab */}
-          { this.state.currentTabIndex == 1 && <SearchListView objects={this.props.globalData.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>}
+          { this.state.currentTabIndex == 1 && <div>
+                                                <div class="px-1 my-2">
+                                                  <input class="form-control form-control-sm shadow-sm" type="text" placeholder="Search..." aria-label=".form-control-sm example"/>
+                                                </div>
+                                                <SearchListView objects={this.props.globalData.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>
+                                              </div>}
 
           <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
             <Offcanvas.Header closeButton>

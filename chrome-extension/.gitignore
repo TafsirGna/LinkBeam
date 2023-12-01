@@ -13,7 +13,7 @@ dist-ssr
 *.local
 .env*
 src/.private*
-src/webUI/styles.min.css
+src/contentScriptUi/styles.min.css
 
 # Editor directories and files
 .vscode/*

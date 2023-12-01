@@ -4,6 +4,7 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import ProfileGeoMapModal from "./modals/ProfileGeoMapModal";
+import eventBus from "../EventBus";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
@@ -30,6 +31,12 @@ export default class ProfileViewHeader extends React.Component{
 
   handleGeoMapModalClose = () => this.setState({geoMapModalShow: false});
   handleGeoMapModalShow = () => this.setState({geoMapModalShow: true});
+
+  showReminder(){
+
+    eventBus.dispatch("showReminder", null);
+
+  }
 
   render(){
     return (
@@ -79,9 +86,9 @@ export default class ProfileViewHeader extends React.Component{
                   ·
                   <OverlayTrigger
                     placement="bottom"
-                    overlay={<ReactTooltip id="tooltip1">Here the reminder text</ReactTooltip>}
+                    overlay={<ReactTooltip id="tooltip1">Show reminder</ReactTooltip>}
                   >
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.showReminder()}}><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
                   </OverlayTrigger>
                 </span>}
               <span>

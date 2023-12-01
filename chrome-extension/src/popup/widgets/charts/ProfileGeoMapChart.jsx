@@ -49,7 +49,7 @@ export default class ProfileGeoMapChart extends React.Component{
       <>
 
         { !this.state.countries && <div class="text-center">
-                                              <div class={"spinner-border text-secondary "} role="status">
+                                              <div class="spinner-border text-secondary spinner-border-sm" role="status">
                                                 <span class="visually-hidden">Loading...</span>
                                               </div>
                                             </div>}

@@ -1,8 +1,7 @@
-/*import './Profile.css'*/
+/*import './MainProfileView.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "./Local_library";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class MainProfileView extends React.Component{
 

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "tailbuild": "tailwindcss -i src/contentScriptUi/WebUiApp.css -o src/webUI/styles.min.css --minify",
+    "tailbuild": "tailwindcss -i src/contentScriptUi/WebUiApp.css -o src/contentScriptUi/styles.min.css --minify",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
