@@ -19,13 +19,15 @@ export default class ProfileViewReminderModal extends React.Component{
       reminder: {
         date: (new Date()).toISOString().split("T")[0],
         text: "",
-      }
+      },
+      display: false,
     };
 
     this.saveReminder = this.saveReminder.bind(this);
     this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
+    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
   }
 
   saveReminder(){
@@ -60,7 +62,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
     var reminder = message.data.objectData;
     reminder.date = new Date(reminder.date);
-    this.setState({reminder: reminder});
+    this.setState({reminder: reminder, display: true});
 
   }
 
@@ -108,6 +110,7 @@ export default class ProfileViewReminderModal extends React.Component{
                   value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
+                  readOnly={this.state.display ? true : false}
                 />
               </Form.Group>
               <Form.Group
@@ -115,7 +118,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
+                <Form.Control readOnly={this.state.display ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
               </Form.Group>
             </Form>
           </Modal.Body>
@@ -123,7 +126,7 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
-            { <Button variant="primary" size="sm" onClick={this.saveReminder} className="shadow">
+            { !this.state.display && <Button variant="primary" size="sm" onClick={this.saveReminder} className="shadow">
                           Save 
                         </Button>}
           </Modal.Footer>

@@ -1646,17 +1646,17 @@ function timeCountIntervalFunction(){
 // Script for starting the time counter
 function startTimeCounter(){
 
-    // start counting the time spent on the tab
-    getSettingsData(["timeCount"], (results) => {
-        var timeCount = results[0];
-        timeCount.lastCheck = (new Date()).toISOString();
-        updateSettingObject("timeCount", timeCount, () => {
+    // // start counting the time spent on the tab
+    // getSettingsData(["timeCount"], (results) => {
+    //     var timeCount = results[0];
+    //     timeCount.lastCheck = (new Date()).toISOString();
+    //     updateSettingObject("timeCount", timeCount, () => {
 
-            timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
+    //         timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
 
-        });
+    //     });
 
-    });
+    // });
 
 }
 
