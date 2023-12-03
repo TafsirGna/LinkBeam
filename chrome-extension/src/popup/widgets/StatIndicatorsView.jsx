@@ -28,7 +28,7 @@ class IndicatorWidget extends React.Component {
   render() {
     return (
       <>
-        <button type="button" class="btn shadow col mx-2 mt-3 text-muted fw-light text-start">
+        <button type="button" class="btn shadow-sm col mx-2 mt-3 text-muted fw-light text-start">
           <h4 class={"ms-3 my-0 " + this.props.object.color}>{this.props.object.count}</h4>
           <p class="ms-3 my-0 small">{this.props.object.label}</p>
         </button>

@@ -11,7 +11,7 @@ export const appParams = {
   commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
   PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
-  appAuthor: "Tafsir GNA",
+  appAuthor: "Jojo Rabbit" /*"Tafsir GNA"*/,
 
   GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "core-section-container",

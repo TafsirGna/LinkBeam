@@ -62,7 +62,7 @@ export default class KeywordListView extends React.Component{
         { this.props.objects == null && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                       {/*<span class="visually-hidden">Loading...</span>*/}
                     </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                    <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
                   </div>
                 </div>}
 

@@ -59,7 +59,7 @@ export default class App extends React.Component{
 
     this.listenToMessages();
 
-    eventBus.on("resetTodayReminderList", (data) =>
+    eventBus.on(eventBus.RESET_TODAY_REMINDER_LIST, (data) =>
       {
         // Resetting the today reminder list here too
         this.setState(prevState => {
@@ -87,7 +87,7 @@ export default class App extends React.Component{
 
   componentWillUnmount() {
 
-    eventBus.remove("resetTodayReminderList");
+    eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
 
   }
 
@@ -302,18 +302,10 @@ export default class App extends React.Component{
 
     if (scope == "all"){
 
-      if (this.state.globalData.allSearchList == null){
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.allSearchList = [];
-          return { globalData };
-        }, () => {
-          this.setSearchList(listData, scope);
-        });
-        return;
+      if (this.state.globalData.allSearchList){
+        listData = this.state.globalData.allSearchList.concat(listData);
       }
 
-      listData = this.state.globalData.allSearchList.concat(listData);
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.allSearchList = listData;
@@ -327,6 +319,8 @@ export default class App extends React.Component{
         let globalData = Object.assign({}, prevState.globalData);
         globalData.todaySearchList = listData;
         return { globalData };
+      }, () => {
+        this.setSearchList(listData, "all");
       });
 
     }

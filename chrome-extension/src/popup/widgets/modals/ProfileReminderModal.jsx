@@ -61,7 +61,10 @@ export default class ProfileViewReminderModal extends React.Component{
     ack(sendResponse);
 
     var reminder = message.data.objectData;
-    reminder.date = new Date(reminder.date);
+    if (!reminder || reminder == undefined){
+      return;
+    }
+
     this.setState({reminder: reminder, display: true});
 
   }
@@ -110,7 +113,9 @@ export default class ProfileViewReminderModal extends React.Component{
                   value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
-                  readOnly={this.state.display ? true : false}
+                  // readOnly={this.state.display ? true : false}
+                  disabled={this.state.display ? true : false}
+
                 />
               </Form.Group>
               <Form.Group
@@ -118,7 +123,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control readOnly={this.state.display ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
+                <Form.Control disabled={this.state.display ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
               </Form.Group>
             </Form>
           </Modal.Body>

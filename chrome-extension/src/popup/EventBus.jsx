@@ -1,4 +1,7 @@
 const eventBus = {
+
+  RESET_TODAY_REMINDER_LIST: "resetTodayReminderList",
+
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));
   },

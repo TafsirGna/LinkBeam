@@ -91,7 +91,7 @@ export default class HomeView extends React.Component{
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
         deactivateTodayReminders();
-        eventBus.dispatch("resetTodayReminderList", null);
+        eventBus.dispatch(eventBus.RESET_TODAY_REMINDER_LIST, null);
       }
     )
   };
@@ -208,7 +208,7 @@ export default class HomeView extends React.Component{
         break;
       }
       case 1: {
-        if (!this.props.globalData.allSearchList){
+        if (this.props.globalData.allSearchList.length == this.props.globalData.todaySearchList.length){
           this.getSearchList("all");
         }
         break;
@@ -223,7 +223,7 @@ export default class HomeView extends React.Component{
     if (scope == "all"){
       if (this.state.allSearchLeft){
         this.setState({loadingAllSearches: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: (this.props.globalData.allSearchList ? this.props.globalData.allSearchList.length : 0), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearchList.length, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
       }
     }
     else{ // today
@@ -263,7 +263,9 @@ export default class HomeView extends React.Component{
           </div>
 
           {/* Today Search List Tab */}
-          { this.state.currentTabIndex == 0 && <SearchListView objects={this.props.globalData.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />}
+          { this.state.currentTabIndex == 0 && <div class="">
+                                                <SearchListView objects={this.props.globalData.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />
+                                                </div>}
 
           {/* All Search List Tab */}
           { this.state.currentTabIndex == 1 && <div>
