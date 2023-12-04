@@ -25,7 +25,7 @@ export default class MainProfileView extends React.Component{
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
-    const profileUrl = urlParams.get("profile-url");
+    const profileUrl = urlParams.get("url");
 
     // Retrieving the profile for the url given throught the url paremeters 
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.PROFILES, profileUrl);
@@ -40,7 +40,9 @@ export default class MainProfileView extends React.Component{
     let profile = message.data.objectData;
 
     // Setting the retrieved profile as a local variable
-    this.setState({profile: profile});
+    if (!this.state.profile){
+      this.setState({profile: profile});
+    }
 
   }
 

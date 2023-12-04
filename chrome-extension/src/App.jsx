@@ -78,7 +78,7 @@ export default class App extends React.Component{
     }
 
     // Sending a request for getting some settings
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
+    // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
 
     // Sending a request to know if some reminders are set for today
     sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {context: "Notifications"});
@@ -337,7 +337,7 @@ export default class App extends React.Component{
               this.state.swDbStatus == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET ?
                 <Navigate replace to={"/index.html/Error?data="+this.state.swDbStatus} />
                 : this.state.redirect_to && this.state.redirect_to.view == "ProfileView" ? 
-                  <Navigate replace to={"/index.html/Profile?profile-url=" + this.state.redirect_to.data} />
+                  <Navigate replace to={"/index.html/Profile?url=" + this.state.redirect_to.data} />
                   : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
                       <Navigate replace to={"/index.html/Calendar"} />
                       : <HomeView globalData={this.state.globalData} />

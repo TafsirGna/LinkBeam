@@ -27,7 +27,6 @@ export default class HomeView extends React.Component{
       currentPageTitle: null,
       currentTabIndex: 0,
       loadingAllSearches: false,
-      currentTabWebPageData: null,
       offCanvasShow: false,
     };
 
@@ -36,7 +35,6 @@ export default class HomeView extends React.Component{
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
     this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
     this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
 
@@ -57,11 +55,6 @@ export default class HomeView extends React.Component{
     }
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY);
-
-    // Setting current tab info if possible
-    if (this.props.globalData.currentTabWebPageData){
-      this.setState({currentTabWebPageData: this.props.globalData.currentTabWebPageData});
-    }
 
     if (!this.props.globalData.todaySearchList){
       this.getSearchList("today");
@@ -144,17 +137,6 @@ export default class HomeView extends React.Component{
 
   }
 
-  onSwResponseReceived(message, sendResponse){
-    
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    let currentTabWebPageData = message.data.objectData;
-    this.setState({currentTabWebPageData: currentTabWebPageData});
-
-  }
-
   onExtensionCodeInjected(message, sendResponse){
     
     // acknowledge receipt
@@ -182,10 +164,10 @@ export default class HomeView extends React.Component{
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
       },
-      {
-        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
-        callback: this.onSwResponseReceived
-      },
+      // {
+      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
+      //   callback: this.onSwResponseReceived
+      // },
       {
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED].join(messageParams.separator), 
         callback: this.onExtensionCodeInjected
@@ -249,7 +231,7 @@ export default class HomeView extends React.Component{
 
           <div class="clearfix">
             {/*setting icon*/}
-            <HomeMenuView envData={this.state.currentTabWebPageData} globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
+            <HomeMenuView globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
           </div>
           <div class="text-center">
             <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
@@ -257,7 +239,7 @@ export default class HomeView extends React.Component{
                 Today {(this.props.globalData.todaySearchList && this.props.globalData.todaySearchList.length != 0) ? "("+this.props.globalData.todaySearchList.length+")" : null}
               </button>
               <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All searches" onClick={() => {this.switchCurrentTab(1)}}>
-                All {(this.props.globalData.allSearchList && this.props.globalData.allSearchList.length != 0) ? "("+this.props.globalData.allSearchList.length+")" : null}
+                All {(this.props.globalData.allSearchList && this.props.globalData.allSearchList.length != this.props.globalData.todaySearchList.length) ? "("+this.props.globalData.allSearchList.length+")" : null}
               </button>
             </div>
           </div>

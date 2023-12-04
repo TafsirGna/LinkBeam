@@ -436,7 +436,7 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
         var objectDate = (new Date(object.date)),
             startDate = new Date(params.timePeriod[0]),
             endDate = new Date(params.timePeriod[2]);
-        if (startDate < objectDate && objectDate <= endDate){
+        if (startDate <= objectDate && objectDate <= endDate){
             list.push(object);
         }
         return list;
@@ -1646,17 +1646,17 @@ function timeCountIntervalFunction(){
 // Script for starting the time counter
 function startTimeCounter(){
 
-    // // start counting the time spent on the tab
-    // getSettingsData(["timeCount"], (results) => {
-    //     var timeCount = results[0];
-    //     timeCount.lastCheck = (new Date()).toISOString();
-    //     updateSettingObject("timeCount", timeCount, () => {
+    // start counting the time spent on the tab
+    getSettingsData(["timeCount"], (results) => {
+        var timeCount = results[0];
+        timeCount.lastCheck = (new Date()).toISOString();
+        updateSettingObject("timeCount", timeCount, () => {
 
-    //         timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
+            timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
 
-    //     });
+        });
 
-    // });
+    });
 
 }
 
@@ -1668,7 +1668,9 @@ function checkCurrentTab(tab, changeInfo){
     if (url && testTabUrl(url)) 
     {
 
-        startTimeCounter();
+        if (currentTabCheckContext != "popup"){
+            startTimeCounter();
+        }
 
         if (tabIds.indexOf(tab.id) == -1){
             tabIds.push(tab.id);
@@ -1694,7 +1696,6 @@ function checkCurrentTab(tab, changeInfo){
 function getAndCheckCurrentTab(){
 
     // getting current tab
-
     let queryOptions = { active: true, lastFocusedWindow: true };
     chrome.tabs.query(queryOptions, ([tab]) => {
         if (chrome.runtime.lastError)

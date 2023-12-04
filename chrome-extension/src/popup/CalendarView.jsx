@@ -19,6 +19,7 @@ export default class CalendarView extends React.Component{
       monthSearchList: null,
       monthReminderList: null,
       selectedDate: (new Date()),
+      activeStartDate: null,
       tabTitles: ["Searches", "Reminders"],
       tabActiveKey: "",
       toastMessage: "",
@@ -32,12 +33,17 @@ export default class CalendarView extends React.Component{
     this.tileDisabled = this.tileDisabled.bind(this);
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
     this.tileClassName = this.tileClassName.bind(this);
+    this.isSelectedMonthResponse = this.isSelectedMonthResponse.bind(this);
   }
 
   componentDidMount() {
 
     // Setting the nav default active key
-    this.setState({tabActiveKey: this.state.tabTitles[0]});
+    this.setState({
+      tabActiveKey: this.state.tabTitles[0], 
+      activeStartDate: moment(this.state.selectedDate).startOf('month').format("YYYY-MM-DD"),
+      // activeStartDate: moment(this.state.selectedDate).startOf('month').toDate().toISOString().split("T")[0],
+    });
 
     this.listenToMessages();
 
@@ -80,7 +86,7 @@ export default class CalendarView extends React.Component{
 
     var timePeriod = [startOfMonth, "to", endOfMonth];
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {timePeriod: timePeriod, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {timePeriod: timePeriod, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR+"|"+JSON.stringify(timePeriod)});
 
   }
 
@@ -105,9 +111,12 @@ export default class CalendarView extends React.Component{
 
       var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
 
-      this.getMonthObjectList(activeDate, dbData.objectStoreNames.SEARCHES);
+      this.setState({activeStartDate: activeDate}, () => {
 
-      this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+        this.getMonthObjectList(activeDate, dbData.objectStoreNames.SEARCHES);
+        this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+
+      });
 
     }
 
@@ -166,7 +175,7 @@ export default class CalendarView extends React.Component{
   onSearchesDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.CALENDAR){
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR) == -1){
       return;
     }
 
@@ -174,6 +183,11 @@ export default class CalendarView extends React.Component{
     ack(sendResponse);
 
     var monthSearchList = message.data.objectData.list;
+
+    // Following code essential to avoid crossover between calendar tabs
+    if (!this.isSelectedMonthResponse(context)){
+      return;
+    }
 
     // Grouping the searches by date
     var results = this.groupObjectsByDate(monthSearchList);
@@ -201,10 +215,25 @@ export default class CalendarView extends React.Component{
 
   }
 
+  isSelectedMonthResponse(context){
+    context = context.replace(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, "");
+    context = context.replace("|", "");
+    var timePeriod = JSON.parse(context);
+    console.log("***************** 111111111 : ", timePeriod);
+
+    var activeStartDate = new Date(this.state.activeStartDate);
+    if ((new Date(timePeriod[0])) <= activeStartDate && activeStartDate <= (new Date(timePeriod[2]))){
+      return true;
+    }
+
+    return false;
+
+  }
+
   onRemindersDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.CALENDAR){
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR) == -1){
       return;
     }
 
@@ -212,6 +241,11 @@ export default class CalendarView extends React.Component{
     ack(sendResponse);
 
     var monthReminderList = message.data.objectData.list;
+
+    // Following code essential to avoid crossover between calendar tabs
+    if (!this.isSelectedMonthResponse(context)){
+      return;
+    }
 
     // Grouping the reminders by date
     var results = this.groupObjectsByDate(monthReminderList);
