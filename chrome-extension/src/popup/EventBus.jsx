@@ -1,6 +1,8 @@
 const eventBus = {
 
   RESET_TODAY_REMINDER_LIST: "resetTodayReminderList",
+  PROFILE_SHOW_REMINDER_OBJECT: "showReminder",
+  PROFILE_SHOW_DOUGHNUT_MODAL: "showDoughnutModal",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

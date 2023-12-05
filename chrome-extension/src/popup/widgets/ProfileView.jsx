@@ -5,6 +5,7 @@ import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileSearchesChartModal from "./modals/ProfileSearchesChartModal";
+import PercentageDoughnutModal from "./modals/PercentageDoughnutModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
 import eventBus from "../EventBus";
 
@@ -17,6 +18,7 @@ export default class MainProfileView extends React.Component{
       toastShow: false,
       reminderModalShow: false,
       searchesChartModalShow: false,
+      percentageDoughnutModalShow: false,
       toastMessage: "",
     };
 
@@ -34,9 +36,15 @@ export default class MainProfileView extends React.Component{
 
     this.listenToMessages();
 
-    eventBus.on("showReminder", (data) =>
+    eventBus.on(eventBus.PROFILE_SHOW_REMINDER_OBJECT, (data) =>
       {
         this.handleReminderModalShow();
+      }
+    );
+
+    eventBus.on(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, (data) =>
+      {
+        this.handlePercentageDoughnutModalShow();
       }
     );
 
@@ -44,7 +52,8 @@ export default class MainProfileView extends React.Component{
 
   componentWillUnmount() {
 
-    eventBus.remove("showReminder");
+    eventBus.remove(eventBus.PROFILE_SHOW_REMINDER_OBJECT);
+    eventBus.remove(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL);
 
   }
 
@@ -115,6 +124,9 @@ export default class MainProfileView extends React.Component{
   handleSearchesChartModalClose = () => this.setState({searchesChartModalShow: false});
   handleSearchesChartModalShow = () => this.setState({searchesChartModalShow: true});
 
+  handlePercentageDoughnutModalClose = () => this.setState({percentageDoughnutModalShow: false});
+  handlePercentageDoughnutModalShow = () => this.setState({percentageDoughnutModalShow: true});
+
   toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
 
@@ -169,6 +181,8 @@ export default class MainProfileView extends React.Component{
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
         
         <ProfileSearchesChartModal profile={this.props.profile} show={this.state.searchesChartModalShow} onHide={this.handleSearchesChartModalClose} />
+        
+        <PercentageDoughnutModal show={this.state.percentageDoughnutModalShow} onHide={this.handlePercentageDoughnutModalClose} />
 
         <CustomToast globalData={this.props.globalData} message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} />
 

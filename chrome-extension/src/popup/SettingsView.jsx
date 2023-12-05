@@ -38,6 +38,7 @@ export default class SettingsView extends React.Component{
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.onAllDataReceived = this.onAllDataReceived.bind(this);
+    this.checkStorageUsage = this.checkStorageUsage.bind(this);
   }
 
   componentDidMount() {
@@ -71,14 +72,20 @@ export default class SettingsView extends React.Component{
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, null);
     }
 
+    this.checkStorageUsage();
+  }
+
+  checkStorageUsage(){
+
     // Storage usage 
     if ('storage' in navigator && 'estimate' in navigator.storage) {
       navigator.storage.estimate().then((({usage, quota}) => {
         console.log(`Using ${usage} out of ${quota} bytes.`);
-        var usageQuota = ((usage * 100) / quota).toFixed(1);
+        var usageQuota = {percentage: ((usage * 100) / quota).toFixed(1), size: Math.round(usage / (1024 * 1024))};
         this.setState({usageQuota: usageQuota});
       }).bind(this));
     }
+
   }
 
   onKeywordsDataReceived(message, sendResponse){
@@ -145,6 +152,8 @@ export default class SettingsView extends React.Component{
           keywordCount: 0,
           reminderCount: 0,
         });
+
+        this.checkStorageUsage();
 
         // Setting a timer to reset all of this
         setTimeout(() => {
@@ -294,11 +303,11 @@ export default class SettingsView extends React.Component{
                                     </OverlayTrigger>}
                   { this.state.usageQuota && <OverlayTrigger
                                       placement="top"
-                                      overlay={<Tooltip id="tooltip2">{this.state.usageQuota}% used</Tooltip>}
+                                      overlay={<Tooltip id="tooltip2">{this.state.usageQuota.percentage}%({this.state.usageQuota.size}Mb) used</Tooltip>}
                                     >
                                       {/*<ProgressBar now={60} class="me-2" style={{width:"30px", height:"7px"}}/>*/}
                                       <div style={{width:"30px", height:"7px"}} class="progress me-2" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
-                                        <div class="progress-bar rounded" style={{width: this.state.usageQuota+"%"}}></div>
+                                        <div class="progress-bar rounded" style={{width: this.state.usageQuota.percentage+"%"}}></div>
                                       </div>
                                     </OverlayTrigger>}
                 </div>

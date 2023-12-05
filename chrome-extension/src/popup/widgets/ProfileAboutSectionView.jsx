@@ -5,7 +5,7 @@ import { appParams } from "../Local_library";
 import Collapse from 'react-bootstrap/Collapse';
 import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
 import { dbDataSanitizer } from "../Local_library";
-
+import eventBus from "../EventBus";
 
 export default class ProfileAboutSectionView extends React.Component{
 
@@ -114,6 +114,12 @@ export default class ProfileAboutSectionView extends React.Component{
 
   }
 
+  showPercentageDoughnutModal(data){
+
+    eventBus.dispatch(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, data);
+
+  }
+
   render(){
     return (
       <>
@@ -125,25 +131,25 @@ export default class ProfileAboutSectionView extends React.Component{
         { this.props.profile.info && <div class="m-4">
 
                                       <div class="row">
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "WORD_COUNT", value: this.wordCount()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.wordCount()}</h5>
                                             <p class="card-text">Word count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "CHAR_COUNT", value: this.characterCount()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.characterCount()}</h5>
                                             <p class="card-text">Character count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "AVG_WORD_LENGTH", value: this.averageWordLength()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.averageWordLength()}</h5>
                                             <p class="card-text">Average word length</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1">
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "UNIQUE_WORDS_COUNT", value: this.state.oneUseWordCount})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.state.oneUseWordCount}%</h5>
                                             <p class="card-text">Unique words</p>

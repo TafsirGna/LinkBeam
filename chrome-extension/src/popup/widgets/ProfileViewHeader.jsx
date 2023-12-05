@@ -34,7 +34,7 @@ export default class ProfileViewHeader extends React.Component{
 
   showReminder(){
 
-    eventBus.dispatch("showReminder", null);
+    eventBus.dispatch(eventBus.PROFILE_SHOW_REMINDER_OBJECT, null);
 
   }
 
