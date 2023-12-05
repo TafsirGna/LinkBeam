@@ -219,7 +219,7 @@ export default class CalendarView extends React.Component{
     context = context.replace(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, "");
     context = context.replace("|", "");
     var timePeriod = JSON.parse(context);
-    console.log("***************** 111111111 : ", timePeriod);
+    // console.log("***************** 111111111 : ", timePeriod);
 
     var activeStartDate = new Date(this.state.activeStartDate);
     if ((new Date(timePeriod[0])) <= activeStartDate && activeStartDate <= (new Date(timePeriod[2]))){

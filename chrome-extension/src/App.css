@@ -2,6 +2,11 @@
   cursor: pointer;
 }
 
+.horizontal-scrollable > .row { 
+    overflow-x: auto; 
+    white-space: nowrap; 
+} 
+
 /*#root {
   max-width: 1280px;
   margin: 0 auto;

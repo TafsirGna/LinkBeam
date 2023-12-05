@@ -245,7 +245,7 @@ export default class HomeView extends React.Component{
           </div>
 
           {/* Today Search List Tab */}
-          { this.state.currentTabIndex == 0 && <div class="">
+          { this.state.currentTabIndex == 0 && <div class="mt-4">
                                                 <SearchListView objects={this.props.globalData.todaySearchList} seeMore={() => {}} loading={false} searchLeft={false} />
                                                 </div>}
 
