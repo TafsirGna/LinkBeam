@@ -3,6 +3,7 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
+import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import moment from 'moment';
 import { 
   saveCurrentPageTitle, 
@@ -25,7 +26,8 @@ export default class SettingsView extends React.Component{
       processingState: {
         status: "NO",
         info: ""
-      }
+      },
+      usageQuota: null,
     };
 
     this.deleteAll = this.deleteAll.bind(this);
@@ -42,25 +44,41 @@ export default class SettingsView extends React.Component{
 
     this.listenToMessages();
 
+    saveCurrentPageTitle("Settings");
+
     if (Object.hasOwn(this.props.globalData.settings, 'notifications')){
       this.setState({notifSettingCheckBoxValue: this.props.globalData.settings.notifications});
+    }
+    else{
+      // Knowing the previous status of the notification checkbox
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
     }
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
       this.setState({keywordCount: this.props.globalData.keywordList.length});
     }
+    else{
+      // Getting the keyword count
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, null);
+    }
 
-    saveCurrentPageTitle("Settings");
+    if (this.props.globalData.reminderList){
+      this.setState({reminderCount: this.props.globalData.reminderList.length});
+    }
+    else{
+      // Getting the reminder count
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, null);
+    }
 
-    // Getting the keyword count
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, null);
-
-    // Getting the reminder count
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, null);
-
-    // Knowing the previous status of the notification checkbox
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+    // Storage usage 
+    if ('storage' in navigator && 'estimate' in navigator.storage) {
+      navigator.storage.estimate().then((({usage, quota}) => {
+        console.log(`Using ${usage} out of ${quota} bytes.`);
+        var usageQuota = ((usage * 100) / quota).toFixed(1);
+        this.setState({usageQuota: usageQuota});
+      }).bind(this));
+    }
   }
 
   onKeywordsDataReceived(message, sendResponse){
@@ -122,10 +140,11 @@ export default class SettingsView extends React.Component{
       case "lastDataResetDate": {
 
         // Displaying the validation sign
-        this.setState({processingState: {status: "NO", info: "ERASING"}});
-
-        // updating local value
-        this.setState({keywordCount: 0});
+        this.setState({
+          processingState: {status: "NO", info: "ERASING"},
+          keywordCount: 0,
+          reminderCount: 0,
+        });
 
         // Setting a timer to reset all of this
         setTimeout(() => {
@@ -180,10 +199,6 @@ export default class SettingsView extends React.Component{
       // Initiate data removal
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", null);
     }
-  }
-
-  exportData(){
-
   }
 
   initDataExport(){
@@ -269,12 +284,36 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Storage usage</strong>
+
+                  { !this.state.usageQuota && <OverlayTrigger
+                                      placement="top"
+                                      overlay={<Tooltip id="tooltip1">Not supported feature</Tooltip>}
+                                    >
+                                      <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-danger me-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                    </OverlayTrigger>}
+                  { this.state.usageQuota && <OverlayTrigger
+                                      placement="top"
+                                      overlay={<Tooltip id="tooltip2">{this.state.usageQuota}% used</Tooltip>}
+                                    >
+                                      {/*<ProgressBar now={60} class="me-2" style={{width:"30px", height:"7px"}}/>*/}
+                                      <div style={{width:"30px", height:"7px"}} class="progress me-2" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar rounded" style={{width: this.state.usageQuota+"%"}}></div>
+                                      </div>
+                                    </OverlayTrigger>}
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Erase all data</strong>
-                  <a href="#" class={"text-danger badge " + (this.state.processingState.status == "NO" && this.state.processingState.info == ""  ? "" : "d-none")} onClick={this.deleteAll}>Delete</a>
-                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={"css-i6dzq1 " + (this.state.processingState.status == "NO" && this.state.processingState.info != "" ? "" : "d-none")}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                  <div class={"spinner-border spinner-border-sm " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
+                  { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={this.deleteAll}>Delete</a>}
+                  { this.state.processingState.status == "NO" && this.state.processingState.info != "" && <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>}
+                  { this.state.processingState.status == "YES" && <div class="spinner-border spinner-border-sm" role="status">
+                                      <span class="visually-hidden">Loading...</span>
+                                    </div>}
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

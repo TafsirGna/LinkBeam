@@ -24,8 +24,8 @@ export default class ProfileExperienceSectionView extends React.Component{
     return (
       <>
         <div class="container-fluid horizontal-scrollable">
-        	<div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3 border">
-            { this.props.profile.experience.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3">
+        	<div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
+            { this.props.profile.experience.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
                                                                               <ItemPercentageDoughnutChart/>
                                                                             </div>) }
   		    </div>
