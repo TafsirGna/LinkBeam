@@ -252,6 +252,24 @@ export const checkWebPage = (callback) => {
   }
 };
 
+export const groupSearchByProfile = (searches) => {
+
+  var results = [];
+  for (var search of searches){
+    var index = results.map(e => e.url).indexOf(search.url);
+    if (index == -1){
+      search.count = 1;
+      results.push(search);
+    }
+    else{
+      (results[index]).count++;
+    }
+  }
+
+  return {list: results, searchCount: searches.length};
+
+}
+
 export const checkCurrentTab = () => {
 
   // Sending a message to the service worker for verification on the current tab

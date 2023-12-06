@@ -37,7 +37,11 @@ export default class SearchInputView extends React.Component{
 
   searchText(){
 
-  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, this.props.objectStoreName, {searchText: this.state.text, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+    if (this.state.text.length == 0){
+      return;
+    }
+
+  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, this.props.objectStoreName, {searchText: this.state.text, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, "search"].join("-")});
 
   }
 

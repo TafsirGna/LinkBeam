@@ -308,6 +308,44 @@ function getAssociatedProfiles(objects, objectStoreName, context){
     });
 }
 
+function getAssociatedSearches(objects, objectStoreName, context){
+
+    if (objects.length == 0){
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: objects});
+        return;
+    }
+
+    // For each url, create a request to retrieve the corresponding profile
+    let objectStore = db
+                        .transaction(dbData.objectStoreNames.SEARCHES, "readonly")
+                        .objectStore(dbData.objectStoreNames.SEARCHES);
+    let results = [];
+
+    objects.forEach((object) => {
+        
+        let profileRequest = objectStore.get(object.url);
+        profileRequest.onsuccess = (event) => {
+            let search = event.target.result;
+            console.log('Got corresponding profile: ', profile);
+            
+            search.profile = object;
+            results.push(object);
+
+            // keep going to the next object
+            if(results.length == objects.length) {
+                // only continue if under limit
+                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: results});
+            }
+
+        };
+
+        profileRequest.onerror = (event) => {
+            console.log('An error occured when requesting the corresponding profile : ', event);
+        };
+
+    });
+}
+
 // Script for providing all the bookmarked profiles
 
 function getBookmarkList(){
@@ -360,12 +398,18 @@ function getBookmarkList(){
 
 function getSearchList(params) {
 
-    getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES)
+    getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, getAssociatedProfiles);
+
+}
+
+function getProfileList(params) {
+
+    getOffsetLimitList(params, dbData.objectStoreNames.PROFILES, getAssociatedSearches);
 
 }
 
 
-function getOffsetLimitList(params, objectStoreName) {
+function getOffsetLimitList(params, objectStoreName, callback) {
 
 
     var params = (params ? params : {});
@@ -380,7 +424,7 @@ function getOffsetLimitList(params, objectStoreName) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            getAssociatedProfiles(results, objectStoreName, params.context);
+            callback(results, objectStoreName, params.context);
             return;
         }
 
@@ -391,11 +435,12 @@ function getOffsetLimitList(params, objectStoreName) {
         }
 
         let object = cursor.value;
-        results = addToOffsetLimitList(object, results, objectStoreName, params);
+        var output = addToOffsetLimitList(object, results, objectStoreName, params);
+        results = output.list;
 
         // if an argument about a specific time is not passed then
-        if (isOffsetLimitReached(results, objectStoreName, params)){
-            getAssociatedProfiles(results, objectStoreName, params.context);
+        if (output.stop){
+            callback(results, objectStoreName, params.context);
             return;
         }
         
@@ -407,61 +452,108 @@ function getOffsetLimitList(params, objectStoreName) {
     };
 }
 
-function addToOffsetLimitList(object, list, objectStoreName, params){
+function addReminderToOffsetLimitList(object, list, objectStoreName, params){
 
+    var stop = false;
     // if the user is requesting all the reminders set for today then only activated reminders are selected
-    if (objectStoreName == dbData.objectStoreNames.REMINDERS && params.context == "Notifications"){
+    if (params.context == "Notifications"){
         if (object.activated && (new Date()).toISOString().split("T")[0] == object.date.split("T")[0]){
             list.push(object);
         }
-        return list;
     }
-
-    if (!params.timePeriod){
-        list.push(object);
-        return list;
-    }
-
-    if (typeof params.timePeriod == "string"){ // a specific date
-        if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+    else{
+        if (!params.timePeriod){
             list.push(object);
         }
-        return list
-    }
-
-    // it's an array of date objects
-
-    // if it is a range of dates
-    if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-        var objectDate = (new Date(object.date)),
-            startDate = new Date(params.timePeriod[0]),
-            endDate = new Date(params.timePeriod[2]);
-        if (startDate <= objectDate && objectDate <= endDate){
-            list.push(object);
+        else{
+            if (typeof params.timePeriod == "string"){ // a specific date
+                if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+                    list.push(object);
+                }
+            }
+            else{
+                if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                    var objectDate = (new Date(object.date)),
+                        startDate = new Date(params.timePeriod[0]),
+                        endDate = new Date(params.timePeriod[2]);
+                    if (startDate <= objectDate && objectDate <= endDate){
+                        list.push(object);
+                    }
+                }
+            }            
         }
-        return list;
     }
 
-    return list
+    return {list: list, stop: stop};
+
 }
 
-function isOffsetLimitReached(list, objectStoreName, params){
+function addSearchToOffsetLimitList(object, list, objectStoreName, params){
 
-    // if the user is requesting all the reminders set for today then there's no limit
-    if (objectStoreName == dbData.objectStoreNames.REMINDERS && params.context == "Notifications"){
-        return false;
+    var stop = false;
+    if (!params.timePeriod){
+        if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
+            list.push(object);
+        }
+        else{
+            if (list[0].date.split("T")[0] != object.date.split("T")[0]){
+                stop = true;
+            }
+        }
+    }
+    else{
+        if (typeof params.timePeriod == "string"){ // a specific date
+            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+                list.push(object);
+            }
+        }
+        else{
+            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                var objectDate = (new Date(object.date)),
+                    startDate = new Date(params.timePeriod[0]),
+                    endDate = new Date(params.timePeriod[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    list.push(object);
+                }
+            }
+        }            
     }
 
-    if (params.timePeriod){
-        return false;
+    return {list: list, stop: stop}; 
+
+}
+
+function addToOffsetLimitList(object, list, objectStoreName, params){
+
+    var result = null;
+    switch(objectStoreName){
+        case dbData.objectStoreNames.REMINDERS:{
+            result = addReminderToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
+        case dbData.objectStoreNames.PROFILES:{
+            result = addProfileToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
+        case dbData.objectStoreNames.SEARCHES:{
+            result = addSearchToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
     }
 
-    if (list.length < appParams.searchPageLimit) {
-        return false;
-    }
-    
-    return true;
+    // if (params.context.indexOf("search") >= 0){
+    //     if (objectStoreName == dbData.objectStoreNames.PROFILES){
+    //         if (object.fullName.indexOf(params.searchText) >= 0){
+    //             list.push(object);
+    //         }
+    //         return list;
+    //     }
+    // }    
 
+    return result;
 }
 
 
@@ -469,7 +561,7 @@ function isOffsetLimitReached(list, objectStoreName, params){
 
 function getReminderList(params) {
 
-    getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS);
+    getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS, getAssociatedProfiles);
 
 }
 
@@ -593,6 +685,11 @@ function getList(objectStoreName, objectData){
 
         case dbData.objectStoreNames.NEWSFEED:{
             getNewsFeedList();
+            break;
+        }
+
+    case dbData.objectStoreNames.PROFILES:{
+            getProfileList(objectData);
             break;
         }
 

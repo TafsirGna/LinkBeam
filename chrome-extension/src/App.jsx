@@ -23,6 +23,7 @@ import {
   messageParams,
   dbData,
   appParams,
+  groupSearchByProfile,
 } from "./popup/Local_library";
 import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
@@ -39,7 +40,7 @@ export default class App extends React.Component{
         bookmarkList: null,
         reminderList: null,
         todayReminderList: null,
-        allSearchList: null,
+        allSearches: null,
         todaySearchList: null,
         settings: {},
         currentTabWebPageData: null,
@@ -302,13 +303,18 @@ export default class App extends React.Component{
 
     if (scope == "all"){
 
-      if (this.state.globalData.allSearchList){
-        listData = this.state.globalData.allSearchList.concat(listData);
+      listData = groupSearchByProfile(listData);
+
+      if (this.state.globalData.allSearches){
+        listData = {
+          list: this.state.globalData.allSearches.list.concat(listData.list),
+          searchCount: this.state.globalData.allSearches.searchCount + listData.searchCount,
+        };
       }
 
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.allSearchList = listData;
+        globalData.allSearches = listData;
         return { globalData };
       });
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
 import SearchListView from "./widgets/SearchListView";
+import AggregatedSearchListView from "./widgets/AggregatedSearchListView";
 import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
@@ -64,13 +65,13 @@ export default class HomeView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData.allSearchList != this.props.globalData.allSearchList){
+    if (prevProps.globalData.allSearches != this.props.globalData.allSearches){
 
       this.setState({loadingAllSearches: false});
 
-      if (prevProps.globalData.allSearchList){
+      if (prevProps.globalData.allSearches){
         // check if the end of the all searches list has been hit
-        var hit = ((this.props.globalData.allSearchList.length - prevProps.globalData.allSearchList.length) < appParams.searchPageLimit);
+        var hit = ((this.props.globalData.allSearches.searchCount == prevProps.globalData.allSearches.searchCount));
         if (hit){
           this.setState({allSearchLeft: false});
         }
@@ -190,8 +191,9 @@ export default class HomeView extends React.Component{
         break;
       }
       case 1: {
-        if (this.props.globalData.allSearchList.length == this.props.globalData.todaySearchList.length){
-          this.getSearchList("all");
+
+        if (this.props.globalData.allSearches.searchCount == this.props.globalData.todaySearchList.length){
+          this.getSearchList("all");  
         }
         break;
       }
@@ -205,7 +207,7 @@ export default class HomeView extends React.Component{
     if (scope == "all"){
       if (this.state.allSearchLeft){
         this.setState({loadingAllSearches: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearchList.length, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearches.searchCount, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
       }
     }
     else{ // today
@@ -239,7 +241,7 @@ export default class HomeView extends React.Component{
                 Today {(this.props.globalData.todaySearchList && this.props.globalData.todaySearchList.length != 0) ? "("+this.props.globalData.todaySearchList.length+")" : null}
               </button>
               <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All searches" onClick={() => {this.switchCurrentTab(1)}}>
-                All {(this.props.globalData.allSearchList && this.props.globalData.allSearchList.length != this.props.globalData.todaySearchList.length) ? "("+this.props.globalData.allSearchList.length+")" : null}
+                All {(this.props.globalData.allSearches && this.props.globalData.allSearches.searchCount != this.props.globalData.todaySearchList.length) ? "("+this.props.globalData.allSearches.searchCount+")" : null}
               </button>
             </div>
           </div>
@@ -251,8 +253,8 @@ export default class HomeView extends React.Component{
 
           {/* All Search List Tab */}
           { this.state.currentTabIndex == 1 && <div>
-                                                <SearchInputView objectStoreName={dbData.objectStoreNames.REMINDERS}/>
-                                                <SearchListView objects={this.props.globalData.allSearchList} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>
+                                                <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES}/>
+                                                <AggregatedSearchListView objects={this.props.globalData.allSearches.list} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>
                                               </div>}
 
           <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
