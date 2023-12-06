@@ -56,7 +56,7 @@ export default class AggregatedSearchListView extends React.Component{
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
                                     <div class="d-flex gap-2 align-items-center">
-                                      <h6 class="mb-0 d-flex align-items-center gap-1">{search.profile.fullName} <span class="text-muted badge text-bg-light shadow-sm border">{search.count}</span></h6>
+                                      <h6 class="mb-0 d-flex align-items-center gap-1"><a class="text-decoration-none text-muted" href={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank">{search.profile.fullName}</a> <span class="text-muted badge text-bg-light shadow-sm border">{search.count}</span></h6>
                                       
                                       <small class="opacity-50 text-nowrap ms-auto">{moment(search.date, moment.ISO_8601).format("L")}</small>
                                     </div>

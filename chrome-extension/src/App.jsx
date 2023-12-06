@@ -319,7 +319,7 @@ export default class App extends React.Component{
       });
 
     }
-    else{ // today
+    else if (scope == "today"){ // today
 
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
@@ -329,6 +329,17 @@ export default class App extends React.Component{
         this.setSearchList(listData, "all");
       });
 
+    }
+    else if (scope == "search"){
+
+      listData = groupSearchByProfile(listData);
+
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.allSearches = listData;
+        return { globalData };
+      });
+      
     }
 
   }

@@ -45,6 +45,7 @@ function createDatabase(context) {
 
         // Search object store
         let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { autoIncrement: true });
+        searchObjectStore.createIndex("url", "url", { unique: false });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
@@ -111,13 +112,6 @@ function createDatabase(context) {
             initializeDatabase(context.params.data);
         }
 
-        // if (context.status == "RUNTIME-MESSAGE-EVENT"){
-        //     processMessageEvent(context.params.message, context.params.sender, context.params.sendResponse)
-        // }
-        // if (context.status == "RUNTIME-TAB-EVENT"){
-        //     processTabEvent(context.params.tabId, context.params.changeInfo, context.params.tab);
-        // }
-
         db.onerror = function (event) {
             console.log("Failed to open database.")
         }
@@ -134,18 +128,14 @@ chrome.runtime.onInstalled.addListener(details => {
         dbExists(
             null,
             () => {
-
                 // on install, open a web page for information
                 chrome.tabs.create({ url: "install.html" });
-
             }
         );
 
         // Setting the process when uninstalling the extension
         chrome.runtime.setUninstallURL(null, () => {
-
             deleteDatabase();
-
         });
     }
 
@@ -311,37 +301,27 @@ function getAssociatedProfiles(objects, objectStoreName, context){
 function getAssociatedSearches(objects, objectStoreName, context){
 
     if (objects.length == 0){
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: objects});
+        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: objects});
         return;
     }
 
-    // For each url, create a request to retrieve the corresponding profile
-    let objectStore = db
-                        .transaction(dbData.objectStoreNames.SEARCHES, "readonly")
-                        .objectStore(dbData.objectStoreNames.SEARCHES);
-    let results = [];
-
-    objects.forEach((object) => {
+    let results = {list: [], count: 0};
+    objects.forEach((profile) => {
         
-        let profileRequest = objectStore.get(object.url);
-        profileRequest.onsuccess = (event) => {
-            let search = event.target.result;
-            console.log('Got corresponding profile: ', profile);
-            
-            search.profile = object;
-            results.push(object);
-
-            // keep going to the next object
-            if(results.length == objects.length) {
-                // only continue if under limit
-                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: results});
+        getOffsetLimitList(
+            {url: profile.url}, 
+            dbData.objectStoreNames.SEARCHES, 
+            (objects_bis, objectStoreName_bis, context_bis) => {
+                for (var search of objects_bis){
+                    search.profile = profile;
+                }
+                results.list = results.list.concat(objects_bis);
+                results.count++;
+                if (results.count == objects.length){
+                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: results.list});
+                }
             }
-
-        };
-
-        profileRequest.onerror = (event) => {
-            console.log('An error occured when requesting the corresponding profile : ', event);
-        };
+        );
 
     });
 }
@@ -492,14 +472,21 @@ function addSearchToOffsetLimitList(object, list, objectStoreName, params){
 
     var stop = false;
     if (!params.timePeriod){
-        if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
-            list.push(object);
-        }
-        else{
-            if (list[0].date.split("T")[0] != object.date.split("T")[0]){
-                stop = true;
+        if (params.url){
+            if (params.url == object.url){
+                list.push(object);
             }
         }
+        else{ // list previous day searches
+            if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
+                list.push(object);
+            }
+            else{
+                if (list[0].date.split("T")[0] != object.date.split("T")[0]){
+                    stop = true;
+                }
+            }
+        } 
     }
     else{
         if (typeof params.timePeriod == "string"){ // a specific date
@@ -517,6 +504,20 @@ function addSearchToOffsetLimitList(object, list, objectStoreName, params){
                 }
             }
         }            
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
+function addProfileToOffsetLimitList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (params.context.indexOf("search") >= 0){
+        if (object.fullName.toLowerCase().indexOf(params.searchText.toLowerCase()) >= 0){
+            list.push(object);
+        }
     }
 
     return {list: list, stop: stop}; 
@@ -542,16 +543,7 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
             break;
         }
 
-    }
-
-    // if (params.context.indexOf("search") >= 0){
-    //     if (objectStoreName == dbData.objectStoreNames.PROFILES){
-    //         if (object.fullName.indexOf(params.searchText) >= 0){
-    //             list.push(object);
-    //         }
-    //         return list;
-    //     }
-    // }    
+    }    
 
     return result;
 }

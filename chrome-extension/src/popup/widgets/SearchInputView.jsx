@@ -8,6 +8,7 @@ import {
   ack,
   startMessageListener, 
   messageParams,
+  appParams
 } from "../Local_library";
 
 export default class SearchInputView extends React.Component{
