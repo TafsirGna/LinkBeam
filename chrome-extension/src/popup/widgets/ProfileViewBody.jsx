@@ -5,6 +5,7 @@ import { appParams } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
+import ProfileActivitySectionView from "./ProfileActivitySectionView";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -42,7 +43,7 @@ export default class ProfileViewBody extends React.Component{
             <ul class="nav nav-tabs card-header-tabs">
               {this.state.navTabTitles.map((tabTitle, index) => (
                                                     <li class="nav-item">
-                                                    <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>{tabTitle}</a>
+                                                    <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>{tabTitle} { index >= 2 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">2</span>} </a>
                                                   </li>
                                                   ))}
             </ul>
@@ -55,6 +56,10 @@ export default class ProfileViewBody extends React.Component{
 
             { this.state.currentTabIndex == 2 && <div class="">
                                                   <ProfileExperienceSectionView profile={this.props.profile}/>
+                                                </div>}
+
+            { this.state.currentTabIndex == 4 && <div class="">
+                                                  <ProfileActivitySectionView profile={this.props.profile}/>
                                                 </div>}
 
           </div>
