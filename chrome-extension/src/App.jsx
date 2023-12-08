@@ -35,6 +35,7 @@ export default class App extends React.Component{
     this.state = {
       redirect_to: null,
       swDbStatus: null,
+      tmp: null,
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -68,6 +69,23 @@ export default class App extends React.Component{
           globalData.todayReminderList = null;
           return { globalData };
         });
+      }
+    );
+
+    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, (data) =>
+      {
+        // Resetting the today reminder list here too
+        if (this.state.globalData.allSearches.scope == "search"){
+
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.allSearches = this.state.tmp;
+            return { globalData };
+          }, () => {
+            this.setState({tmp: null});
+          });
+
+        }
       }
     );
 
@@ -309,6 +327,7 @@ export default class App extends React.Component{
         listData = {
           list: this.state.globalData.allSearches.list.concat(listData.list),
           searchCount: this.state.globalData.allSearches.searchCount + listData.searchCount,
+          scope: scope,
         };
       }
 
@@ -334,12 +353,20 @@ export default class App extends React.Component{
 
       listData = groupSearchByProfile(listData);
 
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.allSearches = listData;
-        return { globalData };
-      });
-      
+      if (!this.state.tmp || (this.state.tmp && this.state.tmp.scope == "all")){
+
+        this.setState({tmp: this.state.globalData.allSearches}, () => {
+
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.allSearches = listData;
+            globalData.allSearches.scope = "search";
+            return { globalData };
+          });
+
+        });
+
+      }
     }
 
   }

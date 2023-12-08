@@ -58,7 +58,7 @@ export default class AggregatedSearchListView extends React.Component{
                                   <div>
                                     <div class="d-flex gap-2 align-items-center">
                                       <h6 class="mb-0 d-flex align-items-center gap-1">
-                                        <a class="text-decoration-none text-black" href={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank">{search.profile.fullName}</a> 
+                                        <a class="text-decoration-none text-black" href={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank" dangerouslySetInnerHTML={{__html: search.profile.fullName}}></a> 
                                         <OverlayTrigger
                                           placement="top"
                                           overlay={<Tooltip id="tooltip1">{search.count} search{search.count > 1 ? "es" : ""} | {moment(search.date, moment.ISO_8601).fromNow()}</Tooltip>}

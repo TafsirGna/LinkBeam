@@ -3,6 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
+import eventBus from "../EventBus";
 import { 
   sendDatabaseActionMessage,
   ack,
@@ -45,6 +46,7 @@ export default class SearchInputView extends React.Component{
   searchText(){
 
     if (this.state.text.length == 0){
+      eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, null);
       return;
     }
 

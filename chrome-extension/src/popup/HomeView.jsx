@@ -67,13 +67,20 @@ export default class HomeView extends React.Component{
 
     if (prevProps.globalData.allSearches != this.props.globalData.allSearches){
 
-      this.setState({loadingAllSearches: false});
+      if (this.props.globalData.allSearches.scope == "search"){
+        this.setState({allSearchLeft: false});
+      }
+      else{
 
-      if (prevProps.globalData.allSearches){
-        // check if the end of the all searches list has been hit
-        var hit = ((this.props.globalData.allSearches.searchCount == prevProps.globalData.allSearches.searchCount));
-        if (hit){
-          this.setState({allSearchLeft: false});
+        this.setState({loadingAllSearches: false, allSearchLeft: true});
+
+        if (prevProps.globalData.allSearches && prevProps.globalData.allSearches.scope == "all"){
+          // check if the end of the all searches list has been hit
+          var hit = ((this.props.globalData.allSearches.searchCount == prevProps.globalData.allSearches.searchCount));
+          if (hit){
+            this.setState({allSearchLeft: false});
+          }
+
         }
 
       }

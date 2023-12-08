@@ -515,7 +515,12 @@ function addProfileToOffsetLimitList(object, list, objectStoreName, params){
     var stop = false;
     
     if (params.context.indexOf("search") >= 0){
-        if (object.fullName.toLowerCase().indexOf(params.searchText.toLowerCase()) >= 0){
+        var searchTextIndex = object.fullName.toLowerCase().indexOf(params.searchText.toLowerCase());
+        if (searchTextIndex >= 0){
+            var fullName = object.fullName.slice(0, searchTextIndex);
+            fullName += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.fullName.slice(searchTextIndex, searchTextIndex + params.searchText.length)+'</span>';
+            fullName += object.fullName.slice(searchTextIndex + params.searchText.length);
+            object.fullName = fullName;
             list.push(object);
         }
     }

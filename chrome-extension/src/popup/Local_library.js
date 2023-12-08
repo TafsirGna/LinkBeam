@@ -262,9 +262,17 @@ export const groupSearchByProfile = (searches) => {
       results.push(search);
     }
     else{
-      (results[index]).count++;
+      if (new Date(results[index].date) >= new Date(search.date)){
+        (results[index]).count++;
+      }
+      else{
+        search.count = (results[index]).count + 1;
+        results[index] = search;
+      }
     }
   }
+
+  results.sort((a,b) => new Date(b.date.split("T")[0]) - new Date(a.date.split("T")[0]));
 
   return {list: results, searchCount: searches.length};
 
