@@ -107,6 +107,7 @@ export default class App extends React.Component{
   componentWillUnmount() {
 
     eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
+    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY);
 
   }
 
@@ -353,20 +354,18 @@ export default class App extends React.Component{
 
       listData = groupSearchByProfile(listData);
 
-      if (!this.state.tmp || (this.state.tmp && this.state.tmp.scope == "all")){
-
-        this.setState({tmp: this.state.globalData.allSearches}, () => {
-
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.allSearches = listData;
-            globalData.allSearches.scope = "search";
-            return { globalData };
-          });
-
-        });
-
-      }
+      // var tmp = (this.state.globalData.allSearches.scope == "all") ? this.state.globalData.allSearches : null;
+      var tmp = this.state.globalData.allSearches;
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.allSearches = listData;
+        globalData.allSearches.scope = "search";
+        return { globalData };
+      }, () => {
+        if (!this.state.tmp || (this.state.tmp && tmp.scope == "all")){
+          this.setState({tmp: tmp});
+        }
+      });
     }
 
   }

@@ -20,7 +20,7 @@ export default class CalendarView extends React.Component{
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Searches", "Reminders"],
+      tabTitles: ["Searches", "Reminders", "Activity List", "Time Chart"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
@@ -303,7 +303,11 @@ export default class CalendarView extends React.Component{
 
                   {this.state.tabTitles.map((tabTitle, index) => (
                                                     <Nav.Item>
-                                                      <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>{tabTitle}</Nav.Link>
+                                                      <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
+                                                        {tabTitle}
+                                                        { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
+                                                        { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
+                                                      </Nav.Link>
                                                     </Nav.Item>
                                                   ))}
 

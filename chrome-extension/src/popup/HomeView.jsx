@@ -261,7 +261,7 @@ export default class HomeView extends React.Component{
           {/* All Search List Tab */}
           { this.state.currentTabIndex == 1 && <div>
                                                 <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES}/>
-                                                <AggregatedSearchListView objects={this.props.globalData.allSearches.list} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft}/>
+                                                <AggregatedSearchListView objects={this.props.globalData.allSearches.list} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft} context={this.props.globalData.allSearches.scope}/>
                                               </div>}
 
           <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>

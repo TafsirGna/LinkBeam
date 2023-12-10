@@ -10,17 +10,14 @@ export default class SearchListView extends React.Component{
     super(props);
     this.state = {
       seeMoreButtonShow: true,
-      seeMoreButtonRef: React.createRef(),
     };
   }
 
   componentDidMount() {
 
-    window.addEventListener('scroll', this.seeMoreVisibilityHandler);
-
     var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
     this.setState({seeMoreButtonShow: seeMoreButtonShow}, () => {
-      this.seeMoreVisibilityHandler();
+      //
     });
 
   }
@@ -34,20 +31,7 @@ export default class SearchListView extends React.Component{
 
   }
 
-  seeMoreVisibilityHandler(){
-
-    if (!this.state.seeMoreButtonRef.current){
-      return;
-    }
-
-    if(window.pageYOffset + window.innerHeight >= /*document.getElementById("seeMoreButton").offsetTop*/ this.state.seeMoreButtonRef.current.offsetTop)
-      console.log(`Hidden element is now visible`);
-
-  }
-
   componentWillUnmount(){
-
-    window.removeEventListener('scroll', this.seeMoreVisibilityHandler);
 
   }
 
@@ -87,7 +71,7 @@ export default class SearchListView extends React.Component{
                   }
                 </div>
                 <div class="text-center my-2 ">
-                    { this.state.seeMoreButtonShow && <button ref={this.state.seeMoreButtonRef} /*id="seeMoreButton"*/ class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">See more</button>}
+                    { this.state.seeMoreButtonShow && <button /*id="seeMoreButton"*/ class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">See more</button>}
                     { this.props.loading && <div class="spinner-border spinner-border-sm text-secondary " role="status">
                                           <span class="visually-hidden">Loading...</span>
                                         </div>}

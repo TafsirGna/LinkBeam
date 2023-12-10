@@ -1,6 +1,5 @@
 /*import './BackToPrev.css'*/
 import { Link } from 'react-router-dom';
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 function BackToPrev(props) {
   /*const [count, setCount] = useState(0)*/

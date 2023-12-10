@@ -4,6 +4,7 @@ import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import VisibilitySensor from 'react-visibility-sensor';
 
 export default class AggregatedSearchListView extends React.Component{
 
@@ -11,7 +12,10 @@ export default class AggregatedSearchListView extends React.Component{
     super(props);
     this.state = {
       seeMoreButtonShow: true,
+      seeMoreButtonVisibility: null,
     };
+
+    this.onSeeMoreButtonVisibilityChange = this.onSeeMoreButtonVisibilityChange.bind(this);
   }
 
   componentDidMount() {
@@ -34,6 +38,14 @@ export default class AggregatedSearchListView extends React.Component{
 
   }
 
+  onSeeMoreButtonVisibilityChange = (isVisible) => {
+    this.setState({seeMoreButtonVisibility: isVisible}, () => {
+      if (this.state.seeMoreButtonVisibility){
+        this.props.seeMore();
+      }
+    });
+  }
+
   render(){
     return (
       <>
@@ -45,8 +57,8 @@ export default class AggregatedSearchListView extends React.Component{
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
                     <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
-                    <p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">{this.props.context == "search" ? "No found results": "No viewed profiles"}</span></p>
+                    {/*<p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>*/}
                   </div> }
 
         { this.props.objects && this.props.objects.length != 0 && <div>
@@ -61,7 +73,7 @@ export default class AggregatedSearchListView extends React.Component{
                                         <a class="text-decoration-none text-black" href={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank" dangerouslySetInnerHTML={{__html: search.profile.fullName}}></a> 
                                         <OverlayTrigger
                                           placement="top"
-                                          overlay={<Tooltip id="tooltip1">{search.count} search{search.count > 1 ? "es" : ""} | {moment(search.date, moment.ISO_8601).fromNow()}</Tooltip>}
+                                          overlay={<Tooltip id="tooltip1">{search.count} search{search.count > 1 ? "es" : ""} { this.props.context == "all" ? " | " + moment(search.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}
                                         >
                                           <span class="text-muted badge text-bg-light shadow-sm border">{search.count}</span>
                                         </OverlayTrigger>
@@ -78,7 +90,13 @@ export default class AggregatedSearchListView extends React.Component{
                   }
                 </div>
                 <div class="text-center my-2 ">
-                    { this.state.seeMoreButtonShow && <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">See more</button>}
+                    { this.state.seeMoreButtonShow && <VisibilitySensor
+                                                        onChange={this.onSeeMoreButtonVisibilityChange}
+                                                      >
+                                                        <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">
+                                                          See more
+                                                        </button>
+                                                      </VisibilitySensor>}
                     { this.props.loading && <div class="spinner-border spinner-border-sm text-secondary " role="status">
                                           <span class="visually-hidden">Loading...</span>
                                         </div>}

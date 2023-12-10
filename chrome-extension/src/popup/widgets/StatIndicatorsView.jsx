@@ -2,12 +2,17 @@
 import React from 'react';
 import moment from 'moment';
 import { Link } from 'react-router-dom';
+import hourglass_icon from '../../assets/hourglass_icon.png';
+import search_icon from '../../assets/search_icon.png';
+import news_icon from '../../assets/news_icon.png';
+import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   sendDatabaseActionMessage,
   ack,
   startMessageListener, 
   messageParams,
   dbData, 
+  secondsToHms,
 } from "../Local_library";
 
 const PROFILE_LABEL = "Profiles",
@@ -28,10 +33,13 @@ class IndicatorWidget extends React.Component {
   render() {
     return (
       <>
-        <button type="button" class="btn shadow-sm col mx-2 mt-3 text-muted fw-light text-start">
-          <h4 class={"ms-3 my-0 " + this.props.object.color}>{this.props.object.count}</h4>
+        <div type="button" class="btn shadow-sm col mx-2 mt-3 text-muted fw-light text-start border">
+          <h6 class={"ms-3 my-0 " + this.props.object.color}>
+            <img src={this.props.object.icon} alt="twbs" width="15" height="15" class="me-2 shadow-lg"/>
+            {this.props.object.value}
+          </h6>
           <p class="ms-3 my-0 small">{this.props.object.label}</p>
-        </button>
+        </div>
       </>
     );
   }
@@ -46,23 +54,27 @@ export default class StatIndicatorsView extends React.Component{
       indicatorData: {
         profileData: {
           label: PROFILE_LABEL,
-          count: 0,
+          value: 0,
           color: "text-warning",
+          icon: default_user_icon,
         },
         searchData: {
           label: SEARCH_LABEL,
-          count: 0,
+          value: 0,
           color: "text-success",
+          icon: search_icon,
         },
         timeSpentData: {
           label: TIME_SPENT_LABEL,
-          count: 0,
+          value: 0,
           color: "text-secondary",
+          icon: hourglass_icon,
         },
         newsData: {
           label: PROFILES_NEWS_LABEL,
-          count: 0,
+          value: 0,
           color: "text-primary",
+          icon: news_icon,
         },
       },
       // indicatorStyles: [
@@ -144,7 +156,8 @@ export default class StatIndicatorsView extends React.Component{
         var timeCount = message.data.objectData.value;
         this.setState(prevState => {
           let indicatorData = Object.assign({}, prevState.indicatorData);
-          indicatorData.timeSpentData.count = timeCount.value.toFixed(2) + "s";
+          // indicatorData.timeSpentData.value = timeCount.value.toFixed(2) + "s";
+          indicatorData.timeSpentData.value = secondsToHms(timeCount.value);
           return { indicatorData };
         }); 
         break;
@@ -163,7 +176,7 @@ export default class StatIndicatorsView extends React.Component{
 
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.profileData.count = profileCount;
+      indicatorData.profileData.value = profileCount;
       return { indicatorData };
     }); 
 
@@ -179,7 +192,7 @@ export default class StatIndicatorsView extends React.Component{
 
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.searchData.count = searchCount;
+      indicatorData.searchData.value = searchCount;
       return { indicatorData };
     }); 
 

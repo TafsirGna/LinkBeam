@@ -7,6 +7,7 @@ import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
 import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
+import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 
 import { 
   saveCurrentPageTitle, 
@@ -118,6 +119,9 @@ export default class StatisticsView extends React.Component{
               </div>
               <div class="carousel-item">
                 <BubbleProfileRelationMetricsChart viewChoice={this.state.viewChoice} />
+              </div>
+              <div class="carousel-item">
+                <ExpEdStackBarChart viewChoice={this.state.viewChoice} />
               </div>
             </div>
             <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
