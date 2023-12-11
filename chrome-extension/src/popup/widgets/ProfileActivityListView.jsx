@@ -12,8 +12,6 @@ export default class ProfileActivityListView extends React.Component{
 
   componentDidMount() {
 
-
-
   }
 
   render(){

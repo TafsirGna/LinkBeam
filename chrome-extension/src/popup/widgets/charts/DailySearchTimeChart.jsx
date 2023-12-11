@@ -2,7 +2,15 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParams, dbData, ack } from "../../Local_library";
+import { 
+  sendDatabaseActionMessage, 
+  getChartColors, 
+  startMessageListener, 
+  messageParams, 
+  dbData, 
+  ack, 
+  dbDataSanitizer 
+} from "../../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -61,9 +69,28 @@ export default class DailySearchTimeChart extends React.Component{
   componentDidMount() {
 
     // setting the labels
+    //
     var labels = [];
+    //
+
+    var objects = [];
     for (var search of this.props.objects){
-      labels.push(search.profile.fullName);
+      var index = objects.map(e => e.url).indexOf(search.url);
+      if (index == -1){
+        var object = {
+          url: search.url,
+          label: dbDataSanitizer.profileAbout(search.profile.fullName),
+          time: 0,
+        };
+        objects.push(object);
+
+        //
+        labels.push(object.label);
+        //
+      }
+      else{
+        // TODO
+      }
     }
 
     // setting the bar data

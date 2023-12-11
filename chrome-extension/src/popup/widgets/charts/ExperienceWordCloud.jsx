@@ -66,7 +66,12 @@ export default class ExperienceWordCloud extends React.Component{
   render(){
     return (
       <>
-        <canvas id="experience_cloud_word_canvas"></canvas>
+        <div class="shadow border rounded border-1 p-2">
+          <canvas id="experience_cloud_word_canvas"></canvas>
+        </div>
+        <p class="small badge text-muted fst-italic p-0">
+          <span>Word cloud of all jobs' title</span>
+        </p>
       </>
     );
   }

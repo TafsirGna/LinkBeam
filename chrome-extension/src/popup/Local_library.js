@@ -108,7 +108,39 @@ export const dbDataSanitizer = {
 
   },
 
-  profileAbout: function(str ){
+  profileAbout: function(str){
+
+    // clean the front
+    var startIndex = 0, endIndex = str.length - 1;
+    while(str[startIndex] == " " || str[startIndex] == "\n"){
+      startIndex++;
+    }
+
+    while(str[endIndex] == " " || str[endIndex] == "\n"){
+      endIndex--;
+    }
+
+    return str.slice(startIndex, endIndex + 1);
+
+  },
+
+  fullName: function(str){
+
+    // clean the front
+    var startIndex = 0, endIndex = str.length - 1;
+    while(str[startIndex] == " " || str[startIndex] == "\n"){
+      startIndex++;
+    }
+
+    while(str[endIndex] == " " || str[endIndex] == "\n"){
+      endIndex--;
+    }
+
+    return str.slice(startIndex, endIndex + 1);
+
+  },
+
+  companyName: function(str){
 
     // clean the front
     var startIndex = 0, endIndex = str.length - 1;
@@ -125,6 +157,10 @@ export const dbDataSanitizer = {
   },
 
 };
+
+export const computeExperienceTime = function(experience){
+
+}
 
 export const logInParseUser = async function(Parse, usernameValue, passwordValue, callback, errCallback = null) {
 

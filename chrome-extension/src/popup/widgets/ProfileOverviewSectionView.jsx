@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { activateInCurrentTab } from "../Local_library";
+import { computeExperienceTime } from "../Local_library";
 import LanguageListModal from "./modals/LanguageListModal";
 
 export default class ProfileOverviewSectionView extends React.Component{
@@ -18,6 +18,8 @@ export default class ProfileOverviewSectionView extends React.Component{
   handleLanguageListModalShow = () => this.setState({languageListModalShow: true});
 
   componentDidMount() {
+
+    var experienceTime = computeExperienceTime(this.props.profile.experience);
 
   }
 

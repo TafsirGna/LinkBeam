@@ -19,7 +19,11 @@ import { OverlayTrigger } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar } from 'react-chartjs-2';
-import { appParams, getChartColors } from "../../Local_library";
+import { 
+  appParams, 
+  getChartColors ,
+  dbDataSanitizer,
+} from "../../Local_library";
 import moment from 'moment';
 
 ChartJS.register(
@@ -91,8 +95,6 @@ export default class ProfileGanttChart extends React.Component{
           {
             label: 'Dataset',
             data: [],
-            // backgroundColor: 'rgba(255, 99, 132, 1)',
-            // borderColor: 'rgba(255, 99, 132, 1)',
             borderWidth: 1,
             borderSkipped: false,
             borderRadius: 10,
@@ -116,7 +118,7 @@ export default class ProfileGanttChart extends React.Component{
 
     for (var experience of this.props.profile.experience){
 
-      var company = experience.company;
+      var company = dbDataSanitizer.companyName(experience.company);
 
       // handling date range
       var dateRange = experience.period.replaceAll("\n", "").split(appParams.DATE_RANGE_SEPARATOR);
@@ -193,7 +195,12 @@ export default class ProfileGanttChart extends React.Component{
   render(){
     return (
       <>
-        <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
+        <div class="shadow border rounded border-1 p-2">
+          <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
+        </div>
+        <p class="small badge text-muted fst-italic p-0">
+          <span>Time chart of job experiences</span>
+        </p>
       </>
     );
   }
