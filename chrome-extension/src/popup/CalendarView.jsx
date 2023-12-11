@@ -10,6 +10,8 @@ import SearchListView from "./widgets/SearchListView";
 import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
 import CustomToast from "./widgets/toasts/CustomToast";
+import DailySearchTimeChart from "./widgets/charts/DailySearchTimeChart";
+import ProfileActivityListView from "./widgets/ProfileActivityListView";
 
 export default class CalendarView extends React.Component{
 
@@ -322,6 +324,10 @@ export default class CalendarView extends React.Component{
                         <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
 
                 { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
+
+                { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+
+                { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart objects={this.getDayObjectList(this.state.monthSearchList)}/>}
 
               </Card.Body>
             </Card>
