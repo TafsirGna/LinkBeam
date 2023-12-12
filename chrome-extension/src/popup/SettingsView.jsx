@@ -4,6 +4,7 @@ import BackToPrev from "./widgets/BackToPrev";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
+import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';
 import { 
   saveCurrentPageTitle, 
@@ -13,6 +14,7 @@ import {
   messageParams,
   dbData, 
 } from "./Local_library";
+// import Button from 'react-bootstrap/Button';
 
 export default class SettingsView extends React.Component{
   
@@ -27,6 +29,12 @@ export default class SettingsView extends React.Component{
         status: "NO",
         info: ""
       },
+      offCanvasShow: false,
+      offCanvasTitle: "",
+      offCanvasFormValidated: false,
+      offCanvasFormStartDate: (new Date()).toISOString().split("T")[0],
+      offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
+      offCanvasFormSelectValue: "1",
       usageQuota: null,
     };
 
@@ -39,6 +47,10 @@ export default class SettingsView extends React.Component{
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.onAllDataReceived = this.onAllDataReceived.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
+    this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
+    this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
+    this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
+
   }
 
   componentDidMount() {
@@ -74,6 +86,9 @@ export default class SettingsView extends React.Component{
 
     this.checkStorageUsage();
   }
+
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
+  handleOffCanvasShow = (title) => {this.setState({offCanvasShow: true, offCanvasTitle: title})};
 
   checkStorageUsage(){
 
@@ -219,6 +234,26 @@ export default class SettingsView extends React.Component{
 
   }
 
+  handleOffCanvasFormSelectInputChange(event) {
+
+    this.setState({offCanvasFormSelectValue: event.target.value}, () => {
+
+    }); 
+
+  }
+
+  handleOffCanvasFormStartDateInputChange(event) {
+
+    this.setState({offCanvasFormStartDate: event.target.value}); 
+
+  }
+
+  handleOffCanvasFormEndDateInputChange(event) {
+
+    this.setState({offCanvasFormEndDate: event.target.value}); 
+
+  }
+
   render(){
     return (
       <>
@@ -300,7 +335,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Export my data (csv)</strong>
-                  <a href="#" onClick={() => {this.initDataExport()}} class="text-primary badge" title="Export all my data">Export</a>
+                  <a href="#" onClick={() => {/*this.initDataExport()*/ this.handleOffCanvasShow("Data export")}} class="text-primary badge" title="Export all my data">Export</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -333,7 +368,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Erase all data</strong>
-                  { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={this.deleteAll}>Delete</a>}
+                  { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={/*this.deleteAll*/ () => {this.handleOffCanvasShow("Data deletion")}}>Delete</a>}
                   { this.state.processingState.status == "NO" && this.state.processingState.info != "" && <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>}
                   { this.state.processingState.status == "YES" && <div class="spinner-border spinner-border-sm" role="status">
                                       <span class="visually-hidden">Loading...</span>
@@ -344,6 +379,65 @@ export default class SettingsView extends React.Component{
             </div>
           </div>
         </div>
+
+        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>{this.state.offCanvasTitle}</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+
+            <Form noValidate validated={this.state.offCanvasFormValidated} id="offcanvas_form" className="small text-muted">
+              <Form.Select aria-label="Default select example" size="sm"
+                onChange={this.handleOffCanvasFormSelectInputChange}>
+                <option value="1">All</option>
+                <option value="2">Specific dates</option>
+              </Form.Select>
+              <Form.Group className="my-3" controlId="reminderForm.scheduledForControlInput1">
+                <Form.Label>Starting</Form.Label>
+                <Form.Control
+                  type="date"
+                  autoFocus
+                  max={new Date().toISOString().slice(0, 10)}
+                  value={this.state.offCanvasFormStartDate}
+                  onChange={this.handleOffCanvasFormStartDateInputChange}
+                  className=""
+                  // readOnly={this.state.display ? true : false}
+                  disabled={this.state.offCanvasFormSelectValue == "1" ? true : false}
+                  required
+                  size="sm"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please choose a valid date.
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="reminderForm.scheduledForControlInput2">
+                <Form.Label>Ending</Form.Label>
+                <Form.Control
+                  type="date"
+                  autoFocus
+                  max={new Date().toISOString().slice(0, 10)}
+                  value={this.state.offCanvasFormEndDate}
+                  onChange={this.handleOffCanvasFormEndDateInputChange}
+                  className=""
+                  // readOnly={this.state.display ? true : false}
+                  disabled={this.state.offCanvasFormSelectValue == "1" ? true : false}
+                  required
+                  size="sm"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please choose a valid date.
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Form>
+
+            <div class="d-flex">
+              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="btn btn-danger btn-sm ms-auto">Delete</button>}
+
+              { this.state.offCanvasTitle == "Data export" && <button type="button" class="btn btn-primary btn-sm ms-auto">Export</button>}
+            </div>
+
+          </Offcanvas.Body>
+        </Offcanvas>
 
       </>
     )

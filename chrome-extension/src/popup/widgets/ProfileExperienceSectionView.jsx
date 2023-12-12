@@ -46,11 +46,11 @@ export default class ProfileExperienceSectionView extends React.Component{
                                                 </p>
                                               </div>}
 
-        <div class="mt-4 mx-2">
+        <div class="mt-2 mx-2">
     			<ProfileGanttChart profile={this.props.profile}/>
     		</div>
 
-        <div class="mt-4 mx-2">
+        <div class="mt-2 mx-2">
           <ExperienceWordCloud />
         </div>
       </>

@@ -130,7 +130,7 @@ export default class MainProfileView extends React.Component{
   render(){
     return (
       <>
-        <div class="col-8 offset-2">
+        <div class="col-8 offset-2 pb-5">
 
           {this.state.profile == null && <div class="text-center"><div class="mt-5 pt-5"><div class="spinner-border text-primary" role="status">
                     </div>

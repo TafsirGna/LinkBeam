@@ -40,7 +40,7 @@ export default class ProfileViewBody extends React.Component{
   render(){
     return (
       <>
-        <div class="card mt-4 shadow">
+        <div class="card mt-4 shadow pb-3">
           <div class="card-header">
             <ul class="nav nav-tabs card-header-tabs">
               {this.state.navTabTitles.map((tabTitle, index) => (
