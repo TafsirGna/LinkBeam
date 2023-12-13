@@ -15,6 +15,8 @@ import {
 import { env } from "../../.env.js";
 import Parse from 'parse/dist/parse.min.js';
 import { genPassword } from "../.private_library";
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
+import Form from 'react-bootstrap/Form';
 
 // Parse initialization configuration goes here
 Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
@@ -207,13 +209,27 @@ export default class FeedbackView extends React.Component{
                           <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>}
 
-            <div class="mb-2 mt-2">
-              <label for="exampleFormControlInput1" class="form-label text-muted small fst-italic">Subject</label>
-              <input type="email" class="form-control shadow border border-primary" id="exampleFormControlInput1" placeholder="Enter a subject" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
+            <div class="mt-4">
+              <FloatingLabel
+                controlId="subjectInput"
+                label="Subject"
+                className="mb-3"
+              >
+                <input type="email" class="form-control shadow-sm" id="exampleFormControlInput1" placeholder="Enter a subject" value={this.state.feedback.title} onChange={this.onFeedbackTitleInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" } />
+              </FloatingLabel>
             </div>
-            <div class="mb-3">
-              <label for="exampleFormControlTextarea1" class="form-label text-muted small fst-italic">Text</label>
-              <textarea class="form-control shadow border border-primary" id="exampleFormControlTextarea1" rows="3" value={this.state.feedback.text} onChange={this.onFeedbackTextInputChange} disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" }></textarea>
+            <div class="mt-4">
+              <FloatingLabel controlId="floatingTextarea2" label="Comments">
+                <Form.Control
+                  as="textarea"
+                  placeholder="Leave a comment here"
+                  style={{ height: '100px' }}
+                  className="shadow-sm"
+                  value={this.state.feedback.text} 
+                  onChange={this.onFeedbackTextInputChange} 
+                  disabled={ this.state.dataRequestDone && this.state.dataRequestDone == "AVAIL" ? "disabled" : "" }
+                />
+              </FloatingLabel>
             </div>
 
             { this.state.dataRequestDone && this.state.dataRequestDone == "N/A" &&

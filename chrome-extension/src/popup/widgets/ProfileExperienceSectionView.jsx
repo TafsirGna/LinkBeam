@@ -1,11 +1,12 @@
 /*import './HomeMenu.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import ExperienceWordCloud from "./charts/ExperienceWordCloud";
+import eventBus from "../EventBus";
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -30,6 +31,10 @@ export default class ProfileExperienceSectionView extends React.Component{
 
   }
 
+  showEdExpTimeChart(){
+    eventBus.dispatch(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, null);
+  }
+
   render(){
     return (
       <>
@@ -47,6 +52,14 @@ export default class ProfileExperienceSectionView extends React.Component{
                                               </div>}
 
         <div class="mt-2 mx-2">
+          <OverlayTrigger
+            placement="bottom"
+            overlay={<Tooltip id="tooltip1">Click to chart education & experience</Tooltip>}
+          >
+            <div class="handy-cursor spinner-grow spinner-grow-sm text-secondary ms-1 mb-2" role="status" onClick={this.showEdExpTimeChart}>
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </OverlayTrigger> 
     			<ProfileGanttChart profile={this.props.profile}/>
     		</div>
 

@@ -23,7 +23,6 @@ export default class SettingsView extends React.Component{
     this.state = {
       keywordCount: 0,
       reminderCount: 0,
-      notifSettingCheckBoxValue: true,
       darkThemeCheckBoxValue: false,
       processingState: {
         status: "NO",
@@ -59,12 +58,16 @@ export default class SettingsView extends React.Component{
 
     saveCurrentPageTitle("Settings");
 
-    if (Object.hasOwn(this.props.globalData.settings, 'notifications')){
-      this.setState({notifSettingCheckBoxValue: this.props.globalData.settings.notifications});
+    if (!Object.hasOwn(this.props.globalData.settings, 'notifications')){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+    }
+
+    if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
     }
     else{
-      // Knowing the previous status of the notification checkbox
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+      // Offcanvas
+      this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
     }
 
     // setting the local variable with the global data
@@ -85,6 +88,19 @@ export default class SettingsView extends React.Component{
     }
 
     this.checkStorageUsage();
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
+
+        this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+
+      }
+    }
+
   }
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
@@ -154,26 +170,22 @@ export default class SettingsView extends React.Component{
 
     // setting the new value
     switch(message.data.objectData.property){
-      case "notifications": {
-        this.setState({notifSettingCheckBoxValue: message.data.objectData.value});
-        break;
-      }
 
       case "lastDataResetDate": {
 
-        // Displaying the validation sign
-        this.setState({
-          processingState: {status: "NO", info: "ERASING"},
-          keywordCount: 0,
-          reminderCount: 0,
-        });
+        // // Displaying the validation sign
+        // this.setState({
+        //   processingState: {status: "NO", info: "ERASING"},
+        //   keywordCount: 0,
+        //   reminderCount: 0,
+        // });
 
-        this.checkStorageUsage();
+        // this.checkStorageUsage();
 
-        // Setting a timer to reset all of this
-        setTimeout(() => {
-          this.setState({processingState: {status: "NO", info: ""}});
-        }, appParams.TIMER_VALUE);
+        // // Setting a timer to reset all of this
+        // setTimeout(() => {
+        //   this.setState({processingState: {status: "NO", info: ""}});
+        // }, appParams.TIMER_VALUE);
 
         break;
       }            
@@ -237,7 +249,10 @@ export default class SettingsView extends React.Component{
   handleOffCanvasFormSelectInputChange(event) {
 
     this.setState({offCanvasFormSelectValue: event.target.value}, () => {
-
+      this.setState({offCanvasFormEndDate: (new Date()).toISOString().split("T")[0]});
+      if (this.state.offCanvasFormSelectValue == "1"){
+        this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+      }
     }); 
 
   }
@@ -250,7 +265,11 @@ export default class SettingsView extends React.Component{
 
   handleOffCanvasFormEndDateInputChange(event) {
 
-    this.setState({offCanvasFormEndDate: event.target.value}); 
+    this.setState({offCanvasFormEndDate: event.target.value}, () => {
+      if (new Date(this.state.offCanvasFormEndDate) < new Date(this.state.offCanvasFormStartDate)){
+        this.setState({offCanvasFormStartDate: this.state.offCanvasFormEndDate});
+      }
+    }); 
 
   }
 
@@ -268,7 +287,7 @@ export default class SettingsView extends React.Component{
                     type="switch"
                     id="notif-custom-switch"
                     label=""
-                    checked={this.state.notifSettingCheckBoxValue}
+                    checked={this.props.globalData.settings.notifications}
                     onChange={this.saveCheckBoxNewState}
                   />
                 </div>
@@ -397,7 +416,7 @@ export default class SettingsView extends React.Component{
                 <Form.Control
                   type="date"
                   autoFocus
-                  max={new Date().toISOString().slice(0, 10)}
+                  max={(new Date(this.state.offCanvasFormEndDate)).toISOString().split("T")[0]}
                   value={this.state.offCanvasFormStartDate}
                   onChange={this.handleOffCanvasFormStartDateInputChange}
                   className=""

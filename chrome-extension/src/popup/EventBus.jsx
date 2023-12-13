@@ -4,6 +4,7 @@ const eventBus = {
   PROFILE_SHOW_REMINDER_OBJECT: "showReminder",
   PROFILE_SHOW_DOUGHNUT_MODAL: "showDoughnutModal",
   EMPTY_SEARCH_TEXT_ACTIVITY: "emptySearchTextActivity",
+  SHOW_ED_EXP_TIME_CHART_MODAL: "showEdExpTimeChartModal",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

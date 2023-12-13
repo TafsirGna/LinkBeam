@@ -6,6 +6,10 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const options = {
+  cutout: 60,
+};
+
 export default class ItemPercentageDoughnutChart extends React.Component{
 
   constructor(props){
@@ -13,12 +17,18 @@ export default class ItemPercentageDoughnutChart extends React.Component{
     this.state = {
       data: null,
       colors:[
-        {back: 'rgba(255, 99, 132, 0.2)', bord: 'rgba(255, 99, 132, 1)'},
-        {back: 'rgba(54, 162, 235, 0.2)', bord: 'rgba(54, 162, 235, 1)'},
-        {back: 'rgba(255, 206, 86, 0.2)', bord: 'rgba(255, 206, 86, 1)'},
-        {back: 'rgba(75, 192, 192, 0.2)', bord: 'rgba(75, 192, 192, 1)'},
-        {back: 'rgba(153, 102, 255, 0.2)', bord: 'rgba(153, 102, 255, 1)'},
-        {back: 'rgba(255, 159, 64, 0.2)', bord: 'rgba(255, 159, 64, 1)'},
+        {back: 'rgba(255, 99, 132, 1)', bord: 'rgba(255, 99, 132, 1)'},
+        {back: 'rgba(54, 162, 235, 1)', bord: 'rgba(54, 162, 235, 1)'},
+        {back: 'rgba(255, 206, 86, 1)', bord: 'rgba(255, 206, 86, 1)'},
+        {back: 'rgba(75, 192, 192, 1)', bord: 'rgba(75, 192, 192, 1)'},
+        {back: 'rgba(153, 102, 255, 1)', bord: 'rgba(153, 102, 255, 1)'},
+        {back: 'rgba(255, 159, 64, 1)', bord: 'rgba(255, 159, 64, 1)'},
+        // {back: 'rgba(255, 99, 132, 0.2)', bord: 'rgba(255, 99, 132, 1)'},
+        // {back: 'rgba(54, 162, 235, 0.2)', bord: 'rgba(54, 162, 235, 1)'},
+        // {back: 'rgba(255, 206, 86, 0.2)', bord: 'rgba(255, 206, 86, 1)'},
+        // {back: 'rgba(75, 192, 192, 0.2)', bord: 'rgba(75, 192, 192, 1)'},
+        // {back: 'rgba(153, 102, 255, 0.2)', bord: 'rgba(153, 102, 255, 1)'},
+        // {back: 'rgba(255, 159, 64, 0.2)', bord: 'rgba(255, 159, 64, 1)'},
       ],
     };
   }
@@ -56,7 +66,7 @@ export default class ItemPercentageDoughnutChart extends React.Component{
   render(){
     return (
       <>
-      	{ this.state.data && <Doughnut data={this.state.data} /> }
+      	{ this.state.data && <Doughnut data={this.state.data} options={options} /> }
       </>
     );
   }

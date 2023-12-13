@@ -7,6 +7,8 @@ import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
+import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
+import eventBus from "../EventBus";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -23,12 +25,25 @@ export default class ProfileViewBody extends React.Component{
         "Activity",
         "Suggestions",
       ],
+      edExpTimeChartModalShow: false,
     };
   }
 
   componentDidMount() {
 
     // Setting the data for the chart
+    eventBus.on(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, (data) =>
+      {
+        this.handleEdExpTimeChartModalShow();
+      }
+    );
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL);
+
   }
 
   switchToTabIndex(tabIndex){
@@ -36,6 +51,9 @@ export default class ProfileViewBody extends React.Component{
     this.setState({currentTabIndex: tabIndex});
 
   }
+
+  handleEdExpTimeChartModalClose = () => this.setState({edExpTimeChartModalShow: false});
+  handleEdExpTimeChartModalShow = () => this.setState({edExpTimeChartModalShow: true});
 
   render(){
     return (
@@ -75,6 +93,8 @@ export default class ProfileViewBody extends React.Component{
 
           </div>
         </div>
+
+        <EducationExperienceTimeChartModal profile={this.props.profile} show={this.state.edExpTimeChartModalShow} onHide={this.handleEdExpTimeChartModalClose} />
       </>
     );
   }

@@ -72,7 +72,7 @@ export default class KeywordListView extends React.Component{
                     </div>}
 
         { this.props.objects != null && this.props.objects.length != 0 && 
-                <ul class="list-unstyled mb-0 rounded shadow p-2">
+                <ul class="list-unstyled mb-0 rounded shadow-sm p-2">
                   {
                     this.props.objects.map((keyword, index) => (<li key={index}>
                             <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.initKeywordDeletion(keyword)}}>

@@ -26,6 +26,7 @@ const settingData = [{
     currentPageTitle: "Activity",
     userIcon: "default",
     timeCount: {value: 0, lastCheck: (new Date()).toISOString()},
+    automaticTabOpening: true,
 }];
 
 
