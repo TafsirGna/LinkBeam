@@ -13,6 +13,7 @@ import {
   startMessageListener, 
   messageParams,
   dbData, 
+  appParams,
 } from "./Local_library";
 // import Button from 'react-bootstrap/Button';
 
@@ -49,6 +50,7 @@ export default class SettingsView extends React.Component{
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
+    this.initDataExport = this.initDataExport.bind(this);
 
   }
 
@@ -56,7 +58,7 @@ export default class SettingsView extends React.Component{
 
     this.listenToMessages();
 
-    saveCurrentPageTitle("Settings");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
     if (!Object.hasOwn(this.props.globalData.settings, 'notifications')){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
@@ -233,16 +235,16 @@ export default class SettingsView extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : {startDate: this.state.offCanvasFormStartDate, endDate: this.state.offCanvasFormEndDate});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]});
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
     }
   }
 
   initDataExport(){
-    const response = confirm("Do you confirm the download your data as specified ?");
+    const response = confirm("Do you confirm the download of your data as specified ?");
 
     if (response){
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : {startDate: this.state.offCanvasFormStartDate, endDate: this.state.offCanvasFormEndDate});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]});
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
     }
 
@@ -411,7 +413,9 @@ export default class SettingsView extends React.Component{
 
             <Form noValidate validated={this.state.offCanvasFormValidated} id="offcanvas_form" className="small text-muted">
               <Form.Select aria-label="Default select example" size="sm"
-                onChange={this.handleOffCanvasFormSelectInputChange}>
+                onChange={this.handleOffCanvasFormSelectInputChange}
+                className="shadow"
+                >
                 <option value="1">All</option>
                 <option value="2">Specific dates</option>
               </Form.Select>

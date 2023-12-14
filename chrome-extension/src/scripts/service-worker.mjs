@@ -337,7 +337,10 @@ function getBookmarkList(params, callback = null){
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.BOOKMARKS, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
     // results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
@@ -352,15 +355,53 @@ function getBookmarkList(params, callback = null){
 
 function getSearchList(params, callback = null) {
 
+    console.log("§§§§§§§§§§§§§§ 1 : ", params);
     if (params){
+        console.log("§§§§§§§§§§§§§§ 2 : ", params);
         callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
         getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, callback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, results);
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
+
+}
+
+function getNotificationList(params, callback = null){
+
+    if (params){
+        getOffsetLimitList(params, dbData.objectStoreNames.NOTIFICATIONS, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.NOTIFICATIONS, (results) => {
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NOTIFICATIONS, results);
+            if (callback){
+                callback(results);
+            }
+        });
+    }
+
+}
+
+function getSettingsList(params, callback = null){
+
+    // if (params){
+    //     // callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
+    //     getOffsetLimitList(params, dbData.objectStoreNames.SETTINGS, callback);
+    // }
+    // else{
+        getObjectStoreAllData(dbData.objectStoreNames.SETTINGS, (results) => {
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SETTINGS, results);
+            if (callback){
+                callback(results);
+            }
+        });
+    // }
 
 }
 
@@ -368,11 +409,14 @@ function getProfileList(params, callback = null) {
 
     if (params){
         callback = (callback ? callback : getAssociatedSearches); // TO BE UPDATED
-    getOffsetLimitList(params, dbData.objectStoreNames.PROFILES, getAssociatedSearches);
+        getOffsetLimitList(params, dbData.objectStoreNames.PROFILES, callback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.PROFILES, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES, results);
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
 
@@ -514,6 +558,25 @@ function addProfileToOffsetLimitList(object, list, objectStoreName, params){
             list.push(object);
         }
     }
+    else{
+        if (params.timePeriod){
+            if (typeof params.timePeriod == "string"){ // a specific date
+                if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+                    list.push(object);
+                }
+            }
+            else{
+                if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                    var objectDate = (new Date(object.date)),
+                        startDate = new Date(params.timePeriod[0]),
+                        endDate = new Date(params.timePeriod[2]);
+                    if (startDate <= objectDate && objectDate <= endDate){
+                        list.push(object);
+                    }
+                }
+            }  
+        }
+    }
 
     return {list: list, stop: stop}; 
 
@@ -535,6 +598,93 @@ function addBookmarkToOffsetLimitList(object, list, objectStoreName, params){
         else{
             if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
                 var objectDate = (new Date(object.createdOn)),
+                    startDate = new Date(params.timePeriod[0]),
+                    endDate = new Date(params.timePeriod[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    list.push(object);
+                }
+            }
+        }            
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
+function addKeywordToOffsetLimitList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (!params.timePeriod){
+        list.push(object);
+    }
+    else{
+        if (typeof params.timePeriod == "string"){ // a specific date
+            if (params.timePeriod.split("T")[0] == object.createdOn.split("T")[0]){
+                list.push(object);
+            }
+        }
+        else{
+            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                var objectDate = (new Date(object.createdOn)),
+                    startDate = new Date(params.timePeriod[0]),
+                    endDate = new Date(params.timePeriod[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    list.push(object);
+                }
+            }
+        }            
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
+function addNotificationToOffsetLimitList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (!params.timePeriod){
+        list.push(object);
+    }
+    else{
+        if (typeof params.timePeriod == "string"){ // a specific date
+            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+                list.push(object);
+            }
+        }
+        else{
+            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                var objectDate = (new Date(object.date)),
+                    startDate = new Date(params.timePeriod[0]),
+                    endDate = new Date(params.timePeriod[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    list.push(object);
+                }
+            }
+        }            
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
+function addNewsFeedToOffsetLimitList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (!params.timePeriod){
+        list.push(object);
+    }
+    else{
+        if (typeof params.timePeriod == "string"){ // a specific date
+            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+                list.push(object);
+            }
+        }
+        else{
+            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                var objectDate = (new Date(object.date)),
                     startDate = new Date(params.timePeriod[0]),
                     endDate = new Date(params.timePeriod[2]);
                 if (startDate <= objectDate && objectDate <= endDate){
@@ -572,6 +722,21 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
             break;
         }
 
+        case dbData.objectStoreNames.KEYWORDS:{
+            result = addKeywordToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
+        case dbData.objectStoreNames.NOTIFICATIONS:{
+            result = addNotificationToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
+        case dbData.objectStoreNames.NEWSFEED:{
+            result = addNewsFeedToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
     }    
 
     return result;
@@ -588,7 +753,10 @@ function getReminderList(params, callback = null) {
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.REMINDERS, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
 
@@ -603,7 +771,10 @@ function getKeywordList(params, callback = null) {
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
 }
@@ -616,8 +787,11 @@ function getNewsFeedList(params, callback = null) {
         getOffsetLimitList(params, dbData.objectStoreNames.NEWSFEED, callback);
     }
     else{
-        getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
+        getObjectStoreAllData(dbData.objectStoreNames.NEWSFEED, (results) => {
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
+            if (callback){
+                callback(results);
+            }
         });
     }
 }
@@ -658,11 +832,11 @@ function getObjectStoresSpecifiedData(objectStoreNames, results, params){
         objectStoreNames.shift();
 
         // looping back
-        getObjectStoresSpecifiedData(objectStoreNames, results);
+        getObjectStoresSpecifiedData(objectStoreNames, results, params);
 
     };
 
-    getList(objectStoreName, params, callback);
+    getList(objectStoreName, { ...params }, callback);
 
 }
 
@@ -718,6 +892,16 @@ function getList(objectStoreName, objectData, callback = null){
 
         case dbData.objectStoreNames.PROFILES:{
             getProfileList(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.NOTIFICATIONS:{
+            getNotificationList(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.SETTINGS:{
+            getSettingsList(objectData, callback);
             break;
         }
 
