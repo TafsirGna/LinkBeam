@@ -105,7 +105,7 @@ export default class SettingsView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasFormSelectValue: "1"})};
   handleOffCanvasShow = (title) => {this.setState({offCanvasShow: true, offCanvasTitle: title})};
 
   checkStorageUsage(){
@@ -415,6 +415,7 @@ export default class SettingsView extends React.Component{
               <Form.Select aria-label="Default select example" size="sm"
                 onChange={this.handleOffCanvasFormSelectInputChange}
                 className="shadow"
+                value={this.state.offCanvasFormSelectValue}
                 >
                 <option value="1">All</option>
                 <option value="2">Specific dates</option>
@@ -425,6 +426,7 @@ export default class SettingsView extends React.Component{
                   type="date"
                   autoFocus
                   max={(new Date(this.state.offCanvasFormEndDate)).toISOString().split("T")[0]}
+                  min={(Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')) ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
                   value={this.state.offCanvasFormStartDate}
                   onChange={this.handleOffCanvasFormStartDateInputChange}
                   className=""
@@ -458,9 +460,9 @@ export default class SettingsView extends React.Component{
             </Form>
 
             <div class="d-flex">
-              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
+              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
 
-              { this.state.offCanvasTitle == "Data export" && <button type="button" class="btn btn-primary btn-sm ms-auto" onClick={this.initDataExport}>Export</button>}
+              { this.state.offCanvasTitle == "Data export" && <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={this.initDataExport}>Export</button>}
             </div>
 
           </Offcanvas.Body>

@@ -355,9 +355,7 @@ function getBookmarkList(params, callback = null){
 
 function getSearchList(params, callback = null) {
 
-    console.log("§§§§§§§§§§§§§§ 1 : ", params);
     if (params){
-        console.log("§§§§§§§§§§§§§§ 2 : ", params);
         callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
         getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, callback);
     }
@@ -836,7 +834,8 @@ function getObjectStoresSpecifiedData(objectStoreNames, results, params){
 
     };
 
-    getList(objectStoreName, { ...params }, callback);
+    var reqParams = (params ? { ...params } : null);
+    getList(objectStoreName, reqParams, callback);
 
 }
 
