@@ -329,63 +329,52 @@ function getAssociatedSearches(objects, objectStoreName, context){
 
 // Script for providing all the bookmarked profiles
 
-function getBookmarkList(){
+function getBookmarkList(params, callback = null){
 
-    let request = db
-                    .transaction(dbData.objectStoreNames.BOOKMARKS, "readonly")
-                    .objectStore(dbData.objectStoreNames.BOOKMARKS)
-                    .getAll();
-    let results = [];
-    request.onsuccess = (event) => {
-        console.log('Got all bookmarks:', event.target.result);
-        // Sending the retrieved data
-        var bookmarks = event.target.result;
-
-        if (bookmarks.length == 0){
+    if (params){
+        callback = (callback ? callback : getAssociatedProfiles);
+        getOffsetLimitList(params, dbData.objectStoreNames.BOOKMARKS, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.BOOKMARKS, (results) => {
             sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
-            return;
-        }
-
-        bookmarks.forEach((bookmark) => {
-            let profileRequest = db
-                    .transaction(dbData.objectStoreNames.PROFILES, "readonly")
-                    .objectStore(dbData.objectStoreNames.PROFILES)
-                    .get(bookmark.url);
-            profileRequest.onsuccess = (event) => {
-                var profile = event.target.result;
-                bookmark.profile = profile;
-
-                results.push(bookmark);
-
-                if (results.length == bookmarks.length){
-                    results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
-                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
-                }
-            };
-
-            profileRequest.onerror = (event) => {
-                console.log("An error occured when retrieving profile of url : ", bookmark.url);
-            };
         });
-    };
+    }
+    // results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
 
-    request.onerror = (event) => {
-        console.log("An error occured when retrieving all bookmarks");
-    };
+    // request.onerror = (event) => {
+    //     console.log("An error occured when retrieving all bookmarks");
+    // };
 
 }
 
 // Script for getting all saved searches
 
-function getSearchList(params) {
+function getSearchList(params, callback = null) {
 
-    getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, getAssociatedProfiles);
+    if (params){
+        callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
+        getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, results);
+        });
+    }
 
 }
 
-function getProfileList(params) {
+function getProfileList(params, callback = null) {
 
+    if (params){
+        callback = (callback ? callback : getAssociatedSearches); // TO BE UPDATED
     getOffsetLimitList(params, dbData.objectStoreNames.PROFILES, getAssociatedSearches);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.PROFILES, (results) => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES, results);
+        });
+    }
 
 }
 
@@ -530,6 +519,35 @@ function addProfileToOffsetLimitList(object, list, objectStoreName, params){
 
 }
 
+function addBookmarkToOffsetLimitList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (!params.timePeriod){
+        list.push(object);
+    }
+    else{
+        if (typeof params.timePeriod == "string"){ // a specific date
+            if (params.timePeriod.split("T")[0] == object.createdOn.split("T")[0]){
+                list.push(object);
+            }
+        }
+        else{
+            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
+                var objectDate = (new Date(object.createdOn)),
+                    startDate = new Date(params.timePeriod[0]),
+                    endDate = new Date(params.timePeriod[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    list.push(object);
+                }
+            }
+        }            
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
 function addToOffsetLimitList(object, list, objectStoreName, params){
 
     var result = null;
@@ -549,6 +567,11 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
             break;
         }
 
+        case dbData.objectStoreNames.BOOKMARKS:{
+            result = addBookmarkToOffsetLimitList(object, list, objectStoreName, params);
+            break;
+        }
+
     }    
 
     return result;
@@ -557,57 +580,51 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
 
 // Script for getting all saved reminders
 
-function getReminderList(params) {
+function getReminderList(params, callback = null) {
 
-    getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS, getAssociatedProfiles);
+    if (params){
+        callback = (callback ? callback : getAssociatedProfiles);
+        getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.REMINDERS, (results) => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
+        });
+    }
 
 }
 
 // Script for getting all saved keywords
 
-function getKeywordList() {
+function getKeywordList(params, callback = null) {
 
-    let request = db
-                .transaction(dbData.objectStoreNames.KEYWORDS, "readonly")
-                .objectStore(dbData.objectStoreNames.KEYWORDS)
-                .getAll();
-
-    request.onsuccess = (event) => {
-        console.log('Got all keywords:', event.target.result);
-        // Sending the retrieved data
-        let results = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when retrieving keyword list : ", event);
-    };
+    if (params){
+        getOffsetLimitList(params, dbData.objectStoreNames.KEYWORDS, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
+        });
+    }
 }
 
 // Script for getting the newsfeed
 
-function getNewsFeedList() {
+function getNewsFeedList(params, callback = null) {
 
-    let request = db
-                .transaction(dbData.objectStoreNames.NEWSFEED, "readonly")
-                .objectStore(dbData.objectStoreNames.NEWSFEED)
-                .getAll();
-
-    request.onsuccess = (event) => {
-        console.log('Got all newsfeed:', event.target.result);
-        // Sending the retrieved data
-        let results = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when retrieving newsfeed list : ", event);
-    };
+    if (params){
+        getOffsetLimitList(params, dbData.objectStoreNames.NEWSFEED, callback);
+    }
+    else{
+        getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
+        });
+    }
 }
 
 // Script for getting all db data
 
-function getAllData(){
+function getMyData(params){
 
     const data = db.objectStoreNames;
     var results = {dbVersion: dbVersion}, objectStoreNames = [];
@@ -618,11 +635,11 @@ function getAllData(){
         }
     }
 
-    getObjectStoresBareData(objectStoreNames, results);
+    getObjectStoresSpecifiedData(objectStoreNames, results, params);
 
 }
 
-function getObjectStoresBareData(objectStoreNames, results){
+function getObjectStoresSpecifiedData(objectStoreNames, results, params){
 
     if (objectStoreNames.length == 0){
         // Sending the data back to the content script
@@ -632,67 +649,80 @@ function getObjectStoresBareData(objectStoreNames, results){
 
     var objectStoreName = objectStoreNames[0];
 
+    const callback = (objects) => {
+
+        console.log('Got the specified data ['+objectStoreName+']:', objects);
+        // Sending the retrieved data
+        results[objectStoreName] = objects;
+
+        objectStoreNames.shift();
+
+        // looping back
+        getObjectStoresSpecifiedData(objectStoreNames, results);
+
+    };
+
+    getList(objectStoreName, params, callback);
+
+}
+
+function getObjectStoreAllData(objectStoreName, callback = null){
+
     let request = db
         .transaction(objectStoreName, "readonly")
         .objectStore(objectStoreName)
         .getAll();
 
     request.onsuccess = (event) => {
-        console.log('Got all data ['+objectStoreName+']:', event.target.result);
-        // Sending the retrieved data
-        results[objectStoreName] = (event.target.result);
-
-        objectStoreNames.shift();
-
-        // looping
-        getObjectStoresBareData(objectStoreNames, results);
-        // if (Object.keys(results).length == objectStoreNames.length){
-
+        var objects = event.target.result;
+        if (callback){
+            callback(objects);
+        }
     };
 
     request.onerror = (event) => {
-        console.log("An error occured when retrieving all data ["+objectStoreName+"] : ", event);
+        console.log("An error occured when retrieving all data of ["+objectStoreName+"] : ", event);
     };
 
 }
 
 // Script for getting any objectStore list
 
-function getList(objectStoreName, objectData){
+function getList(objectStoreName, objectData, callback = null){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.SEARCHES:{
-            getSearchList(objectData);
+            getSearchList(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.BOOKMARKS:{
-            getBookmarkList();
+            getBookmarkList(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            getKeywordList();
+            getKeywordList(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.REMINDERS:{
-            getReminderList(objectData);
+            getReminderList(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.NEWSFEED:{
-            getNewsFeedList();
+            getNewsFeedList(objectData, callback);
             break;
         }
 
-    case dbData.objectStoreNames.PROFILES:{
-            getProfileList(objectData);
+        case dbData.objectStoreNames.PROFILES:{
+            getProfileList(objectData, callback);
             break;
         }
 
         case "all":{
-            getAllData();
+            getMyData(objectData);
             break;
         }
     }

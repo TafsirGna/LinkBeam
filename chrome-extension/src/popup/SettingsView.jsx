@@ -37,14 +37,14 @@ export default class SettingsView extends React.Component{
       usageQuota: null,
     };
 
-    this.deleteAll = this.deleteAll.bind(this);
+    this.deleteData = this.deleteData.bind(this);
     this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
     this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
-    this.onAllDataReceived = this.onAllDataReceived.bind(this);
+    this.onExportDataReceived = this.onExportDataReceived.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
@@ -139,7 +139,7 @@ export default class SettingsView extends React.Component{
 
   }
 
-  onAllDataReceived(message, sendResponse){
+  onExportDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
@@ -151,7 +151,7 @@ export default class SettingsView extends React.Component{
       const url = window.URL.createObjectURL(new Blob([jsonData]));
       const link = document.createElement('a');
       link.href = url;
-      const fileName = `LinkBeam_Data_Export_${moment(new Date()).format("DD_MMM_YY")}.json`;
+      const fileName = "LinkBeam_Data_Export_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
       link.click();
@@ -210,7 +210,7 @@ export default class SettingsView extends React.Component{
       },
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, "all"].join(messageParams.separator), 
-        callback: this.onAllDataReceived
+        callback: this.onExportDataReceived
       },
     ]);
 
@@ -226,22 +226,24 @@ export default class SettingsView extends React.Component{
 
   }
 
-  deleteAll(){
-    const response = confirm("Do you confirm the erase of all your data ?");
+  deleteData(){
+    const response = confirm("Do you confirm the erase of your data as specified ?");
     if (response){
       // Displaying the spinner
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", null);
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : {startDate: this.state.offCanvasFormStartDate, endDate: this.state.offCanvasFormEndDate});
+      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
     }
   }
 
   initDataExport(){
-    const response = confirm("You are about to download all your data. Do you confirm ?");
+    const response = confirm("Do you confirm the download your data as specified ?");
 
     if (response){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", null);
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : {startDate: this.state.offCanvasFormStartDate, endDate: this.state.offCanvasFormEndDate});
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
     }
 
   }
@@ -287,6 +289,7 @@ export default class SettingsView extends React.Component{
                     type="switch"
                     id="notif-custom-switch"
                     label=""
+                    // className="shadow"
                     checked={this.props.globalData.settings.notifications}
                     onChange={this.saveCheckBoxNewState}
                   />
@@ -303,6 +306,7 @@ export default class SettingsView extends React.Component{
                     id="notif-custom-switch"
                     label=""
                     checked={true}
+                    // className="shadow"
                     // onChange={this.saveCheckBoxNewState}
                   />
                 </div>
@@ -354,7 +358,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Export my data (csv)</strong>
-                  <a href="#" onClick={() => {/*this.initDataExport()*/ this.handleOffCanvasShow("Data export")}} class="text-primary badge" title="Export all my data">Export</a>
+                  <a href="#" onClick={() => {this.handleOffCanvasShow("Data export")}} class="text-primary badge" title="Export all my data">Export</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -375,7 +379,7 @@ export default class SettingsView extends React.Component{
                                       overlay={<Tooltip id="tooltip2">{this.state.usageQuota.percentage}%({this.state.usageQuota.size}Mb) used</Tooltip>}
                                     >
                                       {/*<ProgressBar now={60} class="me-2" style={{width:"30px", height:"7px"}}/>*/}
-                                      <div style={{width:"30px", height:"7px"}} class="progress me-2" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                                      <div style={{width:"30px", height:"7px"}} class="progress me-2 shadow" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
                                         <div class="progress-bar rounded" style={{width: this.state.usageQuota.percentage+"%"}}></div>
                                       </div>
                                     </OverlayTrigger>}
@@ -387,7 +391,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Erase all data</strong>
-                  { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={/*this.deleteAll*/ () => {this.handleOffCanvasShow("Data deletion")}}>Delete</a>}
+                  { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={() => {this.handleOffCanvasShow("Data deletion")}}>Delete</a>}
                   { this.state.processingState.status == "NO" && this.state.processingState.info != "" && <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>}
                   { this.state.processingState.status == "YES" && <div class="spinner-border spinner-border-sm" role="status">
                                       <span class="visually-hidden">Loading...</span>
@@ -450,9 +454,9 @@ export default class SettingsView extends React.Component{
             </Form>
 
             <div class="d-flex">
-              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="btn btn-danger btn-sm ms-auto">Delete</button>}
+              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
 
-              { this.state.offCanvasTitle == "Data export" && <button type="button" class="btn btn-primary btn-sm ms-auto">Export</button>}
+              { this.state.offCanvasTitle == "Data export" && <button type="button" class="btn btn-primary btn-sm ms-auto" onClick={this.initDataExport}>Export</button>}
             </div>
 
           </Offcanvas.Body>

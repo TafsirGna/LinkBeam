@@ -143,7 +143,7 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var bookmarkList = message.data.objectData;
+    var bookmarkList = message.data.objectData.list;
 
     // Setting the search list here too
     this.setState(prevState => {
