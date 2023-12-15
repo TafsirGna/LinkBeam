@@ -10,8 +10,7 @@ import MainProfileView from "./popup/MainProfileView";
 import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
 import BookmarkView from "./popup/BookmarkView";
-import Feed from "./popup/Feed";
-import NewsFeed from "./popup/NewsFeed";
+import ProfileActivityView from "./popup/ProfileActivityView";
 import CalendarView from "./popup/CalendarView";
 import FeedbackView from "./popup/FeedbackView";
 import LicenseCreditsView from "./popup/LicenseCredits";
@@ -412,7 +411,7 @@ export default class App extends React.Component{
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
             <Route path="/index.html/Profile" element={<MainProfileView globalData={this.state.globalData} />} />
             <Route path="/index.html/Reminders" element={<ReminderView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Feed" element={<Feed globalData={this.state.globalData} />} />
+            <Route path="/index.html/ProfileActivity" element={<ProfileActivityView globalData={this.state.globalData} />} />
             <Route path="/index.html/Bookmarks" element={<BookmarkView globalData={this.state.globalData} />} />
             <Route path="/index.html/Feedback" element={<FeedbackView globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<CalendarView globalData={this.state.globalData} />} />

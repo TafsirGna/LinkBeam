@@ -43,11 +43,8 @@ export default class HomeMenu extends React.Component{
           </div>
           <ul class="dropdown-menu shadow-lg">
             <li>
-              <Link class="dropdown-item small" to="/index.html/Feed">
-                Feed
-                {/*<div class={"spinner-grow spinner-grow-sm text-danger ms-2 "} role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>*/}
+              <Link class="dropdown-item small" to="/index.html/ProfileActivity">
+                Profiles' Activity
               </Link>
             </li>
             <li><Link class="dropdown-item small" to="/index.html?redirect_to=CalendarView" target="_blank">Calendar</Link></li>

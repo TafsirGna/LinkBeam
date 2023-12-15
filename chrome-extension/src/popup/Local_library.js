@@ -29,6 +29,7 @@ export const appParams = {
     KEYWORDS: "Keywords",
     BOOKMARKS: "Bookmarks",
     STATISTICS: "Statistics",
+    PROFILE_ACTIVITY: "ProfileActivity",
   },
 }
 
@@ -41,7 +42,7 @@ export const dbData = {
     KEYWORDS: "keywords",
     PROFILES: "profiles",
     NOTIFICATIONS: "notifications",
-    NEWSFEED: "newsfeed",
+    PROFILE_ACTIVITY: "profile_activity",
   }
 }
 

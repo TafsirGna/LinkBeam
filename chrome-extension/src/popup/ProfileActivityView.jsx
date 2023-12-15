@@ -2,10 +2,9 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { saveCurrentPageTitle } from "./Local_library";
-/*import 'bootstrap/dist/css/bootstrap.min.css';*/
+import { saveCurrentPageTitle, appParams } from "./Local_library";
 
-export default class NewsFeed extends React.Component{
+export default class ProfileActivityView extends React.Component{
 
   constructor(props){
     super(props);
@@ -15,7 +14,7 @@ export default class NewsFeed extends React.Component{
 
   componentDidMount() {
 
-    saveCurrentPageTitle("NewsFeed");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY);
 
   }
 

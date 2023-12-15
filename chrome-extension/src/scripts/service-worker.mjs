@@ -45,7 +45,7 @@ function createDatabase(context) {
         db = event.target.result;
 
         // Search object store
-        let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { autoIncrement: true });
+        let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { keyPath: 'id', autoIncrement: true });
         searchObjectStore.createIndex("url", "url", { unique: false });
 
         searchObjectStore.transaction.oncomplete = function (event) {
@@ -83,7 +83,7 @@ function createDatabase(context) {
         }
 
         // notification object store
-        let notificationObjectStore = db.createObjectStore(dbData.objectStoreNames.NOTIFICATIONS, { keyPath: "id" });
+        let notificationObjectStore = db.createObjectStore(dbData.objectStoreNames.NOTIFICATIONS, { keyPath: "id", autoIncrement: true  });
 
         notificationObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Notification' created.");
@@ -96,11 +96,11 @@ function createDatabase(context) {
             console.log("ObjectStore 'Bookmark' created.");
         }
 
-        // NewsFeed object store
-        let newsFeedObjectStore = db.createObjectStore(dbData.objectStoreNames.NEWSFEED, { keyPath: "id" });
+        // Profile_Activity object store
+        let profileActivityObjectStore = db.createObjectStore(dbData.objectStoreNames.PROFILE_ACTIVITY, { keyPath: "id", autoIncrement: true });
 
-        newsFeedObjectStore.transaction.oncomplete = function (event) {
-            console.log("ObjectStore 'Newsfeed' created.");
+        profileActivityObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Profile Activity' created.");
         }
     }
 
@@ -667,7 +667,7 @@ function addNotificationToOffsetLimitList(object, list, objectStoreName, params)
 
 }
 
-function addNewsFeedToOffsetLimitList(object, list, objectStoreName, params){
+function addProfileActivityToOffsetLimitList(object, list, objectStoreName, params){
 
     var stop = false;
     
@@ -730,8 +730,8 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
             break;
         }
 
-        case dbData.objectStoreNames.NEWSFEED:{
-            result = addNewsFeedToOffsetLimitList(object, list, objectStoreName, params);
+        case dbData.objectStoreNames.PROFILE_ACTIVITY:{
+            result = addProfileActivityToOffsetLimitList(object, list, objectStoreName, params);
             break;
         }
 
@@ -777,16 +777,16 @@ function getKeywordList(params, callback = null) {
     }
 }
 
-// Script for getting the newsfeed
+// Script for getting all the profile's activities
 
-function getNewsFeedList(params, callback = null) {
+function getProfileActivityList(params, callback = null) {
 
     if (params){
-        getOffsetLimitList(params, dbData.objectStoreNames.NEWSFEED, callback);
+        getOffsetLimitList(params, dbData.objectStoreNames.PROFILE_ACTIVITY, callback);
     }
     else{
-        getObjectStoreAllData(dbData.objectStoreNames.NEWSFEED, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NEWSFEED, results);
+        getObjectStoreAllData(dbData.objectStoreNames.PROFILE_ACTIVITY, (results) => {
+            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY, results);
             if (callback){
                 callback(results);
             }
@@ -886,8 +886,8 @@ function getList(objectStoreName, objectData, callback = null){
             break;
         }
 
-        case dbData.objectStoreNames.NEWSFEED:{
-            getNewsFeedList(objectData, callback);
+        case dbData.objectStoreNames.PROFILE_ACTIVITY:{
+            getProfileActivityList(objectData, callback);
             break;
         }
 
@@ -1232,12 +1232,7 @@ function deleteObject(objectStoreName, objectData, callback = null){
             break;
         }
 
-        case dbData.objectStoreNames.NEWSFEED:{
-            deleteReminderObject(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.SETTINGS:{
+        case dbData.objectStoreNames.PROFILE_ACTIVITY:{
             deleteReminderObject(objectData, callback);
             break;
         }
@@ -1264,48 +1259,75 @@ function deleteObjectStoreSpecificData(objectStoreNames, params){
         deleteObjectStoreSpecificData(objectStoreNames, params);
     });
 
-    // let objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
-    // let cursor = objectStore.openCursor(null, 'prev');
-    // cursor.onsuccess = function(event) {
-    //     let cursor = event.target.result;
-        
-    //     if(!cursor) {
-    //         return;
-    //     }
+}
 
-    //     let object = cursor.value;
-
-    //     if ((new Date()).toISOString().split("T")[0] != object.date.split("T")[0]){
-    //         cursor.continue();
-    //     }
-
-    //     const request = db.transaction('students', 'readwrite')
-    //                   .objectStore('students');
-    //                   .delete(key);
-
-    //     request.onsuccess = ()=> {
-    //         console.log(`${objectStoreName} deleted, email: ${request.result}`);
-    //     }
-
-    //     request.onerror = (err)=> {
-    //         console.error(`Error to delete ${objectStoreName}: ${err}`)
-    //     }
-        
-    //     cursor.continue();
-    // }
-
-    // cursor.onerror = (event) => {
-    //     console.log("Failed to acquire the cursor !");
-    //     sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    // };
+function isObjectDeletable(object, params){
 
 }
 
 // Script for deleting a keyword
 
-function deleteObjectSet(objectStoreName, params){
+function deleteObjectSet(objectStoreName, params, callback = null){
 
+    let objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
+    let cursor = objectStore.openCursor(null, 'prev');
+    cursor.onsuccess = function(event) {
+        let cursor = event.target.result;
+        
+        if(!cursor) {
+            if (callback){
+                callback()
+            }
+            return;
+        }
 
+        let object = cursor.value;
+
+        if (isObjectDeletable(object, params)){
+
+            var delParams = null;
+            switch(objectStoreName){
+                case dbData.objectStoreNames.REMINDERS:{
+                    delParams = {url: object.url}; 
+                    break;
+                }
+
+                case dbData.objectStoreNames.KEYWORDS:{
+                    delParams = {url: object.name}; 
+                    break;
+                }
+
+                case dbData.objectStoreNames.SEARCHES:{
+                    delParams = {url: object.id}; 
+                    break;
+                }
+
+                case dbData.objectStoreNames.NOTIFICATIONS:{
+                    delParams = {url: object.id}; 
+                    break;
+                }
+
+                case dbData.objectStoreNames.PROFILES:{
+                    delParams = {url: object.url}; 
+                    break;
+                }
+
+                case dbData.objectStoreNames.PROFILE_ACTIVITY:{
+                    delParams = {url: object.id}; 
+                    break;
+                }
+            }
+
+            deleteObject(objectStoreName, delParams);
+        }
+        
+        cursor.continue();
+    }
+
+    cursor.onerror = (event) => {
+        console.log("Failed to acquire the cursor !");
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+    };
 
 }
 
@@ -1332,7 +1354,7 @@ function deleteKeywordObject(params, callback) {
     }
     else{
         if (params.timePeriod){
-            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params);
+            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params, callback);
         }
     }
 
