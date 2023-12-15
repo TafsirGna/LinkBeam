@@ -22,7 +22,7 @@ export default class ProfileActivityView extends React.Component{
     return (
 		<>
 			<div class="p-3">
-			 	<BackToPrev prevPageTitle="Activity"/>
+			 	<BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
 		        <div class="list-group list-group-radio d-grid gap-2 border-0 small mt-3">
 					    <div class="position-relative shadow rounded">
 					      <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">

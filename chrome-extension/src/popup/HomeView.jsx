@@ -55,7 +55,7 @@ export default class HomeView extends React.Component{
       return;
     }
 
-    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY);
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
     if (!this.props.globalData.todaySearchList){
       this.getSearchList("today");
@@ -113,7 +113,7 @@ export default class HomeView extends React.Component{
         
         var pageTitle = message.data.objectData.value;
         this.setState({currentPageTitle: pageTitle}, () => {
-          if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
+          if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
             // Getting the list of all searches
             if (this.props.globalData.todaySearchList == null){
               this.getSearchList("today");
@@ -214,11 +214,11 @@ export default class HomeView extends React.Component{
     if (scope == "all"){
       if (this.state.allSearchLeft){
         this.setState({loadingAllSearches: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearches.searchCount, context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearches.searchCount, context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-")});
       }
     }
     else{ // today
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {timePeriod: (new Date()), context: [appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY, scope].join("-")});
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {timePeriod: (new Date()), context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-")});
     }
 
   }
@@ -230,11 +230,11 @@ export default class HomeView extends React.Component{
     }
 
     // Redirecting to a different interface depending on the url params
-    if (this.state.currentPageTitle != appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
+    if (this.state.currentPageTitle != appParams.COMPONENT_CONTEXT_NAMES.HOME){
       return <Navigate replace to={"/index.html/" + this.state.currentPageTitle} />;
     }
 
-    if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY){
+    if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
       return (
         <>
 

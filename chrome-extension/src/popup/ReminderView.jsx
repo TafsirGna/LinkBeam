@@ -11,6 +11,7 @@ import {
   appParams
 } from "./Local_library";
 import ReminderListView from "./widgets/ReminderListView";
+import SearchInputView from "./widgets/SearchInputView";
 
 export default class ReminderView extends React.Component{
 
@@ -39,6 +40,8 @@ export default class ReminderView extends React.Component{
           <div class="text-center mt-2">
             <span class="badge text-bg-primary shadow">Reminders</span>
           </div>
+
+          <SearchInputView objectStoreName={dbData.objectStoreNames.REMINDERS}/>
 
           <div class="mt-3">
             <ReminderListView objects={this.props.globalData.reminderList}/>

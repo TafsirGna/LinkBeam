@@ -82,7 +82,7 @@ export default class StatisticsView extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY}/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
 
           {/*View dropdown*/}
           <div class="clearfix">

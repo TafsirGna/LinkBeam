@@ -23,7 +23,7 @@ const settingData = [{
     lastDataResetDate: new Date().toISOString(),
     installedOn: new Date().toISOString(),
     productID: uuidv4(), 
-    currentPageTitle: "Activity",
+    currentPageTitle: appParams.COMPONENT_CONTEXT_NAMES.HOME,
     userIcon: "default",
     timeCount: {value: 0, lastCheck: (new Date()).toISOString()},
     automaticTabOpening: true,

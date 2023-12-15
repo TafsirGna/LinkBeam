@@ -30,7 +30,7 @@ export default class Feed extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Activity"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY}/>
 
           <div class="text-center mt-3">
             <div class="btn-group btn-group-sm mb-2 shadow-sm" role="group" aria-label="Small button group">

@@ -272,7 +272,7 @@ export default class SettingsView extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Activity"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
           <div>
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">

@@ -27,7 +27,7 @@ export default class AboutView extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Activity"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
           <div class="text-center">
             <img src={app_logo}  alt="" width="40" height="40"/>
             <p class="fw-bold mt-2">

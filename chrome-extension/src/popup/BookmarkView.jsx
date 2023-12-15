@@ -41,7 +41,7 @@ export default class BookmarkView extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY}/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
             
             <div class="text-center mt-2">
               <span class="badge text-bg-primary shadow">Bookmarks</span>

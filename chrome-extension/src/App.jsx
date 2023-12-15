@@ -123,7 +123,7 @@ export default class App extends React.Component{
   onSearchesDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
-    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.ACTIVITY) == -1){
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
       return;
     }
 
