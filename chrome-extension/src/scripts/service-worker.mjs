@@ -798,13 +798,14 @@ function getNewsFeedList(params, callback = null) {
 
 function getMyData(params){
 
-    const data = db.objectStoreNames;
     var results = {dbVersion: dbVersion}, objectStoreNames = [];
 
-    for (var key in data){
-        if (typeof data[key] === "string"){
-            objectStoreNames.push(data[key]);
-        }
+    // convert DOMStringList to js array
+    console.log("**************** : ", db.objectStoreNames); 
+    for (var key in db.objectStoreNames){ 
+        if (typeof db.objectStoreNames[key] === "string"){
+            objectStoreNames.push(db.objectStoreNames[key]);
+        } 
     }
 
     getObjectStoresSpecifiedData(objectStoreNames, results, params);
@@ -830,6 +831,7 @@ function getObjectStoresSpecifiedData(objectStoreNames, results, params){
         objectStoreNames.shift();
 
         // looping back
+        console.log("%%%%%%%%%%%%%%%% : ", objectStoreNames.length);
         getObjectStoresSpecifiedData(objectStoreNames, results, params);
 
     };
@@ -1197,87 +1199,203 @@ function deleteBookmarkObject(bookmarkData){
 
 // Script for deleting any object instance
 
-function deleteObject(objectStoreName, objectData){
+function deleteObject(objectStoreName, objectData, callback = null){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.BOOKMARKS:{
-            deleteBookmarkObject(objectData);
+            deleteBookmarkObject(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            deleteKeywordObject(objectData);
+            deleteKeywordObject(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.REMINDERS:{
-            deleteReminderObject(objectData);
+            deleteReminderObject(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.PROFILES:{
+            deleteReminderObject(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.SEARCHES:{
+            deleteReminderObject(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.NOTIFICATIONS:{
+            deleteReminderObject(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.NEWSFEED:{
+            deleteReminderObject(objectData, callback);
+            break;
+        }
+
+        case dbData.objectStoreNames.SETTINGS:{
+            deleteReminderObject(objectData, callback);
             break;
         }
 
         case "all":{
-            truncateDB();
+            truncateDB(objectData);
             break;
         }
     }
 
 }
 
-// Script for deleting a keyword
-
-function deleteKeywordObject(keywordData) {
-    const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
-    let request = objectStore.delete(keywordData);
-    request.onsuccess = (event) => {
-        console.log("Keyword deleted")
-        // Sending the new list
-        getKeywordList() 
-    }
-
-    request.onerror = function (event) {
-        console.log("An error when deleting the keyword", event);
-        let errorData = "An error occured !";
-        chrome.runtime.sendMessage({header: 'delete-keyword-error', data: errorData}, (response) => {
-          console.log('Delete keyword error message sent', response);
-        });
-    }
-}
-
-// Script for truncating the database 
-
-function truncateDB(){
-
-    // Erasing all data
-    const data = db.objectStoreNames;
-    let objectStoreNames = [];
-    for (var key in data){
-        if (typeof data[key] === "string" && data[key] != dbData.objectStoreNames.SETTINGS){
-            objectStoreNames.push(data[key]);
-        }
-    }
-    clearObjectStores(objectStoreNames);
-    
-}
-
-// Script for clearing an objectStore
-
-function clearObjectStores(objectStoreNames){
+function deleteObjectStoreSpecificData(objectStoreNames, params){
 
     if (objectStoreNames.length == 0){
         // updating the last reset date before notifying the content script
-        updateSettingObject("lastDataResetDate", (new Date()).toISOString());
+        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, "all", {context: params.context});
         return;
     }
 
     var objectStoreName = objectStoreNames[0];
 
-    const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
-    objectStore.clear().onsuccess = (event) => {
-        // Clearing the next objectStore
-        // getList(objectStoreName, null);
-        objectStoreNames.shift()
-        clearObjectStores(objectStoreNames)
+    deleteObject(objectStoreName, params, () => {
+        deleteObjectStoreSpecificData(objectStoreNames, params);
+    });
+
+    // let objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
+    // let cursor = objectStore.openCursor(null, 'prev');
+    // cursor.onsuccess = function(event) {
+    //     let cursor = event.target.result;
+        
+    //     if(!cursor) {
+    //         return;
+    //     }
+
+    //     let object = cursor.value;
+
+    //     if ((new Date()).toISOString().split("T")[0] != object.date.split("T")[0]){
+    //         cursor.continue();
+    //     }
+
+    //     const request = db.transaction('students', 'readwrite')
+    //                   .objectStore('students');
+    //                   .delete(key);
+
+    //     request.onsuccess = ()=> {
+    //         console.log(`${objectStoreName} deleted, email: ${request.result}`);
+    //     }
+
+    //     request.onerror = (err)=> {
+    //         console.error(`Error to delete ${objectStoreName}: ${err}`)
+    //     }
+        
+    //     cursor.continue();
+    // }
+
+    // cursor.onerror = (event) => {
+    //     console.log("Failed to acquire the cursor !");
+    //     sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+    // };
+
+}
+
+// Script for deleting a keyword
+
+function deleteObjectSet(objectStoreName, params){
+
+
+
+}
+
+function deleteKeywordObject(params, callback) {
+
+    if (params.url){
+
+        const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
+        let request = objectStore.delete(params);
+        request.onsuccess = (event) => {
+            console.log("Keyword deleted")
+            // Sending the new list
+            getKeywordList() 
+        }
+
+        request.onerror = function (event) {
+            console.log("An error when deleting the keyword", event);
+            let errorData = "An error occured !";
+            chrome.runtime.sendMessage({header: 'delete-keyword-error', data: errorData}, (response) => {
+              console.log('Delete keyword error message sent', response);
+            });
+        }
+
     }
+    else{
+        if (params.timePeriod){
+            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params);
+        }
+    }
+
+}
+
+// Script for truncating the database 
+
+function truncateDB(params){
+
+    // convert DOMStringList to js array
+    let objectStoreNames = [];
+    for (var key in db.objectStoreNames){
+        if (typeof db.objectStoreNames[key] === "string" && db.objectStoreNames[key] != dbData.objectStoreNames.SETTINGS){
+            objectStoreNames.push(db.objectStoreNames[key]);
+        }
+    }
+
+    if (params){
+        deleteAllObjectStoresData(objectStoreNames);
+    }
+    else{
+        deleteObjectStoreSpecificData(objectStoreNames, params);
+    }
+    
+}
+
+function deleteAllObjectStoreData(objectStoreName, callback = null){
+
+    const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
+    var request = objectStore.clear();
+    request.onsuccess = (event) => {
+        // Clearing the next objectStore
+        console.error(`successfully deleted all ${objectStoreName} data`);
+        if (callback){
+            callback();
+        }
+    }
+
+    request.onerror = (err)=> {
+        console.error(`Failed to delete all ${objectStoreName} data: ${err}`);
+    }
+
+}
+
+// Script for clearing an objectStore
+
+function deleteAllObjectStoresData(objectStoreNames){
+
+    if (objectStoreNames.length == 0){
+        // updating the last reset date before notifying the content script
+        var lastDataResetDate = (new Date()).toISOString();
+        updateSettingObject("lastDataResetDate", lastDataResetDate, () => {
+            sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, "all", {payload: lastDataResetDate});
+        });
+        return;
+    }
+
+    var objectStoreName = objectStoreNames[0];
+
+    deleteAllObjectStoreData(objectStoreName, () => {
+        objectStoreNames.shift();
+        deleteAllObjectStoresData(objectStoreNames);
+    });
 
 }
 

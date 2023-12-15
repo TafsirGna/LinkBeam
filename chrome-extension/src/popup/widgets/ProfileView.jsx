@@ -6,7 +6,7 @@ import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileSearchesChartModal from "./modals/ProfileSearchesChartModal";
 import PercentageDoughnutModal from "./modals/PercentageDoughnutModal";
-import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData } from "../Local_library";
+import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData, appParams } from "../Local_library";
 import eventBus from "../EventBus";
 
 export default class MainProfileView extends React.Component{
@@ -134,7 +134,7 @@ export default class MainProfileView extends React.Component{
     if (this.props.profile.reminder){
       var response = confirm("Do you confirm the deletion of the reminder ?");
       if (response){
-        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, this.props.profile.url);
+        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, url: this.props.profile.url });
       }
     } 
     else{

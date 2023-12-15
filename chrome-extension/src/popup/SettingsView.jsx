@@ -43,7 +43,7 @@ export default class SettingsView extends React.Component{
     this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
-    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.onExportDataReceived = this.onExportDataReceived.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
@@ -165,33 +165,24 @@ export default class SettingsView extends React.Component{
 
   }
 
-  onSettingsDataReceived(message, sendResponse){
+  onDbDataDeleted(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
 
     // setting the new value
-    switch(message.data.objectData.property){
+    this.setState({
+      processingState: {status: "NO", info: "ERASING"},
+      keywordCount: 0,
+      reminderCount: 0,
+    });
 
-      case "lastDataResetDate": {
+    this.checkStorageUsage();
 
-        // // Displaying the validation sign
-        // this.setState({
-        //   processingState: {status: "NO", info: "ERASING"},
-        //   keywordCount: 0,
-        //   reminderCount: 0,
-        // });
-
-        // this.checkStorageUsage();
-
-        // // Setting a timer to reset all of this
-        // setTimeout(() => {
-        //   this.setState({processingState: {status: "NO", info: ""}});
-        // }, appParams.TIMER_VALUE);
-
-        break;
-      }            
-    }
+    // Setting a timer to reset all of this
+    setTimeout(() => {
+      this.setState({processingState: {status: "NO", info: ""}});
+    }, appParams.TIMER_VALUE);
 
   }
 
@@ -207,8 +198,8 @@ export default class SettingsView extends React.Component{
         callback: this.onRemindersDataReceived
       },
       {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onSettingsDataReceived
+        param: [messageParams.responseHeaders.OBJECT_DELETED, "all"].join(messageParams.separator), 
+        callback: this.onDbDataDeleted
       },
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, "all"].join(messageParams.separator), 

@@ -53,6 +53,7 @@ export default class App extends React.Component{
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
   }
@@ -201,6 +202,21 @@ export default class App extends React.Component{
 
   }
 
+  onDbDataDeleted(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    if (message.data.objectData.payload){
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.lastDataResetDate = message.data.objectData.payload;
+        return { globalData };
+      });
+    }
+
+  }
+
   onSettingsDataReceived(message, sendResponse){
 
     // acknowledge receipt
@@ -301,6 +317,10 @@ export default class App extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
         callback: this.onSettingsDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DELETED, "all"].join(messageParams.separator), 
+        callback: this.onDbDataDeleted
       },
       {
         param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
