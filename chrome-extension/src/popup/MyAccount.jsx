@@ -47,7 +47,7 @@ export default class MyAccount extends React.Component{
   	this.listenToMessages();
 
     // Saving the current page title
-    saveCurrentPageTitle("MyAccount");
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT);
 
   	// Setting the local data with the global ones
   	if (this.props.globalData.productID){
@@ -59,56 +59,56 @@ export default class MyAccount extends React.Component{
   	}
 
   	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["installedOn", "productID"]);
+  		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: ["installedOn", "productID"] } });
   	}
 
     // Getting the user icon to display
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["userIcon"]);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: ["userIcon"] } });
 
   }
 
   changeUserIcon(icon_title){
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "userIcon", value: icon_title});
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: {userIcon: icon_title} } });
 
   }
 
   onSettingsDataReceived(message, sendResponse){
 
-  	switch(message.data.objectData.property){
-  		case "installedOn":{
+      var settings = message.data.objectData.object;
+
+  		if (Object.hasOwn(settings, "installedOn")){
 
   			// acknowledge receipt
   			ack(sendResponse);
 
 				// setting the value
-				let installedOn = message.data.objectData.value;
+				let installedOn = settings.installedOn;
 				this.setState({installedOn: installedOn});
-		  	break;
+		  	
 		  }
-  		case "productID":{
+
+  		if (Object.hasOwn(settings, "productID")){
 
   			// acknowledge receipt
   			ack(sendResponse);
 
-				let productID = message.data.objectData.value;
+				let productID = settings.productID;
 				this.setState({productID: productID});
-		  	break;
+		  	
 		  }
 
-    case "userIcon":{
+      if (Object.hasOwn(settings, "userIcon")){
 
         // acknowledge receipt
         ack(sendResponse);
 
-        let userIcon = message.data.objectData.value;
+        let userIcon = settings.userIcon;
         this.setState({userIcon: userIcon});
 
         this.handleOffCanvasClose();
 
-        break;
       }
-		}
 
   }
 

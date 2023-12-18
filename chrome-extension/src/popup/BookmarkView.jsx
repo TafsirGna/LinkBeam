@@ -31,7 +31,7 @@ export default class BookmarkView extends React.Component{
 
   getBookmarkList(){
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.BOOKMARKS, {context: appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS });
 
   }
 

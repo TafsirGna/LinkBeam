@@ -60,7 +60,7 @@ export default class SearchListView extends React.Component{
                                     <div class="d-flex gap-2 align-items-center">
                                       <h6 class="mb-0">{search.profile.fullName}</h6>
                                       <span>·</span>
-                                      <small class={ search.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-danger text-nowrap" : "opacity-50 text-nowrap"}>{moment(search.date, moment.ISO_8601).fromNow()}</small>
+                                      <small class={ search.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{moment(search.date, moment.ISO_8601).fromNow()}</small>
                                     </div>
                                     <p class="mb-0 opacity-75 small">{search.profile.title}</p>
                                     <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{search.profile.nFollowers} · {search.profile.nConnections}</p>

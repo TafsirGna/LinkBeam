@@ -51,7 +51,7 @@ export default class HomeView extends React.Component{
     const origin = urlParams.get("origin");
 
     if (!origin){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["currentPageTitle"]);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["currentPageTitle"] }});
       return;
     }
 
@@ -107,40 +107,33 @@ export default class HomeView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    switch(message.data.objectData.property){
-
-      case "currentPageTitle":{
-        
-        var pageTitle = message.data.objectData.value;
-        this.setState({currentPageTitle: pageTitle}, () => {
-          if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
-            // Getting the list of all searches
-            if (this.props.globalData.todaySearchList == null){
-              this.getSearchList("today");
-            }
-
-            // Requesting the notification settings
-            sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+    var settings = message.data.objectData.object;
+    if (Object.hasOwn(settings, "currentPageTitle")){
+      
+      var pageTitle = settings.currentPageTitle;
+      this.setState({currentPageTitle: pageTitle}, () => {
+        if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
+          // Getting the list of all searches
+          if (this.props.globalData.todaySearchList == null){
+            this.getSearchList("today");
           }
-        });
 
-        break;
-
-      }
-
-      case "notifications":{
-        
-        // Deciding whether to display the grow spinner for plugin activation or not 
-        var notificationSetting = message.data.objectData.value;
-        if (notificationSetting){
-          return;
+          // Requesting the notification settings
+          sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
         }
+      });
 
-        checkCurrentTab();
+    }
 
-        break;
-        
+    if (Object.hasOwn(settings, "notifications")){
+      
+      // Deciding whether to display the grow spinner for plugin activation or not 
+      if (settings.notifications){
+        return;
       }
+
+      checkCurrentTab();
+      
     }
 
   }
@@ -214,11 +207,11 @@ export default class HomeView extends React.Component{
     if (scope == "all"){
       if (this.state.allSearchLeft){
         this.setState({loadingAllSearches: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {offset: this.props.globalData.allSearches.searchCount, context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-")});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { offset: this.props.globalData.allSearches.searchCount }});
       }
     }
     else{ // today
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {timePeriod: (new Date()), context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-")});
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, { context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { props: {"date": (new Date())} }});
     }
 
   }
@@ -260,7 +253,7 @@ export default class HomeView extends React.Component{
 
           {/* All Search List Tab */}
           { this.state.currentTabIndex == 1 && <div>
-                                                <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES}/>
+                                                <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES} context={appParams.COMPONENT_CONTEXT_NAMES.HOME} />
                                                 <AggregatedSearchListView objects={this.props.globalData.allSearches.list} seeMore={() => {this.getSearchList("all")}} loading={this.state.loadingAllSearches} searchLeft={this.state.allSearchLeft} context={this.props.globalData.allSearches.scope}/>
                                               </div>}
 

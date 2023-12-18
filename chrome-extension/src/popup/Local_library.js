@@ -30,6 +30,8 @@ export const appParams = {
     BOOKMARKS: "Bookmarks",
     STATISTICS: "Statistics",
     PROFILE_ACTIVITY: "ProfileActivity",
+    PROFILE: "PROFILE",
+    MY_ACCOUNT: "MyAccount",
   },
 }
 
@@ -351,7 +353,7 @@ export const activateInCurrentTab = (params) => {
 export function saveCurrentPageTitle(pageTitle){
 
   // Saving the current page title
-  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "currentPageTitle", value: pageTitle});
+  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: pageTitle, criteria: { props: {currentPageTitle: pageTitle} } });
 
 }
 

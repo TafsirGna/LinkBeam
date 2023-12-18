@@ -38,7 +38,7 @@ export default class KeywordView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, null);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS });
 
   }
 

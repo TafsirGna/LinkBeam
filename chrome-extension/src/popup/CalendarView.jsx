@@ -51,10 +51,16 @@ export default class CalendarView extends React.Component{
     this.setState({
       tabActiveKey: this.state.tabTitles[0], 
       activeStartDate: moment(this.state.selectedDate).startOf('month').format("YYYY-MM-DD"),
-      // activeStartDate: moment(this.state.selectedDate).startOf('month').toDate().toISOString().split("T")[0],
     });
 
     this.listenToMessages();
+
+    if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, criteria: { props: ["lastDataResetDate"] }});
+    }
+    else{
+
+    }
 
     // Requesting this month's search list
     this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.SEARCHES);
@@ -95,18 +101,31 @@ export default class CalendarView extends React.Component{
 
     var timePeriod = [startOfMonth, "to", endOfMonth];
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, {timePeriod: timePeriod, context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR+"|"+JSON.stringify(timePeriod)});
+    var props = null;
+    switch(objectStoreName){
+
+      case dbData.objectStoreNames.REMINDERS: {
+        props = {createdOn: timePeriod};
+        break;
+      }
+
+      case dbData.objectStoreNames.SEARCHES: {
+        props = {date: timePeriod};
+        break;
+      }
+
+    };
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, { context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR+"|"+JSON.stringify(timePeriod), criteria: { props: props }});
 
   }
 
   tileDisabled({ activeStartDate, date, view }){
 
-    if (view != "month" || !this.state.monthSearchList){
+    if (view != "month"){
       return false;
     }
-
-    date = date.toISOString().split("T")[0];
-    return !(date in this.state.monthSearchList);
+    
+    return date < (new Date(this.props.globalData.settings.lastDataResetDate)); // || date > (new Date());
   }
 
   onActiveStartDateChange({ action, activeStartDate, value, view }){
@@ -228,7 +247,6 @@ export default class CalendarView extends React.Component{
     context = context.replace(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, "");
     context = context.replace("|", "");
     var timePeriod = JSON.parse(context);
-    // console.log("***************** 111111111 : ", timePeriod);
 
     var activeStartDate = new Date(this.state.activeStartDate);
     if ((new Date(timePeriod[0])) <= activeStartDate && activeStartDate <= (new Date(timePeriod[2]))){
@@ -292,12 +310,12 @@ export default class CalendarView extends React.Component{
         </div>
 				<div class="offset-1 col-10 mt-4 row">
           <div class="col-4">
-            <Cal onClickDay={this.onClickDay} 
-              // tileDisabled={this.tileDisabled} 
-              onActiveStartDateChange={this.onActiveStartDateChange} 
-              value={new Date()} 
-              tileClassName={this.tileClassName}
-              className="rounded shadow"/>
+            { this.props.globalData.settings.lastDataResetDate && <Cal onClickDay={this.onClickDay} 
+                          tileDisabled={this.tileDisabled} 
+                          onActiveStartDateChange={this.onActiveStartDateChange} 
+                          value={new Date()} 
+                          tileClassName={this.tileClassName}
+                          className="rounded shadow"/>}
           </div>
           <div class="col-7 ps-3">
             <div>

@@ -44,7 +44,7 @@ export default class HomeMenu extends React.Component{
           <ul class="dropdown-menu shadow-lg">
             <li>
               <Link class="dropdown-item small" to="/index.html/ProfileActivity">
-                Profiles' Activity
+                Activity (Profiles)
               </Link>
             </li>
             <li><Link class="dropdown-item small" to="/index.html?redirect_to=CalendarView" target="_blank">Calendar</Link></li>

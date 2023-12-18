@@ -27,7 +27,7 @@ export default class ReminderView extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {context: appParams.COMPONENT_CONTEXT_NAMES.REMINDERS});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.REMINDERS });
 
   }
 
@@ -37,7 +37,7 @@ export default class ReminderView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
 
-          <div class="text-center mt-2">
+          <div class="text-center mt-2 mb-3">
             <span class="badge text-bg-primary shadow">Reminders</span>
           </div>
 

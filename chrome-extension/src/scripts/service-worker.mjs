@@ -26,7 +26,7 @@ const settingData = [{
     currentPageTitle: appParams.COMPONENT_CONTEXT_NAMES.HOME,
     userIcon: "default",
     timeCount: {value: 0, lastCheck: (new Date()).toISOString()},
-    automaticTabOpening: true,
+    autoTabOpening: true,
 }];
 
 
@@ -46,7 +46,7 @@ function createDatabase(context) {
 
         // Search object store
         let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { keyPath: 'id', autoIncrement: true });
-        searchObjectStore.createIndex("url", "url", { unique: false });
+        searchObjectStore.createIndex("urlIndex", "url", { unique: true });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
@@ -261,10 +261,10 @@ function recursiveDbInit(objectStoreNames, initialData){
 
 
 
-function getAssociatedProfiles(objects, objectStoreName, context){
+function getAssociatedProfiles(objects, context, callback){
 
     if (objects.length == 0){
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: objects});
+        callback(objects);
         return;
     }
 
@@ -274,74 +274,104 @@ function getAssociatedProfiles(objects, objectStoreName, context){
                         .objectStore(dbData.objectStoreNames.PROFILES);
     let results = [];
 
-    objects.forEach((object) => {
-        
-        let profileRequest = objectStore.get(object.url);
-        profileRequest.onsuccess = (event) => {
-            let profile = event.target.result;
-            console.log('Got corresponding profile: ', profile);
-            
+    const pairObjectProfile = (objects) => {
+
+        if (objects.length == 0){
+            callback(results);
+            return;
+        }
+
+        var object  = objects[0];
+        var params = {
+            context: [context, "only_object"].join("-"),
+            criteria: {
+                props: {
+                    url: object.url,
+                }
+            }
+        }
+        getProfileObject(params, (profile) => {
+
             object.profile = profile;
             results.push(object);
 
-            // keep going to the next object
-            if(results.length == objects.length) {
-                // only continue if under limit
-                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, objectStoreName, {context: context, list: results});
-            }
+            objects.shift();
+            pairObjectProfile(objects);
 
-        };
+        });
 
-        profileRequest.onerror = (event) => {
-            console.log('An error occured when requesting the corresponding profile : ', event);
-        };
+    };
 
-    });
+    pairObjectProfile(objects);
 }
 
-function getAssociatedSearches(objects, objectStoreName, context){
+function getAssociatedSearches(objects, context, callback){
 
     if (objects.length == 0){
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: objects});
+        callback(objects);
         return;
     }
 
-    let results = {list: [], count: 0};
-    objects.forEach((profile) => {
-        
-        getOffsetLimitList(
-            {url: profile.url}, 
-            dbData.objectStoreNames.SEARCHES, 
-            (objects_bis, objectStoreName_bis, context_bis) => {
-                for (var search of objects_bis){
-                    search.profile = profile;
-                }
-                results.list = results.list.concat(objects_bis);
-                results.count++;
-                if (results.count == objects.length){
-                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, {context: context, list: results.list});
-                }
-            }
-        );
+    let results = [];
+    let objectStore = db
+                        .transaction(dbData.objectStoreNames.SEARCHES, "readonly")
+                        .objectStore(dbData.objectStoreNames.SEARCHES);
+    let index = objectStore.index("url");
 
-    });
+    const pairProfileSearches = (profiles) => {
+
+        if (profiles.length == 0){
+            callback(results);
+            return;
+        }
+
+        var profile  = profiles[0];
+        index.openCursor(IDBKeyRange.only(profile.url)).onsuccess = (event) => {
+            const cursor = event.target.result;
+            if (cursor) {
+                var search = cursor.value;
+                search.profile = profile;
+                results.push(search);
+                cursor.continue();
+            } else {
+                // console.log("Entries all displayed.");
+                profiles.shift();
+                pairProfileSearches(profiles);
+            }
+        };
+
+    };
+
+    pairProfileSearches(objects);
+
 }
 
 // Script for providing all the bookmarked profiles
 
-function getBookmarkList(params, callback = null){
+function getBookmarkList(params, callback){
 
-    if (params){
-        callback = (callback ? callback : getAssociatedProfiles);
-        getOffsetLimitList(params, dbData.objectStoreNames.BOOKMARKS, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        var filteredCallback = callback;
+        if (params.context != "data_export"){
+            filteredCallback = (objects, context) => {
+                getAssociatedProfiles(objects, context, callback);
+            }
+        }
+        getFilteredList(params, dbData.objectStoreNames.BOOKMARKS, filteredCallback);
     }
     else{
-        getObjectStoreAllData(dbData.objectStoreNames.BOOKMARKS, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS, results);
-            if (callback){
-                callback(results);
+
+        var allCallback = callback;
+        if (params.context != "data_export"){
+            allCallback = (objects) => {
+                getAssociatedProfiles(objects, params.context, callback);
             }
+        }
+
+        getObjectStoreAllData(dbData.objectStoreNames.BOOKMARKS, (results) => {
+            allCallback(results);
         });
+
     }
     // results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
 
@@ -353,81 +383,63 @@ function getBookmarkList(params, callback = null){
 
 // Script for getting all saved searches
 
-function getSearchList(params, callback = null) {
+function getSearchList(params, callback) {
 
-    if (params){
-        callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
-        getOffsetLimitList(params, dbData.objectStoreNames.SEARCHES, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        var filteredCallback = callback;
+        if (params.context != "data_export"){
+            filteredCallback = (objects, context) => {
+                getAssociatedProfiles(objects, context, callback);
+            }
+        }
+        getFilteredList(params, dbData.objectStoreNames.SEARCHES, filteredCallback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES, results);
-            if (callback){
-                callback(results);
-            }
+            callback(results);
         });
     }
 
 }
 
-function getNotificationList(params, callback = null){
+function getNotificationList(params, callback){
 
-    if (params){
-        getOffsetLimitList(params, dbData.objectStoreNames.NOTIFICATIONS, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        getFilteredList(params, dbData.objectStoreNames.NOTIFICATIONS, callback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.NOTIFICATIONS, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.NOTIFICATIONS, results);
-            if (callback){
-                callback(results);
-            }
+            callback(results);
         });
     }
 
 }
 
-function getSettingsList(params, callback = null){
+function getProfileList(params, callback) {
 
-    // if (params){
-    //     // callback = (callback ? callback : getAssociatedProfiles); // TO BE UPDATED
-    //     getOffsetLimitList(params, dbData.objectStoreNames.SETTINGS, callback);
-    // }
-    // else{
-        getObjectStoreAllData(dbData.objectStoreNames.SETTINGS, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SETTINGS, results);
-            if (callback){
-                callback(results);
+    if (Object.hasOwn(params, 'criteria')){
+        var filteredCallback = callback;
+        if (params.context != "data_export"){
+            filteredCallback = (objects, context) => {
+                console.log("%%%%%%%%%%%%%% : ", objects);
+                getAssociatedSearches(objects, context, callback);
             }
-        });
-    // }
-
-}
-
-function getProfileList(params, callback = null) {
-
-    if (params){
-        callback = (callback ? callback : getAssociatedSearches); // TO BE UPDATED
-        getOffsetLimitList(params, dbData.objectStoreNames.PROFILES, callback);
+        }
+        getFilteredList(params, dbData.objectStoreNames.PROFILES, filteredCallback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.PROFILES, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES, results);
-            if (callback){
-                callback(results);
-            }
+            callback(results);
         });
     }
 
 }
 
 
-function getOffsetLimitList(params, objectStoreName, callback) {
+function getFilteredList(params, objectStoreName, callback) {
 
-
-    var params = (params ? params : {});
-    params.timePeriod = (params.timePeriod ? params.timePeriod : null);
-    params.offset = (params.offset ? params.offset : 0);
-    // params.inArea = (params.timePeriod ? [false, false] : null);
+    params.criteria.props = (Object.hasOwn(params.criteria, 'props') ? params.criteria.props : null);
+    params.criteria.offset = (Object.hasOwn(params.criteria, 'offset') ? params.criteria.offset : 0);
 
     let results = [];
     var offsetApplied = false;
@@ -436,23 +448,23 @@ function getOffsetLimitList(params, objectStoreName, callback) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            callback(results, objectStoreName, params.context);
+            callback(results, params.context);
             return;
         }
 
-        if(params.offset != 0 && !offsetApplied) {
+        if(params.criteria.offset != 0 && !offsetApplied) {
           offsetApplied = true;
-          cursor.advance(params.offset);
+          cursor.advance(params.criteria.offset);
           return;
         }
 
         let object = cursor.value;
-        var output = addToOffsetLimitList(object, results, objectStoreName, params);
+        var output = addToFilteredList(object, results, objectStoreName, params);
         results = output.list;
 
         // if an argument about a specific time is not passed then
         if (output.stop){
-            callback(results, objectStoreName, params.context);
+            callback(results, params.context);
             return;
         }
         
@@ -464,115 +476,72 @@ function getOffsetLimitList(params, objectStoreName, callback) {
     };
 }
 
-function addReminderToOffsetLimitList(object, list, objectStoreName, params){
+function isObjectActionable(object, prop, critValue){
+
+    if (["createdOn", "date"].indexOf(prop)){
+
+        if (typeof critValue == "string"){ // a specific date
+            if (critValue.split("T")[0] == object[prop].split("T")[0]){
+                return true;
+            }
+        }
+        else{
+            if (critValue.length == 3 && critValue.indexOf("to") == 1){
+                var objectDate = (new Date(object[prop])),
+                    startDate = new Date(critValue[0]),
+                    endDate = new Date(critValue[2]);
+                if (startDate <= objectDate && objectDate <= endDate){
+                    return true;
+                }
+            }
+        }  
+
+    }
+
+    return false;
+
+}
+
+function addToFilteredReminderList(object, list, objectStoreName, params){
 
     var stop = false;
-    // if the user is requesting all the reminders set for today then only activated reminders are selected
-    if (params.context == "Notifications"){
-        if (object.activated && (new Date()).toISOString().split("T")[0] == object.date.split("T")[0]){
-            list.push(object);
+
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "createdOn")){
+            var date = params.criteria.props.createdOn;
+            if (isObjectActionable(object, "createdOn", date)){
+                list.push(object);
+            }
         }
     }
     else{
-        if (!params.timePeriod){
-            list.push(object);
-        }
-        else{
-            if (typeof params.timePeriod == "string"){ // a specific date
-                if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
-                    list.push(object);
-                }
-            }
-            else{
-                if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                    var objectDate = (new Date(object.date)),
-                        startDate = new Date(params.timePeriod[0]),
-                        endDate = new Date(params.timePeriod[2]);
-                    if (startDate <= objectDate && objectDate <= endDate){
-                        list.push(object);
-                    }
-                }
-            }            
-        }
+        list.push(object);
     }
 
     return {list: list, stop: stop};
 
 }
 
-function addSearchToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredSearchList(object, list, objectStoreName, params){
 
     var stop = false;
-    if (!params.timePeriod){
-        if (params.url){
-            if (params.url == object.url){
+
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "date")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "date", date)){
                 list.push(object);
             }
         }
-        else{ // list previous day searches
-            if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
-                list.push(object);
-            }
-            else{
-                if (list[0].date.split("T")[0] != object.date.split("T")[0]){
-                    stop = true;
-                }
-            }
-        } 
     }
     else{
-        if (typeof params.timePeriod == "string"){ // a specific date
-            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
-                list.push(object);
-            }
-        }
-        else{
-            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                var objectDate = (new Date(object.date)),
-                    startDate = new Date(params.timePeriod[0]),
-                    endDate = new Date(params.timePeriod[2]);
-                if (startDate <= objectDate && objectDate <= endDate){
-                    list.push(object);
-                }
-            }
-        }            
-    }
-
-    return {list: list, stop: stop}; 
-
-}
-
-function addProfileToOffsetLimitList(object, list, objectStoreName, params){
-
-    var stop = false;
-    
-    if (params.context.indexOf("search") >= 0){
-        var searchTextIndex = object.fullName.toLowerCase().indexOf(params.searchText.toLowerCase());
-        if (searchTextIndex >= 0){
-            var fullName = object.fullName.slice(0, searchTextIndex);
-            fullName += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.fullName.slice(searchTextIndex, searchTextIndex + params.searchText.length)+'</span>';
-            fullName += object.fullName.slice(searchTextIndex + params.searchText.length);
-            object.fullName = fullName;
+        if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
             list.push(object);
         }
-    }
-    else{
-        if (params.timePeriod){
-            if (typeof params.timePeriod == "string"){ // a specific date
-                if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
-                    list.push(object);
-                }
+        else{
+            if (list[0].date.split("T")[0] != object.date.split("T")[0]){
+                stop = true;
             }
-            else{
-                if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                    var objectDate = (new Date(object.date)),
-                        startDate = new Date(params.timePeriod[0]),
-                        endDate = new Date(params.timePeriod[2]);
-                    if (startDate <= objectDate && objectDate <= endDate){
-                        list.push(object);
-                    }
-                }
-            }  
         }
     }
 
@@ -580,158 +549,144 @@ function addProfileToOffsetLimitList(object, list, objectStoreName, params){
 
 }
 
-function addBookmarkToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredProfileList(object, list, objectStoreName, params){
 
     var stop = false;
-    
-    if (!params.timePeriod){
-        list.push(object);
-    }
-    else{
-        if (typeof params.timePeriod == "string"){ // a specific date
-            if (params.timePeriod.split("T")[0] == object.createdOn.split("T")[0]){
+
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "fullName")){
+            var searchText = params.criteria.props.fullName;
+            var searchTextIndex = object.fullName.toLowerCase().indexOf(searchText.toLowerCase());
+            if (searchTextIndex >= 0){
+                var fullName = object.fullName.slice(0, searchTextIndex);
+                fullName += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.fullName.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
+                fullName += object.fullName.slice(searchTextIndex + searchText.length);
+                object.fullName = fullName;
                 list.push(object);
             }
         }
-        else{
-            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                var objectDate = (new Date(object.createdOn)),
-                    startDate = new Date(params.timePeriod[0]),
-                    endDate = new Date(params.timePeriod[2]);
-                if (startDate <= objectDate && objectDate <= endDate){
-                    list.push(object);
-                }
-            }
-        }            
     }
 
     return {list: list, stop: stop}; 
 
 }
 
-function addKeywordToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredBookmarkList(object, list, objectStoreName, params){
 
     var stop = false;
-    
-    if (!params.timePeriod){
-        list.push(object);
-    }
-    else{
-        if (typeof params.timePeriod == "string"){ // a specific date
-            if (params.timePeriod.split("T")[0] == object.createdOn.split("T")[0]){
+
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "createdOn")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "createdOn", date)){
                 list.push(object);
             }
         }
-        else{
-            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                var objectDate = (new Date(object.createdOn)),
-                    startDate = new Date(params.timePeriod[0]),
-                    endDate = new Date(params.timePeriod[2]);
-                if (startDate <= objectDate && objectDate <= endDate){
-                    list.push(object);
-                }
-            }
-        }            
+    }
+    else{
+        list.push(object);
     }
 
     return {list: list, stop: stop}; 
 
 }
 
-function addNotificationToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredKeywordList(object, list, objectStoreName, params){
 
     var stop = false;
     
-    if (!params.timePeriod){
-        list.push(object);
-    }
-    else{
-        if (typeof params.timePeriod == "string"){ // a specific date
-            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "createdOn")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "createdOn", date)){
                 list.push(object);
             }
         }
-        else{
-            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                var objectDate = (new Date(object.date)),
-                    startDate = new Date(params.timePeriod[0]),
-                    endDate = new Date(params.timePeriod[2]);
-                if (startDate <= objectDate && objectDate <= endDate){
-                    list.push(object);
-                }
-            }
-        }            
+    }
+    else{
+        list.push(object);
     }
 
     return {list: list, stop: stop}; 
 
 }
 
-function addProfileActivityToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredNotificationList(object, list, objectStoreName, params){
 
     var stop = false;
     
-    if (!params.timePeriod){
-        list.push(object);
-    }
-    else{
-        if (typeof params.timePeriod == "string"){ // a specific date
-            if (params.timePeriod.split("T")[0] == object.date.split("T")[0]){
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "date")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "date", date)){
                 list.push(object);
             }
         }
-        else{
-            if (params.timePeriod.length == 3 && params.timePeriod.indexOf("to") == 1){
-                var objectDate = (new Date(object.date)),
-                    startDate = new Date(params.timePeriod[0]),
-                    endDate = new Date(params.timePeriod[2]);
-                if (startDate <= objectDate && objectDate <= endDate){
-                    list.push(object);
-                }
-            }
-        }            
+    }
+    else{
+        list.push(object);
     }
 
     return {list: list, stop: stop}; 
 
 }
 
-function addToOffsetLimitList(object, list, objectStoreName, params){
+function addToFilteredProfileActivityList(object, list, objectStoreName, params){
+
+    var stop = false;
+    
+    if (params.criteria.props){
+        if (Object.hasOwn(params.criteria.props, "date")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "date", date)){
+                list.push(object);
+            }
+        }
+    }
+    else{
+        list.push(object);
+    }
+
+    return {list: list, stop: stop}; 
+
+}
+
+function addToFilteredList(object, list, objectStoreName, params){
 
     var result = null;
     switch(objectStoreName){
         case dbData.objectStoreNames.REMINDERS:{
-            result = addReminderToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredReminderList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.PROFILES:{
-            result = addProfileToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredProfileList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.SEARCHES:{
-            result = addSearchToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredSearchList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.BOOKMARKS:{
-            result = addBookmarkToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredBookmarkList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            result = addKeywordToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredKeywordList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.NOTIFICATIONS:{
-            result = addNotificationToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredNotificationList(object, list, objectStoreName, params);
             break;
         }
 
         case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-            result = addProfileActivityToOffsetLimitList(object, list, objectStoreName, params);
+            result = addToFilteredProfileActivityList(object, list, objectStoreName, params);
             break;
         }
 
@@ -743,18 +698,22 @@ function addToOffsetLimitList(object, list, objectStoreName, params){
 
 // Script for getting all saved reminders
 
-function getReminderList(params, callback = null) {
+function getReminderList(params, callback) {
 
-    if (params){
-        callback = (callback ? callback : getAssociatedProfiles);
-        getOffsetLimitList(params, dbData.objectStoreNames.REMINDERS, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        getFilteredList(params, dbData.objectStoreNames.REMINDERS, callback);
     }
     else{
-        getObjectStoreAllData(dbData.objectStoreNames.REMINDERS, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS, results);
-            if (callback){
-                callback(results);
+
+        var allCallback = callback;
+        if (params.context != "data_export"){
+            allCallback = (objects) => {
+                getAssociatedProfiles(objects, params.context, callback);
             }
+        }
+
+        getObjectStoreAllData(dbData.objectStoreNames.REMINDERS, (results) => {
+            allCallback(results);
         });
     }
 
@@ -762,34 +721,28 @@ function getReminderList(params, callback = null) {
 
 // Script for getting all saved keywords
 
-function getKeywordList(params, callback = null) {
+function getKeywordList(params, callback) {
 
-    if (params){
-        getOffsetLimitList(params, dbData.objectStoreNames.KEYWORDS, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        getFilteredList(params, dbData.objectStoreNames.KEYWORDS, callback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS, results);
-            if (callback){
-                callback(results);
-            }
+            callback(results);
         });
     }
 }
 
 // Script for getting all the profile's activities
 
-function getProfileActivityList(params, callback = null) {
+function getProfileActivityList(params, callback) {
 
-    if (params){
-        getOffsetLimitList(params, dbData.objectStoreNames.PROFILE_ACTIVITY, callback);
+    if (Object.hasOwn(params, 'criteria')){
+        getFilteredList(params, dbData.objectStoreNames.PROFILE_ACTIVITY, callback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.PROFILE_ACTIVITY, (results) => {
-            // sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY, results);
-            if (callback){
-                callback(results);
-            }
+            callback(results);
         });
     }
 }
@@ -831,7 +784,6 @@ function getObjectStoresSpecifiedData(objectStoreNames, results, params){
         objectStoreNames.shift();
 
         // looping back
-        console.log("%%%%%%%%%%%%%%%% : ", objectStoreNames.length);
         getObjectStoresSpecifiedData(objectStoreNames, results, params);
 
     };
@@ -863,7 +815,7 @@ function getObjectStoreAllData(objectStoreName, callback = null){
 
 // Script for getting any objectStore list
 
-function getList(objectStoreName, objectData, callback = null){
+function getList(objectStoreName, objectData, callback){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.SEARCHES:{
@@ -902,7 +854,7 @@ function getList(objectStoreName, objectData, callback = null){
         }
 
         case dbData.objectStoreNames.SETTINGS:{
-            getSettingsList(objectData, callback);
+            getSettingsData(null, callback);
             break;
         }
 
@@ -1261,10 +1213,6 @@ function deleteObjectStoreSpecificData(objectStoreNames, params){
 
 }
 
-function isObjectDeletable(object, params){
-
-}
-
 // Script for deleting a keyword
 
 function deleteObjectSet(objectStoreName, params, callback = null){
@@ -1283,7 +1231,7 @@ function deleteObjectSet(objectStoreName, params, callback = null){
 
         let object = cursor.value;
 
-        if (isObjectDeletable(object, params)){
+        if (isObjectActionable(object, params)){
 
             var delParams = null;
             switch(objectStoreName){
@@ -1406,7 +1354,14 @@ function deleteAllObjectStoresData(objectStoreNames){
     if (objectStoreNames.length == 0){
         // updating the last reset date before notifying the content script
         var lastDataResetDate = (new Date()).toISOString();
-        updateSettingObject("lastDataResetDate", lastDataResetDate, () => {
+        updateSettingObject({
+            context: "App",
+            criteria: {
+                props: {
+                    lastDataResetDate: lastDataResetDate,
+                }
+            }
+        }, (object) => {
             sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, "all", {payload: lastDataResetDate});
         });
         return;
@@ -1435,26 +1390,26 @@ function deleteAllObjectStoresData(objectStoreNames){
 
 // Script for getting any object instance
 
-function getObject(objectStoreName, objectData){
+function getObject(objectStoreName, objectData, callback){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.PROFILES:{
-            getProfileObject(objectData);
+            getProfileObject(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.SETTINGS:{
-            getSettingsData(objectData);
+            getSettingsData(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.REMINDERS:{
-            getReminderObject(objectData);
+            getReminderObject(objectData, callback);
             break;
         }
 
         case "feedback": {
-            getFeedbackData(objectData);
+            getFeedbackData(objectData, callback);
             break;
         }
     }
@@ -1501,7 +1456,9 @@ function getProcessedData(objectStoreName, objectData){
 
 // Script for providing a profile given its url
 
-function getProfileObject(url){
+function getProfileObject(params, callback){
+
+    var url = params.criteria.props.url;
 
     let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readonly").objectStore(dbData.objectStoreNames.PROFILES);
     let request = objectStore.get(url);
@@ -1511,6 +1468,11 @@ function getProfileObject(url){
         let profile = event.target.result;
         profile.bookmark = null;
         profile.reminder = null;
+
+        if (params.context.indexOf("only_object")){
+            callback(profile);
+            return;
+        }
 
         let bookmarkObjectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readonly").objectStore(dbData.objectStoreNames.BOOKMARKS);
         let bookmarkRequest = bookmarkObjectStore.get(url);
@@ -1558,45 +1520,46 @@ function getProfileObject(url){
 
 // Script for providing setting data
 
-function getSettingsData(properties, callback = null){
+function getSettingsData(params, callback){
     
+    var props = params.criteria.props;
+
     var request = db
                     .transaction(dbData.objectStoreNames.SETTINGS, "readonly")
                     .objectStore(dbData.objectStoreNames.SETTINGS)
                     .get(1);
 
-    var results = [];
     request.onsuccess = (event) => {
         console.log('Got settings:', event.target.result);
         // Sending the retrieved data
         let settings = event.target.result;
-        properties.forEach((property) => {
-            var propValue = settings[property]; 
 
-            if (property == "feedback"){
-                // checking the diff between two dates
-
-                var diffTime = Math.abs((new Date()) - (new Date(propValue.createdAt)));
-                const diffDays = Math.ceil(diffTime / (1000 * 60)); 
-                // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                console.log(diffTime + " milliseconds");
-                // console.log(diffDays + " days");
-
-                if (diffTime > appParams.INTERVAL_FEEDBACK){
-                    propValue = null;
-                }
-            }
-
-            results.push(propValue);
-            if (!callback){
-                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, {property: property, value: propValue});
-            }
-        });
-
-        //Executing the callback if exists
-        if (callback){
-            callback(results);
+        if (!props){
+            callback( (params.context.indexOf("List") >= 0 ? [settings] : settings) );
+            return;
         }
+
+        var result = {};
+        for (var prop of props){
+
+            result[prop] = settings[prop]; 
+
+            // if (property == "feedback"){
+            //     // checking the diff between two dates
+
+            //     var diffTime = Math.abs((new Date()) - (new Date(propValue.createdAt)));
+            //     const diffDays = Math.ceil(diffTime / (1000 * 60)); 
+            //     // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            //     console.log(diffTime + " milliseconds");
+            //     // console.log(diffDays + " days");
+
+            //     if (diffTime > appParams.INTERVAL_FEEDBACK){
+            //         propValue = null;
+            //     }
+            // }
+        }
+
+        callback(result);
     };
 
     request.onerror = (event) => {
@@ -1687,11 +1650,11 @@ function getViewsTimelineData(chartData){
 
 // Script for updating any object instance
 
-function updateObject(objectStoreName, objectData){
+function updateObject(objectStoreName, objectData, callback){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.SETTINGS:{
-            updateSettingObject(objectData.property, objectData.value);
+            updateSettingObject(objectData, callback);
             break;
         }
 
@@ -1700,8 +1663,8 @@ function updateObject(objectStoreName, objectData){
             break;
         }
 
-    case dbData.objectStoreNames.REMINDERS: {
-            updateReminderObject(objectData);
+        case dbData.objectStoreNames.REMINDERS: {
+            updateReminderObject(objectData, callback);
             break;
         }
     }
@@ -1811,7 +1774,9 @@ function deactivateTodayReminders(){
 
 // Script for setting the new date of data reset
 
-function updateSettingObject(propKey, propValue, callback = null){
+function updateSettingObject(params, callback){
+
+    var object = params.criteria.props;
 
     // Retrieving the data first for later update
     let objectStore = db.transaction(dbData.objectStoreNames.SETTINGS, "readwrite").objectStore(dbData.objectStoreNames.SETTINGS);
@@ -1822,22 +1787,18 @@ function updateSettingObject(propKey, propValue, callback = null){
         // then, update the property
         let settings = event.target.result;
 
-        settings[propKey] = propValue;
+        for (var prop in object){ settings[prop] = object[prop]; }
+
         let requestUpdate = objectStore.put(settings);
         requestUpdate.onerror = (event) => {
             // Do something with the error
-            console.log("An error occured when updating "+propKey+" !");
+            console.log("An error occured when updating settings !");
         };
         requestUpdate.onsuccess = (event) => {
             // Success - the data is updated!
-            console.log(propKey+" update processed successfully !");
+            console.log("Settings updated successfully !");
 
-            if (callback){
-                callback();
-                return;
-            }
-
-            getSettingsData([propKey]);
+            callback(object);
 
         };
     };
@@ -1939,7 +1900,9 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            getList(message.data.objectStoreName, message.data.objectData);
+            getList(message.data.objectStoreName, message.data.objectData, (results) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, message.data.objectStoreName, {context: message.data.objectData.context, list: results});
+            });
             break;
         }
 
@@ -1948,7 +1911,9 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            getObject(message.data.objectStoreName, message.data.objectData);
+            getObject(message.data.objectStoreName, message.data.objectData, (object) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+            });
             break;
         }
 
@@ -1966,7 +1931,9 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            updateObject(message.data.objectStoreName, message.data.objectData);
+            updateObject(message.data.objectStoreName, message.data.objectData, (object) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+            });
             break;
         }
 
@@ -2086,7 +2053,16 @@ function timeCountIntervalFunction(){
             lastCheck = new Date();
         timeCount.value += (lastCheck - (new Date(timeCount.lastCheck))) / 1000;
         timeCount.lastCheck = lastCheck;
-        updateSettingObject("timeCount", timeCount);
+        updateSettingObject({
+            context: "App",
+            criteria: {
+                props: {
+                    timeCount: timeCount,
+                }
+            }
+        }, (object) => {
+
+        });
     });
 
 } 
@@ -2098,7 +2074,14 @@ function startTimeCounter(){
     getSettingsData(["timeCount"], (results) => {
         var timeCount = results[0];
         timeCount.lastCheck = (new Date()).toISOString();
-        updateSettingObject("timeCount", timeCount, () => {
+        updateSettingObject({
+            context: "App",
+            criteria: {
+                props: {
+                    timeCount: timeCount,
+                }
+            }
+        }, (object) => {
 
             timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
 

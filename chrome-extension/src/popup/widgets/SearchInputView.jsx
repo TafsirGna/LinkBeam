@@ -9,7 +9,8 @@ import {
   ack,
   startMessageListener, 
   messageParams,
-  appParams
+  appParams,
+  dbData,
 } from "../Local_library";
 
 export default class SearchInputView extends React.Component{
@@ -50,7 +51,16 @@ export default class SearchInputView extends React.Component{
       return;
     }
 
-  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, this.props.objectStoreName, {searchText: this.state.text, context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, "search"].join("-")});
+
+    var props = null;
+    switch(this.props.objectStoreName){
+      case dbData.objectStoreNames.PROFILES:{
+        props = { fullName: this.state.text };
+        break;
+      }
+    }
+
+  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, this.props.objectStoreName, { context: [this.props.context, "search"].join("-"), criteria: { props: props}});
 
   }
 

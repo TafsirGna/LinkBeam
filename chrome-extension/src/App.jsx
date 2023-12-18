@@ -50,6 +50,7 @@ export default class App extends React.Component{
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
     this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
@@ -96,11 +97,8 @@ export default class App extends React.Component{
       this.setState({redirect_to: redirect_to});
     }
 
-    // Sending a request for getting some settings
-    // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["productID"]);
-
     // Sending a request to know if some reminders are set for today
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, {context: "Notifications"});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, { context: "App", criteria: { props: { createdOn: (new Date()) } } });
 
   }
 
@@ -121,6 +119,24 @@ export default class App extends React.Component{
   }
 
   onSearchesDataReceived(message, sendResponse){
+
+    var context = message.data.objectData.context; 
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
+      return;
+    }
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    // setting the new value
+    var listData = message.data.objectData.list,
+        scope = context.split("-")[1];
+
+    this.setSearchList(listData, scope);
+
+  }
+
+  onProfilesDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
     if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
@@ -159,7 +175,7 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var keywordList = message.data.objectData;
+    var keywordList = message.data.objectData.list;
 
     // Setting the search list here too
     this.setState(prevState => {
@@ -188,7 +204,7 @@ export default class App extends React.Component{
       }); 
 
     }
-    else if (context == "Notifications"){
+    else if (context == "App"){
 
       // Setting the reminder list here too
       this.setState(prevState => {
@@ -221,52 +237,54 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    switch(message.data.objectData.property){
-      case "lastDataResetDate":{
-        
+    var settings = message.data.objectData.object;
+
+    if (Object.hasOwn(settings, "lastDataResetDate")){
+      
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.lastDataResetDate = settings.lastDataResetDate;
+        return { globalData };
+      });
+
+    }
+
+    if (Object.hasOwn(settings, "productID")){
+
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.productID = settings.productID;
+        return { globalData };
+      });
+
+    }
+
+    if (Object.hasOwn(settings, "notifications")){
+
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.notifications = settings.notifications;
+        return { globalData };
+      });
+
+      if (settings.notifications){
         this.setState(prevState => {
           let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.lastDataResetDate = message.data.objectData.value;
+          globalData.currentTabWebPageData = null;
           return { globalData };
         });
-        break;
-
       }
 
-      case "productID":{
+    }
 
-        var productID = message.data.objectData.value;
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.productID = productID;
-          return { globalData };
-        });
+    if (Object.hasOwn(settings, "autoTabOpening")){
 
-        break;
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.autoTabOpening = settings.autoTabOpening;
+        return { globalData };
+      });
 
-      }
-
-      case "notifications":{
-        
-        var notificationSetting = message.data.objectData.value;
-
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.notifications = notificationSetting;
-          return { globalData };
-        });
-
-        if (notificationSetting){
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.currentTabWebPageData = null;
-            return { globalData };
-          });
-        }
-
-        break;
-
-      }
     }
 
   }
@@ -301,6 +319,12 @@ export default class App extends React.Component{
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
         callback: this.onSearchesDataReceived
       },
+
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
+        callback: this.onProfilesDataReceived
+      },
+
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarksDataReceived

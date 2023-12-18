@@ -40,6 +40,7 @@ export default class SettingsView extends React.Component{
 
     this.deleteData = this.deleteData.bind(this);
     this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
+    this.saveAutoTabOpeningState = this.saveAutoTabOpeningState.bind(this);
     this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
@@ -61,11 +62,15 @@ export default class SettingsView extends React.Component{
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
     if (!Object.hasOwn(this.props.globalData.settings, 'notifications')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["notifications"]);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["notifications"] } });
+    }
+
+    if (!Object.hasOwn(this.props.globalData.settings, 'autoTabOpening')){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["autoTabOpening"] } });
     }
 
     if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["lastDataResetDate"] } });
     }
     else{
       // Offcanvas
@@ -212,7 +217,13 @@ export default class SettingsView extends React.Component{
   saveCheckBoxNewState(event){
 
     // Initiating the recording of the new state
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "notifications", value: event.target.checked});
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {notifications: event.target.checked} } });
+  }
+
+  saveAutoTabOpeningState(event){
+
+    // Initiating the recording of the new state
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {autoTabOpening: event.target.checked} } });
   }
 
   saveDarkThemeState(){
@@ -226,7 +237,7 @@ export default class SettingsView extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: {timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}});
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
     }
   }
@@ -235,7 +246,7 @@ export default class SettingsView extends React.Component{
     const response = confirm("Do you confirm the download of your data as specified ?");
 
     if (response){
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: {timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}});
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
     }
 
@@ -282,7 +293,6 @@ export default class SettingsView extends React.Component{
                     type="switch"
                     id="notif-custom-switch"
                     label=""
-                    // className="shadow"
                     checked={this.props.globalData.settings.notifications}
                     onChange={this.saveCheckBoxNewState}
                   />
@@ -293,14 +303,13 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Automatic tab opening</strong>
+                  <strong class="text-gray-dark">Auto tab opening</strong>
                   <Form.Check // prettier-ignore
                     type="switch"
                     id="notif-custom-switch"
                     label=""
-                    checked={true}
-                    // className="shadow"
-                    // onChange={this.saveCheckBoxNewState}
+                    checked={this.props.globalData.settings.autoTabOpening}
+                    onChange={this.saveAutoTabOpeningState}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
@@ -436,6 +445,7 @@ export default class SettingsView extends React.Component{
                   type="date"
                   autoFocus
                   max={new Date().toISOString().slice(0, 10)}
+                  min={(Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')) ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
                   value={this.state.offCanvasFormEndDate}
                   onChange={this.handleOffCanvasFormEndDateInputChange}
                   className=""

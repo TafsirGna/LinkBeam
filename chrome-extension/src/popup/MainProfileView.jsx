@@ -28,7 +28,7 @@ export default class MainProfileView extends React.Component{
     const profileUrl = urlParams.get("url");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.PROFILES, profileUrl);
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: profileUrl } }});
 
   }
 
