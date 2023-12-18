@@ -6,14 +6,15 @@ import {
   sendDatabaseActionMessage,
   messageParams,
   dbData,
+  appParams,
 } from "../Local_library";
+import moment from 'moment';
 
 export default class KeywordListView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      objectTags: null,
     };
   }
 
@@ -52,7 +53,7 @@ export default class KeywordListView extends React.Component{
 
   deleteKeyword(keyword){
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, keyword.name);
+    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: keyword.name} } });
 
   }
 
@@ -72,17 +73,20 @@ export default class KeywordListView extends React.Component{
                     </div>}
 
         { this.props.objects != null && this.props.objects.length != 0 && 
-                <ul class="list-unstyled mb-0 rounded shadow-sm p-2">
-                  {
-                    this.props.objects.map((keyword, index) => (<li key={index}>
-                            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="#" onClick={() => {this.initKeywordDeletion(keyword)}}>
-                              <span class="d-inline-block bg-success rounded-circle p-1"></span>
-                              {keyword.name}
-                              <svg viewBox="0 0 24 24" width="14" height="14" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
-                            </a>
-                          </li>))
-                  }
-                </ul> }
+                <div class="list-group list-group-radio d-grid gap-2 border-0 small mt-3">
+
+                  {this.props.objects.map((keyword, index) => (
+                                    <div class="position-relative shadow-sm rounded" key={index}>
+                                      <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid4">
+                                        <strong class="fw-semibold d-flex align-items-center justify-content-between">
+                                          {keyword.name} 
+                                          <svg onClick={() => {this.initKeywordDeletion(keyword)}} title="delete" viewBox="0 0 24 24" width="20" height="20" stroke="#dc3545" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                                        </strong>
+                                        <span class="d-block small opacity-75">Created {moment(keyword.createdOn, moment.ISO_8601).fromNow()}</span>
+                                      </label>
+                                    </div>))}
+
+                </div>}
       </>
     );
   }

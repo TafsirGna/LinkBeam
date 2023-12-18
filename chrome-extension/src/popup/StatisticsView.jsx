@@ -24,52 +24,27 @@ export default class StatisticsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      lastDataResetDate: null,
       viewChoice: 0,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewParamChoice = this.onViewParamChoice.bind(this);
-    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   componentDidMount() {
-
-    // Setting the local data
-    this.setState({lastDataResetDate: this.props.globalData.settings.lastDataResetDate});
 
     // Starting the listener
     this.listenToMessages();
     
     // Requesting the last reset date
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
+    if (!Object.hasOwn(this.props.globalData.settings, "lastDataResetDate")){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["lastDataResetDate"]);
+    }
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS);
   }
 
-  onSettingsDataReceived(message, sendResponse){
-
-    switch(message.data.objectData.property){
-      case "lastDataResetDate":{
-        // acknowledge receipt
-        ack(sendResponse);
-        
-        this.setState({lastDataResetDate: message.data.objectData.value});
-
-        break;
-      }
-    }
-
-  }
-
   listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onSettingsDataReceived
-      }
-    ]);
     
   }
 
@@ -135,7 +110,7 @@ export default class StatisticsView extends React.Component{
           </div>
 
           <div class="clearfix">
-            <span class="text-muted small float-end fst-italic mt-2 badge">Data recorded since {moment(this.state.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a')}</span>
+            <span class="text-muted small float-end fst-italic mt-2 badge">Data recorded since {Object.hasOwn(this.props.globalData.settings, "lastDataResetDate") ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}</span>
           </div>
         </div>
       </>

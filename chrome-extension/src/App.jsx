@@ -175,7 +175,15 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var keywordList = message.data.objectData.list;
+    var keywordList = null;
+    if (Object.hasOwn(message.data.objectData, "list")){
+      keywordList = message.data.objectData.list;
+    }
+    else if (Object.hasOwn(message.data.objectData, "object")){
+      keywordList = this.state.globalData.keywordList;
+      var keywordObject = message.data.objectData.object;
+      keywordList.push(keywordObject);
+    }
 
     // Setting the search list here too
     this.setState(prevState => {
@@ -331,6 +339,10 @@ export default class App extends React.Component{
       },
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        callback: this.onKeywordsDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       },
       {

@@ -76,7 +76,11 @@ export default class KeywordView extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        callback: this.onKeywordsDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       }
     ]);
@@ -97,10 +101,16 @@ export default class KeywordView extends React.Component{
 
     // Displaying the spinner and cleaning the keyword input
     this.setState({processingState: {status: "YES", info: "ADDING"}}, () => {
-      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, this.state.keyword);
+      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: this.state.keyword } } });
       this.setState({keyword: ""});
     });
 
+  }
+
+  handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      this.addKeyword();
+    }
   }
 
   checkInputKeyword(){
@@ -143,6 +153,11 @@ export default class KeywordView extends React.Component{
       <>
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
+
+          <div class="text-center mt-2">
+            <span class="badge text-bg-primary shadow">Keywords</span>
+          </div>
+
           <div class="clearfix">
             <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
               <span class="visually-hidden">Loading...</span>
@@ -156,7 +171,7 @@ export default class KeywordView extends React.Component{
           </div>
           <div class="mt-3">
             <div class="input-group mb-3 shadow">
-              <input type="text" class="form-control" placeholder="New keyword" aria-describedby="basic-addon2" value={this.state.keyword} onChange={this.handleKeywordInputChange}/>
+              <input onKeyDown={this.handleKeyDown} type="text" class="form-control" placeholder="New keyword" aria-describedby="basic-addon2" value={this.state.keyword} onChange={this.handleKeywordInputChange}/>
               <span class="input-group-text handy-cursor" id="basic-addon2" onClick={this.addKeyword}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-muted"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
               </span>

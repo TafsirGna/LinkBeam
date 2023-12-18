@@ -373,11 +373,6 @@ function getBookmarkList(params, callback){
         });
 
     }
-    // results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
-
-    // request.onerror = (event) => {
-    //     console.log("An error occured when retrieving all bookmarks");
-    // };
 
 }
 
@@ -728,6 +723,7 @@ function getKeywordList(params, callback) {
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.KEYWORDS, (results) => {
+            results.sort((a,b) => (new Date(b.createdOn)) - (new Date(a.createdOn)));
             callback(results);
         });
     }
@@ -983,21 +979,21 @@ function addBookmarkObject(url){
 
 // Script for adding any object instance
 
-function addObject(objectStoreName, objectData){
+function addObject(objectStoreName, objectData, callback){
 
     switch(objectStoreName){
         case dbData.objectStoreNames.BOOKMARKS:{
-            addBookmarkObject(objectData);
+            addBookmarkObject(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            addKeywordObject(objectData);
+            addKeywordObject(objectData, callback);
             break;
         }
 
         case dbData.objectStoreNames.REMINDERS:{
-            addReminderObject(objectData);
+            addReminderObject(objectData, callback);
             break;
         }
     }
@@ -1081,24 +1077,25 @@ function add_profile_data(profile, search){
 
 // Script for adding a new keyword
 
-function addKeywordObject(keywordData) {
+function addKeywordObject(params, callback) {
+
+    var name = params.criteria.props.name;
+
     const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
     
     // setting the date of insertion
-    var keyword = {name: keywordData, createdOn: new Date().toISOString()}
+    var keyword = {name: name, createdOn: new Date().toISOString()};
     const request = objectStore.add(keyword);
     request.onsuccess = (event) => {
         // console.log("New keyword added")
-        // Sending the new list
-        getKeywordList() 
+        callback(keyword);
     };
 
     request.onerror = function (event) {
         console.log("An error when inserting the new keyword", event);
-        let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
-        chrome.runtime.sendMessage({header: 'add-keyword-error', data: errorData}, (response) => {
-          console.log('Add keyword error message sent', response);
-        });
+
+        // let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
     };
 
 }
@@ -1281,29 +1278,32 @@ function deleteObjectSet(objectStoreName, params, callback = null){
 
 function deleteKeywordObject(params, callback) {
 
-    if (params.url){
+    if (Object.hasOwn(params, "criteria")){
 
-        const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
-        let request = objectStore.delete(params);
-        request.onsuccess = (event) => {
-            console.log("Keyword deleted")
-            // Sending the new list
-            getKeywordList() 
+        if (Object.hasOwn(params.criteria.props, "name")){
+
+            var name = params.criteria.props.name;
+            const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
+            let request = objectStore.delete(name);
+            request.onsuccess = (event) => {
+                console.log("Keyword deleted")
+                // Sending the new list
+                callback();
+            }
+
+            request.onerror = function (event) {
+                console.log("An error when deleting the keyword", event);
+                sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+            }
+
         }
-
-        request.onerror = function (event) {
-            console.log("An error when deleting the keyword", event);
-            let errorData = "An error occured !";
-            chrome.runtime.sendMessage({header: 'delete-keyword-error', data: errorData}, (response) => {
-              console.log('Delete keyword error message sent', response);
-            });
+        else if (Object.hasOwn(params.criteria.props, "createdOn")){
+            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params, callback);
         }
 
     }
     else{
-        if (params.timePeriod){
-            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params, callback);
-        }
+
     }
 
 }
@@ -1922,7 +1922,9 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            addObject(message.data.objectStoreName, message.data.objectData);
+            addObject(message.data.objectStoreName, message.data.objectData, (object) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+            });
             break;
         }
 
@@ -1942,7 +1944,12 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            deleteObject(message.data.objectStoreName, message.data.objectData);
+            deleteObject(message.data.objectStoreName, message.data.objectData, () => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, message.data.objectStoreName, { context: message.data.objectData.context } );
+                getList(message.data.objectStoreName, { context: message.data.objectData.context }, (results) => {
+                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, message.data.objectStoreName, {context: message.data.objectData.context, list: results});
+                });
+            });
             break;
         }
         
