@@ -46,7 +46,7 @@ function createDatabase(context) {
 
         // Search object store
         let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { keyPath: 'id', autoIncrement: true });
-        searchObjectStore.createIndex("urlIndex", "url", { unique: true });
+        searchObjectStore.createIndex("urlIndex", "url", { unique: false });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
@@ -219,6 +219,8 @@ function recursiveDbInit(objectStoreNames, initialData){
     var objectStoreName = objectStoreNames[0];
     var objectStoreData = initialData[objectStoreName];
 
+    console.log("''''''''''''''''' : ", objectStoreName);
+
     let objectStoreTransaction = db
         .transaction(objectStoreName, "readwrite");
 
@@ -236,14 +238,15 @@ function recursiveDbInit(objectStoreNames, initialData){
         recursiveDbInit(objectStoreNames, initialData);
     }; 
 
-    objectStoreTransaction.onerror = () => {
-    console.log(`Error adding items`);
+    objectStoreTransaction.onerror = (event) => {
+    console.log(`Error adding items`, event);
 
     // then, the whole db is deleted for the process to restart
     deleteDatabase(
-        onSuccessCallback = () => {
+        () => {
             sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    });
+        }
+    );
 
   };
 
@@ -391,6 +394,12 @@ function getSearchList(params, callback) {
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
+
+            // removing the id property
+            // for (var search of results){
+            //     delete search.id;
+            // }
+
             callback(results);
         });
     }
@@ -745,33 +754,32 @@ function getProfileActivityList(params, callback) {
 
 // Script for getting all db data
 
-function getMyData(params){
+function getMyData(params, callback){
 
     var results = {dbVersion: dbVersion}, objectStoreNames = [];
 
     // convert DOMStringList to js array
-    console.log("**************** : ", db.objectStoreNames); 
     for (var key in db.objectStoreNames){ 
-        if (typeof db.objectStoreNames[key] === "string"){
+        if (typeof db.objectStoreNames[key] === "string"){ // avoiding the length key
             objectStoreNames.push(db.objectStoreNames[key]);
         } 
     }
 
-    getObjectStoresSpecifiedData(objectStoreNames, results, params);
+    getExportObjectStoresData(objectStoreNames, results, params, callback);
 
 }
 
-function getObjectStoresSpecifiedData(objectStoreNames, results, params){
+function getExportObjectStoresData(objectStoreNames, results, params, callback){
 
     if (objectStoreNames.length == 0){
         // Sending the data back to the content script
-        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, "all", results);
+        callback(results);
         return;
     }
 
     var objectStoreName = objectStoreNames[0];
 
-    const callback = (objects) => {
+    const rCallback = (objects) => {
 
         console.log('Got the specified data ['+objectStoreName+']:', objects);
         // Sending the retrieved data
@@ -780,12 +788,11 @@ function getObjectStoresSpecifiedData(objectStoreNames, results, params){
         objectStoreNames.shift();
 
         // looping back
-        getObjectStoresSpecifiedData(objectStoreNames, results, params);
+        getExportObjectStoresData(objectStoreNames, results, params, callback);
 
     };
 
-    var reqParams = (params ? { ...params } : null);
-    getList(objectStoreName, reqParams, callback);
+    getList(objectStoreName, { ...params }, rCallback);
 
 }
 
@@ -850,12 +857,13 @@ function getList(objectStoreName, objectData, callback){
         }
 
         case dbData.objectStoreNames.SETTINGS:{
-            getSettingsData(null, callback);
+            getSettingsData(objectData, callback);
             break;
         }
 
         case "all":{
-            getMyData(objectData);
+            objectData.context += "-List";
+            getMyData(objectData, callback);
             break;
         }
     }
@@ -1522,8 +1530,6 @@ function getProfileObject(params, callback){
 
 function getSettingsData(params, callback){
     
-    var props = params.criteria.props;
-
     var request = db
                     .transaction(dbData.objectStoreNames.SETTINGS, "readonly")
                     .objectStore(dbData.objectStoreNames.SETTINGS)
@@ -1534,6 +1540,7 @@ function getSettingsData(params, callback){
         // Sending the retrieved data
         let settings = event.target.result;
 
+        var props = (Object.hasOwn(params, "criteria") ? params.criteria.props : null);
         if (!props){
             callback( (params.context.indexOf("List") >= 0 ? [settings] : settings) );
             return;

@@ -154,7 +154,7 @@ export default class SettingsView extends React.Component{
 
     try {
       
-      var jsonData = JSON.stringify(message.data.objectData);
+      var jsonData = JSON.stringify(message.data.objectData.list);
 
       const url = window.URL.createObjectURL(new Blob([jsonData]));
       const link = document.createElement('a');
