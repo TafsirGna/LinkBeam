@@ -1,6 +1,7 @@
 import React from 'react';
 /*import './Settings.css'*/
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
@@ -284,6 +285,9 @@ export default class SettingsView extends React.Component{
       <>
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
+
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
+
           <div>
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">

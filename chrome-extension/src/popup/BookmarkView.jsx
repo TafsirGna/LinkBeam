@@ -1,5 +1,6 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { 
   saveCurrentPageTitle, 
@@ -43,9 +44,7 @@ export default class BookmarkView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
             
-            <div class="text-center mt-2">
-              <span class="badge text-bg-primary shadow">Bookmarks</span>
-            </div>
+            <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS}/>
 
             <div class="mt-3">
 

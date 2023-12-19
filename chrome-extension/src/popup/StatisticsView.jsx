@@ -2,6 +2,7 @@
 import React from 'react'
 import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import ViewsTimelineChart from "./widgets/charts/ViewsTimelineChart";
 import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
 import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
@@ -58,6 +59,8 @@ export default class StatisticsView extends React.Component{
       <>
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
+
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}/>
 
           {/*View dropdown*/}
           <div class="clearfix">

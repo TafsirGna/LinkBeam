@@ -1,5 +1,6 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import KeywordListView from "./widgets/KeywordListView";
 import { 
   saveCurrentPageTitle, 
@@ -154,9 +155,7 @@ export default class KeywordView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
 
-          <div class="text-center mt-2">
-            <span class="badge text-bg-primary shadow">Keywords</span>
-          </div>
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS}/>
 
           <div class="clearfix">
             <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">

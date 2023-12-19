@@ -16,6 +16,7 @@ import Nav from 'react-bootstrap/Nav';
 import SearchListView from "./widgets/SearchListView";
 import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
+import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
 import DailySearchTimeChart from "./widgets/charts/DailySearchTimeChart";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
@@ -305,9 +306,8 @@ export default class CalendarView extends React.Component{
   render(){
     return (
 			<>
-        <div class="text-center mt-5">
-          <span class="badge text-bg-primary shadow">Calendar View</span>
-        </div>
+        <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}/>
+
 				<div class="offset-1 col-10 mt-4 row">
           <div class="col-4">
             { this.props.globalData.settings.lastDataResetDate && <Cal onClickDay={this.onClickDay} 

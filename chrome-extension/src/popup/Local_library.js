@@ -29,8 +29,8 @@ export const appParams = {
     KEYWORDS: "Keywords",
     BOOKMARKS: "Bookmarks",
     STATISTICS: "Statistics",
-    PROFILE_ACTIVITY: "ProfileActivity",
-    PROFILE: "PROFILE",
+    PROFILE_ACTIVITY: "Profile Activity",
+    PROFILE: "Profile",
     MY_ACCOUNT: "MyAccount",
   },
 }

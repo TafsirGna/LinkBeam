@@ -1,6 +1,7 @@
 /*import './Reminders.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -37,9 +38,7 @@ export default class ReminderView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
 
-          <div class="text-center mt-2 mb-3">
-            <span class="badge text-bg-primary shadow">Reminders</span>
-          </div>
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.REMINDERS}/>
 
           <SearchInputView objectStoreName={dbData.objectStoreNames.REMINDERS}/>
 

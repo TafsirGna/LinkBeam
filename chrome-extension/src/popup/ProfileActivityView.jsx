@@ -1,6 +1,7 @@
 /*import './NewsFeed.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
+import PageTitleView from "./widgets/PageTitleView";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCurrentPageTitle, appParams } from "./Local_library";
 
@@ -14,7 +15,7 @@ export default class ProfileActivityView extends React.Component{
 
   componentDidMount() {
 
-    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY);
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY.replace(" ", ""));
 
   }
 
@@ -24,9 +25,7 @@ export default class ProfileActivityView extends React.Component{
 				<div class="p-3">
 				 	<BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
 
-					 		<div class="text-center mt-2">
-	              <span class="badge text-bg-primary shadow">Profile Activity</span>
-	            </div>
+					 		<PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY}/>
 
 			        <div class="list-group list-group-radio d-grid gap-2 border-0 small mt-3">
 						    <div class="position-relative shadow rounded">
