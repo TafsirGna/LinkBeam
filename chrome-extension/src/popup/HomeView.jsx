@@ -191,8 +191,9 @@ export default class HomeView extends React.Component{
         break;
       }
       case 1: {
-
-        if (this.props.globalData.allSearches.searchCount == this.props.globalData.todaySearchList.length){
+        console.log("************ 0 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
+        if (this.props.globalData.allSearches.scope == "all" && this.props.globalData.allSearches.searchCount == this.props.globalData.todaySearchList.length){
+          console.log("************ 1 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
           this.getSearchList("all");  
         }
         break;
@@ -210,7 +211,7 @@ export default class HomeView extends React.Component{
         sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { offset: this.props.globalData.allSearches.searchCount }});
       }
     }
-    else{ // today
+    else{ // today      
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, { context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { props: {"date": (new Date())} }});
     }
 

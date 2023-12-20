@@ -54,7 +54,7 @@ export default class ReminderListView extends React.Component{
                                                     </a>
                                                   </OverlayTrigger>
                                                 </h6>
-                                                <p class="mb-0 opacity-75">{reminder.text}</p>
+                                                <p class="mb-0 opacity-75" dangerouslySetInnerHTML={{__html: reminder.text}}></p>
                                               </div>
                                               <small class="opacity-50 text-nowrap">{moment(reminder.createdOn, moment.ISO_8601).fromNow()}</small>
                                             </div>

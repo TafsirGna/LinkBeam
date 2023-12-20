@@ -90,6 +90,23 @@ export default class App extends React.Component{
       }
     );
 
+    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_REMINDER, (data) =>
+      {
+        // Resetting the today reminder list here too
+        // if (this.state.globalData.allSearches.scope == "search"){
+
+        //   this.setState(prevState => {
+        //     let globalData = Object.assign({}, prevState.globalData);
+        //     globalData.allSearches = this.state.tmp;
+        //     return { globalData };
+        //   }, () => {
+        //     this.setState({tmp: null});
+        //   });
+
+        // }
+      }
+    );
+
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("redirect_to") != null){
@@ -106,6 +123,7 @@ export default class App extends React.Component{
 
     eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY);
+    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_REMINDER);
 
   }
 
@@ -200,16 +218,26 @@ export default class App extends React.Component{
     ack(sendResponse);
 
     var context = message.data.objectData.context,
-        reminderList = message.data.objectData.list;
+        reminderList = {
+          list: message.data.objectData.list,
+          scope: null,
+        }
 
-    if (context == appParams.COMPONENT_CONTEXT_NAMES.REMINDERS){
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS) != -1 ){
+
+      if (context.indexOf("search")){
+        reminderList.scope = "search";
+      }
+      else{
+        reminderList.scope = "all";
+      }
 
       // Setting the reminder list here too
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.reminderList = reminderList;
         return { globalData };
-      }); 
+      });
 
     }
     else if (context == "App"){
@@ -383,10 +411,10 @@ export default class App extends React.Component{
         listData = {
           list: this.state.globalData.allSearches.list.concat(listData.list),
           searchCount: this.state.globalData.allSearches.searchCount + listData.searchCount,
-          scope: scope,
         };
       }
 
+      listData.scope = scope;
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.allSearches = listData;

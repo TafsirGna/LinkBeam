@@ -47,8 +47,20 @@ export default class SearchInputView extends React.Component{
   searchText(){
 
     if (this.state.text.length == 0){
-      eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, null);
-      return;
+
+      switch(this.props.objectStoreName){
+        case dbData.objectStoreNames.PROFILES:{
+          eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, null);
+          return;
+          break;
+        }
+
+        case dbData.objectStoreNames.REMINDERS:{
+          eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_REMINDER, null);
+          break;
+        }
+      }
+      
     }
 
 
@@ -56,6 +68,11 @@ export default class SearchInputView extends React.Component{
     switch(this.props.objectStoreName){
       case dbData.objectStoreNames.PROFILES:{
         props = { fullName: this.state.text };
+        break;
+      }
+
+      case dbData.objectStoreNames.REMINDERS:{
+        props = { text: this.state.text };
         break;
       }
     }

@@ -39,6 +39,7 @@ export default class AggregatedSearchListView extends React.Component{
   }
 
   onSeeMoreButtonVisibilityChange = (isVisible) => {
+    console.log("************ --------------------------- : ", this.props.context);
     this.setState({seeMoreButtonVisibility: isVisible}, () => {
       if (this.state.seeMoreButtonVisibility){
         this.props.seeMore();
@@ -90,7 +91,7 @@ export default class AggregatedSearchListView extends React.Component{
                   }
                 </div>
                 <div class="text-center my-2 ">
-                    { this.state.seeMoreButtonShow && <VisibilitySensor
+                    { (this.props.context != "search" && this.state.seeMoreButtonShow) && <VisibilitySensor
                                                         onChange={this.onSeeMoreButtonVisibilityChange}
                                                       >
                                                         <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">

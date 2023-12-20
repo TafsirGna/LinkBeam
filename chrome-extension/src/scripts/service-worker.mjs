@@ -511,6 +511,17 @@ function addToFilteredReminderList(object, list, objectStoreName, params){
                 list.push(object);
             }
         }
+        if (Object.hasOwn(params.criteria.props, "text")){
+            var searchText = params.criteria.props.text;
+            var searchTextIndex = object.text.toLowerCase().indexOf(searchText.toLowerCase());
+            if (searchTextIndex >= 0){
+                var text = object.text.slice(0, searchTextIndex);
+                text += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.text.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
+                text += object.text.slice(searchTextIndex + searchText.length);
+                object.text = text;
+                list.push(object);
+            }
+        }
     }
     else{
         list.push(object);
@@ -706,7 +717,13 @@ function addToFilteredList(object, list, objectStoreName, params){
 function getReminderList(params, callback) {
 
     if (Object.hasOwn(params, 'criteria')){
-        getFilteredList(params, dbData.objectStoreNames.REMINDERS, callback);
+        var filteredCallback = callback;
+        if (params.context != "data_export"){
+            filteredCallback = (objects) => {
+                getAssociatedProfiles(objects, callback);
+            }
+        }
+        getFilteredList(params, dbData.objectStoreNames.REMINDERS, filteredCallback);
     }
     else{
 
@@ -1273,7 +1290,8 @@ function deleteAllObjectStoreData(objectStoreName, callback){
     var request = objectStore.clear();
     request.onsuccess = (event) => {
         // Clearing the next objectStore
-        console.error(`successfully deleted all ${objectStoreName} data`);
+        console.log(`successfully deleted all ${objectStoreName} data`);
+        // console.error(`successfully deleted all ${objectStoreName} data`);
         callback();
     }
 
@@ -1890,11 +1908,11 @@ function processMessageEvent(message, sender, sendResponse){
                     getSettingsData({ 
                             context: message.data.objectData.context, 
                             criteria: {
-                                props: [lastDataResetDate],
+                                props: ["lastDataResetDate"],
                             }
                         },
                         (object) => {
-                            sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+                            sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, { context: message.data.objectData.context, object: object});
                         }
                     );
                 }

@@ -234,6 +234,7 @@ export default class SettingsView extends React.Component{
   deleteData(){
     const response = confirm("Do you confirm the erase of your data as specified ?");
     if (response){
+      this.handleOffCanvasClose();
       // Displaying the spinner
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
