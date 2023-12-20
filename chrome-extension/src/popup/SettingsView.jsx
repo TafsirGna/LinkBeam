@@ -238,7 +238,7 @@ export default class SettingsView extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? null : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: {timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_deletion" } : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}}});
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
     }
   }
@@ -247,7 +247,7 @@ export default class SettingsView extends React.Component{
     const response = confirm("Do you confirm the download of your data as specified ?");
 
     if (response){
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: {timePeriod: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: { props: { date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]} }});
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
     }
 
@@ -396,7 +396,7 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Erase all data</strong>
+                  <strong class="text-gray-dark">Erase data</strong>
                   { this.state.processingState.status == "NO" && this.state.processingState.info == "" && <a href="#" class="text-danger badge " onClick={() => {this.handleOffCanvasShow("Data deletion")}}>Delete</a>}
                   { this.state.processingState.status == "NO" && this.state.processingState.info != "" && <svg viewBox="0 0 24 24" width="18" height="18" stroke="#198754" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>}
                   { this.state.processingState.status == "YES" && <div class="spinner-border spinner-border-sm" role="status">

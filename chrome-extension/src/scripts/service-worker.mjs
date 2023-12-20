@@ -46,7 +46,8 @@ function createDatabase(context) {
 
         // Search object store
         let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { keyPath: 'id', autoIncrement: true });
-        searchObjectStore.createIndex("urlIndex", "url", { unique: false });
+        searchObjectStore.createIndex("url", "url", { unique: false });
+        // searchObjectStore.createIndex("urlIndex", "url", { unique: false });
 
         searchObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Search' created.");
@@ -264,7 +265,7 @@ function recursiveDbInit(objectStoreNames, initialData){
 
 
 
-function getAssociatedProfiles(objects, context, callback){
+function getAssociatedProfiles(objects, callback){
 
     if (objects.length == 0){
         callback(objects);
@@ -286,7 +287,7 @@ function getAssociatedProfiles(objects, context, callback){
 
         var object  = objects[0];
         var params = {
-            context: [context, "only_object"].join("-"),
+            context: "only_object",
             criteria: {
                 props: {
                     url: object.url,
@@ -308,7 +309,7 @@ function getAssociatedProfiles(objects, context, callback){
     pairObjectProfile(objects);
 }
 
-function getAssociatedSearches(objects, context, callback){
+function getAssociatedSearches(objects, callback){
 
     if (objects.length == 0){
         callback(objects);
@@ -356,8 +357,8 @@ function getBookmarkList(params, callback){
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
         if (params.context != "data_export"){
-            filteredCallback = (objects, context) => {
-                getAssociatedProfiles(objects, context, callback);
+            filteredCallback = (objects) => {
+                getAssociatedProfiles(objects, callback);
             }
         }
         getFilteredList(params, dbData.objectStoreNames.BOOKMARKS, filteredCallback);
@@ -367,7 +368,7 @@ function getBookmarkList(params, callback){
         var allCallback = callback;
         if (params.context != "data_export"){
             allCallback = (objects) => {
-                getAssociatedProfiles(objects, params.context, callback);
+                getAssociatedProfiles(objects, callback);
             }
         }
 
@@ -386,20 +387,14 @@ function getSearchList(params, callback) {
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
         if (params.context != "data_export"){
-            filteredCallback = (objects, context) => {
-                getAssociatedProfiles(objects, context, callback);
+            filteredCallback = (objects) => {
+                getAssociatedProfiles(objects, callback);
             }
         }
         getFilteredList(params, dbData.objectStoreNames.SEARCHES, filteredCallback);
     }
     else{
         getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
-
-            // removing the id property
-            // for (var search of results){
-            //     delete search.id;
-            // }
-
             callback(results);
         });
     }
@@ -424,9 +419,8 @@ function getProfileList(params, callback) {
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
         if (params.context != "data_export"){
-            filteredCallback = (objects, context) => {
-                console.log("%%%%%%%%%%%%%% : ", objects);
-                getAssociatedSearches(objects, context, callback);
+            filteredCallback = (objects) => {
+                getAssociatedSearches(objects, callback);
             }
         }
         getFilteredList(params, dbData.objectStoreNames.PROFILES, filteredCallback);
@@ -452,7 +446,7 @@ function getFilteredList(params, objectStoreName, callback) {
         let cursor = event.target.result;
         
         if(!cursor) {
-            callback(results, params.context);
+            callback(results);
             return;
         }
 
@@ -468,7 +462,7 @@ function getFilteredList(params, objectStoreName, callback) {
 
         // if an argument about a specific time is not passed then
         if (output.stop){
-            callback(results, params.context);
+            callback(results);
             return;
         }
         
@@ -511,8 +505,8 @@ function addToFilteredReminderList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn")){
-            var date = params.criteria.props.createdOn;
+        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
+            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
             if (isObjectActionable(object, "createdOn", date)){
                 list.push(object);
             }
@@ -569,6 +563,12 @@ function addToFilteredProfileList(object, list, objectStoreName, params){
                 list.push(object);
             }
         }
+        else if (Object.hasOwn(params.criteria.props, "date")){
+            var date = params.criteria.props.date;
+            if (isObjectActionable(object, "date", date)){
+                list.push(object);
+            }
+        }
     }
 
     return {list: list, stop: stop}; 
@@ -580,8 +580,9 @@ function addToFilteredBookmarkList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn")){
-            var date = params.criteria.props.date;
+        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
+            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
+            date = date ? date : params.criteria.props.date;
             if (isObjectActionable(object, "createdOn", date)){
                 list.push(object);
             }
@@ -600,8 +601,8 @@ function addToFilteredKeywordList(object, list, objectStoreName, params){
     var stop = false;
     
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn")){
-            var date = params.criteria.props.date;
+        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
+            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
             if (isObjectActionable(object, "createdOn", date)){
                 list.push(object);
             }
@@ -712,7 +713,7 @@ function getReminderList(params, callback) {
         var allCallback = callback;
         if (params.context != "data_export"){
             allCallback = (objects) => {
-                getAssociatedProfiles(objects, params.context, callback);
+                getAssociatedProfiles(objects, callback);
             }
         }
 
@@ -862,7 +863,6 @@ function getList(objectStoreName, objectData, callback){
         }
 
         case "all":{
-            objectData.context += "-List";
             getMyData(objectData, callback);
             break;
         }
@@ -1122,13 +1122,14 @@ function addKeywordObject(params, callback) {
 
 // Script for deleting a reminder
 
-function deleteReminderObject(reminderData){
+function deleteReminderObject(params, callback){
 
+    var url = params.criteria.props.url;
     const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
-    const request = objectStore.delete(reminderData);
+    const request = objectStore.delete(url);
     request.onsuccess = (event) => {
         console.log("A reminder deleting");
-        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS, reminderData);
+        callback();
     };
 
     request.onerror = (event) => {
@@ -1139,13 +1140,14 @@ function deleteReminderObject(reminderData){
 
 // Script for deleting a bookmark 
 
-function deleteBookmarkObject(bookmarkData){
+function deleteBookmarkObject(params, callback){
 
+    var url = params.criteria.props.url;
     const objectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readwrite").objectStore(dbData.objectStoreNames.BOOKMARKS);
-    const request = objectStore.delete(bookmarkData);
+    const request = objectStore.delete(url);
     request.onsuccess = (event) => {
         console.log("Bookmark deleted");
-        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS, bookmarkData)
+        callback();
     };
 
     request.onerror = (event) => {
@@ -1154,171 +1156,99 @@ function deleteBookmarkObject(bookmarkData){
 
 }
 
+function deleteObjectSet(objectStoreName, objectData, callback){
+
+    getList(objectStoreName, objectData, (results) => {
+        for (var object of results){
+            deleteObject(objectStoreName, objectData, () => {});
+        }
+        callback();
+    });
+
+}
+
 // Script for deleting any object instance
 
-function deleteObject(objectStoreName, objectData, callback = null){
+function deleteObject(objectStoreName, objectData, callback){
 
+    if (objectStoreName == "all"){
+        truncateDB(objectData, callback);
+        return;
+    }
+
+    var id = null;
     switch(objectStoreName){
-        case dbData.objectStoreNames.BOOKMARKS:{
-            deleteBookmarkObject(objectData, callback);
+        case dbData.objectStoreNames.REMINDERS:{
+            id = params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            deleteKeywordObject(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.REMINDERS:{
-            deleteReminderObject(objectData, callback);
+            id = params.criteria.props.name;
             break;
         }
 
         case dbData.objectStoreNames.PROFILES:{
-            deleteReminderObject(objectData, callback);
+            id = params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.SEARCHES:{
-            deleteReminderObject(objectData, callback);
+            id = params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.NOTIFICATIONS:{
-            deleteReminderObject(objectData, callback);
+            id = params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-            deleteReminderObject(objectData, callback);
+            id = params.criteria.props.id;
             break;
         }
 
-        case "all":{
-            truncateDB(objectData);
+        case dbData.objectStoreNames.BOOKMARKS:{
+            id = params.criteria.props.url;
             break;
         }
     }
+    
+    const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
+    let request = objectStore.delete(id);
+    request.onsuccess = (event) => {
+        console.log("Object deleted")
+        // Sending the new list
+        callback();
+    }
+
+    request.onerror = function (event) {
+        console.log("An error when deleting "+objectStoreName, event);
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+    }
+
 
 }
 
-function deleteObjectStoreSpecificData(objectStoreNames, params){
+function deleteObjectStoreSpecificData(objectStoreNames, params, callback){
 
     if (objectStoreNames.length == 0){
         // updating the last reset date before notifying the content script
-        sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, "all", {context: params.context});
+        callback();
         return;
     }
 
     var objectStoreName = objectStoreNames[0];
 
-    deleteObject(objectStoreName, params, () => {
-        deleteObjectStoreSpecificData(objectStoreNames, params);
+    deleteObjectSet(objectStoreName, params, () => {
+        deleteObjectStoreSpecificData(objectStoreNames, params, callback);
     });
-
-}
-
-// Script for deleting a keyword
-
-function deleteObjectSet(objectStoreName, params, callback = null){
-
-    let objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
-    let cursor = objectStore.openCursor(null, 'prev');
-    cursor.onsuccess = function(event) {
-        let cursor = event.target.result;
-        
-        if(!cursor) {
-            if (callback){
-                callback()
-            }
-            return;
-        }
-
-        let object = cursor.value;
-
-        if (isObjectActionable(object, params)){
-
-            var delParams = null;
-            switch(objectStoreName){
-                case dbData.objectStoreNames.REMINDERS:{
-                    delParams = {url: object.url}; 
-                    break;
-                }
-
-                case dbData.objectStoreNames.KEYWORDS:{
-                    delParams = {url: object.name}; 
-                    break;
-                }
-
-                case dbData.objectStoreNames.SEARCHES:{
-                    delParams = {url: object.id}; 
-                    break;
-                }
-
-                case dbData.objectStoreNames.NOTIFICATIONS:{
-                    delParams = {url: object.id}; 
-                    break;
-                }
-
-                case dbData.objectStoreNames.PROFILES:{
-                    delParams = {url: object.url}; 
-                    break;
-                }
-
-                case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-                    delParams = {url: object.id}; 
-                    break;
-                }
-            }
-
-            deleteObject(objectStoreName, delParams);
-        }
-        
-        cursor.continue();
-    }
-
-    cursor.onerror = (event) => {
-        console.log("Failed to acquire the cursor !");
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    };
-
-}
-
-function deleteKeywordObject(params, callback) {
-
-    if (Object.hasOwn(params, "criteria")){
-
-        if (Object.hasOwn(params.criteria.props, "name")){
-
-            var name = params.criteria.props.name;
-            const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
-            let request = objectStore.delete(name);
-            request.onsuccess = (event) => {
-                console.log("Keyword deleted")
-                // Sending the new list
-                callback();
-            }
-
-            request.onerror = function (event) {
-                console.log("An error when deleting the keyword", event);
-                sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-            }
-
-        }
-        else if (Object.hasOwn(params.criteria.props, "createdOn")){
-            deleteObjectSet(dbData.objectStoreNames.KEYWORDS, params, callback);
-        }
-
-    }
-    else{
-
-    }
 
 }
 
 // Script for truncating the database 
 
-function truncateDB(params){
+function truncateDB(params, callback){
 
     // convert DOMStringList to js array
     let objectStoreNames = [];
@@ -1328,25 +1258,23 @@ function truncateDB(params){
         }
     }
 
-    if (params){
-        deleteAllObjectStoresData(objectStoreNames);
+    if (!Object.hasOwn(params, "criteria")){
+        deleteAllObjectStoresData(objectStoreNames, callback);
     }
     else{
-        deleteObjectStoreSpecificData(objectStoreNames, params);
+        deleteObjectStoreSpecificData(objectStoreNames, params, callback);
     }
     
 }
 
-function deleteAllObjectStoreData(objectStoreName, callback = null){
+function deleteAllObjectStoreData(objectStoreName, callback){
 
     const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
     var request = objectStore.clear();
     request.onsuccess = (event) => {
         // Clearing the next objectStore
         console.error(`successfully deleted all ${objectStoreName} data`);
-        if (callback){
-            callback();
-        }
+        callback();
     }
 
     request.onerror = (err)=> {
@@ -1357,7 +1285,7 @@ function deleteAllObjectStoreData(objectStoreName, callback = null){
 
 // Script for clearing an objectStore
 
-function deleteAllObjectStoresData(objectStoreNames){
+function deleteAllObjectStoresData(objectStoreNames, callback){
 
     if (objectStoreNames.length == 0){
         // updating the last reset date before notifying the content script
@@ -1370,7 +1298,7 @@ function deleteAllObjectStoresData(objectStoreNames){
                 }
             }
         }, (object) => {
-            sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, "all", {payload: lastDataResetDate});
+            callback();
         });
         return;
     }
@@ -1379,7 +1307,7 @@ function deleteAllObjectStoresData(objectStoreNames){
 
     deleteAllObjectStoreData(objectStoreName, () => {
         objectStoreNames.shift();
-        deleteAllObjectStoresData(objectStoreNames);
+        deleteAllObjectStoresData(objectStoreNames, callback);
     });
 
 }
@@ -1477,7 +1405,7 @@ function getProfileObject(params, callback){
         profile.bookmark = null;
         profile.reminder = null;
 
-        if (params.context.indexOf("only_object")){
+        if (params.context.indexOf("only_object") != -1){
             callback(profile);
             return;
         }
@@ -1542,7 +1470,12 @@ function getSettingsData(params, callback){
 
         var props = (Object.hasOwn(params, "criteria") ? params.criteria.props : null);
         if (!props){
-            callback( (params.context.indexOf("List") >= 0 ? [settings] : settings) );
+            callback( (params.context.indexOf("data_export") >= 0 ? [settings] : settings) );
+            return;
+        }
+
+        if (params.context.indexOf("data_export") != -1){
+            callback([settings]);
             return;
         }
 
@@ -1953,9 +1886,23 @@ function processMessageEvent(message, sender, sendResponse){
             // providing the result
             deleteObject(message.data.objectStoreName, message.data.objectData, () => {
                 sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, message.data.objectStoreName, { context: message.data.objectData.context } );
-                getList(message.data.objectStoreName, { context: message.data.objectData.context }, (results) => {
-                    sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, message.data.objectStoreName, {context: message.data.objectData.context, list: results});
-                });
+                if (message.data.objectData.context == "data_deletion"){
+                    getSettingsData({ 
+                            context: message.data.objectData.context, 
+                            criteria: {
+                                props: [lastDataResetDate],
+                            }
+                        },
+                        (object) => {
+                            sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+                        }
+                    );
+                }
+                else{
+                    getList(message.data.objectStoreName, { context: message.data.objectData.context }, (results) => {
+                        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, message.data.objectStoreName, {context: message.data.objectData.context, list: results});
+                    });
+                }
             });
             break;
         }
