@@ -2,7 +2,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParams, groupObjectsByDate } from "../../Local_library";
+import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParams, groupObjectsByDate, groupObjectsByMonth } from "../../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -86,6 +86,21 @@ export default class SearchesTimelineChart extends React.Component{
 	}
 
 	getYearSearchesChartLabels(){
+
+		var results = {titles: [], values: []};
+		var searches = groupObjectsByMonth(this.props.objects);
+		const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+		for (var i=0; i < 12; i++){
+			var month = moment().subtract(i, 'months').toDate().getMonth();
+			results.titles.push(months[month]);
+			results.values.push((month in searches) ? searches[month].length : 0);
+		}
+
+		results.titles.reverse();
+		results.values.reverse();
+
+		return results;
 
 	}
 

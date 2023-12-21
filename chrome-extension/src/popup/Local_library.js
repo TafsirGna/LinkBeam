@@ -212,6 +212,25 @@ export const groupObjectsByDate = (objectList) => {
 
 }
 
+export const groupObjectsByMonth = (objectList) => {
+
+  var results = {};
+
+  // Grouping the searches by date
+  for (var object of objectList){
+    var objectMonth = (new Date(object.date)).getMonth();
+    if (objectMonth in results){
+      (results[objectMonth]).push(object);
+    }
+    else{
+      results[objectMonth] = [object];
+    }
+  }
+
+  return results;
+
+}
+
 export const deactivateTodayReminders = () => {
 
   sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, {criteria: "today"/*, property: "activated", value: false*/});
