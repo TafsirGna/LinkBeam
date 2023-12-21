@@ -34,7 +34,10 @@ export default class App extends React.Component{
     this.state = {
       redirect_to: null,
       swDbStatus: null,
-      tmp: null,
+      tmps: {
+        searchList: null,
+        reminderList: null,
+      },
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -80,10 +83,14 @@ export default class App extends React.Component{
 
           this.setState(prevState => {
             let globalData = Object.assign({}, prevState.globalData);
-            globalData.allSearches = this.state.tmp;
+            globalData.allSearches = this.state.tmps.searchList;
             return { globalData };
           }, () => {
-            this.setState({tmp: null});
+            this.setState(prevState => {
+              let tmps = Object.assign({}, prevState.tmps);
+              tmps.searchList = null;
+              return { tmps };
+            });
           });
 
         }
@@ -92,18 +99,22 @@ export default class App extends React.Component{
 
     eventBus.on(eventBus.EMPTY_SEARCH_TEXT_REMINDER, (data) =>
       {
-        // Resetting the today reminder list here too
-        // if (this.state.globalData.allSearches.scope == "search"){
+        
+        if (this.state.globalData.reminderList.scope == "search"){
 
-        //   this.setState(prevState => {
-        //     let globalData = Object.assign({}, prevState.globalData);
-        //     globalData.allSearches = this.state.tmp;
-        //     return { globalData };
-        //   }, () => {
-        //     this.setState({tmp: null});
-        //   });
+          this.setState(prevState => {
+            let globalData = Object.assign({}, prevState.globalData);
+            globalData.reminderList = this.state.tmps.reminderList;
+            return { globalData };
+          }, () => {
+            this.setState(prevState => {
+              let tmps = Object.assign({}, prevState.tmps);
+              tmps.reminderList = null;
+              return { tmps };
+            });
+          });
 
-        // }
+        }
       }
     );
 
@@ -220,23 +231,31 @@ export default class App extends React.Component{
     var context = message.data.objectData.context,
         reminderList = {
           list: message.data.objectData.list,
-          scope: null,
-        }
+        };
 
     if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS) != -1 ){
 
-      if (context.indexOf("search")){
+      if (context.indexOf("search") != -1){
         reminderList.scope = "search";
       }
       else{
         reminderList.scope = "all";
       }
 
-      // Setting the reminder list here too
+      var tmp = { ...this.state.globalData.reminderList };
+
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.reminderList = reminderList;
         return { globalData };
+      }, () => {
+        if (!this.state.tmps.reminderList || (this.state.tmps.reminderList && tmp.scope == "all")){
+          this.setState(prevState => {
+            let tmps = Object.assign({}, prevState.tmps);
+            tmps.reminderList = tmp;
+            return { tmps };
+          });
+        }
       });
 
     }
@@ -438,15 +457,19 @@ export default class App extends React.Component{
       listData = groupSearchByProfile(listData);
 
       // var tmp = (this.state.globalData.allSearches.scope == "all") ? this.state.globalData.allSearches : null;
-      var tmp = this.state.globalData.allSearches;
+      var tmp = { ...this.state.globalData.allSearches };
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.allSearches = listData;
         globalData.allSearches.scope = "search";
         return { globalData };
       }, () => {
-        if (!this.state.tmp || (this.state.tmp && tmp.scope == "all")){
-          this.setState({tmp: tmp});
+        if (!this.state.tmps.searchList || (this.state.tmps.searchList && tmp.scope == "all")){
+          this.setState(prevState => {
+            let tmps = Object.assign({}, prevState.tmps);
+            tmps.searchList = tmp;
+            return { tmps };
+          });
         }
       });
     }

@@ -57,6 +57,7 @@ export default class SearchInputView extends React.Component{
 
         case dbData.objectStoreNames.REMINDERS:{
           eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_REMINDER, null);
+          return;
           break;
         }
       }

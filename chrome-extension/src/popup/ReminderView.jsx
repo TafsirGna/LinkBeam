@@ -43,7 +43,10 @@ export default class ReminderView extends React.Component{
           <SearchInputView objectStoreName={dbData.objectStoreNames.REMINDERS} context={appParams.COMPONENT_CONTEXT_NAMES.REMINDERS}/>
 
           <div class="mt-3">
-            <ReminderListView objects={this.props.globalData.reminderList ? this.props.globalData.reminderList.list : this.props.globalData.reminderList}/>
+            <ReminderListView 
+              objects={this.props.globalData.reminderList ? this.props.globalData.reminderList.list : this.props.globalData.reminderList} 
+              context={this.props.globalData.reminderList ? this.props.globalData.reminderList.scope : null} 
+            />
           </div>
         </div>
       </>
