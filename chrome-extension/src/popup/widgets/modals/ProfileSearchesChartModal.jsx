@@ -3,7 +3,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import ViewsTimelineChart from "../charts/ViewsTimelineChart";
+import SearchesTimelineChart from "../charts/SearchesTimelineChart";
 import { 
   sendDatabaseActionMessage, 
   startMessageListener, 
@@ -83,7 +83,7 @@ export default class ProfileSearchesChartModal extends React.Component{
               </div>
             </div>
 
-            { this.state.currentTabIndex == 0 && <ViewsTimelineChart viewChoice={this.state.viewChoice} specificProfile={this.props.profile} /> }
+            { this.state.currentTabIndex == 0 && <SearchesTimelineChart viewChoice={this.state.viewChoice} specificProfile={this.props.profile} /> }
 
           </Modal.Body>
           <Modal.Footer>

@@ -193,6 +193,25 @@ export const logInParseUser = async function(Parse, usernameValue, passwordValue
 
 };
 
+export const groupObjectsByDate = (objectList) => {
+
+  var results = {};
+
+  // Grouping the searches by date
+  for (var object of objectList){
+    var objectDate = object.date.split("T")[0];
+    if (objectDate in results){
+      (results[objectDate]).push(object);
+    }
+    else{
+      results[objectDate] = [object];
+    }
+  }
+
+  return results;
+
+}
+
 export const deactivateTodayReminders = () => {
 
   sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, {criteria: "today"/*, property: "activated", value: false*/});

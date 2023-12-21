@@ -7,7 +7,8 @@ import {
   startMessageListener, 
   messageParams, 
   dbData, 
-  appParams 
+  appParams ,
+  groupObjectsByDate,
 } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -219,28 +220,9 @@ export default class CalendarView extends React.Component{
     }
 
     // Grouping the searches by date
-    var results = this.groupObjectsByDate(monthSearchList);
+    var results = groupObjectsByDate(monthSearchList);
 
     this.setState({monthSearchList: results});
-
-  }
-
-  groupObjectsByDate(objectList){
-
-    var results = {};
-
-    // Grouping the searches by date
-    for (var object of objectList){
-      var objectDate = object.date.split("T")[0];
-      if (objectDate in results){
-        (results[objectDate]).push(object);
-      }
-      else{
-        results[objectDate] = [object];
-      }
-    }
-
-    return results;
 
   }
 
@@ -276,7 +258,7 @@ export default class CalendarView extends React.Component{
     }
 
     // Grouping the reminders by date
-    var results = this.groupObjectsByDate(monthReminderList);
+    var results = groupObjectsByDate(monthReminderList);
 
     this.setState({monthReminderList: results});
 

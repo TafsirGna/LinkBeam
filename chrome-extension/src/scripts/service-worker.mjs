@@ -901,7 +901,7 @@ function getList(objectStoreName, objectData, callback){
 
 // Script for count any object store elements
 
-function getObjectCount(objectStoreName, objectData){
+function getObjectCount(objectStoreName, objectData, callback){
 
     var request = db
                 .transaction(objectStoreName, "readonly")
@@ -911,7 +911,7 @@ function getObjectCount(objectStoreName, objectData){
         console.log('Got '+objectStoreName+' count:', event.target.result);
         // Sending the retrieved data
         var result = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, objectStoreName, result);
+        callback(result);
     };
 
     request.onerror = (event) => {
@@ -1525,75 +1525,6 @@ function getSettingsData(params, callback){
     };
 }
 
-// Script for providing search chart data
-
-function getViewsTimelineData(chartData){
-
-    let results = [];
-    for (let i = 0; i < chartData.labelValues.length; i++){
-        results.push(0);
-    }
-
-    // populating the chart data Array
-    let cursor = db.transaction(dbData.objectStoreNames.SEARCHES, "readonly").objectStore(dbData.objectStoreNames.SEARCHES).openCursor(null, 'prev');
-    cursor.onsuccess = function(event) {
-        var cursor = event.target.result;
-
-        if(!cursor) {
-            sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
-            return;
-        }
-
-        let searchObject = cursor.value;
-        let searchDate = searchObject.date.split("T")[0];
-        if (typeof chartData.labelValues[0] == "string"){
-
-            let index = chartData.labelValues.indexOf(searchDate);
-
-            if (index == -1){
-                sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
-                return;
-            }
-            
-            if (chartData.specificUrl){
-                if (searchObject.url == chartData.specificUrl){
-                    results[index]++;
-                }
-            }
-            else{
-                results[index]++;
-            }
-            
-        }
-        else{ // if object
-            searchDate = new Date(searchDate);
-            var found = false;
-            for (var i = (chartData.labelValues.length - 1); i >= 0 ; i--){
-                if ((new Date((chartData.labelValues[i]).beg)) < searchDate && searchDate <= (new Date((chartData.labelValues[i]).end))){
-                    if (chartData.specificUrl){
-                        if (searchObject.url == chartData.specificUrl){
-                            results[i]++;
-                        }
-                    }
-                    else{
-                        results[i]++;
-                    }
-                    found = true;
-                }
-            }
-
-            if (!found){
-                sendBackResponse(messageParams.responseHeaders.PROCESSED_DATA, "views-timeline-chart", results);
-                return;
-            }
-        }
-        
-
-        cursor.continue();        
-    }
-
-}
-
 
 
 
@@ -1930,7 +1861,9 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // Providing the keyword count to the front 
-            getObjectCount(message.data.objectStoreName, message.data.objectData);
+            getObjectCount(message.data.objectStoreName, message.data.objectData, (value) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_COUNT, message.data.objectStoreName, { context: message.data.objectData.context, count: value});
+            });
             break;
         }
 

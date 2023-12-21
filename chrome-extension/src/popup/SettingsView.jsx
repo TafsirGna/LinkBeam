@@ -84,15 +84,15 @@ export default class SettingsView extends React.Component{
     }
     else{
       // Getting the keyword count
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, null);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
     }
 
-    if (this.props.globalData.reminderList){
-      this.setState({reminderCount: this.props.globalData.reminderList.length});
+    if (this.props.globalData.reminderList && this.props.globalData.reminderList.scope == "all"){
+      this.setState({reminderCount: this.props.globalData.reminderList.list.length});
     }
     else{
       // Getting the reminder count
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, null);
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
     }
 
     this.checkStorageUsage();
@@ -133,7 +133,8 @@ export default class SettingsView extends React.Component{
     ack(sendResponse);
 
     // setting the new value
-    this.setState({keywordCount: message.data.objectData});
+    var count = message.data.objectData.count;
+    this.setState({keywordCount: count});
 
   }
 
@@ -143,7 +144,8 @@ export default class SettingsView extends React.Component{
     ack(sendResponse);
 
     // setting the new value
-    this.setState({reminderCount: message.data.objectData});
+    var count = message.data.objectData.count;
+    this.setState({reminderCount: count});
 
   }
 
