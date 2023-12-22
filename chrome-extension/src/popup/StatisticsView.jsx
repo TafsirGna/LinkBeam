@@ -150,11 +150,11 @@ export default class StatisticsView extends React.Component{
               </div>
               <div class="carousel-item">
                 <ProfileGeoMapChart />
-              </div>
+              </div>*/}
               <div class="carousel-item">
-                <BubbleProfileRelationMetricsChart />
+                <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} />
               </div>
-              <div class="carousel-item">
+              {/*<div class="carousel-item">
                 <ExpEdStackBarChart />
               </div>*/}
             </div>

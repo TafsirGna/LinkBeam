@@ -1,12 +1,9 @@
-/*import './About.css'*/
+/*import './BubbleProfileRelationMetricsChart.css'*/
 import React from 'react';
 import { Bubble } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
-	sendDatabaseActionMessage, 
 	getChartColors, 
-	startMessageListener, 
-	ack, 
 	messageParams, 
 	dbData,
 	appParams, 
@@ -36,111 +33,36 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			scatterData: null,
-			stringId:"profile-relations-bubble-chart",
-
-			bubbleData: {
-			  datasets: [
-			    {
-			      label: 'Dataset',
-			      data: [],
-			      backgroundColor: getChartColors(1).borders,
-			    },
-			  ],
-			},
+			bubbleData: null,
 
 		};
-
-		this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.listenToMessages();
-
-		this.getProfilesData();
-
-	}
-
-	getProfilesData(){
-
-		var timePeriod = null;
-		switch(this.props.viewChoice){
-			case 0: {
-				timePeriod = this.getLastDaysTimePeriod();
-				break;
-			}
-
-			case 1: {
-				timePeriod = this.getLastMonthTimePeriod();
-				break;
-			}
-
-			case 2: {
-				timePeriod = this.getLastYearTimePeriod();
-				break;
-			}
-		}
-
-		sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, {timePeriod: timePeriod, context: [appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, this.state.stringId].join("-")});
-
-	}
-
-	getLastDaysTimePeriod(){
-
-		var endDate = (new Date()),
-				startDate = moment().subtract(6, 'days').toDate();
-
-		return [startDate, "to", endDate];
-
-	}
-
-	getLastMonthTimePeriod(){
-
-		var endDate = (new Date()),
-				startDate = moment().subtract(1, 'months').toDate();
-
-		return [startDate, "to", endDate];
-
-	}
-
-	getLastYearTimePeriod(){
-
-		var endDate = (new Date()),
-				startDate = moment().subtract(1, 'years').toDate();
-
-		return [startDate, "to", endDate];
+		// this.getChartData();
 
 	}
 
 	componentDidUpdate(prevProps, prevState){
 
 		// everytime the view choice is changed, the chart is reset
-		if (prevProps.viewChoice != this.props.viewChoice){
+		if (prevProps.objects != this.props.objects){
 
-			this.getProfilesData();
+			this.getChartData();
 
 		}
 
 	}
 
-	onProfilesDataReceived(message, sendResponse){
+	getChartData(){
 
-		var context = message.data.objectData.context;
-    if (context.indexOf(this.state.stringId) == -1){
-    	return;
-    }
-
-		// acknowledge receipt
-    ack(sendResponse);    
-
-    var searches = message.data.objectData.list;
     var results = [];
 
-    for (let search of searches){
+    for (let search of this.props.objects){
 
-    		var itemIndex = results.map(e => e.url).indexOf(search.profile.url);
+    		var itemIndex = results.map(e => e.url).indexOf(search.url);
     		if (itemIndex >= 0){
     			(results[itemIndex]).r += 1;
     		}
@@ -149,7 +71,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     					connectionCount = search.profile.nConnections ? dbDataSanitizer.profileConnections(search.profile.nConnections) : 0;
 
     			results.push({
-    				url: search.profile.url,
+    				url: search.url,
     				fullName: search.profile.fullName,
     				r: 1,
     				x: followerCount,
@@ -167,25 +89,15 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 			      backgroundColor: getChartColors(1).borders,
 			    },
 			  ],
-			}});
+			}
+		});
 
-	}
-
-	listenToMessages(){
-
-		startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onProfilesDataReceived
-      },
-    ]);
-    
 	}
 
 	render(){
 		return (
 			<>
-				<Bubble options={options} data={this.state.bubbleData} />
+				{ this.state.bubbleData && <Bubble options={options} data={this.state.bubbleData} /> }
 			</>
 		);
 	}
