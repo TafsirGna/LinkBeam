@@ -4,11 +4,12 @@ import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
 import SearchesTimelineChart from "./widgets/charts/SearchesTimelineChart";
-import ViewsKeywordsBarChart from "./widgets/charts/ViewsKeywordsBarChart";
+import SearchesKeywordsBarChart from "./widgets/charts/SearchesKeywordsBarChart";
 import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
+import Carousel from 'react-bootstrap/Carousel';
 
 import { 
   saveCurrentPageTitle, 
@@ -27,11 +28,13 @@ export default class StatisticsView extends React.Component{
     this.state = {
       periodSearches: [],
       view: 0,
+      carrouselActiveItemIndex: 0,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.handleCarrouselSelect = this.handleCarrouselSelect.bind(this);
   }
 
   componentDidMount() {
@@ -109,6 +112,11 @@ export default class StatisticsView extends React.Component{
 
   }
 
+  handleCarrouselSelect = (selectedIndex) => {
+    console.log("ooooooooooooookkkkkkkkkkkkkkkkkk", selectedIndex);
+    this.setState({carrouselActiveItemIndex: selectedIndex});
+  };
+
   render(){
 
     return(
@@ -137,39 +145,33 @@ export default class StatisticsView extends React.Component{
             </div>
           </div>
 
-          <div id="carouselExample" class="carousel slide carousel-dark shadow rounded p-2 border mt-3">
-            <div class="carousel-inner">
-              <div class="carousel-item active">
-                <SearchesTimelineChart objects={this.state.periodSearches} view={this.state.view} />
-              </div>
-              {/*<div class="carousel-item">
-                <ViewsKeywordsBarChart />
-              </div>
-              <div class="carousel-item">
-                <StatIndicatorsView />
-              </div>
-              <div class="carousel-item">
-                <ProfileGeoMapChart />
-              </div>*/}
-              <div class="carousel-item">
-                <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} />
-              </div>
-              {/*<div class="carousel-item">
-                <ExpEdStackBarChart />
-              </div>*/}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
-              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExample" data-bs-slide="next">
-              <span class="carousel-control-next-icon" aria-hidden="true"></span>
-              <span class="visually-hidden">Next</span>
-            </button>
-          </div>
+          <Carousel 
+            className="shadow rounded p-2 mt-3"
+            interval={null}
+            data-bs-theme="dark"
+            indicators={false}
+            activeIndex={this.state.carrouselActiveItemIndex} onSelect={this.handleCarrouselSelect}>
+            <Carousel.Item>
+              <SearchesTimelineChart objects={this.state.periodSearches} view={this.state.view} />
+            </Carousel.Item>
+            <Carousel.Item>
+              <SearchesKeywordsBarChart globalData={this.props.globalData} objects={this.state.periodSearches}/>
+            </Carousel.Item>
+            <Carousel.Item>
+              <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} />
+            </Carousel.Item>
+            <Carousel.Item>
+              <ProfileGeoMapChart />
+            </Carousel.Item>
+            <Carousel.Item>
+              <ExpEdStackBarChart objects={this.state.periodSearches} />
+            </Carousel.Item>
+          </Carousel>
 
           <div class="clearfix">
-            <span class="text-muted small float-end fst-italic mt-2 badge">Data recorded since {Object.hasOwn(this.props.globalData.settings, "lastDataResetDate") ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}</span>
+            <span class="text-muted small float-end fst-italic mt-2 badge">
+              Data recorded since {Object.hasOwn(this.props.globalData.settings, "lastDataResetDate") ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}
+            </span>
           </div>
         </div>
       </>

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, messageParams, dbData, ack } from "../../Local_library";
+import { sendDatabaseActionMessage, getChartColors, messageParams, dbData, appParams } from "../../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -45,7 +45,7 @@ const barOptions = {
   },
 };
 
-export default class ViewsKeywordsBarChart extends React.Component{
+export default class SearchesKeywordsBarChart extends React.Component{
 
 	constructor(props){
 		super(props);
@@ -54,57 +54,51 @@ export default class ViewsKeywordsBarChart extends React.Component{
 			barData: null,
 		};
 
-  	this.setChartLabels = this.setChartLabels.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-  	this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
+    this.setChartLabels = this.setChartLabels.bind(this);
+    this.setChartData = this.setChartData.bind(this);
 
 	}
 
 	componentDidMount() {
 
-    this.listenToMessages();
-
-		this.setChartLabels();
+    if (this.props.globalData.keywordList){
+      this.setChartLabels();
+    }
+    else{
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.STATISTICS});
+    }
 
 	}
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
     
+    if (prevProps.objects != this.props.objects){
+      this.setChartData();
+    }
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.keywordList != this.props.globalData.keywordList){
+        this.setChartLabels();
+      }
+    }
+
   }
 
-  onKeywordsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
+  setChartLabels(){
 
     let labels = [];
-    var results = message.data.objectData;
-    results.forEach((keyword) => {
-      labels.push(keyword.name);
-    });
+    for (var keyword of this.props.globalData.keywordList){ labels.push(keyword.name); }
     
     // setting the new value
     this.setState({barLabels: labels}, () => {this.setChartData()});
 
   }
 
-	listenToMessages(){
-
-		startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
-        callback: this.onKeywordsDataReceived
-      },
-    ]);
-	}
-
-	setChartLabels(){
-
-  	sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, null);
-
-	}
-
 	setChartData(){
+
+    if (!this.state.barLabels){
+      return;
+    }
 
   	let labels = this.state.barLabels;
 
