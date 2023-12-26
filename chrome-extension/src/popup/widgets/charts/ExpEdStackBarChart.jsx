@@ -11,6 +11,13 @@ import {
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
+import { v4 as uuidv4 } from 'uuid';
+import eventBus from "../../EventBus";
+import { saveAs } from 'file-saver';
+import { 
+  dbDataSanitizer,
+  saveCanvas,
+} from "../../Local_library";
 
 ChartJS.register(
   CategoryScale,
@@ -50,10 +57,23 @@ export default class ExpEdStackBarChart extends React.Component{
     this.state = {
       stackLabels: null,
       stackData: null,
+      uuid: uuidv4(),
     };
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.DOWNLOAD_CHART_IMAGE, (data) =>
+      {
+        if (data.carrouselItemIndex != this.props.carrouselIndex){
+          return;
+        }
+
+        saveCanvas(this.state.uuid, "Experience-education-stack-chart.png", saveAs);
+      }
+    );
+
+    this.setChartData();
 
   }
 
@@ -65,14 +85,25 @@ export default class ExpEdStackBarChart extends React.Component{
 
   }
 
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
+
+  }
+
   setChartData(){
+
+    if (!this.props.objects){
+      return;
+    }
 
     var labels = [];
     for (var search of this.props.objects){
 
-      var index = labels.indexOf(search.profile.fullName);
+      var fullName = dbDataSanitizer.fullName(search.profile.fullName);
+      var index = labels.indexOf(fullName);
       if (index == -1){
-        labels.push(search.profile.fullName);
+        labels.push(fullName);
       }
 
     }
@@ -99,7 +130,15 @@ export default class ExpEdStackBarChart extends React.Component{
   render(){
     return (
       <>
-         { this.state.stackData && <Bar options={options} data={this.state.stackData} />}
+        <div class="text-center">
+
+          { !this.state.stackData && <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                          </div> }
+
+          { this.state.stackData && <Bar id={"chartTag_"+this.state.uuid} options={options} data={this.state.stackData} />}
+          
+        </div>
       </>
     );
   }

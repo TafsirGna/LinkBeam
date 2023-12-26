@@ -4,12 +4,14 @@ import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { activateInCurrentTab } from "../../Local_library";
 import * as d3 from "d3";
+import { v4 as uuidv4 } from 'uuid';
 
 export default class ProfileAboutSectionBubbleChart extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      uuid: uuidv4(),
     };
   }
 
@@ -57,7 +59,7 @@ export default class ProfileAboutSectionBubbleChart extends React.Component{
         .sum(d => d.count));
 
     // Create the SVG container.
-    const svg = d3.select("#chart").append("svg")
+    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("viewBox", [-margin, -margin, width, height])
@@ -115,7 +117,7 @@ export default class ProfileAboutSectionBubbleChart extends React.Component{
                   </div>
                 </div>}
 
-        <div id="chart" class="p-3">
+        <div id={"chartTag_"+this.state.uuid} class="p-3">
         </div>
       </>
     );

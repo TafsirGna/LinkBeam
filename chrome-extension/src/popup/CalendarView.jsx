@@ -288,60 +288,62 @@ export default class CalendarView extends React.Component{
   render(){
     return (
 			<>
-        <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}/>
+        <div class="mt-5 pb-5 pt-3">
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}/>
 
-				<div class="offset-1 col-10 mt-4 row">
-          <div class="col-4">
-            { this.props.globalData.settings.lastDataResetDate && <Cal onClickDay={this.onClickDay} 
-                          tileDisabled={this.tileDisabled} 
-                          onActiveStartDateChange={this.onActiveStartDateChange} 
-                          value={new Date()} 
-                          tileClassName={this.tileClassName}
-                          className="rounded shadow"/>}
-          </div>
-          <div class="col-7 ps-3">
-            <div>
-              <span class="badge shadow text-muted border border-warning mb-2">{this.state.selectedDate.toString()}</span>
+  				<div class="offset-1 col-10 mt-4 row">
+            <div class="col-4">
+              { this.props.globalData.settings.lastDataResetDate && <Cal onClickDay={this.onClickDay} 
+                            tileDisabled={this.tileDisabled} 
+                            onActiveStartDateChange={this.onActiveStartDateChange} 
+                            value={new Date()} 
+                            tileClassName={this.tileClassName}
+                            className="rounded shadow"/>}
             </div>
-            <Card className="shadow">
-              <Card.Header>
-                <Nav 
-                  variant="tabs" 
-                  activeKey={this.state.tabActiveKey}
-                  onSelect={this.onNavSelectKey}>
+            <div class="col-7 ps-3">
+              <div>
+                <span class="badge shadow text-muted border border-warning mb-2">{this.state.selectedDate.toString()}</span>
+              </div>
+              <Card className="shadow">
+                <Card.Header>
+                  <Nav 
+                    variant="tabs" 
+                    activeKey={this.state.tabActiveKey}
+                    onSelect={this.onNavSelectKey}>
 
-                  {this.state.tabTitles.map((tabTitle, index) => (
-                                                    <Nav.Item>
-                                                      <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
-                                                        {tabTitle}
-                                                        { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
-                                                        { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
-                                                      </Nav.Link>
-                                                    </Nav.Item>
-                                                  ))}
+                    {this.state.tabTitles.map((tabTitle, index) => (
+                                                      <Nav.Item>
+                                                        <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
+                                                          {tabTitle}
+                                                          { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
+                                                          { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
+                                                        </Nav.Link>
+                                                      </Nav.Item>
+                                                    ))}
 
-                </Nav>
-              </Card.Header>
-              <Card.Body>
-                {/*<Card.Title>Special title treatment</Card.Title>
-                <Card.Text>
-                  With supporting text below as a natural lead-in to additional content.
-                </Card.Text>*/}
-                { this.state.tabActiveKey == this.state.tabTitles[0] && 
-                        <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
+                  </Nav>
+                </Card.Header>
+                <Card.Body>
+                  {/*<Card.Title>Special title treatment</Card.Title>
+                  <Card.Text>
+                    With supporting text below as a natural lead-in to additional content.
+                  </Card.Text>*/}
+                  { this.state.tabActiveKey == this.state.tabTitles[0] && 
+                          <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
 
-                { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)}/>}
 
-                { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart objects={this.getDayObjectList(this.state.monthSearchList)}/>}
 
-              </Card.Body>
-            </Card>
+                </Card.Body>
+              </Card>
+            </div>
           </div>
-        </div>
 
-        <CustomToast globalData={this.props.globalData} />
+          <CustomToast globalData={this.props.globalData} />
+        </div>
         
 	    </>
     );

@@ -9,6 +9,13 @@ import {
   Title,
   Legend
 } from "chart.js";
+import { 
+  saveCanvas,
+} from "../../Local_library";
+
+import { v4 as uuidv4 } from 'uuid';
+import eventBus from "../../EventBus";
+import { saveAs } from 'file-saver';
 
 ChartJS.register(
   Title,
@@ -27,16 +34,33 @@ export default class ProfileGeoMapChart extends React.Component{
     super(props);
     this.state = {
       countries: null,
+      uuid: uuidv4(),
     };
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.DOWNLOAD_CHART_IMAGE, (data) =>
+      {
+        if (data.carrouselItemIndex != this.props.carrouselIndex){
+          return;
+        }
+
+        saveCanvas(this.state.uuid, "Profile-geo-map-chart.png", saveAs);
+      }
+    );
 
     fetch('https://unpkg.com/world-atlas/countries-50m.json').then((r) => r.json()).then((data) => {
       
       this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
 
     });
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
 
   }
 
@@ -54,7 +78,7 @@ export default class ProfileGeoMapChart extends React.Component{
                                               </div>
                                             </div>}
 
-      	{ this.state.countries && <Chart
+      	{ this.state.countries && <Chart id={"chartTag_"+this.state.uuid}
                   type="choropleth"
                   data={{
                     labels: this.state.countries.map((d) => d.properties.name),
@@ -76,7 +100,7 @@ export default class ProfileGeoMapChart extends React.Component{
                         axis: 'x',
                         projection: 'equalEarth'
                       }
-                    }
+                    },
                   }}
                 />}
       </>

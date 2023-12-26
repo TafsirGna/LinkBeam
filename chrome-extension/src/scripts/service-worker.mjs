@@ -1539,76 +1539,88 @@ function getSettingsData(params, callback){
 
 // Script for updating any object instance
 
-function updateObject(objectStoreName, objectData, callback){
+function updateObject(objectStoreName, params, callback){
 
-    switch(objectStoreName){
-        case dbData.objectStoreNames.SETTINGS:{
-            updateSettingObject(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.PROFILES: {
-            // updateProfileObject(objectData);
-            break;
-        }
-
-        case dbData.objectStoreNames.REMINDERS: {
-            updateReminderObject(objectData, callback);
-            break;
-        }
-    }
-
-}
-
-
-// Function for updating reminder objects
-function updateReminderObject(params){
-
-    if (/*typeof params.criteria === "string" &&*/ params.criteria == "today"){
-        deactivateTodayReminders();
+    if (objectStoreName == dbData.objectStoreNames.SETTINGS){
+        updateSettingObject(params, callback);
         return;
     }
 
-    // else
-}
+    const updateOb = (object, params, fCallback) => {
 
-function deactivateTodayReminders(){
-
-    let objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
-    let cursor = objectStore.openCursor(null, 'prev');
-    cursor.onsuccess = function(event) {
-        let cursor = event.target.result;
-        
-        if(!cursor) {
-            return;
+        for (var prop in params.criteria.props){ 
+            if (prop != "object"){
+                object[prop] = params.criteria.props[prop]; 
+            }
         }
 
-        let object = cursor.value;
-
-        if ((new Date()).toISOString().split("T")[0] != object.date.split("T")[0]){
-            cursor.continue();
-        }
-
-        object.activated = false;
+        let objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
         let requestUpdate = objectStore.put(object);
-        requestUpdate.onerror = (event) => {
-            // Do something with the error
-            console.log("An error occured when updating reminder "+object.url+" !");
-        };
         requestUpdate.onsuccess = (event) => {
             // Success - the data is updated!
-            console.log("Reminder "+object.url+" update processed successfully !");
+            console.log(objectStoreName+" updated successfully !");
+            fCallback(object);
         };
-        
-        cursor.continue();
+        requestUpdate.onerror = (event) => {
+            // Do something with the error
+            console.log("An error occured when updating  "+objectStoreName+"!");
+        };
+
     }
 
-    cursor.onerror = (event) => {
-        console.log("Failed to acquire the cursor !");
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    };
+    if (Object.hasOwn(params.criteria.props, "object")){
+
+        var object = params.criteria.props.object;
+        updateOb(object, params, callback);
+
+    }
+    else{
+
+        getObject(objectStoreName, params, (object) => {
+            updateOb(object, params, callback);
+        });
+
+    }
 
 }
+
+// function deactivateTodayReminders(){
+
+//     let objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
+//     let cursor = objectStore.openCursor(null, 'prev');
+//     cursor.onsuccess = function(event) {
+//         let cursor = event.target.result;
+        
+//         if(!cursor) {
+//             return;
+//         }
+
+//         let object = cursor.value;
+
+//         if ((new Date()).toISOString().split("T")[0] != object.date.split("T")[0]){
+//             cursor.continue();
+//         }
+
+//         object.activated = false;
+//         let requestUpdate = objectStore.put(object);
+//         requestUpdate.onerror = (event) => {
+//             // Do something with the error
+//             console.log("An error occured when updating reminder "+object.url+" !");
+//         };
+//         requestUpdate.onsuccess = (event) => {
+//             // Success - the data is updated!
+//             console.log("Reminder "+object.url+" update processed successfully !");
+//         };
+        
+//         cursor.continue();
+//     }
+
+//     cursor.onerror = (event) => {
+//         console.log("Failed to acquire the cursor !");
+//         sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+//     };
+
+// }
 
 // Script for updating a profile object
 
@@ -1781,6 +1793,9 @@ function injectWebApp(productID){
 function processMessageEvent(message, sender, sendResponse){
 
     console.log("Message received : ", message);
+
+    // testUpDb();
+
     // Script for getting all the searches done so far
     switch(message.header){
 
@@ -2141,3 +2156,17 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     }
 
 });
+
+
+
+// function testUpDb(){
+
+//     var params = { context: "" };
+//     getList(dbData.objectStoreNames.SEARCHES, params, (results) => {
+//         for (var search of results){
+//             params = { context: "", criteria: { props: { object: search, timeCount: { value: Math.floor(Math.random() * 3), lastCheck: (new Date()).toISOString() } } } };
+//             updateObject(dbData.objectStoreNames.SEARCHES, params, () => {});
+//         }
+//     });
+
+// }

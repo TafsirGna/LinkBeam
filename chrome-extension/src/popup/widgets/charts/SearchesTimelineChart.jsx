@@ -2,7 +2,16 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
-import { sendDatabaseActionMessage, getChartColors, startMessageListener, ack ,messageParams, groupObjectsByDate, groupObjectsByMonth } from "../../Local_library";
+import { 
+	sendDatabaseActionMessage, 
+	getChartColors, 
+	startMessageListener, 
+	ack, 
+	messageParams, 
+	groupObjectsByDate, 
+	groupObjectsByMonth, 
+	saveCanvas,
+} from "../../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,8 +21,12 @@ import {
   BarElement,
   Title,
   Tooltip,
+  Filler,
   Legend,
 } from 'chart.js';
+import { v4 as uuidv4 } from 'uuid';
+import eventBus from "../../EventBus";
+import { saveAs } from 'file-saver';
 
 ChartJS.register(
   CategoryScale,
@@ -23,7 +36,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Filler,
+  Legend,
 );
 
 const lineOptions = {
@@ -45,6 +59,7 @@ export default class SearchesTimelineChart extends React.Component{
 		super(props);
 		this.state = {
 			lineData: null,
+			uuid: uuidv4(),
 		};
 
   	this.setChartLabels = this.setChartLabels.bind(this);
@@ -53,7 +68,17 @@ export default class SearchesTimelineChart extends React.Component{
 
 	componentDidMount() {
 
-		// this.setChartLabels();
+		eventBus.on(eventBus.DOWNLOAD_CHART_IMAGE, (data) =>
+      {
+        if (data.carrouselItemIndex != this.props.carrouselIndex){
+          return;
+        }
+
+        saveCanvas(this.state.uuid, "Searches-timeline-chart.png", saveAs);
+      }
+    );
+
+		this.setChartLabels();
 
 	}
 
@@ -68,18 +93,30 @@ export default class SearchesTimelineChart extends React.Component{
 
 	getDaysSearchesChartLabels(view){
 
-		var results = {titles: [], values: []};
+		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
 		var searches = groupObjectsByDate(this.props.objects);
 
 		var upperLimit = (view == 0 ? 7 : 31);
 		for (var i=0; i < upperLimit; i++){
 			var date = moment().subtract(i, 'days');
 			results.titles.push(view == 0 ? date.format('dddd') : date.format("DD-MM"));
-			results.values.push((date.toISOString().split("T")[0] in searches) ? searches[date.toISOString().split("T")[0]].length : 0);
+			results.valuesDataset1.push((date.toISOString().split("T")[0] in searches) ? searches[date.toISOString().split("T")[0]].length : 0);
+
+			if (date.toISOString().split("T")[0] in searches){
+				var valueDataset2 = 0;
+				for (var search of searches[date.toISOString().split("T")[0]]){
+					valueDataset2 += search.timeCount.value;
+				}
+				results.valuesDataset2.push(valueDataset2);
+			}
+			else{
+				results.valuesDataset2.push(0);
+			}
 		}
 
 		results.titles.reverse();
-		results.values.reverse();
+		results.valuesDataset1.reverse();
+		results.valuesDataset2.reverse();
 
 		return results;
 
@@ -87,26 +124,44 @@ export default class SearchesTimelineChart extends React.Component{
 
 	getYearSearchesChartLabels(){
 
-		var results = {titles: [], values: []};
+		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
 		var searches = groupObjectsByMonth(this.props.objects);
 		const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 		for (var i=0; i < 12; i++){
 			var month = moment().subtract(i, 'months').toDate().getMonth();
 			results.titles.push(months[month]);
-			results.values.push((month in searches) ? searches[month].length : 0);
+			results.valuesDataset1.push((month in searches) ? searches[month].length : 0);
+
+			if (month in searches){
+				var valueDataset2 = 0;
+				for (var search of searches[month]){
+					valueDataset2 += search.timeCount.value;
+				}
+				results.valuesDataset2.push(valueDataset2);
+			}
+			else{
+				results.valuesDataset2.push(0);
+			}
 		}
 
 		results.titles.reverse();
-		results.values.reverse();
+		results.valuesDataset1.reverse();
+		results.valuesDataset2.reverse();
 
 		return results;
 
 	}
 
+	componentWillUnmount(){
+
+    eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
+
+  }
+
 	setChartLabels(){
 
-		if (this.props.objects == []){
+		if (!this.props.objects){
 			return;
 		}
 		
@@ -127,17 +182,27 @@ export default class SearchesTimelineChart extends React.Component{
 		}
 
 		var titles = results.titles;
-		var colors = getChartColors(titles.length);
+		var colors = getChartColors(2);
+		var colorDataset1 = {borders: [colors.borders[0]], backgrounds: [colors.backgrounds[0]]};
+		var colorDataset2 = {borders: [colors.borders[1]], backgrounds: [colors.backgrounds[1]]};
 
 		this.setState({
 			lineData: {
 				labels: results.titles,
 				datasets: [
 				  {
-				    label: 'Dataset',
-				    data: results.values,
-				    borderColor: colors.borders,
-				    backgroundColor: colors.backgrounds,
+				    label: 'Dataset 1',
+				    fill: true,
+				    data: results.valuesDataset1,
+				    borderColor: colorDataset1.borders,
+				    backgroundColor: colorDataset1.borders,
+				  },
+				  {
+				    label: 'Dataset 2',
+				    fill: true,
+				    data: results.valuesDataset2,
+				    borderColor: colorDataset2.borders,
+				    backgroundColor: colorDataset2.borders,
 				  },
 				],
 			}
@@ -147,7 +212,15 @@ export default class SearchesTimelineChart extends React.Component{
 	render(){
 		return (
 			<>
-				{ this.state.lineData && <Line options={lineOptions} data={this.state.lineData} /> }
+				<div class="text-center">
+
+					{ !this.state.lineData && <div class="spinner-border spinner-border-sm" role="status">
+	                                          <span class="visually-hidden">Loading...</span>
+	                                        </div> }
+
+					{ this.state.lineData && <Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} /> }
+
+				</div>
 			</>
 		);
 	}

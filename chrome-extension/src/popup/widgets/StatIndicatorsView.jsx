@@ -33,7 +33,7 @@ class IndicatorWidget extends React.Component {
   render() {
     return (
       <>
-        <div type="button" class="btn shadow-sm col mx-2 mt-3 text-muted fw-light text-start border">
+        <div type="button" class="btn shadow-sm col mx-2 mt-3 fw-light text-start">
           <h6 class={"ms-3 my-0 " + this.props.object.color}>
             <img src={this.props.object.icon} alt="twbs" width="15" height="15" class="me-2 shadow-lg"/>
             {this.props.object.value}
@@ -83,7 +83,6 @@ export default class StatIndicatorsView extends React.Component{
     };
 
     this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.onTimeDataReceived = this.onTimeDataReceived.bind(this);
     this.onProfileNewsDataReceived = this.onProfileNewsDataReceived.bind(this);
 
@@ -95,8 +94,6 @@ export default class StatIndicatorsView extends React.Component{
 
     this.getProfileCount();
 
-    this.getSearchCount();
-
     this.getProfileNewsCount();
 
     this.getTimeSpent();
@@ -104,10 +101,6 @@ export default class StatIndicatorsView extends React.Component{
   }
 
   componentDidUpdate(prevProps, prevState){
-
-  }
-
-  seeMoreVisibilityHandler(){
 
   }
 
@@ -123,8 +116,7 @@ export default class StatIndicatorsView extends React.Component{
 
   getProfileNewsCount(){
 
-    
-    
+      
   }
 
   getProfileCount(){
@@ -182,32 +174,12 @@ export default class StatIndicatorsView extends React.Component{
 
   }
 
-  onSearchesDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var searchCount = message.data.objectData;
-
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.searchData.value = searchCount;
-      return { indicatorData };
-    }); 
-
-  }
-
   listenToMessages(){
 
     startMessageListener([
       {
         param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
         callback: this.onProfilesDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
       },
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 

@@ -14,6 +14,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { v4 as uuidv4 } from 'uuid';
+import eventBus from "../../EventBus";
+import { saveAs } from 'file-saver';
 
 ChartJS.register(
   CategoryScale,
@@ -52,6 +55,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
 		this.state = {
 			barLabels: null,
 			barData: null,
+      uuid: uuidv4(),
 		};
 
     this.setChartLabels = this.setChartLabels.bind(this);
@@ -60,6 +64,16 @@ export default class SearchesKeywordsBarChart extends React.Component{
 	}
 
 	componentDidMount() {
+
+    eventBus.on(eventBus.DOWNLOAD_CHART_IMAGE, (data) =>
+      {
+        if (data.carrouselItemIndex != this.props.carrouselIndex){
+          return;
+        }
+
+        this.saveCanvas();
+      }
+    );
 
     if (this.props.globalData.keywordList){
       this.setChartLabels();
@@ -94,6 +108,12 @@ export default class SearchesKeywordsBarChart extends React.Component{
 
   }
 
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
+
+  }
+
 	setChartData(){
 
     if (!this.state.barLabels){
@@ -121,7 +141,14 @@ export default class SearchesKeywordsBarChart extends React.Component{
 	render(){
 		return (
 			<>
-				{ this.state.barData && <Bar options={barOptions} data={this.state.barData} /> }
+        <div class="text-center">
+
+          { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                          </div> }
+				  { this.state.barData && <Bar id={"chartTag_"+this.state.uuid} options={barOptions} data={this.state.barData} /> }
+
+        </div>
 			</>
 		);
 	}

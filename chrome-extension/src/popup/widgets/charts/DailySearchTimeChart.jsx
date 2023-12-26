@@ -68,41 +68,39 @@ export default class DailySearchTimeChart extends React.Component{
 
   componentDidMount() {
 
-    // setting the labels
-    //
-    var labels = [];
-    //
+    if (!this.props.objects){
+      return;
+    }
 
-    var objects = [];
+    var results = [];
     for (var search of this.props.objects){
-      var index = objects.map(e => e.url).indexOf(search.url);
+      var index = results.map(e => e.url).indexOf(search.url);
       if (index == -1){
         var object = {
           url: search.url,
-          label: dbDataSanitizer.profileAbout(search.profile.fullName),
+          label: dbDataSanitizer.fullName(search.profile.fullName),
           time: 0,
         };
-        objects.push(object);
-
-        //
-        labels.push(object.label);
-        //
+        results.push(object);
       }
       else{
-        // TODO
+        results[index].time += search.timeCount.value;
       }
     }
 
+    var colors = getChartColors(1);
+
     // setting the bar data
     this.setState({barData: {
-        labels,
+        labels: results.map((object) => object.label),
         datasets: [
           {
             label: 'Dataset',
-            data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
-            // backgroundColor: colors.backgrounds,
-            // borderColor: colors.borders,
-            borderWidth: 2,
+            data: results.map((object) => object.time),
+            // data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
+            backgroundColor: colors.borders,
+            borderColor: colors.borders,
+            borderWidth: 1,
           },
         ],
     }});
@@ -116,7 +114,13 @@ export default class DailySearchTimeChart extends React.Component{
   render(){
     return (
       <>
+
+        { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                          </div> }
+
         { this.state.barData && <Bar options={barOptions} data={this.state.barData} /> }
+
       </>
     );
   }

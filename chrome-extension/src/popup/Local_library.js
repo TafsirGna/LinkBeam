@@ -231,6 +231,14 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
+export const saveCanvas = (uuid, fileName, saveAs) => {
+  //save to png
+  const canvasSave = document.getElementById("chartTag_" + uuid);
+  canvasSave.toBlob(function (blob) {
+    saveAs(blob, fileName);
+  })
+}
+
 export const deactivateTodayReminders = () => {
 
   sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, {criteria: "today"/*, property: "activated", value: false*/});

@@ -6,6 +6,7 @@ const eventBus = {
   EMPTY_SEARCH_TEXT_ACTIVITY: "emptySearchTextActivity",
   EMPTY_SEARCH_TEXT_REMINDER: "emptySearchTextReminder",
   SHOW_ED_EXP_TIME_CHART_MODAL: "showEdExpTimeChartModal",
+  DOWNLOAD_CHART_IMAGE: "downloadChartImage",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

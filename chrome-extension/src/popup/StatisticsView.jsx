@@ -9,7 +9,9 @@ import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
+import RelationshipsChart from "./widgets/charts/RelationshipsChart";
 import Carousel from 'react-bootstrap/Carousel';
+import eventBus from "./EventBus";
 
 import { 
   saveCurrentPageTitle, 
@@ -26,15 +28,23 @@ export default class StatisticsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      periodSearches: [],
+      periodSearches: null,
       view: 0,
       carrouselActiveItemIndex: 0,
+      indicators: {
+        profileCount: 0,
+        profileActivityCount: 0,
+        timeSpent: 0,
+      },
+      controlsVisibility: true,
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
     this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
     this.handleCarrouselSelect = this.handleCarrouselSelect.bind(this);
+    this.downloadChart = this.downloadChart.bind(this);
+    this.onChartExpansion = this.onChartExpansion.bind(this);
   }
 
   componentDidMount() {
@@ -112,10 +122,32 @@ export default class StatisticsView extends React.Component{
 
   }
 
+  downloadChart(){
+
+    eventBus.dispatch(eventBus.DOWNLOAD_CHART_IMAGE, { carrouselItemIndex: this.state.carrouselActiveItemIndex });
+
+  }
+
   handleCarrouselSelect = (selectedIndex) => {
-    console.log("ooooooooooooookkkkkkkkkkkkkkkkkk", selectedIndex);
-    this.setState({carrouselActiveItemIndex: selectedIndex});
+
+    var controlsVisibility = (selectedIndex == 1) ? false : true;
+
+    this.setState({
+      carrouselActiveItemIndex: selectedIndex,
+      controlsVisibility: controlsVisibility,
+    });
   };
+
+  onChartExpansion(){
+
+    var periodSearches = JSON.stringify(this.state.periodSearches);
+    localStorage.setItem('periodSearches', periodSearches);
+    localStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
+    localStorage.setItem('carrouselChartView', this.state.view);
+
+    window.open("/index.html?redirect_to=ChartExpansionView", '_blank');
+
+  }
 
   render(){
 
@@ -128,6 +160,16 @@ export default class StatisticsView extends React.Component{
 
           {/*View dropdown*/}
           <div class="clearfix">
+            { this.state.controlsVisibility && <span class="border shadow-sm rounded p-1 text-muted">
+                          <span title="Expand chart" onClick={this.onChartExpansion}>
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor mx-1 text-primary"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                          </span>
+                          <span onClick={this.downloadChart} title="Download chart">
+                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor mx-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                          </span>
+                          {/*<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>*/}
+                        </span>}
+
             <div class="btn-group float-end">
               <button class="btn btn-primary btn-sm dropdown-toggle fst-italic badge" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                 View
@@ -146,25 +188,32 @@ export default class StatisticsView extends React.Component{
           </div>
 
           <Carousel 
-            className="shadow rounded p-2 mt-3"
+            className="shadow rounded p-2 mt-2"
             interval={null}
             data-bs-theme="dark"
             indicators={false}
             activeIndex={this.state.carrouselActiveItemIndex} onSelect={this.handleCarrouselSelect}>
             <Carousel.Item>
-              <SearchesTimelineChart objects={this.state.periodSearches} view={this.state.view} />
+              <SearchesTimelineChart objects={this.state.periodSearches} view={this.state.view} carrouselIndex={0} />
             </Carousel.Item>
             <Carousel.Item>
-              <SearchesKeywordsBarChart globalData={this.props.globalData} objects={this.state.periodSearches}/>
+              <StatIndicatorsView objects={this.state.periodSearches} indicators={this.state.indicators} carrouselIndex={1} />
             </Carousel.Item>
             <Carousel.Item>
-              <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} />
+              <SearchesKeywordsBarChart globalData={this.props.globalData} objects={this.state.periodSearches} carrouselIndex={2}/>
             </Carousel.Item>
             <Carousel.Item>
-              <ProfileGeoMapChart />
+              <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} carrouselIndex={3} />
             </Carousel.Item>
             <Carousel.Item>
-              <ExpEdStackBarChart objects={this.state.periodSearches} />
+              <ProfileGeoMapChart objects={this.state.periodSearches} carrouselIndex={4} />
+            </Carousel.Item>
+            <Carousel.Item>
+              <ExpEdStackBarChart objects={this.state.periodSearches} carrouselIndex={5} />
+            </Carousel.Item>
+            {/* Connection graph */}
+            <Carousel.Item> 
+              <RelationshipsChart objects={this.state.periodSearches} carrouselIndex={6} />
             </Carousel.Item>
           </Carousel>
 

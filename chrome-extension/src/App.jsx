@@ -15,6 +15,7 @@ import CalendarView from "./popup/CalendarView";
 import FeedbackView from "./popup/FeedbackView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
+import ChartExpansionView from "./popup/ChartExpansionView";
 import { 
   sendDatabaseActionMessage,
   ack,
@@ -122,6 +123,7 @@ export default class App extends React.Component{
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("redirect_to") != null){
       var redirect_to = {view: urlParams.get("redirect_to"), data: urlParams.get("data")};
+
       this.setState({redirect_to: redirect_to});
     }
 
@@ -489,7 +491,9 @@ export default class App extends React.Component{
                   <Navigate replace to={"/index.html/Profile?url=" + this.state.redirect_to.data} />
                   : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
                       <Navigate replace to={"/index.html/Calendar"} />
-                      : <HomeView globalData={this.state.globalData} />
+                      : this.state.redirect_to && this.state.redirect_to.view == "ChartExpansionView" ?
+                        <Navigate replace to={"/index.html/ChartExpansion"} />
+                        : <HomeView globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<AboutView />} />
             <Route path="/index.html/Settings" element={<SettingsView globalData={this.state.globalData} />} />
@@ -503,6 +507,7 @@ export default class App extends React.Component{
             <Route path="/index.html/Feedback" element={<FeedbackView globalData={this.state.globalData} />} />
             <Route path="/index.html/Calendar" element={<CalendarView globalData={this.state.globalData} />} />
             <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />
+            <Route path="/index.html/ChartExpansion" element={<ChartExpansionView globalData={this.state.globalData} />} />
             <Route path="/index.html/Error" element={<ErrorPageView />} />
           </Routes>
         </BrowserRouter>
