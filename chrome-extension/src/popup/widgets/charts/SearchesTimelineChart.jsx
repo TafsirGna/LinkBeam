@@ -102,16 +102,14 @@ export default class SearchesTimelineChart extends React.Component{
 			results.titles.push(view == 0 ? date.format('dddd') : date.format("DD-MM"));
 			results.valuesDataset1.push((date.toISOString().split("T")[0] in searches) ? searches[date.toISOString().split("T")[0]].length : 0);
 
+			var valueDataset2 = 0;
 			if (date.toISOString().split("T")[0] in searches){
-				var valueDataset2 = 0;
 				for (var search of searches[date.toISOString().split("T")[0]]){
-					valueDataset2 += search.timeCount.value;
+					valueDataset2 += (search.timeCount.value / 60);
 				}
-				results.valuesDataset2.push(valueDataset2);
+				
 			}
-			else{
-				results.valuesDataset2.push(0);
-			}
+			results.valuesDataset2.push(valueDataset2);
 		}
 
 		results.titles.reverse();
@@ -133,16 +131,13 @@ export default class SearchesTimelineChart extends React.Component{
 			results.titles.push(months[month]);
 			results.valuesDataset1.push((month in searches) ? searches[month].length : 0);
 
+			var valueDataset2 = 0;
 			if (month in searches){
-				var valueDataset2 = 0;
 				for (var search of searches[month]){
-					valueDataset2 += search.timeCount.value;
+					valueDataset2 += (search.timeCount.value / 60);
 				}
-				results.valuesDataset2.push(valueDataset2);
 			}
-			else{
-				results.valuesDataset2.push(0);
-			}
+			results.valuesDataset2.push(valueDataset2);
 		}
 
 		results.titles.reverse();

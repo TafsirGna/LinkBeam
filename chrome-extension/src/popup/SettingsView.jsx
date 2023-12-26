@@ -181,8 +181,12 @@ export default class SettingsView extends React.Component{
     // setting the new value
     this.setState({
       processingState: {status: "NO", info: "ERASING"},
-      keywordCount: 0,
-      reminderCount: 0,
+    }, () => {
+
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
+
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
+      
     });
 
     this.checkStorageUsage();
@@ -241,7 +245,7 @@ export default class SettingsView extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_deletion" } : { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}}});
+      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_deletion" } : { context: "data_deletion", criteria: { props: {date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}}});
       sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
     }
   }

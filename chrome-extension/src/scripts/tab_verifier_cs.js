@@ -129,7 +129,7 @@ function extractData(){
     pageData = {
         date: dateTime,
         url: pageUrl,
-        timeCount: { value: 0, lastCheck: (new Date()).toISOString() },
+        timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
         profile: {
             url: pageUrl,
             fullName: fullName,

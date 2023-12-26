@@ -356,7 +356,7 @@ function getBookmarkList(params, callback){
 
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             filteredCallback = (objects) => {
                 getAssociatedProfiles(objects, callback);
             }
@@ -366,7 +366,7 @@ function getBookmarkList(params, callback){
     else{
 
         var allCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             allCallback = (objects) => {
                 getAssociatedProfiles(objects, callback);
             }
@@ -386,7 +386,7 @@ function getSearchList(params, callback) {
 
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             filteredCallback = (objects) => {
                 getAssociatedProfiles(objects, callback);
             }
@@ -418,7 +418,7 @@ function getProfileList(params, callback) {
 
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             filteredCallback = (objects) => {
                 getAssociatedSearches(objects, callback);
             }
@@ -718,7 +718,7 @@ function getReminderList(params, callback) {
 
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             filteredCallback = (objects) => {
                 getAssociatedProfiles(objects, callback);
             }
@@ -728,7 +728,7 @@ function getReminderList(params, callback) {
     else{
 
         var allCallback = callback;
-        if (params.context != "data_export"){
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             allCallback = (objects) => {
                 getAssociatedProfiles(objects, callback);
             }
@@ -1137,49 +1137,25 @@ function addKeywordObject(params, callback) {
 
 
 
-// Script for deleting a reminder
-
-function deleteReminderObject(params, callback){
-
-    var url = params.criteria.props.url;
-    const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
-    const request = objectStore.delete(url);
-    request.onsuccess = (event) => {
-        console.log("A reminder deleting");
-        callback();
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when deleting a reminder ", event);
-    };
-
-}
-
-// Script for deleting a bookmark 
-
-function deleteBookmarkObject(params, callback){
-
-    var url = params.criteria.props.url;
-    const objectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readwrite").objectStore(dbData.objectStoreNames.BOOKMARKS);
-    const request = objectStore.delete(url);
-    request.onsuccess = (event) => {
-        console.log("Bookmark deleted");
-        callback();
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when deleting a bookmark");
-    };
-
-}
-
 function deleteObjectSet(objectStoreName, objectData, callback){
 
-    getList(objectStoreName, objectData, (results) => {
-        for (var object of results){
-            deleteObject(objectStoreName, objectData, () => {});
+    const deleteResults = (results) => {
+
+        if (results.length == 0){
+            callback();
+            return;
         }
-        callback();
+
+        objectData.criteria.props.object = results[0];
+        deleteObject(objectStoreName, objectData, () => {
+            results.shift();
+            deleteResults(results);
+        });
+
+    }
+
+    getList(objectStoreName, objectData, (results) => {
+        deleteResults(results);
     });
 
 }
@@ -1193,57 +1169,56 @@ function deleteObject(objectStoreName, objectData, callback){
         return;
     }
 
-    var id = null;
+    var id = null, params = objectData;
     switch(objectStoreName){
         case dbData.objectStoreNames.REMINDERS:{
-            id = params.criteria.props.url;
+            id =  (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            id = params.criteria.props.name;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.name : params.criteria.props.name;
             break;
         }
 
         case dbData.objectStoreNames.PROFILES:{
-            id = params.criteria.props.url;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.SEARCHES:{
-            id = params.criteria.props.id;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.NOTIFICATIONS:{
-            id = params.criteria.props.id;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-            id = params.criteria.props.id;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.BOOKMARKS:{
-            id = params.criteria.props.url;
+            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
             break;
         }
     }
-    
+
     const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
-    let request = objectStore.delete(id);
-    request.onsuccess = (event) => {
-        console.log("Object deleted")
-        // Sending the new list
+    let requestUpdate = objectStore.delete(id);
+    requestUpdate.onsuccess = (event) => {
+        // Success - the data is updated!
+        console.log(objectStoreName+" deleted successfully !");
         callback();
-    }
-
-    request.onerror = function (event) {
-        console.log("An error when deleting "+objectStoreName, event);
+    };
+    requestUpdate.onerror = (event) => {
+        // Do something with the error
+        console.log("An error occured when deleting  "+objectStoreName+"!");
         sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    }
-
+    };
 
 }
 
@@ -1257,7 +1232,10 @@ function deleteObjectStoreSpecificData(objectStoreNames, params, callback){
 
     var objectStoreName = objectStoreNames[0];
 
+    console.log("obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb : ", objectStoreName);
+
     deleteObjectSet(objectStoreName, params, () => {
+        objectStoreNames.shift();
         deleteObjectStoreSpecificData(objectStoreNames, params, callback);
     });
 
@@ -2164,7 +2142,7 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 //     var params = { context: "" };
 //     getList(dbData.objectStoreNames.SEARCHES, params, (results) => {
 //         for (var search of results){
-//             params = { context: "", criteria: { props: { object: search, timeCount: { value: Math.floor(Math.random() * 3), lastCheck: (new Date()).toISOString() } } } };
+//             params = { context: "", criteria: { props: { object: search, timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() } } } };
 //             updateObject(dbData.objectStoreNames.SEARCHES, params, () => {});
 //         }
 //     });
