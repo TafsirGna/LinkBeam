@@ -70,7 +70,7 @@ export default class StatIndicatorsView extends React.Component{
           color: "text-secondary",
           icon: hourglass_icon,
         },
-        newsData: {
+        profileActivityData: {
           label: PROFILES_NEWS_LABEL,
           value: 0,
           color: "text-primary",
@@ -82,110 +82,53 @@ export default class StatIndicatorsView extends React.Component{
       // ],
     };
 
-    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
-    this.onTimeDataReceived = this.onTimeDataReceived.bind(this);
-    this.onProfileNewsDataReceived = this.onProfileNewsDataReceived.bind(this);
-
   }
 
   componentDidMount() {
-
-    this.listenToMessages();
-
-    this.getProfileCount();
-
-    this.getProfileNewsCount();
-
-    this.getTimeSpent();
 
   }
 
   componentDidUpdate(prevProps, prevState){
 
+    if (prevProps.indicators != this.props.indicators){
+
+      if (prevProps.indicators.timeSpent != this.props.indicators.timeSpent){
+        this.setState(prevState => {
+          let indicatorData = Object.assign({}, prevState.indicatorData);
+          indicatorData.timeSpentData.value = secondsToHms(this.props.indicators.timeSpent);
+          return { indicatorData };
+        });
+      }
+
+      if (prevProps.indicators.profileCount != this.props.indicators.profileCount){
+        this.setState(prevState => {
+          let indicatorData = Object.assign({}, prevState.indicatorData);
+          indicatorData.profileData.value = this.props.indicators.profileCount;
+          return { indicatorData };
+        });
+      }
+
+      if (prevProps.indicators.searchCount != this.props.indicators.searchCount){
+        this.setState(prevState => {
+          let indicatorData = Object.assign({}, prevState.indicatorData);
+          indicatorData.searchData.value = this.props.indicators.searchCount;
+          return { indicatorData };
+        });
+      }
+
+      if (prevProps.indicators.profileActivityCount != this.props.indicators.profileActivityCount){
+        this.setState(prevState => {
+          let indicatorData = Object.assign({}, prevState.indicatorData);
+          indicatorData.profileActivityData.value = this.props.indicators.profileActivityCount;
+          return { indicatorData };
+        });
+      }
+
+    }
+
   }
 
   componentWillUnmount(){
-
-  }
-
-  getTimeSpent(){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["timeCount"]);
-
-  }
-
-  getProfileNewsCount(){
-
-      
-  }
-
-  getProfileCount(){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.PROFILES, null);
-
-  }
-
-  getSearchCount(){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.SEARCHES, null);
-
-  }
-
-  onProfileNewsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-  }
-
-  onTimeDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    switch(message.data.objectData.property){
-      case "timeCount": {
-        var timeCount = message.data.objectData.value;
-        this.setState(prevState => {
-          let indicatorData = Object.assign({}, prevState.indicatorData);
-          // indicatorData.timeSpentData.value = timeCount.value.toFixed(2) + "s";
-          indicatorData.timeSpentData.value = secondsToHms(timeCount.value);
-          return { indicatorData };
-        }); 
-        break;
-      }         
-    }
-    
-  }
-
-  onProfilesDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var profileCount = message.data.objectData;
-
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.profileData.value = profileCount;
-      return { indicatorData };
-    }); 
-
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
-        callback: this.onProfilesDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onTimeDataReceived
-      }
-    ]);
 
   }
 

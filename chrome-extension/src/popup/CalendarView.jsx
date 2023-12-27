@@ -298,7 +298,7 @@ export default class CalendarView extends React.Component{
                             onActiveStartDateChange={this.onActiveStartDateChange} 
                             value={new Date()} 
                             tileClassName={this.tileClassName}
-                            className="rounded shadow"/>}
+                            className="rounded shadow-lg"/>}
             </div>
             <div class="col-7 ps-3">
               <div>
