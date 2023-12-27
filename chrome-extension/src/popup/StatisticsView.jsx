@@ -21,6 +21,7 @@ import {
   messageParams,
   dbData,
   appParams,
+  getPeriodSearches,
 } from "./Local_library";
 
 export default class StatisticsView extends React.Component{
@@ -58,7 +59,7 @@ export default class StatisticsView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS);
 
-    this.getPeriodSearches(this.state.view);
+    getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, this.state.view, {moment: moment});
     
     // Requesting the last reset date
     if (!Object.hasOwn(this.props.globalData.settings, "lastDataResetDate")){
@@ -117,34 +118,10 @@ export default class StatisticsView extends React.Component{
 
   }
 
-  getPeriodSearches(index){
-
-    var startDate = null;
-      switch(index){
-        case 0: {
-          startDate = moment().subtract(6, 'days').toDate();
-          break;
-        }
-
-        case 1: {
-          startDate = moment().subtract(30, 'days').toDate();
-          break;
-        }
-
-        case 2: {
-          startDate = moment().subtract(12, 'months').toDate();
-          break;
-        }
-      }
-      var props = { date: [startDate, "to", (new Date())] };
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, { context: appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, criteria: { props: props }});
-
-  }
-
   onViewChange(index){
 
     this.setState({view: index}, () => {
-      this.getPeriodSearches(index);
+      getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, index, {moment: moment});
     });
 
   }

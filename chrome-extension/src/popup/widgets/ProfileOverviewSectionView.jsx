@@ -26,7 +26,7 @@ export default class ProfileOverviewSectionView extends React.Component{
   render(){
     return (
       <>
-        <div class="row mx-4 mt-3">
+        <div class="row mx-2 mt-3">
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
               <h5 class="card-title">0</h5>

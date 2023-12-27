@@ -231,6 +231,33 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
+export const getPeriodSearches = (context, index, func, profile = null) => {
+
+  var startDate = null;
+    switch(index){
+      case 0: {
+        startDate = func.moment().subtract(6, 'days').toDate();
+        break;
+      }
+
+      case 1: {
+        startDate = func.moment().subtract(30, 'days').toDate();
+        break;
+      }
+
+      case 2: {
+        startDate = func.moment().subtract(12, 'months').toDate();
+        break;
+      }
+    }
+    var props = { date: [startDate, "to", (new Date())] };
+    if (profile){
+      props.url = profile.url;
+    }
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, { context: context, criteria: { props: props }});
+
+}
+
 export const saveCanvas = (uuid, fileName, saveAs) => {
   //save to png
   const canvasSave = document.getElementById("chartTag_" + uuid);

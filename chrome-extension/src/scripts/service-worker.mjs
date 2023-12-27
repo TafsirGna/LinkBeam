@@ -460,7 +460,6 @@ function getFilteredList(params, objectStoreName, callback) {
         var output = addToFilteredList(object, results, objectStoreName, params);
         results = output.list;
 
-        // if an argument about a specific time is not passed then
         if (output.stop){
             callback(results);
             return;
@@ -474,29 +473,127 @@ function getFilteredList(params, objectStoreName, callback) {
     };
 }
 
-function isObjectActionable(object, prop, critValue){
+function isObjectActionable(object, objectStoreName, props){
 
-    if (["createdOn", "date"].indexOf(prop)){
+    const isDateConform = (object, prop, value) => {
 
-        if (typeof critValue == "string"){ // a specific date
-            if (critValue.split("T")[0] == object[prop].split("T")[0]){
-                return true;
+        var date = value,
+            objectDate = (new Date(Object.hasOwn(object, prop) ? object[prop] : object["date"]));
+        if (typeof date == "string"){ // a specific date
+            if (date.split("T")[0] == objectDate){
+                return object;
             }
         }
         else{
-            if (critValue.length == 3 && critValue.indexOf("to") == 1){
-                var objectDate = (new Date(object[prop])),
-                    startDate = new Date(critValue[0]),
-                    endDate = new Date(critValue[2]);
+            if (date.length == 3 && date.indexOf("to") == 1){
+                    var startDate = new Date(date[0]),
+                    endDate = new Date(date[2]);
                 if (startDate <= objectDate && objectDate <= endDate){
-                    return true;
+                    return object;
                 }
             }
-        }  
+        }
+
+        return null;
 
     }
 
-    return false;
+    const isUrlConform = (object, value) => {
+
+        if (object["url"] == value){
+            return object;
+        }
+
+        return null;
+
+    }
+
+    const isFullNameConform = (object, value) => {
+
+        var searchText = value;
+        var searchTextIndex = object.fullName.toLowerCase().indexOf(searchText.toLowerCase());
+        if (searchTextIndex >= 0){
+            var fullName = object.fullName.slice(0, searchTextIndex);
+            fullName += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.fullName.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
+            fullName += object.fullName.slice(searchTextIndex + searchText.length);
+            object.fullName = fullName;
+            return object;
+        }
+
+        return null;
+
+    }
+
+    const isTextConform = (object, value) => {
+
+        var searchText = value;
+        var searchTextIndex = object.text.toLowerCase().indexOf(searchText.toLowerCase());
+        if (searchTextIndex >= 0){
+            var text = object.text.slice(0, searchTextIndex);
+            text += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.text.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
+            text += object.text.slice(searchTextIndex + searchText.length);
+            object.text = text;
+            return object;
+        }
+
+        return null;
+
+    }
+
+
+    for (var prop in props){
+
+        if (Object.hasOwn(object, prop)){
+            switch(prop){
+                case "date":{
+                    var result = isDateConform(object, prop, props[prop]);
+                    if (!result){
+                        return null;
+                    }
+                    break;
+                } 
+                case "createdOn":{
+                    var result = isDateConform(object, prop, props[prop]);
+                    if (!result){
+                        return null;
+                    }
+                    break;
+                }
+                case "url":{
+                    var result = isUrlConform(object, prop, props[prop]);
+                    if (!result){
+                        return null;
+                    }
+                    break;
+                }
+                case "text":{
+                    var result = isTextConform(object, props[prop]);
+                    if (!result){
+                        return null;
+                    }
+                    break;
+                } 
+                case "fullName":{
+                    var result = isFullNameConform(object, props[prop]);
+                    if (!result){
+                        return null;
+                    }
+                    break;
+                } 
+            }
+        }
+        else{
+            if (prop == "date"){
+                var result = isDateConform(object, prop, props[prop]);
+                if (!result){
+                    return null;
+                }
+            }
+        }
+
+    }
+
+    return object;
 
 }
 
@@ -505,22 +602,9 @@ function addToFilteredReminderList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
-            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
-            if (isObjectActionable(object, "createdOn", date)){
-                list.push(object);
-            }
-        }
-        if (Object.hasOwn(params.criteria.props, "text")){
-            var searchText = params.criteria.props.text;
-            var searchTextIndex = object.text.toLowerCase().indexOf(searchText.toLowerCase());
-            if (searchTextIndex >= 0){
-                var text = object.text.slice(0, searchTextIndex);
-                text += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.text.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
-                text += object.text.slice(searchTextIndex + searchText.length);
-                object.text = text;
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{
@@ -536,11 +620,9 @@ function addToFilteredSearchList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "date")){
-            var date = params.criteria.props.date;
-            if (isObjectActionable(object, "date", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{
@@ -563,22 +645,9 @@ function addToFilteredProfileList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "fullName")){
-            var searchText = params.criteria.props.fullName;
-            var searchTextIndex = object.fullName.toLowerCase().indexOf(searchText.toLowerCase());
-            if (searchTextIndex >= 0){
-                var fullName = object.fullName.slice(0, searchTextIndex);
-                fullName += '<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">'+object.fullName.slice(searchTextIndex, searchTextIndex + searchText.length)+'</span>';
-                fullName += object.fullName.slice(searchTextIndex + searchText.length);
-                object.fullName = fullName;
-                list.push(object);
-            }
-        }
-        else if (Object.hasOwn(params.criteria.props, "date")){
-            var date = params.criteria.props.date;
-            if (isObjectActionable(object, "date", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
 
@@ -591,12 +660,9 @@ function addToFilteredBookmarkList(object, list, objectStoreName, params){
     var stop = false;
 
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
-            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
-            date = date ? date : params.criteria.props.date;
-            if (isObjectActionable(object, "createdOn", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{
@@ -612,11 +678,9 @@ function addToFilteredKeywordList(object, list, objectStoreName, params){
     var stop = false;
     
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "createdOn") || Object.hasOwn(params.criteria.props, "date")){
-            var date = Object.hasOwn(params.criteria.props, "createdOn") ? params.criteria.props.createdOn : null;
-            if (isObjectActionable(object, "createdOn", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{
@@ -632,11 +696,9 @@ function addToFilteredNotificationList(object, list, objectStoreName, params){
     var stop = false;
     
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "date")){
-            var date = params.criteria.props.date;
-            if (isObjectActionable(object, "date", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{
@@ -652,11 +714,9 @@ function addToFilteredProfileActivityList(object, list, objectStoreName, params)
     var stop = false;
     
     if (params.criteria.props){
-        if (Object.hasOwn(params.criteria.props, "date")){
-            var date = params.criteria.props.date;
-            if (isObjectActionable(object, "date", date)){
-                list.push(object);
-            }
+        var result = isObjectActionable(object, objectStoreName, params.criteria.props);
+        if (result){
+            list.push(result);
         }
     }
     else{

@@ -17,7 +17,7 @@ import {
 
 const PROFILE_LABEL = "Profiles",
       TIME_SPENT_LABEL = "Time spent",
-      PROFILES_NEWS_LABEL = "Profiles' News",
+      PROFILES_ACTIVITY_LABEL = "Profiles' Activity",
       SEARCH_LABEL = "Searches";
 
 
@@ -71,7 +71,7 @@ export default class StatIndicatorsView extends React.Component{
           icon: hourglass_icon,
         },
         profileActivityData: {
-          label: PROFILES_NEWS_LABEL,
+          label: PROFILES_ACTIVITY_LABEL,
           value: 0,
           color: "text-primary",
           icon: news_icon,
