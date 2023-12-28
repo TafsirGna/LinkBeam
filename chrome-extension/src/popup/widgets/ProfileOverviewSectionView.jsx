@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { computeExperienceTime } from "../Local_library";
 import LanguageListModal from "./modals/LanguageListModal";
+import SunBurstOverviewChart from "./charts/SunBurstOverviewChart";
 
 export default class ProfileOverviewSectionView extends React.Component{
 
@@ -57,6 +58,10 @@ export default class ProfileOverviewSectionView extends React.Component{
               <p class="card-text">Certifications</p>
             </div>
           </div>
+        </div>
+
+        <div class="mt-4">
+          <SunBurstOverviewChart objects={[]} />
         </div>
 
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>

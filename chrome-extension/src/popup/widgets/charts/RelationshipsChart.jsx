@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { activateInCurrentTab, saveCanvas } from "../../Local_library";
 import * as d3 from "d3";
-// import {Swatches} from "@d3/color-legend";
 
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
@@ -99,6 +98,12 @@ export default class RelationshipsChart extends React.Component{
   drawChart(){
 
     if (!this.props.objects){
+      return;
+    }
+
+    // if a previous svg has laready been draw, no need to has one new
+    var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
+    if (chartContainer.firstChild){
       return;
     }
 

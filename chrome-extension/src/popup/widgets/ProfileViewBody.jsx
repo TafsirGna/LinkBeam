@@ -9,6 +9,8 @@ import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
 import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
+import Offcanvas from 'react-bootstrap/Offcanvas';
+import RelationshipsChart from "./charts/RelationshipsChart";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -26,6 +28,7 @@ export default class ProfileViewBody extends React.Component{
         "Suggestions",
       ],
       edExpTimeChartModalShow: false,
+      suggestionsOffCanvasShow: true,
     };
   }
 
@@ -51,6 +54,14 @@ export default class ProfileViewBody extends React.Component{
     this.setState({currentTabIndex: tabIndex});
 
   }
+
+  handleSuggestionsOffCanvasClose = () => {
+    this.setState({suggestionsOffCanvasShow: false})
+  };
+
+  handleSuggestionsOffCanvasShow = () => {
+      this.setState({suggestionsOffCanvasShow: true});
+  };
 
   handleEdExpTimeChartModalClose = () => this.setState({edExpTimeChartModalShow: false});
   handleEdExpTimeChartModalShow = () => this.setState({edExpTimeChartModalShow: true});
@@ -89,6 +100,19 @@ export default class ProfileViewBody extends React.Component{
 
             { this.state.currentTabIndex == 4 && <div class="">
                                                   <ProfileActivitySectionView profile={this.props.profile}/>
+                                                </div>}
+
+            { this.state.currentTabIndex == 5 && <div class="">
+                                                  <RelationshipsChart objects={[]} />
+
+                                                  <Offcanvas show={this.state.suggestionsOffCanvasShow} onHide={this.handleSuggestionsOffCanvasClose}>
+                                                    <Offcanvas.Header closeButton>
+                                                      <Offcanvas.Title>Suggestions</Offcanvas.Title>
+                                                    </Offcanvas.Header>
+                                                    <Offcanvas.Body>
+                                                      {/**/}
+                                                    </Offcanvas.Body>
+                                                  </Offcanvas>
                                                 </div>}
 
           </div>

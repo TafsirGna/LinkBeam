@@ -560,7 +560,7 @@ function isObjectActionable(object, objectStoreName, props){
                     break;
                 }
                 case "url":{
-                    var result = isUrlConform(object, prop, props[prop]);
+                    var result = isUrlConform(object, props[prop]);
                     if (!result){
                         return null;
                     }
