@@ -30,7 +30,6 @@ export default class FeedbackView extends React.Component{
       feedback: {
         title: null,
         text: null,
-        createdAt: null, // new Date().toISOString(),
       },
       productID: null,
       dataRequestDone: null,
@@ -49,11 +48,16 @@ export default class FeedbackView extends React.Component{
 
     this.listenToMessages();
 
-    this.setState({productID: this.props.globalData.settings.productID});
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.FEEDBACK);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, ["feedback"/*, "productID"*/]);
+    if (Object.hasOwn(this.props.globalData.settings, "productID")){
+      this.setState({productID: this.props.globalData.settings.productID});
+    }
+    else{
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.FEEDBACK, criteria: { props: ["productID"] } });
+    }
 
-    saveCurrentPageTitle("Feedback");
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.FEEDBACK, criteria: { props: ["feedback"] } });
 
   }
 
@@ -62,28 +66,22 @@ export default class FeedbackView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    // setting the new value
-    switch(message.data.objectData.property){
-      case "feedback": {
-        var feedback = message.data.objectData.value;
-
-        if (feedback == null || feedback == undefined){
-          this.setState({feedback: {title: "", text: ""}, dataRequestDone: "N/A"});
-          return;
-        }
-
-        this.setState({feedback: feedback, dataRequestDone: "AVAIL"});
-        break;
-      }
-
-      /*case "productID": {
-        var productID = message.data.objectData.value;
-
-        this.setState({productID: productID});
-        break;
-      }*/
-
+    var context = message.data.objectData.context;
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.FEEDBACK) == -1){
+      return;
     }
+
+    // setting the new value
+    var settings = message.data.objectData.object;
+    console.log("~~~~~~~~~~~~~~~~~~~~~~ : ", settings);
+
+    if (Object.hasOwn(settings, "feedback")){
+      var feedback = settings.feedback;
+      this.setState({feedback: feedback, dataRequestDone: "AVAIL"});
+      return;
+    }
+
+    this.setState({feedback: {title: "", text: ""}, dataRequestDone: "N/A"});
 
   }
 
@@ -100,55 +98,59 @@ export default class FeedbackView extends React.Component{
 
   onSendButtonClick(){
 
-    if (this.state.feedback.title == "" || this.state.feedback.text == "" || this.state.productID == null){
+    if (this.state.feedback.title == "" 
+        || this.state.feedback.text == "" 
+        || !Object.hasOwn(this.props.globalData.settings, "productID")){
       console.log("Missing data for processing");
       return;
     }
 
     this.setState({sending: true});
 
-    if (Parse.User.current() == null){
+    // if (Parse.User.current() == null){
 
-      // log in to the parse
-      logInParseUser(
-        Parse,
-        this.state.productID,
-        genPassword(this.state.productID),
-        (parseUser) => {
+    //   // log in to the parse
+    //   logInParseUser(
+    //     Parse,
+    //     this.state.productID,
+    //     genPassword(this.state.productID),
+    //     (parseUser) => {
 
-          this.props.handleParseUserLoggedIn(parseUser);
+    //       this.props.handleParseUserLoggedIn(parseUser);
 
-          this.storeObjectInParse();
+    //       this.storeObjectInParse();
 
-        },
-        () => {
+    //     },
+    //     () => {
 
-          // if (error 404)
+    //       // if (error 404)
           
-          registerParseUser(
-            Parse, 
-            this.state.productID,
-            genPassword(this.state.productID),
-            (parseUser) => {
+    //       registerParseUser(
+    //         Parse, 
+    //         this.state.productID,
+    //         genPassword(this.state.productID),
+    //         (parseUser) => {
 
-              this.props.handleParseUserLoggedIn(parseUser);
+    //           this.props.handleParseUserLoggedIn(parseUser);
 
-              this.storeObjectInParse();
+    //           this.storeObjectInParse();
 
-            },
-            () => {
-              alert("An error ocurred when sending the feedback. Try again later!");
-            },
-          );
-        }
-      );
+    //         },
+    //         () => {
+    //           alert("An error ocurred when sending the feedback. Try again later!");
+    //         },
+    //       );
+    //     }
+    //   );
 
-    }
-    else{
+    // }
+    // else{
 
-      this.storeObjectInParse();
+    //   this.storeObjectInParse();
 
-    }
+    // }
+
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.FEEDBACK, criteria: { props: {feedback: this.state.feedback} } });
 
   }
 
@@ -165,10 +167,9 @@ export default class FeedbackView extends React.Component{
         console.log('UsageFeedback created', result);
 
         var feedbackObject = this.state.feedback;
-        feedbackObject.createdAt = new Date().toISOString();
         sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: feedbackObject});
 
-        this.setState({sending: false});
+        // this.setState({sending: false});
 
       } catch (error) {
         console.error('Error while creating UsageFeedback: ', error);
@@ -234,7 +235,7 @@ export default class FeedbackView extends React.Component{
 
             { this.state.dataRequestDone && this.state.dataRequestDone == "N/A" &&
                 <div class="clearfix">
-                  <button type="button" class="btn btn-primary btn-sm float-end shadow-sm" onClick={this.onSendButtonClick}>
+                  <button type="button" class="badge mt-3 btn btn-primary btn-sm float-end shadow-sm" onClick={this.onSendButtonClick}>
                     { !this.state.sending && <span>Send</span>}
                     { this.state.sending && <div class="spinner-border spinner-border-sm" role="status">
                                               <span class="visually-hidden">Loading...</span>

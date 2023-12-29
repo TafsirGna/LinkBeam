@@ -480,7 +480,7 @@ function isObjectActionable(object, objectStoreName, props){
         var date = value,
             objectDate = (new Date(Object.hasOwn(object, prop) ? object[prop] : object["date"]));
         if (typeof date == "string"){ // a specific date
-            if (date.split("T")[0] == objectDate){
+            if (date.split("T")[0] == objectDate.toISOString().split("T")[0]){
                 return object;
             }
         }
@@ -1538,21 +1538,11 @@ function getSettingsData(params, callback){
         var result = {};
         for (var prop of props){
 
+            // Feedback prop case
+            if (prop == "feedback"){ result[prop] = checkSettingsFeedback(settings); continue; }
+            //
+
             result[prop] = settings[prop]; 
-
-            // if (property == "feedback"){
-            //     // checking the diff between two dates
-
-            //     var diffTime = Math.abs((new Date()) - (new Date(propValue.createdAt)));
-            //     const diffDays = Math.ceil(diffTime / (1000 * 60)); 
-            //     // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            //     console.log(diffTime + " milliseconds");
-            //     // console.log(diffDays + " days");
-
-            //     if (diffTime > appParams.INTERVAL_FEEDBACK){
-            //         propValue = null;
-            //     }
-            // }
         }
 
         callback(result);
@@ -1561,6 +1551,29 @@ function getSettingsData(params, callback){
     request.onerror = (event) => {
         console.log("An error occured when getting the settings data");
     };
+
+    // ---
+    const checkSettingsFeedback = (settings) => {
+        // checking the diff between two dates
+
+        if (!Object.hasOwn(settings, "feedback")){
+            return settings["feedback"];
+        }
+
+        var diffTime = Math.abs((new Date()) - (new Date(settings["feedback"].createdOn)));
+        diffTime = Math.ceil(diffTime / (1000 * 60)); // diff minutes
+        // const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        console.log(diffTime + " minutes");
+
+        if (diffTime <= appParams.INTERVAL_FEEDBACK){
+            return settings["feedback"];
+        }
+
+        return undefined;
+
+    }
+    // ---
+
 }
 
 
@@ -1726,6 +1739,10 @@ function updateSettingObject(params, callback){
         // then, update the property
         let settings = event.target.result;
 
+        // Feedback prop case
+        if (Object.hasOwn(object, "feedback")){ object["feedback"].createdOn = (new Date()).toISOString(); }
+        //
+
         for (var prop in object){ settings[prop] = object[prop]; }
 
         let requestUpdate = objectStore.put(settings);
@@ -1736,7 +1753,6 @@ function updateSettingObject(params, callback){
         requestUpdate.onsuccess = (event) => {
             // Success - the data is updated!
             console.log("Settings updated successfully !");
-
             callback(object);
 
         };

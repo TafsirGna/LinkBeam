@@ -32,6 +32,7 @@ export const appParams = {
     PROFILE_ACTIVITY: "Profile Activity",
     PROFILE: "Profile",
     MY_ACCOUNT: "MyAccount",
+    FEEDBACK: "Feedback",
   },
 }
 
