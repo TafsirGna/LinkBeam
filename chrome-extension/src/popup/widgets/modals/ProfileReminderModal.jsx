@@ -8,7 +8,8 @@ import {
   startMessageListener, 
   messageParams, 
   ack, 
-  dbData 
+  dbData ,
+  appParams,
 } from "../../Local_library";
 
 export default class ProfileViewReminderModal extends React.Component{
@@ -42,7 +43,7 @@ export default class ProfileViewReminderModal extends React.Component{
     this.setState({validated: true}, () => {
 
       var reminder = {url: this.props.profile.url, text: this.state.reminder.text, date: this.state.reminder.date};
-      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.REMINDERS, reminder);
+      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: reminder } });
 
     });
 

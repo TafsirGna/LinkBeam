@@ -39,8 +39,12 @@ export default class KeywordView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS);
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS });
+    this.getKeywordList();
 
+  }
+
+  getKeywordList(){
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS });
   }
 
   onKeywordsDataReceived(message, sendResponse){
@@ -50,6 +54,7 @@ export default class KeywordView extends React.Component{
 
     // Displaying the alertBadge
     if (this.state.processingState.status == "YES"){
+      this.getKeywordList();
       switch(this.state.processingState.info){
         case "ADDING":{
           this.setState({alertBadgeContent: "Added !"});
@@ -77,7 +82,7 @@ export default class KeywordView extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
+        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
       },
       {

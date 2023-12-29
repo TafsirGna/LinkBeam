@@ -53,7 +53,7 @@ export default class KeywordListView extends React.Component{
 
   deleteKeyword(keyword){
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: keyword.name} } });
+    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: keyword.name } } });
 
   }
 

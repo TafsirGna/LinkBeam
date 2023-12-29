@@ -1023,65 +1023,42 @@ function add_search_data(searchData){
 
 }
 
-// Script for adding a reminder
-
-function addReminderObject(reminder){
-
-    reminder.createdOn = (new Date()).toISOString();
-    reminder.activated = true;
-
-    const objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
-    const request = objectStore.add(reminder);
-    request.onsuccess = (event) => {
-        console.log("New reminder added");
-        sendBackResponse(messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS, reminder);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when adding a reminder ", event);
-    };
-
-}
-
-// Script for adding a bookmark
-
-function addBookmarkObject(url){
-
-    var bookmark = {url: url, createdOn: (new Date()).toISOString()};
-
-    const objectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readwrite").objectStore(dbData.objectStoreNames.BOOKMARKS);
-    const request = objectStore.add(bookmark);
-    request.onsuccess = (event) => {
-        console.log("New bookmark added");
-        sendBackResponse(messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS, bookmark);
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when adding a bookmark");
-    };
-
-}
-
 // Script for adding any object instance
 
 function addObject(objectStoreName, objectData, callback){
 
+    var params = objectData;
+    var object = params.criteria.props;
+
     switch(objectStoreName){
+        case dbData.objectStoreNames.REMINDERS:{
+            object.createdOn = (new Date()).toISOString();
+            object.activated = true;
+            break;
+        }
+
         case dbData.objectStoreNames.BOOKMARKS:{
-            addBookmarkObject(objectData, callback);
+            object.createdOn = (new Date()).toISOString();
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            addKeywordObject(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.REMINDERS:{
-            addReminderObject(objectData, callback);
+            object.createdOn = (new Date()).toISOString();
             break;
         }
     }
+
+    const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
+    const request = objectStore.add(object);
+    request.onsuccess = (event) => {
+        console.log("New "+objectStoreName+" object added");
+        callback(object);
+    };
+
+    request.onerror = (event) => {
+        console.log("An error occured when adding an "+objectStoreName+" object :", event);
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
+    };
 
 }
 
@@ -1160,32 +1137,6 @@ function add_profile_data(profile, search){
     };
 }
 
-// Script for adding a new keyword
-
-function addKeywordObject(params, callback) {
-
-    var name = params.criteria.props.name;
-
-    const objectStore = db.transaction(dbData.objectStoreNames.KEYWORDS, "readwrite").objectStore(dbData.objectStoreNames.KEYWORDS);
-    
-    // setting the date of insertion
-    var keyword = {name: name, createdOn: new Date().toISOString()};
-    const request = objectStore.add(keyword);
-    request.onsuccess = (event) => {
-        // console.log("New keyword added")
-        callback(keyword);
-    };
-
-    request.onerror = function (event) {
-        console.log("An error when inserting the new keyword", event);
-
-        // let errorData = "An error occured most likely due to duplicated data. Check again before trying again !";
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-    };
-
-}
-
-
 
 
 
@@ -1232,37 +1183,37 @@ function deleteObject(objectStoreName, objectData, callback){
     var id = null, params = objectData;
     switch(objectStoreName){
         case dbData.objectStoreNames.REMINDERS:{
-            id =  (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
+            id = params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.KEYWORDS:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.name : params.criteria.props.name;
+            id = params.criteria.props.name;
             break;
         }
 
         case dbData.objectStoreNames.PROFILES:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
+            id = params.criteria.props.url;
             break;
         }
 
         case dbData.objectStoreNames.SEARCHES:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
+            id = params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.NOTIFICATIONS:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
+            id = params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.id : params.criteria.props.id;
+            id = params.criteria.props.id;
             break;
         }
 
         case dbData.objectStoreNames.BOOKMARKS:{
-            id = (Object.hasOwn(params.criteria.props, "object")) ? params.criteria.props.object.url : params.criteria.props.url;
+            id = params.criteria.props.url;
             break;
         }
     }
@@ -1881,7 +1832,7 @@ function processMessageEvent(message, sender, sendResponse){
 
             // providing the result
             addObject(message.data.objectStoreName, message.data.objectData, (object) => {
-                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
+                sendBackResponse(messageParams.responseHeaders.OBJECT_ADDED, message.data.objectStoreName, { context: message.data.objectData.context, object: object});
             });
             break;
         }
@@ -1915,11 +1866,6 @@ function processMessageEvent(message, sender, sendResponse){
                             sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS, { context: message.data.objectData.context, object: object});
                         }
                     );
-                }
-                else{
-                    getList(message.data.objectStoreName, { context: message.data.objectData.context }, (results) => {
-                        sendBackResponse(messageParams.responseHeaders.OBJECT_LIST, message.data.objectStoreName, {context: message.data.objectData.context, list: results});
-                    });
                 }
             });
             break;

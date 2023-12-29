@@ -134,7 +134,7 @@ export default class MainProfileView extends React.Component{
     if (this.props.profile.reminder){
       var response = confirm("Do you confirm the deletion of the reminder ?");
       if (response){
-        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, url: this.props.profile.url });
+        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, criteria: { props: {url: this.props.profile.url} } } );
       }
     } 
     else{
@@ -154,7 +154,7 @@ export default class MainProfileView extends React.Component{
       action = messageParams.requestHeaders.ADD_OBJECT;
     }
 
-    sendDatabaseActionMessage(action, dbData.objectStoreNames.BOOKMARKS, this.props.profile.url);
+    sendDatabaseActionMessage(action, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, criteria: { props: { url: this.props.profile.url } } });
 
   }
 

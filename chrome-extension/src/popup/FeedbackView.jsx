@@ -73,7 +73,6 @@ export default class FeedbackView extends React.Component{
 
     // setting the new value
     var settings = message.data.objectData.object;
-    console.log("~~~~~~~~~~~~~~~~~~~~~~ : ", settings);
 
     if (Object.hasOwn(settings, "feedback")){
       var feedback = settings.feedback;
