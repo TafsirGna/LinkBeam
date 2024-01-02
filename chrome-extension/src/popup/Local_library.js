@@ -201,8 +201,6 @@ export const computeExperienceTime = function(experiences, func){
 
   const recursiveCompute = function(refTime){
 
-    console.log("111 : ", refTime, expTime);
-
     var currentExperiences = [], futureExperiences = [];
     for (var experience of experiences){
 
@@ -216,8 +214,6 @@ export const computeExperienceTime = function(experiences, func){
       }
 
     }
-
-    console.log("222 : ", currentExperiences, futureExperiences);
 
     if (currentExperiences.length > 0){
       currentExperiences.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });

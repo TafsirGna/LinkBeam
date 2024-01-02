@@ -5,7 +5,8 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
-import ExperienceWordCloud from "./charts/ExperienceWordCloud";
+import JobTitlesWordCloudChart from "./charts/JobTitlesWordCloudChart";
+import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 
@@ -15,24 +16,48 @@ export default class ProfileExperienceSectionView extends React.Component{
     super(props);
     this.state = {
       doughnutChartsData: null,
-      experienceTime: 0,
+      wordCloudData: null,
     };
   }
 
   componentDidMount() {
 
-    var experienceTime = computeExperienceTime(this.props.profile.experience, {moment: moment});
-    this.setState({experienceTime: experienceTime});
-
     // setting doughnutChartsData
-    var doughnutChartsData = [];
+    var doughnutChartsData = [], 
+        wordCloudData = [];
     for (var experience of this.props.profile.experience){
-      doughnutChartsData.push({
-        label: dbDataSanitizer.companyName(experience.company),
-        value: ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / experienceTime) * 100,
-      });
+
+      var companyLabel = dbDataSanitizer.companyName(experience.company),
+          title = dbDataSanitizer.companyName(experience.title),
+          expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
+
+      var index = doughnutChartsData.map(e => e.label).indexOf(companyLabel);
+      if (index == -1){
+        doughnutChartsData.push({
+          label: companyLabel,
+          value: expTime,
+        });
+      }
+      else{
+        doughnutChartsData[index].value += expTime;
+      }
+
+      index = wordCloudData.map(e => e.title).indexOf(title);
+      // console.log("LLLLLLLLLLLLLLLL : ", title);
+      if (index == -1){
+        wordCloudData.push({
+          label: title,
+          value: expTime,
+        });
+      }
+      else{
+        wordCloudData[index].value += expTime;
+      }
     }
-    this.setState({doughnutChartsData: doughnutChartsData});
+    this.setState({
+      doughnutChartsData: doughnutChartsData, 
+      wordCloudData: wordCloudData,
+    });
 
   }
 
@@ -69,7 +94,8 @@ export default class ProfileExperienceSectionView extends React.Component{
     		</div>
 
         <div class="mt-2 mx-2">
-          <ExperienceWordCloud />
+          {/*<JobTitlesWordCloudChart data={this.state.wordCloudData}/>*/}
+          <JobTitlesBarChart data={this.state.wordCloudData}/>
         </div>
       </>
     );

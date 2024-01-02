@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { computeExperienceTime } from "../Local_library";
 import LanguageListModal from "./modals/LanguageListModal";
 import SunBurstOverviewChart from "./charts/SunBurstOverviewChart";
 import moment from 'moment';
@@ -22,8 +21,25 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   componentDidMount() {
 
-    var experienceTime = computeExperienceTime(this.props.profile.experience, {moment: moment});
-    experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
+    if (this.props.computedData.experienceTime){
+      this.setExperienceTime();
+    }
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.computedData != this.props.computedData){
+      if (prevProps.computedData.experienceTime != this.props.computedData.experienceTime){
+        this.setExperienceTime();
+      }
+    }
+
+  }
+
+  setExperienceTime(){
+
+    var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
 
     var y = Math.floor(experienceTime / 365);
     var m = Math.floor(experienceTime % 365 / 30);

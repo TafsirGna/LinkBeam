@@ -1493,44 +1493,6 @@ function updateObject(objectStoreName, params, callback){
 
 }
 
-// function deactivateTodayReminders(){
-
-//     let objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readwrite").objectStore(dbData.objectStoreNames.REMINDERS);
-//     let cursor = objectStore.openCursor(null, 'prev');
-//     cursor.onsuccess = function(event) {
-//         let cursor = event.target.result;
-        
-//         if(!cursor) {
-//             return;
-//         }
-
-//         let object = cursor.value;
-
-//         if ((new Date()).toISOString().split("T")[0] != object.date.split("T")[0]){
-//             cursor.continue();
-//         }
-
-//         object.activated = false;
-//         let requestUpdate = objectStore.put(object);
-//         requestUpdate.onerror = (event) => {
-//             // Do something with the error
-//             console.log("An error occured when updating reminder "+object.url+" !");
-//         };
-//         requestUpdate.onsuccess = (event) => {
-//             // Success - the data is updated!
-//             console.log("Reminder "+object.url+" update processed successfully !");
-//         };
-        
-//         cursor.continue();
-//     }
-
-//     cursor.onerror = (event) => {
-//         console.log("Failed to acquire the cursor !");
-//         sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-//     };
-
-// }
-
 // Script for setting the new date of data reset
 
 function updateSettingObject(params, callback){

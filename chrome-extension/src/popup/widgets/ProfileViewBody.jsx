@@ -1,7 +1,7 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
-import { appParams } from "../Local_library";
+import { appParams, computeExperienceTime } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
@@ -11,6 +11,7 @@ import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeC
 import eventBus from "../EventBus";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import RelationshipsChart from "./charts/RelationshipsChart";
+import moment from 'moment';
 
 
 export default class ProfileViewBody extends React.Component{
@@ -29,10 +30,23 @@ export default class ProfileViewBody extends React.Component{
       ],
       edExpTimeChartModalShow: false,
       suggestionsOffCanvasShow: true,
+
+      computedProfileData: {
+        experienceTime: null,
+      }
+
     };
   }
 
   componentDidMount() {
+
+    var experienceTime = computeExperienceTime(this.props.profile.experience, {moment: moment});
+
+    this.setState(prevState => {
+      let computedProfileData = Object.assign({}, prevState.computedProfileData);
+      computedProfileData.experienceTime = experienceTime;
+      return { computedProfileData };
+    });
 
     // Setting the data for the chart
     eventBus.on(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, (data) =>
@@ -87,7 +101,7 @@ export default class ProfileViewBody extends React.Component{
           <div class="card-body">
 
             { this.state.currentTabIndex == 0 && <div class="">
-                                                    <ProfileOverviewSectionView profile={this.props.profile} />
+                                                    <ProfileOverviewSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />
                                                 </div>}
 
             { this.state.currentTabIndex == 1 && <div class="">
@@ -95,7 +109,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 2 && <div class="">
-                                                  <ProfileExperienceSectionView profile={this.props.profile}/>
+                                                  <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">
