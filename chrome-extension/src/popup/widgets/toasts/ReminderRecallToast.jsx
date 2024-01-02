@@ -34,7 +34,7 @@ export default class ReminderRecallToast extends React.Component{
   onListModalHide(){
 
     this.setState({listModalShow: false}, () => {
-      deactivateTodayReminders();
+      deactivateTodayReminders(this.props.globalData.todayReminderList);
     });
 
   }

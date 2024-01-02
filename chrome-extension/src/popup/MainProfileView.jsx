@@ -13,9 +13,9 @@ export default class MainProfileView extends React.Component{
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onProfileDataReceived = this.onProfileDataReceived.bind(this);
-    this.onReminderAdditionDataReceived = this.onReminderAdditionDataReceived.bind(this);
+    this.onReminderDataReceived = this.onReminderDataReceived.bind(this);
     this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
-    this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
+    this.onBookmarkDataReceived = this.onBookmarkDataReceived.bind(this);
     this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
   }
 
@@ -37,19 +37,34 @@ export default class MainProfileView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    let profile = message.data.objectData;
+    let profile = message.data.objectData.object;
 
     // Setting the retrieved profile as a local variable
     if (!this.state.profile){
-      this.setState({profile: profile});
+      this.setState({profile: profile}, () => {
+
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: this.state.profile.url } }});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: this.state.profile.url } }});
+
+      });
     }
 
   }
 
-  onBookmarkAdditionDataReceived(message, sendResponse){
+  onBookmarkDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
+
+    var bookmark = message.data.objectData.object;
+
+    if (bookmark == undefined){ // No bookmark for this user
+      return;
+    }
+
+    if (bookmark.url != this.state.profile.url){
+      return;
+    }
 
     var bookmark = message.data.objectData;
     this.setState(prevState => {
@@ -60,12 +75,21 @@ export default class MainProfileView extends React.Component{
 
   }
 
-  onReminderAdditionDataReceived(message, sendResponse){
+  onReminderDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
 
-    var reminder = message.data.objectData;
+    var reminder = message.data.objectData.object;
+
+    if (reminder == undefined){ // No reminder for this user
+      return;
+    }
+    
+    if (reminder.url != this.state.profile.url){
+      return;
+    }
+
     this.setState(prevState => {
       let profile = Object.assign({}, prevState.profile);
       profile.reminder = reminder;
@@ -79,9 +103,14 @@ export default class MainProfileView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    var props = message.data.objectData.criteria.props;
+    if (props.url != this.state.profile.url){
+      return;
+    }
+
     this.setState(prevState => {
       let profile = Object.assign({}, prevState.profile);
-      profile.bookmark = null;
+      delete profile.bookmark;
       return { profile };
     });
 
@@ -92,9 +121,14 @@ export default class MainProfileView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    var props = message.data.objectData.criteria.props;
+    if (props.url != this.state.profile.url){
+      return;
+    }
+
     this.setState(prevState => {
       let profile = Object.assign({}, prevState.profile);
-      profile.reminder = null;
+      delete profile.reminder;
       return { profile };
     });
 
@@ -105,11 +139,19 @@ export default class MainProfileView extends React.Component{
     startMessageListener([
       {
         param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderAdditionDataReceived
+        callback: this.onReminderDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
+        callback: this.onReminderDataReceived
       },
       {
         param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkAdditionDataReceived
+        callback: this.onBookmarkDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
+        callback: this.onBookmarkDataReceived
       },
       {
         param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 

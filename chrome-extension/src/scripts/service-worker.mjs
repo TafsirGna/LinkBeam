@@ -287,14 +287,14 @@ function getAssociatedProfiles(objects, callback){
 
         var object  = objects[0];
         var params = {
-            context: "only_object",
+            // context: "",
             criteria: {
                 props: {
                     url: object.url,
                 }
             }
         }
-        getProfileObject(params, (profile) => {
+        getObject(dbData.objectStoreNames.PROFILES, params, (profile) => {
 
             object.profile = profile;
             results.push(object);
@@ -576,6 +576,12 @@ function isObjectActionable(object, objectStoreName, props){
                 case "fullName":{
                     var result = isFullNameConform(object, props[prop]);
                     if (!result){
+                        return null;
+                    }
+                    break;
+                } 
+                case "activated":{
+                    if (object[prop] != props[prop]){
                         return null;
                     }
                     break;
@@ -1180,50 +1186,15 @@ function deleteObject(objectStoreName, objectData, callback){
         return;
     }
 
-    var id = null, params = objectData;
-    switch(objectStoreName){
-        case dbData.objectStoreNames.REMINDERS:{
-            id = params.criteria.props.url;
-            break;
-        }
-
-        case dbData.objectStoreNames.KEYWORDS:{
-            id = params.criteria.props.name;
-            break;
-        }
-
-        case dbData.objectStoreNames.PROFILES:{
-            id = params.criteria.props.url;
-            break;
-        }
-
-        case dbData.objectStoreNames.SEARCHES:{
-            id = params.criteria.props.id;
-            break;
-        }
-
-        case dbData.objectStoreNames.NOTIFICATIONS:{
-            id = params.criteria.props.id;
-            break;
-        }
-
-        case dbData.objectStoreNames.PROFILE_ACTIVITY:{
-            id = params.criteria.props.id;
-            break;
-        }
-
-        case dbData.objectStoreNames.BOOKMARKS:{
-            id = params.criteria.props.url;
-            break;
-        }
-    }
+    var id = getIdFromParams(objectStoreName, objectData), params = objectData;
+    
 
     const objectStore = db.transaction(objectStoreName, "readwrite").objectStore(objectStoreName);
     let requestUpdate = objectStore.delete(id);
     requestUpdate.onsuccess = (event) => {
         // Success - the data is updated!
-        console.log(objectStoreName+" deleted successfully !");
-        callback();
+        console.log(objectStoreName+" deleted successfully ! ", params.criteria.props);
+        callback(params.criteria.props);
     };
     requestUpdate.onerror = (event) => {
         // Do something with the error
@@ -1242,8 +1213,6 @@ function deleteObjectStoreSpecificData(objectStoreNames, params, callback){
     }
 
     var objectStoreName = objectStoreNames[0];
-
-    console.log("obbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb : ", objectStoreName);
 
     deleteObjectSet(objectStoreName, params, () => {
         objectStoreNames.shift();
@@ -1328,138 +1297,76 @@ function deleteAllObjectStoresData(objectStoreNames, callback){
 
 
 
+function getIdFromParams(objectStoreName, params){
 
+    var id = null;
+    switch(objectStoreName){
+        case dbData.objectStoreNames.REMINDERS:{
+            id = params.criteria.props.url;
+            break;
+        }
+
+        case dbData.objectStoreNames.KEYWORDS:{
+            id = params.criteria.props.name;
+            break;
+        }
+
+        case dbData.objectStoreNames.PROFILES:{
+            id = params.criteria.props.url;
+            break;
+        }
+
+        case dbData.objectStoreNames.SEARCHES:{
+            id = params.criteria.props.id;
+            break;
+        }
+
+        case dbData.objectStoreNames.NOTIFICATIONS:{
+            id = params.criteria.props.id;
+            break;
+        }
+
+        case dbData.objectStoreNames.PROFILE_ACTIVITY:{
+            id = params.criteria.props.id;
+            break;
+        }
+
+        case dbData.objectStoreNames.BOOKMARKS:{
+            id = params.criteria.props.url;
+            break;
+        }
+    }
+
+    return id;
+
+}
 
 
 // Script for getting any object instance
 
 function getObject(objectStoreName, objectData, callback){
 
-    switch(objectStoreName){
-        case dbData.objectStoreNames.PROFILES:{
-            getProfileObject(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.SETTINGS:{
-            getSettingsData(objectData, callback);
-            break;
-        }
-
-        case dbData.objectStoreNames.REMINDERS:{
-            getReminderObject(objectData, callback);
-            break;
-        }
-
-        case "feedback": {
-            getFeedbackData(objectData, callback);
-            break;
-        }
+    if (objectStoreName == dbData.objectStoreNames.SETTINGS){
+        getSettingsData(objectData, callback);
+        return;
     }
 
-}
-
-// Script for getting a specific reminder object
-
-function getReminderObject(params){
-
-    var url = params.url;
-
-    let objectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS);
-    let request = objectStore.get(url);
+    var id = getIdFromParams(objectStoreName, objectData);
+    let objectStore = db.transaction(objectStoreName, "readonly").objectStore(objectStoreName);
+    let request = objectStore.get(id);
 
     request.onsuccess = (event) => {
-
-        let reminder = event.target.result;
-        sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.REMINDERS, reminder);
-        
+        let object = event.target.result;
+        callback(object);  
     };
 
     request.onerror = (event) => {
         // Handle errors!
-        console.log("An error occured when retrieving the reminder with url : ", profile.url);
+        console.log("An error occured when retrieving the object : ", objectStoreName, profile.url);
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
     };
 
-}
-
-// Script for getting processed data usually for statistics
-
-function getProcessedData(objectStoreName, objectData){
-
-    switch(objectStoreName){
-
-        case "views-timeline-chart":{
-            getViewsTimelineData(objectData);
-            break;
-        }
-
-    }
-
-}
-
-// Script for providing a profile given its url
-
-function getProfileObject(params, callback){
-
-    var url = params.criteria.props.url;
-
-    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readonly").objectStore(dbData.objectStoreNames.PROFILES);
-    let request = objectStore.get(url);
-
-    request.onsuccess = (event) => {
-
-        let profile = event.target.result;
-        profile.bookmark = null;
-        profile.reminder = null;
-
-        if (params.context.indexOf("only_object") != -1){
-            callback(profile);
-            return;
-        }
-
-        let bookmarkObjectStore = db.transaction(dbData.objectStoreNames.BOOKMARKS, "readonly").objectStore(dbData.objectStoreNames.BOOKMARKS);
-        let bookmarkRequest = bookmarkObjectStore.get(url);
-
-        bookmarkRequest.onsuccess = (event) => {
-
-            let bookmark = event.target.result;
-
-            if (bookmark != undefined){
-                profile.bookmark = bookmark;
-            }
-
-            let reminderObjectStore = db.transaction(dbData.objectStoreNames.REMINDERS, "readonly").objectStore(dbData.objectStoreNames.REMINDERS);
-            let reminderRequest = reminderObjectStore.get(url);
-
-            reminderRequest.onsuccess = (event) => {
-
-                let reminder = event.target.result;
-                if (reminder != undefined){
-                    profile.reminder = reminder;
-                }
-                sendBackResponse(messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.PROFILES, profile);
-
-            };
-
-            bookmarkRequest.onerror = (event) => {
-                // Handle errors!
-                console.log("An error occured when retrieving the reminder with url : ", url);
-            };
-
-        };
-
-        bookmarkRequest.onerror = (event) => {
-            // Handle errors!
-            console.log("An error occured when retrieving the bookmark with url : ", url);
-        };
-    };
-
-    request.onerror = (event) => {
-        // Handle errors!
-        console.log("An error occured when retrieving the profile with url : ", profile.url);
-    };
-
-}
+}  
 
 // Script for providing setting data
 
@@ -1620,57 +1527,6 @@ function updateObject(objectStoreName, params, callback){
 //     cursor.onerror = (event) => {
 //         console.log("Failed to acquire the cursor !");
 //         sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_PROCESS_FAILED, null);
-//     };
-
-// }
-
-// Script for updating a profile object
-
-// function updateProfileObject(params){
-
-//     let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-//     let request = objectStore.get(params.url);
-
-//     request.onsuccess = (event) => {
-//         console.log('Got profile object:', event.target.result);
-
-//         let profile = event.target.result;
-//         for (var i = 0; i < params.properties.length; i++){
-//             let property = params.properties[i];
-//             let value = params.values[i];
-
-//             profile[property] = value;
-
-//             /*switch(property){
-//                 case "": {
-//                     break;
-//                 }
-//             };*/
-//         }
-
-//         let updateRequest = objectStore.put(profile);
-//         updateRequest.onsuccess = (event) => {
-
-//             for (var i = 0; i < params.properties.length; i++){
-
-//                 let property = params.properties[i];
-//                 let value = params.values[i];
-//                 chrome.runtime.sendMessage({header: 'profile-updated', data: {url: params.url, property: property, value: value}}, (response) => {
-//                   console.log('Update profile response sent', response);
-//                 });
-
-//             }
-//         };
-
-//         updateRequest.onerror = (event) => {
-//             console.log("An error occured when updating the profile with url : ", params.url);
-//         };
-
-//     };
-
-//     request.onerror = (event) => {
-//         // Handle errors!
-//         console.log("An error occured when retrieving the profile with url : ", params.url);
 //     };
 
 // }
@@ -1853,8 +1709,8 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
 
             // providing the result
-            deleteObject(message.data.objectStoreName, message.data.objectData, () => {
-                sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, message.data.objectStoreName, { context: message.data.objectData.context } );
+            deleteObject(message.data.objectStoreName, message.data.objectData, (props) => {
+                sendBackResponse(messageParams.responseHeaders.OBJECT_DELETED, message.data.objectStoreName, { context: message.data.objectData.context, criteria: { props: props } } );
                 if (message.data.objectData.context == "data_deletion"){
                     getSettingsData({ 
                             context: message.data.objectData.context, 
@@ -1882,14 +1738,6 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
-        case messageParams.requestHeaders.GET_PROCESSED_DATA:{
-            // acknowledge receipt
-            ack(sendResponse);
-
-            // Saving the new notification setting state
-            getProcessedData(message.data.objectStoreName, message.data.objectData);
-            break;
-        }
         case messageParams.responseHeaders.CS_WEB_PAGE_DATA:{
             // acknowledge receipt
             ack(sendResponse);

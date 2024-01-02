@@ -91,7 +91,7 @@ export default class HomeView extends React.Component{
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
-        deactivateTodayReminders();
+        deactivateTodayReminders(this.props.globalData.todayReminderList);
         eventBus.dispatch(eventBus.RESET_TODAY_REMINDER_LIST, null);
       }
     )

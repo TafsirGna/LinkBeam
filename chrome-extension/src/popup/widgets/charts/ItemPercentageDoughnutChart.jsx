@@ -41,8 +41,8 @@ export default class ItemPercentageDoughnutChart extends React.Component{
         labels: [this.props.data.label, 'Others'],
         datasets: [
           {
-            label: '# of Votes',
-            data: [12, 19],
+            label: 'Percentage',
+            data: [this.props.data.value, (100 - this.props.data.value)],
             backgroundColor: [
               color.back,
               'rgba(237, 231, 225, 0.2)',

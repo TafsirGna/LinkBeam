@@ -160,9 +160,86 @@ export const dbDataSanitizer = {
 
   },
 
+  experienceDates: (expPeriod, func) => {
+
+    // handling date range
+    var dateRange = (expPeriod.split("\n")[1]).split(appParams.DATE_RANGE_SEPARATOR);
+    var startDateRange = dateRange[0], endDateRange = dateRange[1];
+
+    // starting with the start date
+    startDateRange = func.moment(startDateRange, "MMM YYYY");
+
+    // then the end date
+    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd'hui") != -1 ){ // contains Present 
+      endDateRange = func.moment();
+    }
+    else{
+      endDateRange = func.moment(endDateRange, "MMM YYYY");
+    }
+
+    return {startDateRange: startDateRange, endDateRange: endDateRange};
+
+  }
+
 };
 
-export const computeExperienceTime = function(experience){
+export const computeExperienceTime = function(experiences, func){
+
+  var expTime = 0;
+  var refTime = func.moment();
+
+  // Setting the refTime
+  for (var experience of experiences){
+
+    if (typeof experience.period == "string"){
+      experience.period = dbDataSanitizer.experienceDates(experience.period, func);
+    }
+
+    if (experience.period.startDateRange < refTime) { refTime = experience.period.startDateRange; }
+
+  }
+
+  const recursiveCompute = function(refTime){
+
+    console.log("111 : ", refTime, expTime);
+
+    var currentExperiences = [], futureExperiences = [];
+    for (var experience of experiences){
+
+      if (experience.period.startDateRange <= refTime){
+        if (experience.period.endDateRange > refTime){
+          currentExperiences.push(experience);
+        }
+      }
+      else{
+        futureExperiences.push(experience);
+      }
+
+    }
+
+    console.log("222 : ", currentExperiences, futureExperiences);
+
+    if (currentExperiences.length > 0){
+      currentExperiences.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });
+      var experience = currentExperiences[0];
+      expTime += (experience.period.endDateRange.toDate() - refTime.toDate());
+      return recursiveCompute(experience.period.endDateRange);
+    }
+    else{
+      if (futureExperiences.length > 0){
+        futureExperiences.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
+        var experience = futureExperiences[0];
+        expTime += (experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate());
+        return recursiveCompute(experience.period.endDateRange);
+      }
+      else{
+        return expTime;
+      }
+    }
+
+  }
+
+  return recursiveCompute(refTime);
 
 }
 
@@ -267,9 +344,11 @@ export const saveCanvas = (uuid, fileName, saveAs) => {
   })
 }
 
-export const deactivateTodayReminders = () => {
+export const deactivateTodayReminders = (reminderList) => {
 
-  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, {criteria: "today"/*, property: "activated", value: false*/});
+  reminderList.forEach((reminder) => {
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, { context: "App", criteria: { props: { object: reminder, activated: false} }});
+  });
 
 }
 

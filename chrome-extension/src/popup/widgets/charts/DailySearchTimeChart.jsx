@@ -52,7 +52,7 @@ const barOptions = {
     },
     title: {
       display: true,
-      text: 'Keywords Bar Chart',
+      text: 'Searches Bar Chart',
     },
   },
 };
@@ -84,7 +84,7 @@ export default class DailySearchTimeChart extends React.Component{
         results.push(object);
       }
       else{
-        results[index].time += search.timeCount.value;
+        results[index].time += (search.timeCount.value / 60);
       }
     }
 
@@ -95,7 +95,7 @@ export default class DailySearchTimeChart extends React.Component{
         labels: results.map((object) => object.label),
         datasets: [
           {
-            label: 'Dataset',
+            label: 'Time spent',
             data: results.map((object) => object.time),
             // data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
             backgroundColor: colors.borders,

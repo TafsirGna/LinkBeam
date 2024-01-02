@@ -7,6 +7,7 @@ import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import ExperienceWordCloud from "./charts/ExperienceWordCloud";
 import eventBus from "../EventBus";
+import moment from 'moment';
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -14,17 +15,21 @@ export default class ProfileExperienceSectionView extends React.Component{
     super(props);
     this.state = {
       doughnutChartsData: null,
+      experienceTime: 0,
     };
   }
 
   componentDidMount() {
+
+    var experienceTime = computeExperienceTime(this.props.profile.experience, {moment: moment});
+    this.setState({experienceTime: experienceTime});
 
     // setting doughnutChartsData
     var doughnutChartsData = [];
     for (var experience of this.props.profile.experience){
       doughnutChartsData.push({
         label: dbDataSanitizer.companyName(experience.company),
-        value: 0,
+        value: ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / experienceTime) * 100,
       });
     }
     this.setState({doughnutChartsData: doughnutChartsData});

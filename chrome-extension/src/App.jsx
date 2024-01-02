@@ -128,7 +128,7 @@ export default class App extends React.Component{
     }
 
     // Sending a request to know if some reminders are set for today
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, { context: "App", criteria: { props: { createdOn: (new Date()) } } });
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.REMINDERS, { context: "App", criteria: { props: { date: (new Date()).toISOString(), activated: true } } });
 
   }
 
@@ -145,7 +145,10 @@ export default class App extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
     
-    alert("Something went wrong when performing this operation!. Try again later." );
+    var response = confirm("Something went wrong when performing this operation!. Try again later. You can also help improve this app by reporting this error. Report ?" );
+    if (response){
+
+    }
 
   }
 
@@ -266,7 +269,7 @@ export default class App extends React.Component{
       // Setting the reminder list here too
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.todayReminderList = reminderList;
+        globalData.todayReminderList = reminderList.list;
         return { globalData };
       }); 
 

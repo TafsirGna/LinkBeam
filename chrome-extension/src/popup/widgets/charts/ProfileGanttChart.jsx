@@ -65,43 +65,8 @@ export default class ProfileGanttChart extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-
-      barOptions: {
-        indexAxis: 'y',
-        responsive: true,
-        scales: {
-          x: {
-            position: "top",
-            type: "time",
-            time: {
-                displayFormats: {
-                    quarter: 'MMM YYYY'
-                }
-            },
-            min: "1900-01-01",
-            max: "1900-01-01",
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          }
-        }
-      },
-
-      barData: {
-        // labels,
-        datasets: [
-          {
-            label: 'Dataset',
-            data: [],
-            borderWidth: 1,
-            borderSkipped: false,
-            borderRadius: 10,
-            barPercentage: .7,
-          },
-        ],
-      },
+      barOptions: null,
+      barData: null,
 
     };
   }
@@ -119,28 +84,11 @@ export default class ProfileGanttChart extends React.Component{
     for (var experience of this.props.profile.experience){
 
       var company = dbDataSanitizer.companyName(experience.company);
-
-      // handling date range
-      var dateRange = experience.period.replaceAll("\n", "").split(appParams.DATE_RANGE_SEPARATOR);
-      var startDateRange = dateRange[0], endDateRange = dateRange[1];
-
-      // starting with the start date
-      startDateRange = moment(startDateRange, "MMM YYYY");
-
+      
       // Setting the minDate object
-      if (startDateRange < minDate){
-        minDate = startDateRange;
-      }
-
-      // then the end date
-      if (endDateRange.indexOf("Present") > -1 || endDateRange.indexOf("aujourd'hui") > -1 ){ // contains Present 
-        endDateRange = moment().format("YYYY-MM-DD");
-      }
-      else{
-        endDateRange = moment(endDateRange, "MMM YYYY").format("YYYY-MM-DD");
-      }
-
-      data.push({x: [startDateRange.format("YYYY-MM-DD"), endDateRange], y: company});
+      if (experience.period.startDateRange < minDate){ minDate = experience.period.startDateRange; }
+      
+      data.push({x: [experience.period.startDateRange.format("YYYY-MM-DD"), experience.period.endDateRange.format("YYYY-MM-DD")], y: company});
 
     }
 
@@ -170,37 +118,41 @@ export default class ProfileGanttChart extends React.Component{
           }
         }
       }
+    }, () => {
+
+      var chartColors = getChartColors(data.length);
+
+      this.setState({barData: {
+        // labels,
+        datasets: [
+          {
+            label: 'Dataset',
+            data: data,
+            backgroundColor: chartColors.backgrounds,
+            borderColor: chartColors.borders,
+            borderWidth: 1,
+            borderSkipped: false,
+            borderRadius: 10,
+            barPercentage: .7,
+          },
+        ],
+      }});
+
     });
-
-    var chartColors = getChartColors(data.length);
-
-    this.setState({barData: {
-      // labels,
-      datasets: [
-        {
-          label: 'Dataset',
-          data: data,
-          backgroundColor: chartColors.backgrounds,
-          borderColor: chartColors.borders,
-          borderWidth: 1,
-          borderSkipped: false,
-          borderRadius: 10,
-          barPercentage: .7,
-        },
-      ],
-    }});
 
   }
 
   render(){
     return (
       <>
-        <div class="shadow border rounded border-1 p-2">
-          <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
-        </div>
-        <p class="small badge text-muted fst-italic p-0">
-          <span>Time chart of job experiences</span>
-        </p>
+        { this.state.barData && <div> 
+                                  <div class="shadow border rounded border-1 p-2">
+                                    <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
+                                  </div>
+                                  <p class="small badge text-muted fst-italic p-0">
+                                    <span>Time chart of job experiences</span>
+                                  </p>
+                                </div>}
       </>
     );
   }

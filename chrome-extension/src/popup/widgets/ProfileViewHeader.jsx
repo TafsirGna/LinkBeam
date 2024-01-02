@@ -73,7 +73,7 @@ export default class ProfileViewHeader extends React.Component{
                                 <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.handleImageModalShow(COVER_IMAGE_MODAL_TITLE)}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                               </OverlayTrigger>
                             </span>}
-              { this.props.profile.bookmark && <span>
+              { Object.hasOwn(this.props.profile, "bookmark") && <span>
                   ·
                   <OverlayTrigger
                     placement="bottom"
