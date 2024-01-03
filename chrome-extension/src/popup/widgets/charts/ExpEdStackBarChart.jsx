@@ -17,7 +17,9 @@ import { saveAs } from 'file-saver';
 import { 
   dbDataSanitizer,
   saveCanvas,
+  computeExperienceTime
 } from "../../Local_library";
+import moment from 'moment';
 
 ChartJS.register(
   CategoryScale,
@@ -97,13 +99,19 @@ export default class ExpEdStackBarChart extends React.Component{
       return;
     }
 
-    var labels = [];
+    var labels = [], expTimeData = [], edTimeData = [];
     for (var search of this.props.objects){
 
       var fullName = dbDataSanitizer.fullName(search.profile.fullName);
       var index = labels.indexOf(fullName);
       if (index == -1){
         labels.push(fullName);
+
+        console.log("%%%%%%%%%%%%%%%%%%%%%%%%% : ", search.profile.experience);
+        var experienceTime = computeExperienceTime(search.profile.experience, {moment: moment});
+        experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
+        var y = Math.floor(experienceTime / 365);
+        expTimeData.push(Number(y));
       }
 
     }
@@ -112,12 +120,12 @@ export default class ExpEdStackBarChart extends React.Component{
         labels,
         datasets: [
           {
-            label: 'Dataset 1',
-            data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+            label: 'Experience Time',
+            data: expTimeData, // labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
             backgroundColor: 'rgb(255, 99, 132)',
           },
           {
-            label: 'Dataset 2',
+            label: 'Education Time',
             data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
             backgroundColor: 'rgb(75, 192, 192)',
           },

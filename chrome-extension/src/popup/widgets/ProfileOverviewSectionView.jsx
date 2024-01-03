@@ -45,9 +45,9 @@ export default class ProfileOverviewSectionView extends React.Component{
     var m = Math.floor(experienceTime % 365 / 30);
     var d = Math.floor(experienceTime % 365 % 30);
 
-    var yDisplay = y > 0 ? y + (y == 1 ? " year, " : " years, ") : "";
-    var mDisplay = m > 0 ? m + (m == 1 ? " month, " : " months, ") : "";
-    var dDisplay = d > 0 ? d + (d == 1 ? " day" : " days") : "";
+    var yDisplay = y > 0 ? y + (y == 1 ? " year " : " years ") : "";
+    var mDisplay = m > 0 ? m + (m == 1 ? ", month, " : ", months ") : "";
+    var dDisplay = d > 0 ? d + (d == 1 ? ", day" : ", days") : "";
 
     this.setState({experienceTime: yDisplay + mDisplay/* + dDisplay*/});
 
@@ -90,7 +90,7 @@ export default class ProfileOverviewSectionView extends React.Component{
         </div>
 
         <div class="mt-4">
-          <SunBurstOverviewChart objects={[]} />
+          <SunBurstOverviewChart profile={this.props.profile} />
         </div>
 
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>

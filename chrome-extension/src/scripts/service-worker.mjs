@@ -997,38 +997,6 @@ function getObjectCount(objectStoreName, objectData, callback){
 
 
 
-
-// Script for adding a new search
-
-function add_search(search) {
-
-    console.log("Initiating insertion");
-
-    if (search.profile == undefined){
-        return;
-    }
-
-    add_profile_data(search.profile, search);
-
-}
-
-function add_search_data(searchData){
-
-    delete searchData.profile;
-    delete searchData.codeInjected;
-
-    const objectStore = db.transaction(dbData.objectStoreNames.SEARCHES, "readwrite").objectStore(dbData.objectStoreNames.SEARCHES);
-    const request = objectStore.add(searchData);
-    request.onsuccess = (event) => {
-        console.log("New search data added");
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when adding search data");
-    };
-
-}
-
 // Script for adding any object instance
 
 function addObject(objectStoreName, objectData, callback){
@@ -1106,41 +1074,6 @@ function updateProfileObject(profile, callback = null){
         console.log("An error occured when updating a new profile");
     };
 
-}
-
-// Script for adding the new profile
-
-function add_profile_data(profile, search){
-
-    // checking first that a profile with the same id doesn't exist yet
-    let objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-    let request = objectStore.get(profile.url);
-
-    request.onsuccess = (event) => {
-        console.log('Got profile:', event.target.result);
-
-        if (event.target.result){
-            
-            updateProfileObject(profile, () => {
-                // then add the search object
-                add_search_data(search);
-            });
-            
-        }
-        else{
-
-            addProfileObject(profile, () => {
-                add_search_data(search);
-            });
-
-        }
-        
-    };
-
-    request.onerror = (event) => {
-        // Handle errors!
-        console.log("An error occured when retrieving the profile with url : ", profile.url);
-    };
 }
 
 
@@ -1558,34 +1491,71 @@ function sendBackResponse(action, objectStoreName, data){
 
 // Script for processing linkedin data
 
-function processLinkedInData(linkedInData){
+function processProfileData(profileData){
 
-    console.log("linkedInData : ", linkedInData);
+    console.log("linkedInData : ", profileData);
 
     if (currentTabCheckContext == "popup"){
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, linkedInData);
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, profileData);
         // resetting the variable
         currentTabCheckContext = null;
         return;   
     }
 
-    if (!linkedInData){
+    if (!profileData){
         console.log("Not a valid linkedin page");
         return;
     }
+
+    delete profileData.codeInjected;
     
-    add_search(linkedInData);
+    var searchObject = profileData,
+        profileObject = {...profileData.profile};
+
+    delete searchObject.profile;
+    addObject(
+        dbData.objectStoreNames.SEARCHES, 
+        {context: "", criteria: { props: searchObject }},
+        () => {
+            getObject(
+                dbData.objectStoreNames.PROFILES,
+                { context: "", criteria: { props: { url: searchObject.url } } },
+                (profile) => {
+                    if (profile == undefined){
+                        addObject(
+                            dbData.objectStoreNames.PROFILES, 
+                            { context: "", criteria: { props: profileObject } },
+                            () => {
+                                // TODO
+                            }
+                        );
+                    }
+                    else{
+                        var props = profileObject;
+                        props["object"] = profile;
+                        updateObject(
+                            dbData.objectStoreNames.PROFILES, 
+                            { context: "", criteria: { props: props } },
+                            () => {
+                                // TODO
+                            }
+                        );
+                    }
+                }
+            );
+        }
+    );
 
     // checking that the setting allows the injection
-    getSettingsData(["notifications", "productID"], (results) => {
-        var notificationSetting = results[0];
+    // getSettingsData(["notifications", "productID"], (results) => {
+    //     var notificationSetting = results[0];
 
-        if (notificationSetting){
+    //     if (notificationSetting){
 
-            injectWebApp(results[1]);
+    //         injectWebApp(results[1]);
 
-        }
-    });
+    //     }
+    // });
 }
 
 // Script for injecting web app into the current tab
@@ -1705,8 +1675,8 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
             
             // Saving the new notification setting state
-            var linkedInData = message.data;
-            processLinkedInData(linkedInData);
+            var profileData = message.data;
+            processProfileData(profileData);
             break;
         }
         case messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION:{

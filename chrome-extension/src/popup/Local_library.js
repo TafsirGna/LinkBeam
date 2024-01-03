@@ -191,6 +191,7 @@ export const computeExperienceTime = function(experiences, func){
   // Setting the refTime
   for (var experience of experiences){
 
+    console.log("µµµµµµµµµµµµµµµµµµµ : ", experience);
     if (typeof experience.period == "string"){
       experience.period = dbDataSanitizer.experienceDates(experience.period, func);
     }

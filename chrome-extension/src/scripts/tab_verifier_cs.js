@@ -110,7 +110,8 @@ function extractData(){
 
   }
 
-  let newsFeed = [], newsFeedTagContainer = document.querySelector(".core-section-container.activities");
+  let newsFeed = [], 
+      newsFeedTagContainer = document.querySelector(".core-section-container.activities");
   if (newsFeedTagContainer){
 
     Array.from(document.querySelectorAll(".core-section-container.activities li")).forEach((activityLiTag) => {
@@ -120,6 +121,24 @@ function extractData(){
         title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
       };
       newsFeed.push(article);
+    });
+
+  }
+
+  // PEOPLE ALSO VIEWED SECTION
+  var profileSuggestions = null,
+      profileSuggestionsContainer = document.querySelector('.aside-section-container');
+  if (profileSuggestionsContainer){
+
+    profileSuggestions = [];
+    Array.from(document.querySelectorAll(".aside-section-container li")).forEach((suggestionLiTag) => {
+      var profileSuggestion = {
+        name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").innerHTML : null),
+        location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").innerHTML : null),
+        link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
+        picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").href : null),        ,
+      };
+      profileSuggestions.push(profileSuggestion);
     });
 
   }
@@ -148,6 +167,7 @@ function extractData(){
             certifications: {},
             newsFeed: newsFeed,
             languages: {},
+            profileSuggestions: profileSuggestions,
         },
     };
     
