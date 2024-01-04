@@ -5,24 +5,11 @@
 
 // Content script designed to make sure the active tab is a linkedin page
 
-function extractData(){
+function extractHeaderData(){
 
-  let pageData = {};
-
-  // Setting datetime and page's url
-  let dateTime = new Date().toISOString(),
-      pageUrl = (window.location.href.split("?"))[0];
-
-  // Setting profile fullName property
-  // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
   let fullName = null, fullNameTagContainer = document.querySelector(".top-card-layout__title");
   if (fullNameTagContainer){
     fullName = fullNameTagContainer.firstChild.textContent;
-  }
-
-  let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
-  if (userAboutTagContainer){
-    userAbout = userAboutTagContainer.textContent;
   }
 
   let avatar = null, avatarTagContainer = (document.querySelector(".top-card__profile-image"));
@@ -78,8 +65,53 @@ function extractData(){
 
   }
 
-  let experience = [], experienceSectionTag = document.querySelector(".core-section-container.experience");
+  return {
+    fullName: fullName,
+    avatar: avatar,
+    coverImage: coverImage,
+    title: title,
+    location: location,
+    nFollowers: nFollowers,
+    nConnections: nConnections,
+    company: company,
+    featuredSchool: featuredSchool,
+  };
+
+}
+
+function extractAboutData(){
+
+  let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
+  if (userAboutTagContainer){
+    userAbout = userAboutTagContainer.textContent;
+  }
+
+  return userAbout;
+
+}
+
+function extractEducationData(){
+
+  var educationData = null;
+
+  return educationData;
+
+}
+
+function extractLanguageData(){
+
+  var languageData = null;
+
+  return languageData;
+
+}
+
+function extractExperienceData(){
+
+  let experienceData = null, experienceSectionTag = document.querySelector(".core-section-container.experience");
   if (experienceSectionTag){
+
+    experienceData = [];
 
     Array.from((document.querySelector(".core-section-container.experience .experience__list")).children).forEach((experienceLiTag) => {
       
@@ -93,7 +125,7 @@ function extractData(){
           experienceItem["title"] = (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null);
           experienceItem["company"] = companyName;
           experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
-          experience.push(experienceItem);
+          experienceData.push(experienceItem);
         });
 
       }
@@ -102,7 +134,7 @@ function extractData(){
         experienceItem["title"] = (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null);
         experienceItem["company"] = (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null); 
         experienceItem["period"] = (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null);
-        experience.push(experienceItem);
+        experienceData.push(experienceItem);
 
       }
 
@@ -110,9 +142,17 @@ function extractData(){
 
   }
 
-  let newsFeed = [], 
-      newsFeedTagContainer = document.querySelector(".core-section-container.activities");
-  if (newsFeedTagContainer){
+  return experienceData;
+
+}
+
+function extractActivityData(){
+
+  let activityData = null, 
+      activityTagContainer = document.querySelector(".core-section-container.activities");
+  if (activityTagContainer){
+
+    activityData = [];
 
     Array.from(document.querySelectorAll(".core-section-container.activities li")).forEach((activityLiTag) => {
       var article = {
@@ -120,10 +160,32 @@ function extractData(){
         picture: (activityLiTag.querySelector("img") ? activityLiTag.querySelector("img").src : null),
         title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
       };
-      newsFeed.push(article);
+      activityData.push(article);
     });
 
   }
+
+  return activityData;
+
+}
+
+function extractCertificationData(){
+
+  var certificationData = null;
+
+  return certificationData;
+
+}
+
+function extractProjectData(){
+
+  var projectData = null;
+
+  return projectData;
+
+}
+
+function extractSuggestionsData(){
 
   // PEOPLE ALSO VIEWED SECTION
   var profileSuggestions = null,
@@ -131,59 +193,77 @@ function extractData(){
   if (profileSuggestionsContainer){
 
     profileSuggestions = [];
+
     Array.from(document.querySelectorAll(".aside-section-container li")).forEach((suggestionLiTag) => {
       var profileSuggestion = {
         name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").innerHTML : null),
         location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").innerHTML : null),
         link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
-        picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").href : null),        ,
+        picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").href : null),
       };
       profileSuggestions.push(profileSuggestion);
     });
 
   }
 
-  if (fullName){
+  return profileSuggestions;
+
+}
+
+function extractData(){
+
+  let pageData = null;
+
+  // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
+  var headerData = extractHeaderData();
+
+  if (headerData.fullName){
     
     pageData = {
-        date: dateTime,
-        url: pageUrl,
-        timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
-        profile: {
-            url: pageUrl,
-            fullName: fullName,
-            title: title,
-            info: userAbout,
-            avatar: avatar,
-            coverImage: coverImage,
-            date: dateTime,
-            nFollowers: nFollowers,
-            nConnections: nConnections, 
-            location: location,
-            featuredSchool: featuredSchool,
-            company: company,
-            education: {},
-            experience: experience,
-            certifications: {},
-            newsFeed: newsFeed,
-            languages: {},
-            profileSuggestions: profileSuggestions,
-        },
+
+      url: (window.location.href.split("?"))[0],
+      fullName: headerData.fullName,
+      title: headerData.title,
+      info: extractAboutData(),
+      avatar: headerData.avatar,
+      coverImage: headerData.coverImage,
+      // date: dateTime,
+      nFollowers: headerData.nFollowers,
+      nConnections: headerData.nConnections, 
+      location: headerData.location,
+      featuredSchool: headerData.featuredSchool,
+      company: headerData.company,
+      education: extractEducationData(),
+      experience: extractExperienceData(),
+      certifications: extractCertificationData(),
+      activity: extractActivityData(),
+      languages: extractLanguageData(),
+      projects: extractProjectData(),
+      profileSuggestions: extractSuggestionsData(),
+      //
+      codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
+
     };
     
   }
 
-
-  // checking if a linkbeam code has already been injected
-  // var linkBeamRootTag = document.getElementById(appParams.extShadowHostId);
-  var linkBeamRootTag = document.getElementById("linkBeamExtensionMainRoot");
-  pageData["codeInjected"] = (linkBeamRootTag ? true : false);
-
   return pageData;
 }
 
-var webPageData = extractData();
+const interval = setInterval(
+  () => {
 
-chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: webPageData}, (response) => {
-  console.log('linkedin-data response sent', response, webPageData);
-})
+    var webPageData = extractData();
+
+    chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: webPageData}, (response) => {
+      console.log('linkedin-data response sent', response, webPageData);
+    });
+
+    if (!webPageData){
+      clearInterval(interval);
+      return;
+    }
+
+  }, 
+  1000
+);

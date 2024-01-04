@@ -9,7 +9,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 
 let db = null,
-    tabID = null,
+    currentTabID = null,
     currentTabCheckContext = null;
 
 const dbName = "LinkBeamDB";
@@ -1508,11 +1508,16 @@ function processProfileData(profileData){
     }
 
     delete profileData.codeInjected;
+    var profileObject = profileData;
     
-    var searchObject = profileData,
-        profileObject = {...profileData.profile};
-
-    delete searchObject.profile;
+    var dateTime = new Date().toISOString();
+    var searchObject = {
+        date: dateTime,
+        url: profileObject.url,
+        timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
+    };
+    profileObject["date"] = dateTime;
+    
     addObject(
         dbData.objectStoreNames.SEARCHES, 
         {context: "", criteria: { props: searchObject }},
@@ -1563,7 +1568,7 @@ function processProfileData(profileData){
 function injectWebApp(productID){
 
     chrome.scripting.executeScript({
-        target: { tabId: tabID },
+        target: { tabId: currentTabID },
         files: ["./assets/web_ui.js"],
     }, () => {
 
@@ -1573,7 +1578,7 @@ function injectWebApp(productID){
             });  
         });*/
 
-        chrome.tabs.sendMessage(tabID, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: productID}}, (response) => {
+        chrome.tabs.sendMessage(currentTabID, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {productID: productID}}, (response) => {
           console.log('On load, productID sent', response);
         });  
 
@@ -1806,19 +1811,19 @@ function checkCurrentTab(tab, changeInfo){
     if (url && testTabUrl(url)) 
     {
 
-        if (currentTabCheckContext != "popup"){
-            startTimeCounter();
-        }
+        // if (currentTabCheckContext != "popup"){
+        //     startTimeCounter();
+        // }
 
-        if (tabIds.indexOf(tab.id) == -1){
-            tabIds.push(tab.id);
-        }
+        // if (tabIds.indexOf(tab.id) == -1){
+        //     tabIds.push(tab.id);
+        // }
 
         // Starting the verifier script in order to make sure this is a linkedin page
-        tabID = tab.id;
+        currentTabID = tab.id;
         chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            files: ["./assets/tab_verifier_cs.js"]
+            files: ["./assets/tab_verifier_cs.js"],
         });
 
     }

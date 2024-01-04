@@ -156,7 +156,23 @@ export const dbDataSanitizer = {
       endIndex--;
     }
 
-    return str.slice(startIndex, endIndex + 1);
+    str = str.slice(startIndex, endIndex + 1);
+    // // Wrapping up long strings
+    // str = str.split(" ");
+    // console.log("................. 1 : ", str);
+    // var index = 0;
+    // for (var index = 0; index < str.length; index++){
+    //   if (index > 0 && index % 3 == 0){
+    //     console.log(";;;;;;;;;;;;;;;;;;;;;;;; a : ", str[index], str[index].length);
+    //     str[index] += "\\n";
+    //     console.log(";;;;;;;;;;;;;;;;;;;;;;;; b : ", str[index], str[index].length);
+    //   }
+    // }
+    // console.log("................. 2 : ", str);
+    // str = str.join(" ");
+    // console.log("................. 3 : ", str);
+
+    return str;
 
   },
 
