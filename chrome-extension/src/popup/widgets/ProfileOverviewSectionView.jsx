@@ -89,9 +89,9 @@ export default class ProfileOverviewSectionView extends React.Component{
           </div>
         </div>
 
-        <div class="mt-4">
-          <SunBurstOverviewChart profile={this.props.profile} />
-        </div>
+        { this.props.profile.experience && <div class="mt-4">
+                  <SunBurstOverviewChart profile={this.props.profile} />
+                </div>}
 
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>
       </>

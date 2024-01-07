@@ -157,21 +157,6 @@ export const dbDataSanitizer = {
     }
 
     str = str.slice(startIndex, endIndex + 1);
-    // // Wrapping up long strings
-    // str = str.split(" ");
-    // console.log("................. 1 : ", str);
-    // var index = 0;
-    // for (var index = 0; index < str.length; index++){
-    //   if (index > 0 && index % 3 == 0){
-    //     console.log(";;;;;;;;;;;;;;;;;;;;;;;; a : ", str[index], str[index].length);
-    //     str[index] += "\\n";
-    //     console.log(";;;;;;;;;;;;;;;;;;;;;;;; b : ", str[index], str[index].length);
-    //   }
-    // }
-    // console.log("................. 2 : ", str);
-    // str = str.join(" ");
-    // console.log("................. 3 : ", str);
-
     return str;
 
   },
@@ -204,10 +189,17 @@ export const computeExperienceTime = function(experiences, func){
   var expTime = 0;
   var refTime = func.moment();
 
+  if (!experiences){
+    return 0;
+  }
+
   // Setting the refTime
   for (var experience of experiences){
 
-    console.log("µµµµµµµµµµµµµµµµµµµ : ", experience);
+    if (!experience.period){
+      continue;
+    }
+
     if (typeof experience.period == "string"){
       experience.period = dbDataSanitizer.experienceDates(experience.period, func);
     }
@@ -220,6 +212,10 @@ export const computeExperienceTime = function(experiences, func){
 
     var currentExperiences = [], futureExperiences = [];
     for (var experience of experiences){
+
+      if (!experience.period){
+        continue;
+      }
 
       if (experience.period.startDateRange <= refTime){
         if (experience.period.endDateRange > refTime){

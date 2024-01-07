@@ -1,6 +1,6 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
-import { OverlayTrigger } from "react-bootstrap";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { appParams, computeExperienceTime } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
@@ -90,7 +90,19 @@ export default class ProfileViewBody extends React.Component{
                                                     <li class="nav-item">
                                                     <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>
                                                       {tabTitle} 
-                                                      { index == 2 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>} 
+                                                      { index == 2 && <span>
+                                                                        { this.props.profile.experience && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                                                              {this.props.profile.experience.length}
+                                                                                                          </span>}
+                                                                        { !this.props.profile.experience && <span class="badge ms-1 text-warning px-0">
+                                                                                                              <OverlayTrigger
+                                                                                                                placement="top"
+                                                                                                                overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                              >
+                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                                                                                              </OverlayTrigger>
+                                                                                                            </span>}
+                                                                      </span>} 
                                                       {/*{ index == 3 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>} 
                                                                                                             { index == 4 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>} */}
                                                     </a>
@@ -109,7 +121,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 2 && <div class="">
-                                                  <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />
+                                                  { this.props.profile.experience && <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">

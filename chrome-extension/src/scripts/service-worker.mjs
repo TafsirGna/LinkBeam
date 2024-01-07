@@ -1036,46 +1036,6 @@ function addObject(objectStoreName, objectData, callback){
 
 }
 
-// Function for adding a profile object
-
-function addProfileObject(profile, callback = null){
-
-    // then adding the given profile into the database
-    const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-    const request = objectStore.add(profile);
-    request.onsuccess = (event) => {
-        console.log("New profile added");
-        if (callback){
-            callback();
-        }
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when adding a new profile");
-    };
-
-}
-
-// Function for updating a profile object
-
-function updateProfileObject(profile, callback = null){
-
-    // then adding the given profile into the database
-    const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-    const request = objectStore.put(profile);
-    request.onsuccess = (event) => {
-        console.log("Profile updated");
-        if (callback){
-            callback();
-        }
-    };
-
-    request.onerror = (event) => {
-        console.log("An error occured when updating a new profile");
-    };
-
-}
-
 
 
 
@@ -1491,63 +1451,139 @@ function sendBackResponse(action, objectStoreName, data){
 
 // Script for processing linkedin data
 
-function processProfileData(profileData){
+function processTabData(tabData){
 
-    console.log("linkedInData : ", profileData);
+    console.log("linkedInData : ", tabData);
 
     if (currentTabCheckContext == "popup"){
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, profileData);
+        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, tabData.profileData);
         // resetting the variable
         currentTabCheckContext = null;
         return;   
     }
 
-    if (!profileData){
+    if (!tabData.profileData){
         console.log("Not a valid linkedin page");
         return;
     }
 
-    delete profileData.codeInjected;
-    var profileObject = profileData;
-    
+    if (currentTabID != tabData.tabId){
+        return;
+    }
+
+    delete tabData.profileData.codeInjected;
+    var activityObjects = tabData.profileData.activity;
+    delete tabData.profileData.activity;
+
+    var profileObject = tabData.profileData;
     var dateTime = new Date().toISOString();
-    var searchObject = {
-        date: dateTime,
-        url: profileObject.url,
-        timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
-    };
-    profileObject["date"] = dateTime;
-    
-    addObject(
-        dbData.objectStoreNames.SEARCHES, 
-        {context: "", criteria: { props: searchObject }},
-        () => {
-            getObject(
-                dbData.objectStoreNames.PROFILES,
-                { context: "", criteria: { props: { url: searchObject.url } } },
-                (profile) => {
-                    if (profile == undefined){
-                        addObject(
-                            dbData.objectStoreNames.PROFILES, 
-                            { context: "", criteria: { props: profileObject } },
-                            () => {
-                                // TODO
-                            }
-                        );
+
+    const openNewTab = (profileObject) => {
+        // open new tab
+        chrome.tabs.create({
+          active: true,
+          url:  "/index.html?redirect_to=ProfileView&data="+profileObject.url,
+        }, null);
+    }
+
+    const addSearchObject = () => {
+        var searchObject = {
+            date: dateTime,
+            url: profileObject.url,
+            timeCount: { value: 0, lastCheck: (new Date()).toISOString() }, // { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
+            tabId: tabData.tabId,
+        };
+
+        addObject(
+            dbData.objectStoreNames.SEARCHES, 
+            {context: "", criteria: { props: searchObject }},
+            () => {
+                // open new tab
+                openNewTab(profileObject);
+            },
+        );
+    }
+
+    getObject(
+        dbData.objectStoreNames.PROFILES,
+        { context: "", criteria: { props: { url: profileObject.url } } },
+        (profile) => {
+            if (profile == undefined){
+
+                profileObject["date"] = dateTime;
+
+                addObject(
+                    dbData.objectStoreNames.PROFILES, 
+                    { context: "", criteria: { props: profileObject } },
+                    () => {
+
+                        addSearchObject();
+
+                        // saving the activity objects
+                        for (var activityObject of activityObjects){
+                            activityObject["date"] = dateTime;
+                            activityObject["url"] = profileObject.url;
+                            addObject(
+                                dbData.objectStoreNames.PROFILE_ACTIVITY, 
+                                {context: "", criteria: { props: activityObject }},
+                                () => {},
+                            );
+                        }
                     }
-                    else{
-                        var props = profileObject;
-                        props["object"] = profile;
-                        updateObject(
-                            dbData.objectStoreNames.PROFILES, 
-                            { context: "", criteria: { props: props } },
-                            () => {
-                                // TODO
-                            }
+                );
+            }
+            else{
+                var props = profileObject;
+                props["object"] = profile;
+                updateObject(
+                    dbData.objectStoreNames.PROFILES, 
+                    { context: "", criteria: { props: props } },
+                    () => {
+
+                        getList(
+                            dbData.objectStoreNames.SEARCHES,
+                            { context: "", criteria: { props: { url: profileObject.url } } },
+                            (searches) => {
+
+                                var search = null
+                                for (var object of searches){
+                                    if (object.tabId == tabData.tabId){
+                                        search = object;
+                                        break;
+                                    }
+                                }
+
+                                if (search == null){
+                                    addSearchObject();
+                                }
+                                else{
+                                    var timeCount = search.timeCount,
+                                        lastCheck = (new Date()).toISOString();
+                                    timeCount.value += (new Date(lastCheck) - (new Date(timeCount.lastCheck))) / 1000;
+                                    timeCount.lastCheck = lastCheck;
+                                    updateObject(
+                                        dbData.objectStoreNames.SEARCHES, 
+                                        { context: "", criteria: { props: { object: search, timeCount } } },
+                                        () => {},
+                                    );
+                                }
+
+                                // saving the activity objects
+
+                                getList(
+                                    dbData.objectStoreNames.PROFILE_ACTIVITY,
+                                    { context: "", criteria: { props: { url: profileObject.url } } },
+                                    (articles) => {
+
+                                    },
+                                );
+
+                            },
                         );
+
                     }
-                }
-            );
+                );
+            }
         }
     );
 
@@ -1680,8 +1716,8 @@ function processMessageEvent(message, sender, sendResponse){
             ack(sendResponse);
             
             // Saving the new notification setting state
-            var profileData = message.data;
-            processProfileData(profileData);
+            var tabData = message.data;
+            processTabData(tabData);
             break;
         }
         case messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION:{
@@ -1811,19 +1847,16 @@ function checkCurrentTab(tab, changeInfo){
     if (url && testTabUrl(url)) 
     {
 
-        // if (currentTabCheckContext != "popup"){
-        //     startTimeCounter();
-        // }
-
-        // if (tabIds.indexOf(tab.id) == -1){
-        //     tabIds.push(tab.id);
-        // }
-
         // Starting the verifier script in order to make sure this is a linkedin page
         currentTabID = tab.id;
         chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ["./assets/tab_verifier_cs.js"],
+                target: { tabId: tab.id },
+                files: ["./assets/tab_verifier_cs.js"],
+            }, 
+            () => {
+                chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {tabId: tab.id}}, (response) => {
+                console.log('tabId sent', response);
+            });  
         });
 
     }
@@ -1925,20 +1958,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onActivated.addListener(function(activeInfo) {
     // console.log(activeInfo.tabId);
 
-    if (tabIds.indexOf(activeInfo.tabId) >= 0){
-
-        startTimeCounter();
-
-    }
-    else{
-
-        // resetting the interval
-        if (timeCountInterval){
-            clearInterval(timeCountInterval);
-            timeCountInterval = null;
-        }
-
-    }
+    currentTabID = activeInfo.tabId;
 
 });
 
@@ -1947,10 +1967,26 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 // function testUpDb(){
 
 //     var params = { context: "" };
-//     getList(dbData.objectStoreNames.SEARCHES, params, (results) => {
-//         for (var search of results){
-//             params = { context: "", criteria: { props: { object: search, timeCount: { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() } } } };
-//             updateObject(dbData.objectStoreNames.SEARCHES, params, () => {});
+//     getList(dbData.objectStoreNames.PROFILES, params, (results) => {
+//         for (var profile of results){
+//             if (Object.hasOwn(profile, "activity")){
+//                 delete profile.activity;
+//             }
+
+//             if (Object.hasOwn(profile, "newsFeed")){
+//                 delete profile.newsFeed;
+//             }
+
+//             // then adding the given profile into the database
+//             const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+//             const request = objectStore.put(profile);
+//             request.onsuccess = (event) => {
+//                 console.log("Profile updated");
+//             };
+
+//             request.onerror = (event) => {
+//                 console.log("An error occured when updating a new profile");
+//             };
 //         }
 //     });
 

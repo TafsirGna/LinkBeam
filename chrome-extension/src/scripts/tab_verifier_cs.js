@@ -100,7 +100,22 @@ function extractEducationData(){
 
 function extractLanguageData(){
 
-  var languageData = null;
+  var sectionName = ".core-section-container.languages";
+
+  var languageData = null, languageSectionTag = document.querySelector(sectionName);
+  if (languageSectionTag){
+
+    languageData = [];
+
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((languageLiTag) => {
+      var language = {
+        name: (languageLiTag.querySelector("h3") ? languageLiTag.querySelector("h3").innerHTML : null),
+        proficiency: (languageLiTag.querySelector("h4") ? languageLiTag.querySelector("h4").innerHTML : null),
+      };
+      languageData.push(language);
+    });
+
+  }
 
   return languageData;
 
@@ -108,12 +123,14 @@ function extractLanguageData(){
 
 function extractExperienceData(){
 
-  let experienceData = null, experienceSectionTag = document.querySelector(".core-section-container.experience");
+  var sectionName = ".core-section-container.experience";
+
+  let experienceData = null, experienceSectionTag = document.querySelector(sectionName);
   if (experienceSectionTag){
 
     experienceData = [];
 
-    Array.from((document.querySelector(".core-section-container.experience .experience__list")).children).forEach((experienceLiTag) => {
+    Array.from((document.querySelector(sectionName + " .experience__list")).children).forEach((experienceLiTag) => {
       
       var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
       if (groupPositions){
@@ -148,16 +165,17 @@ function extractExperienceData(){
 
 function extractActivityData(){
 
+  var sectionName = ".core-section-container.activities";
   let activityData = null, 
-      activityTagContainer = document.querySelector(".core-section-container.activities");
+      activityTagContainer = document.querySelector(sectionName);
   if (activityTagContainer){
 
     activityData = [];
 
-    Array.from(document.querySelectorAll(".core-section-container.activities li")).forEach((activityLiTag) => {
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((activityLiTag) => {
       var article = {
         link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
-        picture: (activityLiTag.querySelector("img") ? activityLiTag.querySelector("img").src : null),
+        picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
         title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
       };
       activityData.push(article);
@@ -188,13 +206,15 @@ function extractProjectData(){
 function extractSuggestionsData(){
 
   // PEOPLE ALSO VIEWED SECTION
+  var sectionName = ".aside-section-container";
+
   var profileSuggestions = null,
-      profileSuggestionsContainer = document.querySelector('.aside-section-container');
+      profileSuggestionsContainer = document.querySelector(sectionName);
   if (profileSuggestionsContainer){
 
     profileSuggestions = [];
 
-    Array.from(document.querySelectorAll(".aside-section-container li")).forEach((suggestionLiTag) => {
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((suggestionLiTag) => {
       var profileSuggestion = {
         name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").innerHTML : null),
         location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").innerHTML : null),
@@ -248,22 +268,50 @@ function extractData(){
   }
 
   return pageData;
-}
+}     
 
-const interval = setInterval(
-  () => {
+let webPageData = null;
 
-    var webPageData = extractData();
+// Function for sending the page data
+const sendTabData = (data, tabId) => {
 
-    chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: webPageData}, (response) => {
-      console.log('linkedin-data response sent', response, webPageData);
-    });
+  chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: {profileData: data, tabId: tabId}}, (response) => {
+    console.log('linkedin-data response sent', response, data);
+  });
 
-    if (!webPageData){
-      clearInterval(interval);
-      return;
-    }
+};
 
-  }, 
-  1000
-);
+// Retrieving the tabId variable
+chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+
+  if (message.header == "web-ui-app-settings-data") /*messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA*/ {
+      // Acknowledge the message
+      sendResponse({
+          status: "ACK"
+      });
+
+      let tabId = message.data.tabId;
+
+      setInterval(
+        () => {
+
+          if (webPageData == {}){
+            sendTabData({}, tabId);
+            return;
+          }
+
+          var data = extractData();
+          if (data == webPageData){
+            data = {};
+          }
+          sendTabData(data, tabId);
+          webPageData = data;
+
+        }, 
+        3000
+      );
+
+  }
+
+});
+

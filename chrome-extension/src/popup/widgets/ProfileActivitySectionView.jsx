@@ -21,7 +21,7 @@ export default class ProfileActivitySectionView extends React.Component{
   render(){
     return (
       <>
-        <ProfileActivityListView/>
+        <ProfileActivityListView objects="" variant="timeline" showPost="" />
       </>
     );
   }

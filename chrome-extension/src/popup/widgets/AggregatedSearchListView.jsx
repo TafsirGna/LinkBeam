@@ -66,7 +66,7 @@ export default class AggregatedSearchListView extends React.Component{
                 <div class="list-group m-1 shadow-sm small">
                   {
                     this.props.objects.map((search) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                <img src={default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                <img src={search.profile.avatar ? search.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
                                     <div class="d-flex gap-2 align-items-center">
