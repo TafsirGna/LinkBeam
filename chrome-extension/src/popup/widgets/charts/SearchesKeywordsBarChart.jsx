@@ -53,12 +53,9 @@ export default class SearchesKeywordsBarChart extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
-			barLabels: null,
 			barData: null,
       uuid: uuidv4(),
 		};
-
-    this.setChartLabels = this.setChartLabels.bind(this);
     this.setChartData = this.setChartData.bind(this);
 
 	}
@@ -76,7 +73,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
     );
 
     if (this.props.globalData.keywordList){
-      this.setChartLabels();
+      this.setChartData();
     }
     else{
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.STATISTICS});
@@ -92,19 +89,9 @@ export default class SearchesKeywordsBarChart extends React.Component{
 
     if (prevProps.globalData != this.props.globalData){
       if (prevProps.globalData.keywordList != this.props.globalData.keywordList){
-        this.setChartLabels();
+        this.setChartData();
       }
     }
-
-  }
-
-  setChartLabels(){
-
-    let labels = [];
-    for (var keyword of this.props.globalData.keywordList){ labels.push(keyword.name); }
-    
-    // setting the new value
-    this.setState({barLabels: labels}, () => {this.setChartData()});
 
   }
 
@@ -116,20 +103,30 @@ export default class SearchesKeywordsBarChart extends React.Component{
 
 	setChartData(){
 
-    if (!this.state.barLabels){
+    if (!this.props.objects){
       return;
     }
 
-  	let labels = this.state.barLabels;
+    var barData = [];
+    for (var keyword of this.props.globalData.keywordList){ 
+      var profiles = [];
+      for (var search of this.props.objects){
+        console.log("%%%%%%%%%%%%%% : ", JSON.stringify(search.profile).toLowerCase());
+        if (JSON.stringify(search.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1){
+          profiles.push(search.profile);
+        }
+      }
+      barData.push({label: keyword.name, profiles: profiles}); 
+    }
 
-  	var colors = getChartColors(labels.length);
+  	var colors = getChartColors(barData.length);
 
   	this.setState({barData: {
-    		labels,
+    		labels: barData.map((obj) => obj.label),
     		datasets: [
 	        {
 	          label: 'Dataset',
-	          data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
+	          data: barData.map((obj) => obj.profiles.length),
 	          backgroundColor: colors.backgrounds,
             borderColor: colors.borders,
             borderWidth: 2,

@@ -38,21 +38,22 @@ export default class SunBurstOverviewChart extends React.Component{
 
       var company = dbDataSanitizer.companyName(experience.company), 
           title = dbDataSanitizer.companyName(experience.title);
-      var itemIndex = expChildren.map(e => e.name).indexOf(company);
+      var itemIndex = expChildren.map(e => e.fullName).indexOf(company);
       if (itemIndex == -1){
         expChildren.push({
-          "name": company,
-          "children": [{"name": title, "value": 3938}],
+          "fullName": company,
+          "name": company.slice(0, 30) + "...",
+          "children": [{"name": (title.slice(0, 30) + "..."), "value": 3938}],
         });
       }
       else{
-        expChildren[itemIndex].children.push({"name": title, "value": 3938});
+        expChildren[itemIndex].children.push({"name": (title.slice(0, 30) + "..."), "value": 3938});
       }
 
     }
 
     var data = {"name":"profile","children":[{"name":"experience","children": expChildren}, {"name":"education","children": edChildren}]};
-    console.log("µµµµµµµµµµµµµµµµµµµµµµµµ : ", data);
+    // console.log("µµµµµµµµµµµµµµµµµµµµµµµµ : ", data);
     this.setState({data: data}, () => {
       this.drawChart();
     });

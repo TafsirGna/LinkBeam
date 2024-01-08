@@ -100,6 +100,11 @@ export default class KeywordView extends React.Component{
       return;
     }
 
+    if (this.state.keyword.indexOf(" ") != -1){
+      alert("The keyword should consist of only one word !");
+      return;
+    }
+
     if (!this.checkInputKeyword()){
       console.log("Check of input returned false");
       return;

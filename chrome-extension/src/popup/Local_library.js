@@ -184,6 +184,12 @@ export const dbDataSanitizer = {
 
 };
 
+// export const isKeywordValid = (keyword) => {
+
+//   const chars = [" ", "'", '"', "(", ]
+
+// }
+
 export const computeExperienceTime = function(experiences, func){
 
   var expTime = 0;
