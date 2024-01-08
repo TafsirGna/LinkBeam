@@ -103,8 +103,9 @@ export default class ProfileViewBody extends React.Component{
                                                                                                               </OverlayTrigger>
                                                                                                             </span>}
                                                                       </span>} 
-                                                      {/*{ index == 3 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>} 
-                                                                                                            { index == 4 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>} */}
+                                                      {/*{ index == 3 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>}*/}
+                                                      { index == 4 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.activity ? this.props.profile.activity.length : ""}</span>}
+                                                      { index == 5 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.profileSuggestions ? this.props.profile.profileSuggestions.length : ""}</span>}
                                                     </a>
                                                   </li>
                                                   ))}
@@ -125,7 +126,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">
-                                                  <ProfileActivitySectionView profile={this.props.profile}/>
+                                                  <ProfileActivitySectionView profile={this.props.profile} />
                                                 </div>}
 
             { this.state.currentTabIndex == 5 && <div class="">

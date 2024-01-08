@@ -43,7 +43,6 @@ export default class ProfileExperienceSectionView extends React.Component{
       }
 
       index = wordCloudData.map(e => e.title).indexOf(title);
-      // console.log("LLLLLLLLLLLLLLLL : ", title);
       if (index == -1){
         wordCloudData.push({
           label: title,

@@ -1,4 +1,4 @@
-/*import './ProfileView.css'*/
+/*import './MainProfileView.css'*/
 import React from 'react';
 import CustomToast from "./toasts/CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
@@ -103,10 +103,11 @@ export default class MainProfileView extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkDeletionDataReceived
-      }
+      },
     ]);
     
   }
+
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});

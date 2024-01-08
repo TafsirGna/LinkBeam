@@ -48,8 +48,9 @@ export default class ProfileActivityView extends React.Component{
 					    </div>
 						</div>*/}
 
-
-						<ProfileActivityListView objects={this.props.globalData.profileActivityList} showPost={this.handleOffCanvasShow} variant="list"/> 
+				 		<div class="mt-3">
+							<ProfileActivityListView objects={this.props.globalData.profileActivityList} showPost={this.handleOffCanvasShow} variant="list"/> 
+						</div>
 
 	          <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
 	            <Offcanvas.Header closeButton>

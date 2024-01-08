@@ -2,6 +2,7 @@ import '../assets/css/ProfileActivityListView.css';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import moment from 'moment';
 
 export default class ProfileActivityListView extends React.Component{
 
@@ -39,7 +40,7 @@ export default class ProfileActivityListView extends React.Component{
                                                 <h6 class="mb-0">List group item heading</h6>
                                                 <p class="mb-0 opacity-75">Some placeholder content in a paragraph.</p>
                                               </div>
-                                              <small class="opacity-50 text-nowrap">now</small>
+                                              <small class="opacity-50 text-nowrap">{moment(profileActivityObject.date, moment.ISO_8601).fromNow()}</small>
                                             </div>
                                           </a>))} 
                                         </div>}
@@ -52,7 +53,7 @@ export default class ProfileActivityListView extends React.Component{
                                               </span>
 
                                               <h5 class="fw-bold">Our company starts its operations</h5>
-                                              <p class="text-muted mb-2 fw-bold">11 March 2020</p>
+                                              <p class="text-muted mb-2 fw-bold">{moment(profileActivityObject.date, moment.ISO_8601).fromNow()}</p>
                                               <p class="text-muted">
                                                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit
                                                 necessitatibus adipisci, ad alias, voluptate pariatur officia
