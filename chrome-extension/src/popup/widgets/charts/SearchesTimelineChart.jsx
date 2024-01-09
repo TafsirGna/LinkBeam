@@ -193,7 +193,7 @@ export default class SearchesTimelineChart extends React.Component{
 				    backgroundColor: colorDataset1.borders,
 				  },
 				  {
-				    label: 'Time spent (seconds)',
+				    label: 'Time spent (minutes)',
 				    fill: true,
 				    data: results.valuesDataset2,
 				    borderColor: colorDataset2.borders,

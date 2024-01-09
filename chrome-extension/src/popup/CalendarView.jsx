@@ -333,7 +333,7 @@ export default class CalendarView extends React.Component{
 
                   { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)} variant="timeline"/>}
 
                   { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart objects={this.getDayObjectList(this.state.monthSearchList)}/>}
 

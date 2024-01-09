@@ -830,9 +830,19 @@ function getProfileActivityList(params, callback) {
         getFilteredList(params, dbData.objectStoreNames.PROFILE_ACTIVITY, callback);
     }
     else{
+
+        var allCallback = callback;
+        if (["data_export", "data_deletion"].indexOf(params.context) == -1){
+            allCallback = (objects) => {
+                getAssociatedProfiles(objects, callback);
+            }
+        }
+
         getObjectStoreAllData(dbData.objectStoreNames.PROFILE_ACTIVITY, (results) => {
-            callback(results);
+            results.sort((a,b) => (new Date(b.date)) - (new Date(a.date)));
+            allCallback(results);
         });
+        
     }
 }
 
@@ -1523,6 +1533,7 @@ function processTabData(tabData){
                         for (var activityObject of activityObjects){
                             activityObject["date"] = dateTime;
                             activityObject["url"] = profileObject.url;
+                            activityObject["publishedOn"] = null;
                             addObject(
                                 dbData.objectStoreNames.PROFILE_ACTIVITY, 
                                 {context: "", criteria: { props: activityObject }},

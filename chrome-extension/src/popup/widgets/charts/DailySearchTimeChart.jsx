@@ -95,7 +95,7 @@ export default class DailySearchTimeChart extends React.Component{
         labels: results.map((object) => object.label),
         datasets: [
           {
-            label: 'Time spent',
+            label: 'Time spent (minutes)',
             data: results.map((object) => object.time),
             // data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
             backgroundColor: colors.borders,
