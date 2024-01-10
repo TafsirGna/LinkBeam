@@ -161,6 +161,12 @@ export const dbDataSanitizer = {
 
   },
 
+  suggestionName: function(str){
+
+    return str.split("\n")[2];
+
+  },
+
   experienceDates: (expPeriod, func) => {
 
     // handling date range
@@ -183,12 +189,6 @@ export const dbDataSanitizer = {
   }
 
 };
-
-// export const isKeywordValid = (keyword) => {
-
-//   const chars = [" ", "'", '"', "(", ]
-
-// }
 
 export const computeExperienceTime = function(experiences, func){
 

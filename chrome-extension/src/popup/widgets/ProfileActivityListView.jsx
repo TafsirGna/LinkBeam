@@ -39,10 +39,8 @@ export default class ProfileActivityListView extends React.Component{
                                           {this.props.objects.map((profileActivityObject) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" onClick={() => {this.props.showPost(profileActivityObject);}}>
                                             <div class="d-flex gap-2 w-100 justify-content-between">
                                               <div>
-                                                {/*<h6 class="mb-0">List group item heading</h6>*/}
                                                 <p class="mb-1">
-                                                  {/*<span class="px-2 border rounded shadow text-muted">{profileActivityObject.profile.fullName}<span>*/}
-                                                  <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                  <span class="badge align-items-center p-1 pe-3 text-secondary-emphasis rounded-pill">
                                                     <img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>
                                                     {profileActivityObject.profile.fullName}
                                                     <OverlayTrigger
@@ -81,7 +79,7 @@ export default class ProfileActivityListView extends React.Component{
                                               </h5>
                                               <p class="text-muted mb-2 fw-bold">
                                                 <span>
-                                                  {moment(profileActivityObject.date, moment.ISO_8601).fromNow()}
+                                                  Added {moment(profileActivityObject.date, moment.ISO_8601).fromNow()}
                                                 </span>
                                                 <a class="border shadow-sm rounded p-1 mx-2" href={profileActivityObject.link}>
                                                   <span title="See post on linkedin">
@@ -89,7 +87,7 @@ export default class ProfileActivityListView extends React.Component{
                                                   </span>
                                                 </a>
                                               </p>
-                                              <p class="text-muted">
+                                              <p class="text-muted border rounded p-2 shadow-sm">
                                                 {profileActivityObject.title}
                                               </p>
                                             </li>))} 

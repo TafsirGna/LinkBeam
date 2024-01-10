@@ -4,7 +4,7 @@ import moment from 'moment';
 import { Link } from 'react-router-dom';
 import hourglass_icon from '../../assets/hourglass_icon.png';
 import search_icon from '../../assets/search_icon.png';
-import news_icon from '../../assets/news_icon.png';
+import news_icon from '../../assets/newspaper_icon.png';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   sendDatabaseActionMessage,

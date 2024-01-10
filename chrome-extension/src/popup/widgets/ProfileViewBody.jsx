@@ -130,7 +130,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 5 && <div class="">
-                                                  <RelationshipsChart objects={[]} />
+                                                  <RelationshipsChart objects={[this.props.profile]} />
 
                                                   <Offcanvas show={this.state.suggestionsOffCanvasShow} onHide={this.handleSuggestionsOffCanvasClose}>
                                                     <Offcanvas.Header closeButton>

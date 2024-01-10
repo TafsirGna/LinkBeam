@@ -70,7 +70,7 @@ export default class ChartExpansionView extends React.Component{
                       <ExpEdStackBarChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 6 && 
-                      <RelationshipsChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <RelationshipsChart objects={this.state.periodSearches.map((search) => search.profile)} carrouselIndex={this.state.carrouselActiveItemIndex} />}
     
             </div>
           </div>

@@ -111,6 +111,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
     for (var keyword of this.props.globalData.keywordList){ 
       var profiles = [];
       for (var search of this.props.objects){
+        console.log('++++++++++++++++ : ', search)
         console.log("%%%%%%%%%%%%%% : ", JSON.stringify(search.profile).toLowerCase());
         if (JSON.stringify(search.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1){
           profiles.push(search.profile);
