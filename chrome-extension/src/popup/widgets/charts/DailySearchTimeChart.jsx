@@ -84,7 +84,7 @@ export default class DailySearchTimeChart extends React.Component{
         results.push(object);
       }
       else{
-        results[index].time += (search.timeCount.value / 60);
+        results[index].time += (search.timeCount / 60);
       }
     }
 

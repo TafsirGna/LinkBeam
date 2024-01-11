@@ -25,7 +25,6 @@ const settingData = [{
     productID: uuidv4(), 
     currentPageTitle: appParams.COMPONENT_CONTEXT_NAMES.HOME,
     userIcon: "default",
-    timeCount: {value: 0, lastCheck: (new Date()).toISOString()},
     autoTabOpening: true,
 }];
 
@@ -97,12 +96,6 @@ function createDatabase(context) {
             console.log("ObjectStore 'Bookmark' created.");
         }
 
-        // Profile_Activity object store
-        let profileActivityObjectStore = db.createObjectStore(dbData.objectStoreNames.PROFILE_ACTIVITY, { keyPath: "id", autoIncrement: true });
-
-        profileActivityObjectStore.transaction.oncomplete = function (event) {
-            console.log("ObjectStore 'Profile Activity' created.");
-        }
     }
 
     request.onsuccess = function (event) {
@@ -1415,7 +1408,13 @@ function updateSettingObject(params, callback){
         if (Object.hasOwn(object, "feedback")){ object["feedback"].createdOn = (new Date()).toISOString(); }
         //
 
-        for (var prop in object){ settings[prop] = object[prop]; }
+        for (var prop in object){ 
+            if (object[prop] == undefined){
+                delete settings[prop];
+                continue;
+            }
+            settings[prop] = object[prop]; 
+        }
 
         let requestUpdate = objectStore.put(settings);
         requestUpdate.onerror = (event) => {
@@ -1482,8 +1481,6 @@ function processTabData(tabData){
     }
 
     delete tabData.profileData.codeInjected;
-    var activityObjects = tabData.profileData.activity;
-    delete tabData.profileData.activity;
 
     var profileObject = tabData.profileData;
     var dateTime = new Date().toISOString();
@@ -1500,7 +1497,7 @@ function processTabData(tabData){
         var searchObject = {
             date: dateTime,
             url: profileObject.url,
-            timeCount: { value: 0, lastCheck: (new Date()).toISOString() }, // { value: (Math.random() * (180 - 30) + 30)/*.toFixed(1)*/, lastCheck: (new Date()).toISOString() },
+            timeCount: 0, 
             tabId: tabData.tabId,
         };
 
@@ -1526,20 +1523,7 @@ function processTabData(tabData){
                     dbData.objectStoreNames.PROFILES, 
                     { context: "", criteria: { props: profileObject } },
                     () => {
-
                         addSearchObject();
-
-                        // saving the activity objects
-                        for (var activityObject of activityObjects){
-                            activityObject["date"] = dateTime;
-                            activityObject["url"] = profileObject.url;
-                            activityObject["publishedOn"] = null;
-                            addObject(
-                                dbData.objectStoreNames.PROFILE_ACTIVITY, 
-                                {context: "", criteria: { props: activityObject }},
-                                () => {},
-                            );
-                        }
                     }
                 );
             }
@@ -1568,26 +1552,13 @@ function processTabData(tabData){
                                     addSearchObject();
                                 }
                                 else{
-                                    var timeCount = search.timeCount,
-                                        lastCheck = (new Date()).toISOString();
-                                    timeCount.value += (new Date(lastCheck) - (new Date(timeCount.lastCheck))) / 1000;
-                                    timeCount.lastCheck = lastCheck;
+                                    var timeCount = search.timeCount + 3;
                                     updateObject(
                                         dbData.objectStoreNames.SEARCHES, 
-                                        { context: "", criteria: { props: { object: search, timeCount } } },
+                                        { context: "", criteria: { props: { object: search, timeCount: timeCount } } },
                                         () => {},
                                     );
                                 }
-
-                                // saving the activity objects
-
-                                getList(
-                                    dbData.objectStoreNames.PROFILE_ACTIVITY,
-                                    { context: "", criteria: { props: { url: profileObject.url } } },
-                                    (articles) => {
-
-                                    },
-                                );
 
                             },
                         );
@@ -1805,51 +1776,6 @@ function processTabEvent(tabId, changeInfo, tab){
 
 };
 
-function timeCountIntervalFunction(){
-
-    getSettingsData(["timeCount"], (results) => {
-        var timeCount = results[0],
-            lastCheck = new Date();
-        timeCount.value += (lastCheck - (new Date(timeCount.lastCheck))) / 1000;
-        timeCount.lastCheck = lastCheck;
-        updateSettingObject({
-            context: "App",
-            criteria: {
-                props: {
-                    timeCount: timeCount,
-                }
-            }
-        }, (object) => {
-
-        });
-    });
-
-} 
-
-// Script for starting the time counter
-function startTimeCounter(){
-
-    // start counting the time spent on the tab
-    getSettingsData(["timeCount"], (results) => {
-        var timeCount = results[0];
-        timeCount.lastCheck = (new Date()).toISOString();
-        updateSettingObject({
-            context: "App",
-            criteria: {
-                props: {
-                    timeCount: timeCount,
-                }
-            }
-        }, (object) => {
-
-            timeCountInterval = setInterval(timeCountIntervalFunction, appParams.TIMER_VALUE);
-
-        });
-
-    });
-
-}
-
 
 function checkCurrentTab(tab, changeInfo){
 
@@ -1977,28 +1903,27 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
 // function testUpDb(){
 
-//     var params = { context: "" };
-//     getList(dbData.objectStoreNames.PROFILES, params, (results) => {
-//         for (var profile of results){
-//             if (Object.hasOwn(profile, "activity")){
-//                 delete profile.activity;
-//             }
 
-//             if (Object.hasOwn(profile, "newsFeed")){
-//                 delete profile.newsFeed;
+//     getList(dbData.objectStoreNames.SEARCHES, { context: "" }, (results) => {
+//         for (var search of results){
+            
+//             if (search.timeCount == undefined){
+//                 search.timeCount = (Math.random() * (180 - 30) + 30);
 //             }
 
 //             // then adding the given profile into the database
-//             const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-//             const request = objectStore.put(profile);
+//             const objectStore = db.transaction(dbData.objectStoreNames.SEARCHES, "readwrite").objectStore(dbData.objectStoreNames.SEARCHES);
+//             const request = objectStore.put(search);
 //             request.onsuccess = (event) => {
-//                 console.log("Profile updated");
+//                 console.log("Search updated");
 //             };
 
 //             request.onerror = (event) => {
-//                 console.log("An error occured when updating a new profile");
+//                 console.log("An error occured when updating a new search");
 //             };
 //         }
 //     });
+
+//     updateSettingObject({ context: "", criteria: { props: { timeCount: undefined } }}, () => {});
 
 // }

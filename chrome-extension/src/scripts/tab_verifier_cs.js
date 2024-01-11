@@ -92,7 +92,23 @@ function extractAboutData(){
 
 function extractEducationData(){
 
-  var educationData = null;
+  var sectionName = ".core-section-container.education";
+
+  var educationData = null, educationSectionTag = document.querySelector(sectionName);
+  if (educationSectionTag){
+
+    educationData = [];
+
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((educationLiTag) => {
+      var education = {
+        institutionName: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").innerHTML : null),
+        degree: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
+      };
+      educationData.push(education);
+    });
+
+  }
 
   return educationData;
 
@@ -142,6 +158,7 @@ function extractExperienceData(){
           experienceItem["title"] = (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null);
           experienceItem["company"] = companyName;
           experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
+          experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item") ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
           experienceData.push(experienceItem);
         });
 
@@ -151,6 +168,7 @@ function extractExperienceData(){
         experienceItem["title"] = (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null);
         experienceItem["company"] = (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null); 
         experienceItem["period"] = (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null);
+        experienceItem["location"] = (experienceLiTag.querySelectorAll(".experience-item__meta-item") ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
         experienceData.push(experienceItem);
 
       }
@@ -189,7 +207,25 @@ function extractActivityData(){
 
 function extractCertificationData(){
 
-  var certificationData = null;
+  var sectionName = ".core-section-container.certifications";
+
+  var certificationData = null, certificationSectionTag = document.querySelector(sectionName);
+  if (certificationSectionTag){
+
+    certificationData = [];
+
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((certificationLiTag) => {
+      var certification = {
+        title: (certificationLiTag.querySelector("h3 a") ? certificationLiTag.querySelector("h3 a").textContent : null),
+        issuer: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
+        // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+      };
+      certificationData.push(certification);
+    });
+
+  }
 
   return certificationData;
 

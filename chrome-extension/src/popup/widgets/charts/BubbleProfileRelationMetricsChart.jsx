@@ -90,7 +90,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     		var itemIndex = resultsDataset1.map(e => e.url).indexOf(search.url);
     		if (itemIndex >= 0){
     			(resultsDataset1[itemIndex]).r += 1;
-    			(resultsDataset2[itemIndex]).r += (search.timeCount.value / 60);
+    			(resultsDataset2[itemIndex]).r += (search.timeCount / 60);
     		}
     		else{
     			var followerCount = search.profile.nFollowers ? dbDataSanitizer.profileFollowers(search.profile.nFollowers) : 0,
@@ -107,7 +107,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     			resultsDataset2.push({
     				url: search.url,
     				fullName: search.profile.fullName,
-    				r: (search.timeCount.value / 60),
+    				r: (search.timeCount / 60),
     				x: followerCount,
     				y: connectionCount,
     			});
@@ -128,7 +128,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 				    backgroundColor: colorDataset1.borders,
 			    },
 			    {
-			      label: 'Time spent',
+			      label: 'Time spent (minutes)',
 			      data: resultsDataset2,
 			      borderColor: colorDataset2.borders,
 				    backgroundColor: colorDataset2.borders,

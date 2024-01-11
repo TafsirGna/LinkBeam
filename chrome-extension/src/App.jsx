@@ -48,7 +48,6 @@ export default class App extends React.Component{
         todayReminderList: null,
         allSearches: null,
         todaySearchList: null,
-        profileActivityList: null,
         settings: {},
         currentTabWebPageData: null,
       }
@@ -60,7 +59,6 @@ export default class App extends React.Component{
     this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    this.onProfileActivityDataReceived = this.onProfileActivityDataReceived.bind(this);
     this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
     this.onBookmarksDataReceived = this.onBookmarksDataReceived.bind(this);
     this.onSwResponseReceived = this.onSwResponseReceived.bind(this);
@@ -189,22 +187,6 @@ export default class App extends React.Component{
         scope = context.split("-")[1];
 
     this.setSearchList(listData, scope);
-
-  }
-
-  onProfileActivityDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var profileActivityList = message.data.objectData.list;
-
-    // Setting the search list here too
-    this.setState(prevState => {
-      let globalData = Object.assign({}, prevState.globalData);
-      globalData.profileActivityList = profileActivityList;
-      return { globalData };
-    });
 
   }
 
@@ -412,10 +394,6 @@ export default class App extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
         callback: this.onKeywordsDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY].join(messageParams.separator), 
-        callback: this.onProfileActivityDataReceived
       },
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 

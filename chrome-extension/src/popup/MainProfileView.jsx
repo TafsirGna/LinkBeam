@@ -17,7 +17,6 @@ export default class MainProfileView extends React.Component{
     this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
     this.onBookmarkDataReceived = this.onBookmarkDataReceived.bind(this);
     this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
-    this.onProfileActivityDataReceived = this.onProfileActivityDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -49,31 +48,6 @@ export default class MainProfileView extends React.Component{
 
       });
     }
-
-  }
-
-  onProfileActivityDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var context = message.data.objectData.context;
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.PROFILE){
-      return;
-    }
-
-    var profileActivityList = message.data.objectData.list;
-
-    if (profileActivityList.length && profileActivityList[0].url != this.state.profile.url){
-      return;
-    }
-
-    // Setting the list here too
-    this.setState(prevState => {
-      let profile = Object.assign({}, prevState.profile);
-      profile.activity = profileActivityList;
-      return { profile };
-    });
 
   }
 
@@ -190,10 +164,6 @@ export default class MainProfileView extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
         callback: this.onProfileDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY].join(messageParams.separator), 
-        callback: this.onProfileActivityDataReceived
       },
     ]);
     

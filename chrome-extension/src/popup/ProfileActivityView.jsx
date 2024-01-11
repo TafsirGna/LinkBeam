@@ -5,7 +5,7 @@ import PageTitleView from "./widgets/PageTitleView";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Offcanvas } from "react-bootstrap";
-import { saveCurrentPageTitle, appParams, sendDatabaseActionMessage, messageParams, dbData } from "./Local_library";
+import { saveCurrentPageTitle, appParams, sendDatabaseActionMessage, messageParams, ack, dbData, startMessageListener } from "./Local_library";
 import heart_icon from '../assets/heart_icon.png';
 import newspaper_icon from '../assets/newspaper_icon.png';
 import default_user_icon from '../assets/user_icons/default.png';
@@ -18,14 +18,20 @@ export default class ProfileActivityView extends React.Component{
     this.state = {
     	offCanvasShow: false,
     	selectedPost: null,
+    	profiles: null,
     };
+
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
   }
 
   componentDidMount() {
 
+  	this.listenToMessages();
+
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY.replace(" ", ""));
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY });
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY });
 
   }
 
@@ -43,6 +49,34 @@ export default class ProfileActivityView extends React.Component{
       }
     )
   };
+
+  onProfilesDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var context = message.data.objectData.context;
+    if (context != appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY){
+    	return;
+    }
+
+    var profileList = message.data.objectData.list;
+
+    // Setting the search list here too
+    this.setState({profiles: profileList});
+
+  }
+
+  listenToMessages(){
+
+    startMessageListener([
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
+        callback: this.onProfilesDataReceived
+      },
+    ]);
+  }
+
 
   render(){
     return (
@@ -62,7 +96,7 @@ export default class ProfileActivityView extends React.Component{
 						</div>*/}
 
 				 		<div class="mt-3">
-							<ProfileActivityListView objects={this.props.globalData.profileActivityList} showPost={this.handleOffCanvasShow} variant="list"/> 
+							<ProfileActivityListView objects={this.state.profiles} showPost={this.handleOffCanvasShow} variant="list"/> 
 						</div>
 
 	          <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>

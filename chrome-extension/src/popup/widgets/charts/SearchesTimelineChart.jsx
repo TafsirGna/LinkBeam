@@ -105,7 +105,7 @@ export default class SearchesTimelineChart extends React.Component{
 			var valueDataset2 = 0;
 			if (date.toISOString().split("T")[0] in searches){
 				for (var search of searches[date.toISOString().split("T")[0]]){
-					valueDataset2 += (search.timeCount.value / 60);
+					valueDataset2 += (search.timeCount / 60);
 				}
 				
 			}
@@ -134,7 +134,7 @@ export default class SearchesTimelineChart extends React.Component{
 			var valueDataset2 = 0;
 			if (month in searches){
 				for (var search of searches[month]){
-					valueDataset2 += (search.timeCount.value / 60);
+					valueDataset2 += (search.timeCount / 60);
 				}
 			}
 			results.valuesDataset2.push(valueDataset2);

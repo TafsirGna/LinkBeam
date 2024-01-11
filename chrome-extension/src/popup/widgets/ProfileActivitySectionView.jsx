@@ -17,16 +17,12 @@ export default class ProfileActivitySectionView extends React.Component{
 
   componentDidMount() {
 
-    if (this.props.profile.activity == undefined){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILE_ACTIVITY, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-    }
-
   }
 
   render(){
     return (
       <>
-        <ProfileActivityListView objects={this.props.profile.activity} variant="timeline" showPost={() => {}} />
+        <ProfileActivityListView objects={[this.props.profile]} variant="timeline" showPost={() => {}} />
       </>
     );
   }
