@@ -12,6 +12,7 @@ import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
 import SearchesKeywordsBarChart from "./widgets/charts/SearchesKeywordsBarChart";
 import RelationshipsChart from "./widgets/charts/RelationshipsChart";
+import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
 
 export default class ChartExpansionView extends React.Component{
 
@@ -71,6 +72,9 @@ export default class ChartExpansionView extends React.Component{
 
               { this.state.carrouselActiveItemIndex == 6 && 
                       <RelationshipsChart objects={this.state.periodSearches.map((search) => search.profile)} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+
+              { this.state.carrouselActiveItemIndex == 7 && 
+                      <ConnectedScatterplot objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
     
             </div>
           </div>

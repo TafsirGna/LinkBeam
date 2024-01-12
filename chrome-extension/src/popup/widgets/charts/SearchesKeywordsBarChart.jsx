@@ -4,7 +4,8 @@ import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { Offcanvas } from "react-bootstrap";
 import moment from 'moment';
-import { sendDatabaseActionMessage, getChartColors, messageParams, dbData, appParams } from "../../Local_library";
+import { sendDatabaseActionMessage, getChartColors, messageParams, dbData, appParams, saveCanvas } from "../../Local_library";
+import default_user_icon from '../../../assets/user_icons/default.png';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -75,7 +76,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
           return;
         }
 
-        this.saveCanvas();
+        saveCanvas(this.state.uuid, "Searches-keywords-bar-chart.png", saveAs);
       }
     );
 
@@ -151,15 +152,23 @@ export default class SearchesKeywordsBarChart extends React.Component{
     var elements = getElementAtEvent(this.state.chartRef.current, event);
     console.log(elements, (elements[0]).index);
 
-    if (elements.length){
+    if (elements.length != 0){
       this.handleOffCanvasShow((elements[0]).index);
     }
 
   }
 
-  handleOffCanvasClose = () => { this.setState({offCanvasShow: false, selectedChartElementIndex: null}) };
+  handleOffCanvasClose = () => { 
+    this.setState({offCanvasShow: false}, 
+    () => { this.setState({selectedChartElementIndex: null}); });
+  };
 
-  handleOffCanvasShow = (element) => { this.setState({offCanvasShow: true, selectedChartElementIndex: element}) };
+  handleOffCanvasShow = (elementIndex) => { 
+    this.setState({selectedChartElementIndex: elementIndex}, 
+    () => { 
+      this.setState({offCanvasShow: true});
+    }
+  )};
 
 	render(){
 		return (
@@ -181,17 +190,23 @@ export default class SearchesKeywordsBarChart extends React.Component{
         <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>
-              { (this.state.selectedChartElementIndex) ? "Keyword: " + this.state.labelsData[this.state.selectedChartElementIndex].label : "Title" }
+             { (this.state.selectedChartElementIndex != null) ? ("Keyword: " + this.state.labelsData[this.state.selectedChartElementIndex].label) : "Title" }
             </Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
 
-            { this.state.selectedChartElementIndex && ((this.state.labelsData[this.state.selectedChartElementIndex]).profiles).length == 0 && <div class="text-center m-5 mt-2">
+            { this.state.selectedChartElementIndex == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                  </div>
+                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                </div>
+              </div>}
+
+            { (this.state.selectedChartElementIndex != null && ((this.state.labelsData[this.state.selectedChartElementIndex]).profiles).length == 0) && <div class="text-center m-5 mt-2">
                     <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No corresponding profiles</span></p>
                   </div> }
             
-            { this.state.selectedChartElementIndex && ((this.state.labelsData[this.state.selectedChartElementIndex]).profiles).length != 0 && 
+            { (this.state.selectedChartElementIndex != null && ((this.state.labelsData[this.state.selectedChartElementIndex]).profiles).length != 0) && 
                 <div class="list-group m-1 shadow-sm small">
                   { (this.state.labelsData[this.state.selectedChartElementIndex]).profiles.map((profile) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                     <img src={profile.avatar ? profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>

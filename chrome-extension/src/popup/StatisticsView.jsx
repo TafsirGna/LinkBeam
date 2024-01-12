@@ -10,6 +10,7 @@ import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import RelationshipsChart from "./widgets/charts/RelationshipsChart";
+import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot"; ConnectedScatterplot
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 
@@ -308,6 +309,11 @@ export default class StatisticsView extends React.Component{
               <RelationshipsChart 
                 objects={this.state.periodSearches ? this.state.periodSearches.map((search) => search.profile) : null} 
                 carrouselIndex={6} />
+            </Carousel.Item>
+            <Carousel.Item> 
+              <ConnectedScatterplot 
+                objects={this.state.periodSearches} 
+                carrouselIndex={7} />
             </Carousel.Item>
           </Carousel>
 

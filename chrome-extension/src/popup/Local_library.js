@@ -354,6 +354,7 @@ export const getPeriodSearches = (context, index, func, profile = null) => {
 export const saveCanvas = (uuid, fileName, saveAs) => {
   //save to png
   const canvasSave = document.getElementById("chartTag_" + uuid);
+  console.log("''''''''''''' : ", "chartTag_" + uuid, canvasSave);
   canvasSave.toBlob(function (blob) {
     saveAs(blob, fileName);
   })
