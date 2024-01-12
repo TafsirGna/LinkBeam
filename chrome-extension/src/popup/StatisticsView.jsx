@@ -300,11 +300,10 @@ export default class StatisticsView extends React.Component{
                 carrouselIndex={4} />
             </Carousel.Item>
             <Carousel.Item>
-              <ExpEdStackBarChart 
+              {/*<ExpEdStackBarChart 
                 objects={this.state.periodSearches} 
-                carrouselIndex={5} />
+                carrouselIndex={5} />*/}
             </Carousel.Item>
-            {/* Connection graph */}
             <Carousel.Item> 
               <RelationshipsChart 
                 objects={this.state.periodSearches ? this.state.periodSearches.map((search) => search.profile) : null} 

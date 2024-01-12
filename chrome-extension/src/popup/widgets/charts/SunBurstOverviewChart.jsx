@@ -42,12 +42,12 @@ export default class SunBurstOverviewChart extends React.Component{
       if (itemIndex == -1){
         expChildren.push({
           "fullName": company,
-          "name": company.slice(0, 30) + "...",
-          "children": [{"name": (title.slice(0, 30) + "..."), "value": 3938}],
+          "name": company.slice(0, 30) + (company.length >= 30 ? "..." : ""),
+          "children": [{"name": (title.slice(0, 30) + (title.length >= 30 ? "..." : "")), "value": 3938}],
         });
       }
       else{
-        expChildren[itemIndex].children.push({"name": (title.slice(0, 30) + "..."), "value": 3938});
+        expChildren[itemIndex].children.push({"name": (title.slice(0, 30) + (title.length >= 30 ? "..." : "")), "value": 3938});
       }
 
     }

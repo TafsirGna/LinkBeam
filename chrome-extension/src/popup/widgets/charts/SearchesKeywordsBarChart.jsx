@@ -1,6 +1,6 @@
 /*import './About.css'*/
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { sendDatabaseActionMessage, getChartColors, messageParams, dbData, appParams } from "../../Local_library";
 import {
@@ -53,10 +53,12 @@ export default class SearchesKeywordsBarChart extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
+      chartRef: React.createRef(),
 			barData: null,
       uuid: uuidv4(),
 		};
     this.setChartData = this.setChartData.bind(this);
+    this.onChartClick = this.onChartClick.bind(this);
 
 	}
 
@@ -111,8 +113,8 @@ export default class SearchesKeywordsBarChart extends React.Component{
     for (var keyword of this.props.globalData.keywordList){ 
       var profiles = [];
       for (var search of this.props.objects){
-        console.log('++++++++++++++++ : ', search)
-        console.log("%%%%%%%%%%%%%% : ", JSON.stringify(search.profile).toLowerCase());
+        // console.log('++++++++++++++++ : ', search);
+        // console.log("%%%%%%%%%%%%%% : ", JSON.stringify(search.profile).toLowerCase());
         if (JSON.stringify(search.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1){
           profiles.push(search.profile);
         }
@@ -134,7 +136,34 @@ export default class SearchesKeywordsBarChart extends React.Component{
 	        },
       	],
   	}});
-}
+  }
+
+  // setCanvasEventListener(){
+
+  //   document.getElementById("chartTag_"+this.state.uuid).onclick = function(evt)
+  //   {   
+  //       var activePoints = chart.getElementsAtEvent(evt);
+
+  //       if(activePoints.length > 0)
+  //       {
+  //         //get the internal index of slice in pie chart
+  //         var clickedElementindex = activePoints[0]["_index"];
+
+  //         //get specific label by index 
+  //         var label = chart.data.labels[clickedElementindex];
+
+  //         //get value by index      
+  //         var value = chart.data.datasets[0].data[clickedElementindex];
+
+  //         /* other stuff that requires slice's label and value */
+  //      }
+  //   }
+
+  // }
+
+  onChartClick(event){
+    console.log(getElementAtEvent(this.state.chartRef.current, event));
+  }
 
 	render(){
 		return (
@@ -144,7 +173,12 @@ export default class SearchesKeywordsBarChart extends React.Component{
           { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
-				  { this.state.barData && <Bar id={"chartTag_"+this.state.uuid} options={barOptions} data={this.state.barData} /> }
+				  { this.state.barData && <Bar 
+                                    ref={this.state.chartRef}
+                                    id={"chartTag_"+this.state.uuid} 
+                                    options={barOptions} 
+                                    data={this.state.barData}
+                                    onClick={this.onChartClick} /> }
 
         </div>
 			</>

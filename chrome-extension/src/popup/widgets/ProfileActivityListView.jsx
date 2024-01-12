@@ -1,10 +1,20 @@
 import '../assets/css/ProfileActivityListView.css';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
+
+const popover = (
+  <Popover id="popover-basic">
+    <Popover.Header as="h3">Popover right</Popover.Header>
+    <Popover.Body>
+      And here's some <strong>amazing</strong> content. It's very engaging.
+      right?
+    </Popover.Body>
+  </Popover>
+);
 
 export default class ProfileActivityListView extends React.Component{
 
@@ -90,7 +100,7 @@ export default class ProfileActivityListView extends React.Component{
                                                     </OverlayTrigger>
                                                   </span>
                                                 </p>
-                                                <p class="mb-0 opacity-75 border p-2 rounded shadow-sm">{profileActivityObject.title}</p>
+                                                <p class="mb-0 opacity-75 border p-2 rounded shadow">{profileActivityObject.title}</p>
                                               </div>
                                               <small class="opacity-50 text-nowrap">{moment(profileActivityObject.date, moment.ISO_8601).fromNow()}</small>
                                             </div>
@@ -120,11 +130,16 @@ export default class ProfileActivityListView extends React.Component{
                                                 <span>
                                                   Added {moment(profileActivityObject.date, moment.ISO_8601).fromNow()}
                                                 </span>
-                                                <a class="border shadow-sm rounded p-1 mx-2" href={profileActivityObject.link}>
-                                                  <span title="See post on linkedin">
+                                                <span class="border shadow-sm rounded p-1 mx-2">
+                                                  <a title="See post on linkedin" class="mx-1" href={profileActivityObject.link}>
                                                     <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                  </a>
+                                                  <span title="Image" class="mx-1">
+                                                    <OverlayTrigger trigger="click" placement="right" overlay={popover}>
+                                                      <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                                    </OverlayTrigger>
                                                   </span>
-                                                </a>
+                                                </span>
                                               </p>
                                               <p class="text-muted border rounded p-2 shadow-sm">
                                                 {profileActivityObject.title}

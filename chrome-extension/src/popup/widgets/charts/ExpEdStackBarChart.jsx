@@ -107,7 +107,7 @@ export default class ExpEdStackBarChart extends React.Component{
       if (index == -1){
         labels.push(fullName);
 
-        console.log("%%%%%%%%%%%%%%%%%%%%%%%%% : ", search.profile.experience);
+        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% : ", search.profile.experience);
         var experienceTime = computeExperienceTime(search.profile.experience, {moment: moment});
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);
