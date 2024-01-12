@@ -82,6 +82,11 @@ export default class StatIndicatorsView extends React.Component{
       // ],
     };
 
+    this.setSearchData = this.setSearchData.bind(this);
+    this.setProfileData = this.setProfileData.bind(this);
+    this.setTimeSpentData = this.setTimeSpentData.bind(this);
+    this.setProfileActivityData = this.setProfileActivityData.bind(this);
+
   }
 
   componentDidMount() {
@@ -90,42 +95,88 @@ export default class StatIndicatorsView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.indicators != this.props.indicators){
+    if (prevProps.objects != this.props.objects){
 
-      if (prevProps.indicators.timeSpent != this.props.indicators.timeSpent){
-        this.setState(prevState => {
-          let indicatorData = Object.assign({}, prevState.indicatorData);
-          indicatorData.timeSpentData.value = secondsToHms(this.props.indicators.timeSpent);
-          return { indicatorData };
-        });
-      }
+      this.setProfileData();
 
-      if (prevProps.indicators.profileCount != this.props.indicators.profileCount){
-        this.setState(prevState => {
-          let indicatorData = Object.assign({}, prevState.indicatorData);
-          indicatorData.profileData.value = this.props.indicators.profileCount;
-          return { indicatorData };
-        });
-      }
+      this.setSearchData();
 
-      if (prevProps.indicators.searchCount != this.props.indicators.searchCount){
-        this.setState(prevState => {
-          let indicatorData = Object.assign({}, prevState.indicatorData);
-          indicatorData.searchData.value = this.props.indicators.searchCount;
-          return { indicatorData };
-        });
-      }
+      this.setTimeSpentData();
 
-      if (prevProps.indicators.profileActivityCount != this.props.indicators.profileActivityCount){
-        this.setState(prevState => {
-          let indicatorData = Object.assign({}, prevState.indicatorData);
-          indicatorData.profileActivityData.value = this.props.indicators.profileActivityCount;
-          return { indicatorData };
-        });
-      }
+      this.setProfileActivityData();
 
     }
 
+  }
+
+  setProfileData(){
+
+    if (!this.props.objects){
+      return;
+    }
+
+    var profiles = [];
+    for (var search of this.props.objects){
+      var index = profiles.map(e => e.url).indexOf(search.url);
+      if (index == -1){
+        profiles.push(search.profile);
+      }
+    }
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.profileData.value = profiles.length;
+      return { indicatorData };
+    });
+  }
+
+  setSearchData(){
+
+    if (!this.props.objects){
+      return;
+    }
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.searchData.value = this.props.objects.length;
+      return { indicatorData };
+    });
+  }
+
+  setTimeSpentData(){
+
+    if (!this.props.objects){
+      return;
+    }
+
+    var time = 0;
+    for (var search of this.props.objects){
+      time += search.timeCount;
+    }
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.timeSpentData.value = secondsToHms(time);
+      return { indicatorData };
+    });
+  }
+
+  setProfileActivityData(){
+
+    if (!this.props.objects){
+      return;
+    }
+
+    var count = 0;
+    for (var search of this.props.objects){
+      count += (search.profile.activity ? search.profile.activity.length : 0);
+    }
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.profileActivityData.value = count;
+      return { indicatorData };
+    });
   }
 
   componentWillUnmount(){

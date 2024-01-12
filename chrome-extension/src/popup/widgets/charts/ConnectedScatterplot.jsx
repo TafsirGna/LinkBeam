@@ -80,7 +80,7 @@ export default class ConnectedScatterplot extends React.Component{
 
     // Declare the chart dimensions and margins.
 		const width = 928;
-		const height = 720;
+		const height = 520;
 		const marginTop = 20;
 		const marginRight = 30;
 		const marginBottom = 30;

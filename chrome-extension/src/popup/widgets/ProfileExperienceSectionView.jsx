@@ -5,7 +5,6 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
-import JobTitlesWordCloudChart from "./charts/JobTitlesWordCloudChart";
 import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
@@ -93,7 +92,6 @@ export default class ProfileExperienceSectionView extends React.Component{
     		</div>
 
         <div class="mt-2 mx-2">
-          {/*<JobTitlesWordCloudChart data={this.state.wordCloudData}/>*/}
           <JobTitlesBarChart data={this.state.wordCloudData}/>
         </div>
       </>
