@@ -1487,10 +1487,22 @@ function processTabData(tabData){
 
     const openNewTab = (profileObject) => {
         // open new tab
-        chrome.tabs.create({
-          active: true,
-          url:  "/index.html?redirect_to=ProfileView&data="+profileObject.url,
-        }, null);
+        getSettingsData(
+            { 
+                context: "", 
+                criteria: {
+                    props: ["autoTabOpening"],
+                }
+            },
+            (object) => {
+                if (object.autoTabOpening){
+                    chrome.tabs.create({
+                      active: true,
+                      url:  "/index.html?redirect_to=ProfileView&data="+profileObject.url,
+                    }, null);
+                }                
+            }
+        );
     }
 
     const addSearchObject = () => {
@@ -1792,9 +1804,20 @@ function checkCurrentTab(tab, changeInfo){
             }, 
             () => {
                 chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {tabId: tab.id}}, (response) => {
-                console.log('tabId sent', response);
-            });  
-        });
+                    console.log('tabId sent', response);
+                });  
+
+                getList(
+                    dbData.objectStoreNames.REMINDERS,
+                    { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
+                    (reminders) => {
+                        chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
+                            console.log('Reminders sent', response);
+                        }); 
+                    }
+                );
+            }
+        );
 
     }
     else{

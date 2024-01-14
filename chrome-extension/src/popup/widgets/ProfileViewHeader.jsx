@@ -5,6 +5,14 @@ import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import ProfileGeoMapModal from "./modals/ProfileGeoMapModal";
 import eventBus from "../EventBus";
+import { 
+  AlertCircleIcon, 
+  LocationIcon, 
+  PictureIcon, 
+  BookmarkIcon, 
+  DuplicateIcon,
+  ReminderIcon,
+} from "./SVGs";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
@@ -46,7 +54,9 @@ export default class ProfileViewHeader extends React.Component{
               placement="top"
               overlay={<ReactTooltip id="tooltip1">Warning!</ReactTooltip>}
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 me-1 text-warning"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span class="me-1 text-warning">
+                <AlertCircleIcon size="14"/>
+              </span>
             </OverlayTrigger>
           <span>The data below are only the ones made publicly available by this user on its profile page</span>
         </p>
@@ -62,7 +72,9 @@ export default class ProfileViewHeader extends React.Component{
                               placement="bottom"
                               overlay={<ReactTooltip id="tooltip1">{this.props.profile.location}</ReactTooltip>}
                             >
-                              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.handleGeoMapModalShow()}}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                              <span onClick={() => {this.handleGeoMapModalShow()}}>
+                                <LocationIcon size="20" className="mx-2 handy-cursor"/>
+                              </span>
                             </OverlayTrigger>}
               { this.props.profile.coverImage && <span>
                               ·
@@ -70,7 +82,9 @@ export default class ProfileViewHeader extends React.Component{
                                 placement="bottom"
                                 overlay={<ReactTooltip id="tooltip1">View Cover Image</ReactTooltip>}
                               >
-                                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.handleImageModalShow(COVER_IMAGE_MODAL_TITLE)}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                                <span onClick={() => {this.handleImageModalShow(COVER_IMAGE_MODAL_TITLE)}}>
+                                  <PictureIcon size="20" className="mx-2 handy-cursor"/>
+                                </span>                                
                               </OverlayTrigger>
                             </span>}
               { Object.hasOwn(this.props.profile, "bookmark") && <span>
@@ -79,7 +93,9 @@ export default class ProfileViewHeader extends React.Component{
                     placement="bottom"
                     overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
                   >
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                    <span>
+                      <BookmarkIcon size="24" className="mx-2"/>
+                    </span>
                   </OverlayTrigger>
                 </span>}
               { this.props.profile.reminder && <span>
@@ -88,7 +104,9 @@ export default class ProfileViewHeader extends React.Component{
                     placement="bottom"
                     overlay={<ReactTooltip id="tooltip1">Show reminder</ReactTooltip>}
                   >
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2 handy-cursor" onClick={() => {this.showReminder()}}><polyline points="21 8 21 21 3 21 3 8"></polyline><rect x="1" y="3" width="22" height="5"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>
+                    <span onClick={() => {this.showReminder()}}>
+                      <ReminderIcon size="24" className="mx-2 handy-cursor"/>
+                    </span>
                   </OverlayTrigger>
                 </span>}
               <span>
@@ -98,7 +116,7 @@ export default class ProfileViewHeader extends React.Component{
                   overlay={<ReactTooltip id="tooltip1">Visit on Linkedin</ReactTooltip>}
                 >
                   <a href={this.props.profile.url} target="_blank">
-                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mx-2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <DuplicateIcon size="24" className="mx-2" />
                   </a>
                 </OverlayTrigger>
               </span>

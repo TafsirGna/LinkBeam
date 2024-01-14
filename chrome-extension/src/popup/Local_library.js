@@ -171,13 +171,10 @@ export const dbDataSanitizer = {
 
     // handling date range
     var dateRange = (expPeriod.split("\n")[1]).split(appParams.DATE_RANGE_SEPARATOR);
-    var startDateRange = dateRange[0], endDateRange = dateRange[1];
-
-    // starting with the start date
-    startDateRange = func.moment(startDateRange, "MMM YYYY");
+    var startDateRange = func.moment(dateRange[0], "MMM YYYY"), endDateRange = dateRange[1];
 
     // then the end date
-    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd'hui") != -1 ){ // contains Present 
+    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd'hui") != -1){ // contains Present 
       endDateRange = func.moment();
     }
     else{
@@ -209,8 +206,17 @@ export const computeExperienceTime = function(experiences, func){
     if (typeof experience.period == "string"){
       experience.period = dbDataSanitizer.experienceDates(experience.period, func);
     }
+    else{
+      if (typeof experience.period.startDateRange == "string"){
+        experience.period.startDateRange = func.moment(experience.period.startDateRange, func.moment.ISO_8601);
+      }
 
-    if (experience.period.startDateRange < refTime) { refTime = experience.period.startDateRange; }
+      if (typeof experience.period.endDateRange == "string"){
+        experience.period.endDateRange = func.moment(experience.period.endDateRange, func.moment.ISO_8601);
+      }
+    }
+
+    refTime = (experience.period.startDateRange < refTime) ? experience.period.startDateRange : refTime;
 
   }
 
@@ -242,8 +248,10 @@ export const computeExperienceTime = function(experiences, func){
     }
     else{
       if (futureExperiences.length > 0){
+        // console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", futureExperiences);
         futureExperiences.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
         var experience = futureExperiences[0];
+        console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", typeof experience.period.endDateRange, experience.period.endDateRange);
         expTime += (experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate());
         return recursiveCompute(experience.period.endDateRange);
       }

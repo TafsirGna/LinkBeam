@@ -7,10 +7,9 @@ import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
+import ProfileSuggestionsSectionView from "./ProfileSuggestionsSectionView";
 import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
-import Offcanvas from 'react-bootstrap/Offcanvas';
-import RelationshipsChart from "./charts/RelationshipsChart";
 import moment from 'moment';
 
 
@@ -29,8 +28,6 @@ export default class ProfileViewBody extends React.Component{
         "Suggestions",
       ],
       edExpTimeChartModalShow: false,
-      suggestionsOffCanvasShow: true,
-
       computedProfileData: {
         experienceTime: null,
       }
@@ -68,14 +65,6 @@ export default class ProfileViewBody extends React.Component{
     this.setState({currentTabIndex: tabIndex});
 
   }
-
-  handleSuggestionsOffCanvasClose = () => {
-    this.setState({suggestionsOffCanvasShow: false})
-  };
-
-  handleSuggestionsOffCanvasShow = () => {
-      this.setState({suggestionsOffCanvasShow: true});
-  };
 
   handleEdExpTimeChartModalClose = () => this.setState({edExpTimeChartModalShow: false});
   handleEdExpTimeChartModalShow = () => this.setState({edExpTimeChartModalShow: true});
@@ -130,16 +119,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 5 && <div class="">
-                                                  <RelationshipsChart objects={[this.props.profile]} />
-
-                                                  <Offcanvas show={this.state.suggestionsOffCanvasShow} onHide={this.handleSuggestionsOffCanvasClose}>
-                                                    <Offcanvas.Header closeButton>
-                                                      <Offcanvas.Title>Suggestions</Offcanvas.Title>
-                                                    </Offcanvas.Header>
-                                                    <Offcanvas.Body>
-                                                      {/**/}
-                                                    </Offcanvas.Body>
-                                                  </Offcanvas>
+                                                  <ProfileSuggestionsSectionView profile={this.props.profile} />
                                                 </div>}
 
           </div>

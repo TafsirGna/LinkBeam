@@ -34,7 +34,7 @@ export const options = {
   plugins: {
     title: {
       display: true,
-      text: 'Chart.js Bar Chart - Stacked',
+      text: 'Education/Experience Bar Chart - Stacked',
     },
   },
   responsive: true,
@@ -57,7 +57,6 @@ export default class ExpEdStackBarChart extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      stackLabels: null,
       stackData: null,
       uuid: uuidv4(),
     };
@@ -107,11 +106,12 @@ export default class ExpEdStackBarChart extends React.Component{
       if (index == -1){
         labels.push(fullName);
 
-        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% : ", search.profile.experience);
+        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", search.profile);
         var experienceTime = computeExperienceTime(search.profile.experience, {moment: moment});
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);
-        expTimeData.push(Number(y));
+        expTimeData.push(y.toFixed(2));
+        // expTimeData.push(Number(y));
       }
 
     }
@@ -120,13 +120,13 @@ export default class ExpEdStackBarChart extends React.Component{
         labels,
         datasets: [
           {
-            label: 'Experience Time',
-            data: expTimeData, // labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+            label: 'Experience Time (years)',
+            data: expTimeData, // labels.map(() => faker.datatype.number({ min: -20, max: 20 })),
             backgroundColor: 'rgb(255, 99, 132)',
           },
           {
-            label: 'Education Time',
-            data: labels.map(() => faker.datatype.number({ min: -1000, max: 1000 })),
+            label: 'Education Time (years)',
+            data: labels.map(() => faker.datatype.number({ min: -20, max: 0 })),
             backgroundColor: 'rgb(75, 192, 192)',
           },
         ],

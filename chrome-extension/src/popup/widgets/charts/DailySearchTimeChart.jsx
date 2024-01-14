@@ -64,9 +64,17 @@ export default class DailySearchTimeChart extends React.Component{
     this.state = {
       barData: null,
     };
+
+    this.setChartData = this.setChartData.bind(this);
   }
 
   componentDidMount() {
+
+    this.setChartData()
+
+  }
+
+  setChartData(){
 
     if (!this.props.objects){
       return;
@@ -79,12 +87,12 @@ export default class DailySearchTimeChart extends React.Component{
         var object = {
           url: search.url,
           label: dbDataSanitizer.fullName(search.profile.fullName),
-          time: 0,
+          time: (search.timeCount / 60).toFixed(2),
         };
         results.push(object);
       }
       else{
-        results[index].time += (search.timeCount / 60);
+        results[index].time += (search.timeCount / 60).toFixed(2);
       }
     }
 
@@ -107,7 +115,11 @@ export default class DailySearchTimeChart extends React.Component{
 
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
+    
+    if (prevProps.objects != this.props.objects){
+      this.setChartData();
+    }
 
   }
 

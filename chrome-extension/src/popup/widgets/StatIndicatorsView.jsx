@@ -86,10 +86,13 @@ export default class StatIndicatorsView extends React.Component{
     this.setProfileData = this.setProfileData.bind(this);
     this.setTimeSpentData = this.setTimeSpentData.bind(this);
     this.setProfileActivityData = this.setProfileActivityData.bind(this);
+    this.setData = this.setData.bind(this);
 
   }
 
   componentDidMount() {
+
+    this.setData();
 
   }
 
@@ -97,15 +100,21 @@ export default class StatIndicatorsView extends React.Component{
 
     if (prevProps.objects != this.props.objects){
 
-      this.setProfileData();
-
-      this.setSearchData();
-
-      this.setTimeSpentData();
-
-      this.setProfileActivityData();
+      this.setData();
 
     }
+
+  }
+
+  setData(){
+
+    this.setProfileData();
+
+    this.setSearchData();
+
+    this.setTimeSpentData();
+
+    this.setProfileActivityData();
 
   }
 

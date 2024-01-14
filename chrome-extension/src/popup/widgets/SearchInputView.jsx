@@ -2,6 +2,7 @@
 import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
+import { SearchIcon } from './SVGs';
 import { Link } from 'react-router-dom';
 import eventBus from "../EventBus";
 import { 
@@ -89,7 +90,7 @@ export default class SearchInputView extends React.Component{
 			  <div class="input-group mb-3 input-group-sm shadow">
 			    <input type="text" class="form-control" placeholder="Search..." aria-label="Search" aria-describedby="basic-addon2" onChange={this.handleInputChange} onKeyDown={this.handleKeyDown}/>
 			    <span class="input-group-text handy-cursor text-muted" id="basic-addon2" onClick={() => {this.searchText()}} title="search">
-			      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+			      <SearchIcon size="20" />
 			    </span>
 			  </div>
 			</div>

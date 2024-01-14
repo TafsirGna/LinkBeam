@@ -22,6 +22,7 @@ export default class ConnectedScatterplot extends React.Component{
     };
 
     this.setChartData = this.setChartData.bind(this);
+    // this.drawChart = this.drawChart.bind(this);
   }
 
   componentDidMount() {
@@ -42,7 +43,7 @@ export default class ConnectedScatterplot extends React.Component{
       () => {
         this.drawChart();
       }, 
-      10000
+      12000
     );
 
   }
@@ -73,8 +74,13 @@ export default class ConnectedScatterplot extends React.Component{
 
     // if a previous svg has already been drawn, no need to has one new
     var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
+
+    if (!chartContainer){
+    	return;
+    }
+
     if (chartContainer.firstChild){
-      return;
+    	chartContainer.removeChild(chartContainer.firstChild);
     }
 
 

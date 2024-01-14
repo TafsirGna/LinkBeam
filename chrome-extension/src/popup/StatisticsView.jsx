@@ -163,46 +163,46 @@ export default class StatisticsView extends React.Component{
             indicators={false}
             activeIndex={this.state.carrouselActiveItemIndex} onSelect={this.handleCarrouselSelect}>
             <Carousel.Item>
-              <SearchesTimelineChart 
-                objects={this.state.periodSearches} 
-                view={this.state.view} 
-                carrouselIndex={0} />
+              { this.state.carrouselActiveItemIndex == 0 && <SearchesTimelineChart 
+                              objects={this.state.periodSearches} 
+                              view={this.state.view} 
+                              carrouselIndex={0} />}
             </Carousel.Item>
             <Carousel.Item>
-              <StatIndicatorsView 
-                objects={this.state.periodSearches}
-                carrouselIndex={1} />
+              { this.state.carrouselActiveItemIndex == 1 && <StatIndicatorsView 
+                              objects={this.state.periodSearches}
+                              carrouselIndex={1} />}
             </Carousel.Item>
             <Carousel.Item>
-              <SearchesKeywordsBarChart 
-                globalData={this.props.globalData} 
-                objects={this.state.periodSearches} 
-                carrouselIndex={2}/>
+              { this.state.carrouselActiveItemIndex == 2 && <SearchesKeywordsBarChart 
+                              globalData={this.props.globalData} 
+                              objects={this.state.periodSearches} 
+                              carrouselIndex={2}/>}
             </Carousel.Item>
             <Carousel.Item>
-              <BubbleProfileRelationMetricsChart 
-                objects={this.state.periodSearches} 
-                carrouselIndex={3} />
+              { this.state.carrouselActiveItemIndex == 3 && <BubbleProfileRelationMetricsChart 
+                              objects={this.state.periodSearches} 
+                              carrouselIndex={3} />}
             </Carousel.Item>
             <Carousel.Item>
-              <ProfileGeoMapChart 
-                objects={this.state.periodSearches} 
-                carrouselIndex={4} />
+              { this.state.carrouselActiveItemIndex == 4 && <ProfileGeoMapChart 
+                              objects={this.state.periodSearches} 
+                              carrouselIndex={4} />}
             </Carousel.Item>
             <Carousel.Item>
-              {/*<ExpEdStackBarChart 
-                objects={this.state.periodSearches} 
-                carrouselIndex={5} />*/}
+              { this.state.carrouselActiveItemIndex == 5 && <ExpEdStackBarChart 
+                              objects={this.state.periodSearches} 
+                              carrouselIndex={5} />}
             </Carousel.Item>
             <Carousel.Item> 
-              <RelationshipsChart 
-                objects={this.state.periodSearches ? this.state.periodSearches.map((search) => search.profile) : null} 
-                carrouselIndex={6} />
+              { this.state.carrouselActiveItemIndex == 6 && <RelationshipsChart 
+                              objects={this.state.periodSearches ? this.state.periodSearches.map((search) => search.profile) : null} 
+                              carrouselIndex={6} />}
             </Carousel.Item>
             <Carousel.Item> 
-              <ConnectedScatterplot 
-                objects={this.state.periodSearches} 
-                carrouselIndex={7} />
+              { this.state.carrouselActiveItemIndex == 7 && <ConnectedScatterplot 
+                              objects={this.state.periodSearches} 
+                              carrouselIndex={7} />}
             </Carousel.Item>
           </Carousel>
 

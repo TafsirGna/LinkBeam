@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import LanguageListModal from "./modals/LanguageListModal";
 import SunBurstOverviewChart from "./charts/SunBurstOverviewChart";
+import RadarOverviewChart from "./charts/RadarOverviewChart";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import moment from 'moment';
 
 export default class ProfileOverviewSectionView extends React.Component{
@@ -13,6 +16,7 @@ export default class ProfileOverviewSectionView extends React.Component{
     this.state = {
       languageListModalShow: false,
       experienceTime: 0,
+      radarChartModalShow: false,
     };
   }
 
@@ -37,6 +41,9 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   }
 
+  handleRadarChartModalClose = () => this.setState({radarChartModalShow: false});
+  handleRadarChartModalShow = () => this.setState({radarChartModalShow: true});
+
   setExperienceTime(){
 
     var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
@@ -56,7 +63,19 @@ export default class ProfileOverviewSectionView extends React.Component{
   render(){
     return (
       <>
-        <div class="row mx-2 mt-3">
+
+        <div class="mt-2 mx-2">
+          <OverlayTrigger
+            placement="bottom"
+            overlay={<Tooltip id="tooltip1">Click to draw on radar chart</Tooltip>}
+          >
+            <div class="handy-cursor spinner-grow spinner-grow-sm text-secondary ms-2" role="status" onClick={() => {this.handleRadarChartModalShow()}}>
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </OverlayTrigger> 
+        </div>
+
+        <div class="row mx-2 mt-1">
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
               <h6 class="card-title">{this.state.experienceTime}</h6>
@@ -94,6 +113,24 @@ export default class ProfileOverviewSectionView extends React.Component{
                 </div>}
 
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>
+
+        {/*Radar chart*/}
+        <Modal show={this.state.radarChartModalShow} onHide={this.props.handleRadarChartModalClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Radar Chart</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+            <RadarOverviewChart profile={this.props.profile}/>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.props.handleRadarChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
       </>
     );
   }

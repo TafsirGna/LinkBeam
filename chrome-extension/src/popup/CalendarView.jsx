@@ -35,6 +35,7 @@ export default class CalendarView extends React.Component{
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
+      selectedDateProfiles: null,
     };
 
     this.onClickDay = this.onClickDay.bind(this);
@@ -188,15 +189,15 @@ export default class CalendarView extends React.Component{
     this.setState({selectedDate: date}, () => {
 
       var searchList = this.getDayObjectList(this.state.monthSearchList),
-          reminderList = this.getDayObjectList(this.state.monthReminderList);
+          profileList = [];
 
-      if (searchList.length == 0){
-        this.onNavSelectKey(this.state.tabTitles[1]);
+      for (var search of searchList){
+        if (profileList.map(e => e.url).indexOf(search.url) == -1){
+          profileList.push(search.profile);
+        }
       }
 
-      if (reminderList.length == 0){
-        this.onNavSelectKey(this.state.tabTitles[0]);
-      }
+      this.setState({selectedDateProfiles: profileList});
 
     });
 
@@ -317,6 +318,7 @@ export default class CalendarView extends React.Component{
                                                           {tabTitle}
                                                           { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
                                                           { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
+                                                          {/*{ (index == 2 && this.state.selectedDateProfiles) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.state.selectedDateProfiles.length}</span>}*/}
                                                         </Nav.Link>
                                                       </Nav.Item>
                                                     ))}
@@ -328,14 +330,21 @@ export default class CalendarView extends React.Component{
                   <Card.Text>
                     With supporting text below as a natural lead-in to additional content.
                   </Card.Text>*/}
-                  { this.state.tabActiveKey == this.state.tabTitles[0] && 
-                          <SearchListView objects={this.getDayObjectList(this.state.monthSearchList)} seeMore={() => {}} loading={false} searchLeft={false}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[0] && <SearchListView 
+                                                                            objects={this.getDayObjectList(this.state.monthSearchList)} 
+                                                                            seeMore={() => {}} 
+                                                                            loading={false} 
+                                                                            searchLeft={false}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView objects={this.getDayObjectList(this.state.monthReminderList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView 
+                                                                            objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView objects={this.getDayObjectList(this.state.monthSearchList)} variant="timeline"/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView 
+                                                                            objects={this.state.selectedDateProfiles} 
+                                                                            variant="timeline"/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart 
+                                                                            objects={this.getDayObjectList(this.state.monthSearchList)}/>}
 
                 </Card.Body>
               </Card>
