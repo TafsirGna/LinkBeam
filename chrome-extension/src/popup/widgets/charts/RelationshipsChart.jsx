@@ -105,7 +105,6 @@ export default class RelationshipsChart extends React.Component{
 
     var chartData = { name: "suggestions", children: [{name: "suggested", children: suggestedList}, {name: "profiles", children: profilesList}]};
 
-    console.log("---------------------------- : ", chartData);
     this.setState({data: chartData}, () => { callback(); });
 
   }
@@ -119,7 +118,7 @@ export default class RelationshipsChart extends React.Component{
     // if a previous svg has laready been draw, no need to has one new
     var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
     if (chartContainer.firstChild){
-      return;
+      chartContainer.removeChild(chartContainer.firstChild);
     }
 
     const drawEdgeBundling = () => {
@@ -131,6 +130,8 @@ export default class RelationshipsChart extends React.Component{
         .size([2 * Math.PI, radius - 100]);
       const root = tree(bilink(d3.hierarchy(this.state.data)
           .sort((a, b) => d3.ascending(a.height, b.height) || d3.ascending(a.data.name, b.data.name))));
+
+      console.log("^^^^^^^^^^^^^^^^^^^^^^^^ : ", document.getElementById("chartTag_"+this.state.uuid));
 
       const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
           .attr("width", width)
@@ -193,14 +194,9 @@ export default class RelationshipsChart extends React.Component{
 
     };
 
-    if (!this.state.data){
-      this.setData(() => {
-        drawEdgeBundling();
-      });
-      return;
-    }
-
-    drawEdgeBundling();
+    this.setData(() => {
+      drawEdgeBundling();
+    });
   
   }
 

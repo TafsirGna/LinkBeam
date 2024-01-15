@@ -31,6 +31,7 @@ export default class StatisticsView extends React.Component{
     super(props);
     this.state = {
       periodSearches: null,
+      periodProfiles: null,
       view: 0,
       carrouselActiveItemIndex: 0,
       controlsVisibility: true,
@@ -79,8 +80,16 @@ export default class StatisticsView extends React.Component{
       return;
     }
 
-    var searches = message.data.objectData.list
-    this.setState({ periodSearches: searches });
+    var searches = message.data.objectData.list, 
+        profiles = [];
+
+    for (var search of searches){
+      if (profiles.map(e => e.url).indexOf(search.url) == -1){
+        profiles.push(search.profile);
+      }
+    }
+
+    this.setState({ periodSearches: searches, periodProfiles: profiles });
 
   }
 
@@ -109,8 +118,10 @@ export default class StatisticsView extends React.Component{
 
   onChartExpansion(){
 
-    var periodSearches = JSON.stringify(this.state.periodSearches);
+    var periodSearches = JSON.stringify(this.state.periodSearches)/*,
+        periodProfiles = JSON.stringify(this.state.periodProfiles)*/;
     localStorage.setItem('periodSearches', periodSearches);
+    // localStorage.setItem('periodProfiles', periodProfiles);
     localStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
     localStorage.setItem('carrouselChartView', this.state.view);
 
@@ -196,7 +207,7 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 6 && <RelationshipsChart 
-                              objects={this.state.periodSearches ? this.state.periodSearches.map((search) => search.profile) : null} 
+                              objects={this.state.periodProfiles} 
                               carrouselIndex={6} />}
             </Carousel.Item>
             <Carousel.Item> 

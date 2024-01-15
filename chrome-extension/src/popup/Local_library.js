@@ -361,11 +361,53 @@ export const getPeriodSearches = (context, index, func, profile = null) => {
 
 export const saveCanvas = (uuid, fileName, saveAs) => {
   //save to png
-  const canvasSave = document.getElementById("chartTag_" + uuid);
+  var canvasSave = document.getElementById("chartTag_" + uuid);
+  if (canvasSave.tagName == "DIV"){
+
+    var svgNode = canvasSave.firstChild;
+    // Converting svg to canvas
+    const svgString = (new XMLSerializer()).serializeToString(svgNode);
+    const svgBlob = new Blob([svgString], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+
+    const DOMURL = window.URL || window.webkitURL || window;
+    const url = DOMURL.createObjectURL(svgBlob);
+
+    const image = new Image();
+    image.width = svgNode.width.baseVal.value;
+    image.height = svgNode.height.baseVal.value;
+    image.src = url;
+    image.onload = function () {
+      const canvas = document.createElement('canvas');
+      canvas.classList.add('d-none');
+      canvas.width = image.width;
+      canvas.height = image.height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0);
+      DOMURL.revokeObjectURL(url);
+
+      // const imgURI = canvas
+      //   .toDataURL('image/png')
+      //   .replace('image/png', 'image/octet-stream');
+      // triggerDownload(imgURI);
+
+      canvasSave = canvas;
+      canvasSave.toBlob(function (blob) {
+        saveAs(blob, fileName);
+      });
+
+    };
+
+    return;
+
+  }
+
   console.log("''''''''''''' : ", "chartTag_" + uuid, canvasSave);
   canvasSave.toBlob(function (blob) {
     saveAs(blob, fileName);
-  })
+  });
 }
 
 export const deactivateTodayReminders = (reminderList) => {

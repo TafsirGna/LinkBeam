@@ -28,14 +28,23 @@ export default class ChartExpansionView extends React.Component{
   componentDidMount() {
 
     var periodSearches = localStorage.getItem('periodSearches'),
+        // periodProfiles = localStorage.getItem('periodProfiles'),
         carrouselActiveItemIndex = localStorage.getItem('carrouselActiveItemIndex'),
         carrouselChartView = localStorage.getItem('carrouselChartView');
     periodSearches = JSON.parse(periodSearches);
+
+    var profiles = [];
+    for (var search of periodSearches){
+      if (profiles.map(e => e.url).indexOf(search.url) == -1){
+        profiles.push(search.profile);
+      }
+    }
 
     this.setState({
       periodSearches: periodSearches,
       carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
       carrouselChartView: parseInt(carrouselChartView),
+      periodProfiles: profiles,
     });
 
   }
@@ -71,7 +80,7 @@ export default class ChartExpansionView extends React.Component{
                       <ExpEdStackBarChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 6 && 
-                      <RelationshipsChart objects={this.state.periodSearches.map((search) => search.profile)} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <RelationshipsChart objects={this.state.periodProfiles} carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 7 && 
                       <ConnectedScatterplot objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
