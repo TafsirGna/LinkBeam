@@ -1,7 +1,6 @@
-/*import './About.css'*/
+/*import './RadarOverviewChart.css'*/
 import React from 'react';
 import { Radar } from 'react-chartjs-2';
-// import moment from 'moment';
 // import { 
 // 	saveCanvas,
 // } from "../../Local_library";
@@ -74,11 +73,11 @@ export default class RadarOverviewChart extends React.Component{
 
 		this.setState({
 			radarData: {
-			  labels: ['Thing 1', 'Thing 2', 'Thing 3', 'Thing 4', 'Thing 5', 'Thing 6'],
+			  labels: ['Education', 'Experience', 'Languages', 'Certifications', 'Projects'],
 			  datasets: [
 			    {
-			      label: '# of Votes',
-			      data: [2, 9, 3, 5, 2, 3],
+			      label: 'Count',
+			      data: [2, 9, 3, 5, 2],
 			      backgroundColor: 'rgba(255, 99, 132, 0.2)',
 			      borderColor: 'rgba(255, 99, 132, 1)',
 			      borderWidth: 1,

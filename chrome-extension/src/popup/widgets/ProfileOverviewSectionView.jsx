@@ -115,17 +115,23 @@ export default class ProfileOverviewSectionView extends React.Component{
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>
 
         {/*Radar chart*/}
-        <Modal show={this.state.radarChartModalShow} onHide={this.props.handleRadarChartModalClose}>
+        <Modal 
+          show={this.state.radarChartModalShow} 
+          onHide={this.handleRadarChartModalClose}
+          // size="lg"
+          >
           <Modal.Header closeButton>
             <Modal.Title>Radar Chart</Modal.Title>
           </Modal.Header>
           <Modal.Body>
             
-            <RadarOverviewChart profile={this.props.profile}/>
+            <div class="text-center">
+              <RadarOverviewChart profile={this.props.profile}/>
+            </div>
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.props.handleRadarChartModalClose} className="shadow">
+            <Button variant="secondary" size="sm" onClick={this.handleRadarChartModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>
