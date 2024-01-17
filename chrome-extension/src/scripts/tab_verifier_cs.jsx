@@ -2,6 +2,8 @@
   messageParams,
   appParams,
 } from "../react_components/Local_library";*/
+import styles from "../contentScriptUi/styles.min.css";
+import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedReminderToastView";
 
 // Content script designed to make sure the active tab is a linkedin page
 
@@ -317,35 +319,76 @@ const sendTabData = (data, tabId) => {
 
 };
 
+const getTabId = (messageData, sendResponse) => {
+
+  // Acknowledge the message
+  sendResponse({
+      status: "ACK"
+  });
+
+  let tabId = messageData.tabId;
+
+  setInterval(
+    () => {
+
+      if (webPageData == {}){
+        sendTabData({}, tabId);
+        return;
+      }
+
+      var data = extractData();
+      if (data == webPageData){
+        data = {};
+      }
+      sendTabData(data, tabId);
+      webPageData = data;
+
+    }, 
+    3000
+  );
+
+}
+
+const showReminders = (messageData, sendResponse) => {
+
+  // Acknowledge the message
+  sendResponse({
+      status: "ACK"
+  });
+
+  var reminders = messageData.reminders;
+
+  var shadowHost = document.createElement('div');
+  shadowHost.id = /*appParams.extShadowHostId*/"extShadowHostId";
+  shadowHost.style.cssText='all:initial';
+  document.body.appendChild(shadowHost);
+
+  shadowHost = document.getElementById(/*appParams.extShadowHostId*/"extShadowHostId");
+  shadowHost.attachShadow({ mode: 'open' });
+  const shadowRoot = shadowHost.shadowRoot;
+
+  ReactDOM.createRoot(shadowRoot).render(
+    <React.StrictMode>
+      <style type="text/css">{styles}</style>
+      <InjectedReminderToastView objects={reminders} />
+    </React.StrictMode>
+  );
+
+}
+
 // Retrieving the tabId variable
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 
   if (message.header == "web-ui-app-settings-data") /*messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA*/ {
-      // Acknowledge the message
-      sendResponse({
-          status: "ACK"
-      });
-
-      let tabId = message.data.tabId;
-
-      setInterval(
-        () => {
-
-          if (webPageData == {}){
-            sendTabData({}, tabId);
-            return;
-          }
-
-          var data = extractData();
-          if (data == webPageData){
-            data = {};
-          }
-          sendTabData(data, tabId);
-          webPageData = data;
-
-        }, 
-        3000
-      );
+      
+      if (Object.hasOwn(message.data, "tabId")){
+        getTabId(message.data, sendResponse);
+      }
+      else{ 
+        if (Object.hasOwn(message.data, "reminders")){
+          showReminders(message.data);
+        }
+      }
 
   }
 

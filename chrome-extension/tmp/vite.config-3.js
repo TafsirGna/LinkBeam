@@ -9,11 +9,10 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        
-        // web_ui: resolve(__dirname, 'src/web_ui.jsx'),
-        web_ui: resolve(__dirname, 'web_ui.html'),
+
+        // web_ui: resolve(__dirname, 'web_ui.html'),
         install: resolve(__dirname, 'install.html'),
-        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.js'),
+        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.jsx'),
         index: resolve(__dirname, 'index.html'),
         service_worker: resolve(__dirname, 'src/scripts/service-worker.mjs'),
 

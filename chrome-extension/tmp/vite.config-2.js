@@ -10,7 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         
-        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.js'),
+        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.jsx'),
 
       },
       output: {

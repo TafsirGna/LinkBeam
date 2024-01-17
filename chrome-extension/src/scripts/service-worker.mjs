@@ -1487,7 +1487,7 @@ function processTabData(tabData){
 
     const openNewTab = (profileObject) => {
         // open new tab
-        getSettingsData(
+        getSettingsData( // checking first if the settings allow it
             { 
                 context: "", 
                 criteria: {
@@ -1541,6 +1541,7 @@ function processTabData(tabData){
             }
             else{
                 var props = profileObject;
+                console.log("|||||||||||||||||||||||||| : ", profileObject);
                 props["object"] = profile;
                 updateObject(
                     dbData.objectStoreNames.PROFILES, 
@@ -1807,13 +1808,27 @@ function checkCurrentTab(tab, changeInfo){
                     console.log('tabId sent', response);
                 });  
 
-                getList(
-                    dbData.objectStoreNames.REMINDERS,
-                    { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
-                    (reminders) => {
-                        chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
-                            console.log('Reminders sent', response);
-                        }); 
+                getSettingsData(
+                    { 
+                        context: "", 
+                        criteria: {
+                            props: ["notifications"],
+                        }
+                    },
+                    (object) => {
+                        if (object.notifications){
+                            getList(
+                                dbData.objectStoreNames.REMINDERS,
+                                { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
+                                (reminders) => {
+                                    if (reminders && reminders.length != 0){
+                                        chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
+                                            console.log('Reminders sent', response);
+                                        }); 
+                                    }
+                                }
+                            );
+                        }                
                     }
                 );
             }

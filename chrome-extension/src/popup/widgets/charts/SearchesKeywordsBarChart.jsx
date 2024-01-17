@@ -20,6 +20,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
+import { AlertCircleIcon } from "../SVGs";
 
 ChartJS.register(
   CategoryScale,
@@ -177,7 +178,13 @@ export default class SearchesKeywordsBarChart extends React.Component{
           { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
-				  { this.state.barData && <Bar 
+
+          { this.state.barData && this.state.labelsData.length == 0 && <div class="text-center m-5 mt-4">
+                      <AlertCircleIcon size="100" className=""/>
+                      <p><span class="badge text-bg-primary fst-italic shadow">No keywords yet</span></p>
+                    </div>}
+
+				  { this.state.barData && this.state.labelsData.length != 0 && <Bar 
                                     ref={this.state.chartRef}
                                     id={"chartTag_"+this.state.uuid} 
                                     options={barOptions} 
