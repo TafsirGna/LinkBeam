@@ -1,61 +1,59 @@
 /*import './HomeMenu.css'*/
 import React from 'react';
-// import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
-import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 
-export default class ProfileExperienceSectionView extends React.Component{
+export default class ProfileEducationSectionView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
       doughnutChartsData: null,
-      jobTitlesBarData: null,
+      // wordCloudData: null,
     };
   }
 
   componentDidMount() {
 
     // setting doughnutChartsData
-    var doughnutChartsData = [], 
-        jobTitlesBarData = [];
-    for (var experience of this.props.profile.experience){
+    // var doughnutChartsData = [], 
+    //     wordCloudData = [];
+    // for (var experience of this.props.profile.experience){
 
-      var companyLabel = dbDataSanitizer.companyName(experience.company),
-          title = dbDataSanitizer.companyName(experience.title),
-          expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
+    //   var companyLabel = dbDataSanitizer.companyName(experience.company),
+    //       title = dbDataSanitizer.companyName(experience.title),
+    //       expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
 
-      var index = doughnutChartsData.map(e => e.label).indexOf(companyLabel);
-      if (index == -1){
-        doughnutChartsData.push({
-          label: companyLabel,
-          value: expTime,
-        });
-      }
-      else{
-        doughnutChartsData[index].value += expTime;
-      }
+    //   var index = doughnutChartsData.map(e => e.label).indexOf(companyLabel);
+    //   if (index == -1){
+    //     doughnutChartsData.push({
+    //       label: companyLabel,
+    //       value: expTime,
+    //     });
+    //   }
+    //   else{
+    //     doughnutChartsData[index].value += expTime;
+    //   }
 
-      index = jobTitlesBarData.map(e => e.title).indexOf(title);
-      if (index == -1){
-        jobTitlesBarData.push({
-          label: title,
-          value: expTime,
-        });
-      }
-      else{
-        jobTitlesBarData[index].value += expTime;
-      }
-    }
-    this.setState({
-      doughnutChartsData: doughnutChartsData, 
-      jobTitlesBarData: jobTitlesBarData,
-    });
+    //   index = wordCloudData.map(e => e.title).indexOf(title);
+    //   if (index == -1){
+    //     wordCloudData.push({
+    //       label: title,
+    //       value: expTime,
+    //     });
+    //   }
+    //   else{
+    //     wordCloudData[index].value += expTime;
+    //   }
+    // }
+    // this.setState({
+    //   doughnutChartsData: doughnutChartsData, 
+    //   wordCloudData: wordCloudData,
+    // });
 
   }
 
@@ -66,7 +64,7 @@ export default class ProfileExperienceSectionView extends React.Component{
   render(){
     return (
       <>
-        { this.state.doughnutChartsData &&  <div>
+        {/*{ this.state.doughnutChartsData &&  <div>
                                                 <div class="container-fluid horizontal-scrollable">
                                                   <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
                                                     { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
@@ -89,11 +87,7 @@ export default class ProfileExperienceSectionView extends React.Component{
             </div>
           </OverlayTrigger> 
     			<ProfileGanttChart profile={this.props.profile}/>
-    		</div>
-
-        <div class="mt-2 mx-2">
-          <JobTitlesBarChart data={this.state.jobTitlesBarData}/>
-        </div>
+    		</div>*/}
       </>
     );
   }

@@ -1,6 +1,6 @@
 /*import './ProfileGeoMapChart.css'*/
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
   sendDatabaseActionMessage, 
@@ -23,6 +23,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Colors } from 'chart.js';
+import JobDescriptionModal from "../modals/JobDescriptionModal";
 
 // Chart.register(Colors);
 
@@ -71,8 +72,12 @@ export default class JobTitlesBarChart extends React.Component{
     super(props);
     this.state = {
       barData: null,
+      jobModalShow: false,
+      selectedChartElementIndex: null,
+      chartRef: React.createRef(),
     };
     this.setBarData = this.setBarData.bind(this);
+    this.onChartClick = this.onChartClick.bind(this);
   }
 
   componentDidMount() {
@@ -84,6 +89,18 @@ export default class JobTitlesBarChart extends React.Component{
     this.setBarData();
 
   }
+
+  handleJobModalClose = () => { 
+    this.setState({jobModalShow: false}, 
+    () => { this.setState({selectedChartElementIndex: null}); });
+  };
+
+  handleJobModalShow = (elementIndex) => { 
+    this.setState({selectedChartElementIndex: elementIndex}, 
+    () => { 
+      this.setState({jobModalShow: true});
+    }
+  )};
 
   setBarData(){
 
@@ -113,6 +130,17 @@ export default class JobTitlesBarChart extends React.Component{
 
   }
 
+  onChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      this.handleJobModalShow((elements[0]).index);
+    }
+
+  }
+
   render(){
     return (
       <>
@@ -121,7 +149,16 @@ export default class JobTitlesBarChart extends React.Component{
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
 
-        { this.state.barData && <Bar height="200" options={barOptions} data={this.state.barData} /> }
+        { this.state.barData && <Bar 
+                                  ref={this.state.chartRef}
+                                  height="200" 
+                                  options={barOptions} 
+                                  data={this.state.barData}
+                                  onClick={this.onChartClick} /> }
+
+
+        <JobDescriptionModal show={this.state.jobModalShow} onHide={this.handleJobModalClose}/>
+
 
       </>
     );

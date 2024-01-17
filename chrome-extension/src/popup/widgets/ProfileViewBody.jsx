@@ -5,6 +5,7 @@ import { appParams, computeExperienceTime } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
+import ProfileEducationSectionView from "./ProfileEducationSectionView";
 import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
 import ProfileSuggestionsSectionView from "./ProfileSuggestionsSectionView";
@@ -92,7 +93,19 @@ export default class ProfileViewBody extends React.Component{
                                                                                                               </OverlayTrigger>
                                                                                                             </span>}
                                                                       </span>} 
-                                                      {/*{ index == 3 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.experience.length}</span>}*/}
+                                                      { index == 3 && <span>
+                                                                        { this.props.profile.education && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                                                              {this.props.profile.education.length}
+                                                                                                          </span>}
+                                                                        { !this.props.profile.education && <span class="badge ms-1 text-warning px-0">
+                                                                                                              <OverlayTrigger
+                                                                                                                placement="top"
+                                                                                                                overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                              >
+                                                                                                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                                                                                              </OverlayTrigger>
+                                                                                                            </span>}
+                                                                      </span>} 
                                                       { index == 4 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.activity ? this.props.profile.activity.length : ""}</span>}
                                                       { index == 5 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.profileSuggestions ? this.props.profile.profileSuggestions.length : ""}</span>}
                                                     </a>
@@ -112,6 +125,10 @@ export default class ProfileViewBody extends React.Component{
 
             { this.state.currentTabIndex == 2 && <div class="">
                                                   { this.props.profile.experience && <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
+                                                </div>}
+
+            { this.state.currentTabIndex == 3 && <div class="">
+                                                  { this.props.profile.education && <ProfileEducationSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">
