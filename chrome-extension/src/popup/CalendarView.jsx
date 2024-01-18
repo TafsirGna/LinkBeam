@@ -128,7 +128,11 @@ export default class CalendarView extends React.Component{
       return false;
     }
     
-    return date < (new Date(this.props.globalData.settings.lastDataResetDate)); // || date > (new Date());
+    date = date.toLocaleDateString();
+    date = new Date(moment(new Date(date)).format("YYYY-MM-DD"));
+
+    return date < (new Date(this.props.globalData.settings.lastDataResetDate.split('T')[0])); 
+
   }
 
   onActiveStartDateChange({ action, activeStartDate, value, view }){
@@ -163,7 +167,7 @@ export default class CalendarView extends React.Component{
       return null
     }
 
-    var date = date.toLocaleString().split(",")[0];
+    var date = date.toLocaleDateString();
     date = moment(new Date(date)).format("YYYY-MM-DD");
 
     // month reminder list
@@ -183,7 +187,7 @@ export default class CalendarView extends React.Component{
 
   onClickDay(value, event){
     
-    var date = value.toLocaleString().split(",")[0];
+    var date = value.toLocaleDateString();
     date = new Date(date);
 
     this.setState({selectedDate: date}, () => {

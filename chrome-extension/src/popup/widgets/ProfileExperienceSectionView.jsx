@@ -2,7 +2,7 @@
 import React from 'react';
 // import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
+import { dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import JobTitlesBarChart from "./charts/JobTitlesBarChart";

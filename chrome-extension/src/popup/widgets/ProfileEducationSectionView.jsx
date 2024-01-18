@@ -1,7 +1,7 @@
-/*import './HomeMenu.css'*/
+/*import './ProfileEducationSectionView.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { computeExperienceTime, dbDataSanitizer } from "../Local_library";
+import { dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import eventBus from "../EventBus";
@@ -20,40 +20,40 @@ export default class ProfileEducationSectionView extends React.Component{
   componentDidMount() {
 
     // setting doughnutChartsData
-    // var doughnutChartsData = [], 
-    //     wordCloudData = [];
-    // for (var experience of this.props.profile.experience){
+    var doughnutChartsData = []/*, 
+        wordCloudData = []*/;
+    for (var education of this.props.profile.education){
 
-    //   var companyLabel = dbDataSanitizer.companyName(experience.company),
-    //       title = dbDataSanitizer.companyName(experience.title),
-    //       expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
+      var institutionName = dbDataSanitizer.institutionName(education.institutionName),
+          // title = dbDataSanitizer.institutionName(education.degree),
+          expTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
 
-    //   var index = doughnutChartsData.map(e => e.label).indexOf(companyLabel);
-    //   if (index == -1){
-    //     doughnutChartsData.push({
-    //       label: companyLabel,
-    //       value: expTime,
-    //     });
-    //   }
-    //   else{
-    //     doughnutChartsData[index].value += expTime;
-    //   }
+      var index = doughnutChartsData.map(e => e.label).indexOf(institutionName);
+      if (index == -1){
+        doughnutChartsData.push({
+          label: institutionName,
+          value: expTime,
+        });
+      }
+      else{
+        doughnutChartsData[index].value += expTime;
+      }
 
-    //   index = wordCloudData.map(e => e.title).indexOf(title);
-    //   if (index == -1){
-    //     wordCloudData.push({
-    //       label: title,
-    //       value: expTime,
-    //     });
-    //   }
-    //   else{
-    //     wordCloudData[index].value += expTime;
-    //   }
-    // }
-    // this.setState({
-    //   doughnutChartsData: doughnutChartsData, 
-    //   wordCloudData: wordCloudData,
-    // });
+      // index = wordCloudData.map(e => e.title).indexOf(title);
+      // if (index == -1){
+      //   wordCloudData.push({
+      //     label: title,
+      //     value: expTime,
+      //   });
+      // }
+      // else{
+      //   wordCloudData[index].value += expTime;
+      // }
+    }
+    this.setState({
+      doughnutChartsData: doughnutChartsData, 
+      // wordCloudData: wordCloudData,
+    });
 
   }
 
@@ -64,20 +64,20 @@ export default class ProfileEducationSectionView extends React.Component{
   render(){
     return (
       <>
-        {/*{ this.state.doughnutChartsData &&  <div>
+        { this.state.doughnutChartsData &&  <div>
                                                 <div class="container-fluid horizontal-scrollable">
                                                   <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
-                                                    { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                      <ItemPercentageDoughnutChart data={experienceItem} variant={"primary"}/>
+                                                    { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
+                                                                                                                      <ItemPercentageDoughnutChart data={educationItem} variant={"primary"}/>
                                                                                                                     </div>) }
                                                   </div>
                                                 </div>
                                                 <p class="small badge text-muted fst-italic p-0 ps-2">
-                                                  <span>Share of each job experience</span>
+                                                  <span>Share of each education institution</span>
                                                 </p>
                                               </div>}
 
-        <div class="mt-2 mx-2">
+        {/*<div class="mt-2 mx-2">
           <OverlayTrigger
             placement="bottom"
             overlay={<Tooltip id="tooltip1">Click to chart education & experience</Tooltip>}

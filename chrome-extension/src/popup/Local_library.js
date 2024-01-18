@@ -173,6 +173,25 @@ export const dbDataSanitizer = {
 
   },
 
+  institutionName: function(str){
+
+    var str = str.split("\n")[2];
+
+    var startIndex = 0, endIndex = str.length - 1;
+    while(str[startIndex] == " "){
+      startIndex++;
+    }
+
+    while(str[endIndex] == " "){
+      endIndex--;
+    }
+
+    str = str.slice(startIndex, endIndex + 1);
+    return str;
+
+  },
+
+
   experienceDates: (expPeriod, func) => {
 
     // handling date range
