@@ -51,6 +51,10 @@ export default class RadarOverviewChart extends React.Component{
     //   }
     // );
 
+    // if (this.props.computedData.experienceTime){
+    //   this.setExperienceTime();
+    // }
+
 		this.setChartLabels();
 
 	}
@@ -62,6 +66,22 @@ export default class RadarOverviewChart extends React.Component{
 	componentWillUnmount(){
 
     // eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
+
+  }
+
+  setExperienceTime(){
+
+    var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
+
+    var y = Math.floor(experienceTime / 365);
+    var m = Math.floor(experienceTime % 365 / 30);
+    var d = Math.floor(experienceTime % 365 % 30);
+
+    var yDisplay = y > 0 ? y + (y == 1 ? " year " : " years ") : "";
+    var mDisplay = m > 0 ? m + (m == 1 ? ", month, " : ", months ") : "";
+    var dDisplay = d > 0 ? d + (d == 1 ? ", day" : ", days") : "";
+
+    this.setState({experienceTime: yDisplay + mDisplay/* + dDisplay*/});
 
   }
 
@@ -77,7 +97,12 @@ export default class RadarOverviewChart extends React.Component{
 			  datasets: [
 			    {
 			      label: 'Count',
-			      data: [2, 9, 3, 5, 2],
+			      data: [
+			      	2, 
+			      	9, 
+			      	(this.props.profile.languages ? this.props.profile.languages.length : 0), 
+			      	(this.props.profile.certifications ? this.props.profile.certifications.length : 0),
+			      	(this.props.profile.projects ? this.props.profile.projects.length : 0)],
 			      backgroundColor: 'rgba(255, 99, 132, 0.2)',
 			      borderColor: 'rgba(255, 99, 132, 1)',
 			      borderWidth: 1,

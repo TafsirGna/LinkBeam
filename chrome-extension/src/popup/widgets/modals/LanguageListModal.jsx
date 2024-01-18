@@ -7,7 +7,8 @@ import {
   startMessageListener, 
   messageParams, 
   ack, 
-  dbData 
+  dbData,
+  dbDataSanitizer,
 } from "../../Local_library";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 
@@ -16,7 +17,12 @@ export default class LanguageListModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-
+      progressBarVariants: [
+        "primary",
+        "warning",
+        "info",
+        "danger",
+      ],
     };
   }
 
@@ -37,10 +43,25 @@ export default class LanguageListModal extends React.Component{
           </Modal.Header>
           <Modal.Body>
             
-            <div>
-              <p>Français</p>
-              <ProgressBar animated now={100} />
-            </div>
+            { this.props.profile.languages && this.props.profile.languages.map((language, index) => <div class="mt-3">
+                          <p class="mb-1">{dbDataSanitizer.languageName(language.name)}</p>
+                          <ProgressBar 
+                            title={dbDataSanitizer.languageName(language.proficiency)}
+                            animated 
+                            now={
+                              (language.proficiency.toLowerCase().indexOf("native") != -1 
+                                ? 100 
+                                : language.proficiency.toLowerCase().indexOf("full professional") != -1 
+                                  ? 80 
+                                    : language.proficiency.toLowerCase().indexOf("professional working") != -1 
+                                      ? 60 
+                                        : language.proficiency.toLowerCase().indexOf("limited working") != -1
+                                          ? 40 
+                                            : language.proficiency.toLowerCase().indexOf("elementary") != -1 
+                                              ? 20 : 0 )
+                            } 
+                            variant={this.state.progressBarVariants[index % this.state.progressBarVariants.length]} />
+                        </div>)}
 
           </Modal.Body>
           <Modal.Footer>

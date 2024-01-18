@@ -167,6 +167,12 @@ export const dbDataSanitizer = {
 
   },
 
+  languageName: function(str){
+
+    return str.split("\n")[2];
+
+  },
+
   experienceDates: (expPeriod, func) => {
 
     // handling date range

@@ -88,21 +88,21 @@ export default class ProfileOverviewSectionView extends React.Component{
               <p class="card-text">Education length</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleLanguageListModalShow()}}>
+          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {if (this.props.profile.languages){ this.handleLanguageListModalShow(); }}}>
             <div class="card-body">
-              <h5 class="card-title">0</h5>
+              <h5 class="card-title">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h5>
               <p class="card-text">Languages</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h5 class="card-title">0</h5>
+              <h5 class="card-title">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h5>
               <p class="card-text">Projects</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h5 class="card-title">0</h5>
+              <h5 class="card-title">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h5>
               <p class="card-text">Certifications</p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default class ProfileOverviewSectionView extends React.Component{
           <Modal.Body>
             
             <div class="text-center">
-              <RadarOverviewChart profile={this.props.profile}/>
+              <RadarOverviewChart profile={this.props.profile} computedData={this.props.computedData}/>
             </div>
 
           </Modal.Body>
