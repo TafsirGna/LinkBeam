@@ -114,6 +114,13 @@ export const dbDataSanitizer = {
 
   profileAbout: function(str){
 
+    var str = this.preSanitize(str);
+    return str;
+
+  },
+
+  preSanitize: function(str){
+
     // clean the front
     var startIndex = 0, endIndex = str.length - 1;
     while(str[startIndex] == " " || str[startIndex] == "\n"){
@@ -130,63 +137,42 @@ export const dbDataSanitizer = {
 
   fullName: function(str){
 
-    // clean the front
-    var startIndex = 0, endIndex = str.length - 1;
-    while(str[startIndex] == " " || str[startIndex] == "\n"){
-      startIndex++;
-    }
-
-    while(str[endIndex] == " " || str[endIndex] == "\n"){
-      endIndex--;
-    }
-
-    return str.slice(startIndex, endIndex + 1);
+    var str = this.preSanitize(str);
+    return str;
 
   },
 
   companyName: function(str){
 
-    // clean the front
-    var startIndex = 0, endIndex = str.length - 1;
-    while(str[startIndex] == " " || str[startIndex] == "\n"){
-      startIndex++;
-    }
-
-    while(str[endIndex] == " " || str[endIndex] == "\n"){
-      endIndex--;
-    }
-
-    str = str.slice(startIndex, endIndex + 1);
+    var str = this.preSanitize(str);
     return str;
 
   },
 
   suggestionName: function(str){
 
-    return str.split("\n")[2];
+    var str = this.preSanitize(str);
+    return str;
 
   },
 
   languageName: function(str){
 
-    return str.split("\n")[2];
+    var str = this.preSanitize(str);
+    return str;
 
   },
 
   institutionName: function(str){
 
-    var str = str.split("\n")[2];
+    var str = this.preSanitize(str);
+    return str;
 
-    var startIndex = 0, endIndex = str.length - 1;
-    while(str[startIndex] == " "){
-      startIndex++;
-    }
+  },
 
-    while(str[endIndex] == " "){
-      endIndex--;
-    }
+  issuerName: function(str){
 
-    str = str.slice(startIndex, endIndex + 1);
+    var str = this.preSanitize(str);
     return str;
 
   },
@@ -273,10 +259,8 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
     }
     else{
       if (futureObjects.length > 0){
-        // console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", futureObjects);
         futureObjects.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
         var object = futureObjects[0];
-        console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", typeof object.period.endDateRange, object.period.endDateRange);
         expTime += (object.period.endDateRange.toDate() - object.period.startDateRange.toDate());
         return recursiveCompute(object.period.endDateRange);
       }

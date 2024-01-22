@@ -18,6 +18,10 @@ export default class SunBurstOverviewChart extends React.Component{
     };
 
     this.setChartData = this.setChartData.bind(this);
+    this.getLanguageData = this.getLanguageData.bind(this);
+    this.getEducationData = this.getEducationData.bind(this);
+    this.getExperienceData = this.getExperienceData.bind(this);
+    this.getCertificationData = this.getCertificationData.bind(this);
   }
 
   componentDidMount() {
@@ -30,47 +34,146 @@ export default class SunBurstOverviewChart extends React.Component{
 
   }
 
+  getExperienceData(){
+
+    var expChildren = [];
+    // Experience data
+    if (this.props.profile.experience){
+
+      for (var experience of this.props.profile.experience){
+
+        var company = dbDataSanitizer.companyName(experience.company), 
+            title = dbDataSanitizer.companyName(experience.title);
+        var itemIndex = expChildren.map(e => e.fullName).indexOf(company);
+        if (itemIndex == -1){
+          expChildren.push({
+            fullName: company,
+            name: this.cropLabel(company),
+            children: [{"name": this.cropLabel(title), "value": 123}],
+          });
+        }
+        else{
+          expChildren[itemIndex].children.push({"name": this.cropLabel(title), "value": 123});
+        }
+
+      }
+
+    }
+
+    return expChildren;
+
+  }
+
+  getEducationData(){
+
+    var edChildren = [];
+    // Education data
+    if (this.props.profile.education){
+
+      for (var education of this.props.profile.education){
+
+        var institutionName = dbDataSanitizer.institutionName(education.institutionName), 
+            degree = dbDataSanitizer.institutionName(education.degree);
+        var itemIndex = edChildren.map(e => e.fullName).indexOf(institutionName);
+        if (itemIndex == -1){
+          edChildren.push({
+            fullName: institutionName,
+            name: this.cropLabel(institutionName),
+            children: [{"name": this.cropLabel(degree), "value": 123}],
+          });
+        }
+        else{
+          edChildren[itemIndex].children.push({"name": this.cropLabel(degree), "value": 123});
+        }
+
+      }
+
+    }
+
+    return edChildren;
+
+  }
+
+  getLanguageData(){
+
+    var langChildren = [];
+
+    // Languages
+    if (this.props.profile.languages){
+      for (var language of this.props.profile.languages){
+
+        var languageName = dbDataSanitizer.languageName(language.name);
+        var itemIndex = langChildren.map(e => e.fullName).indexOf(languageName);
+        if (itemIndex == -1){
+          langChildren.push({
+            fullName: languageName,
+            name: this.cropLabel(languageName),
+            // "children": [],
+            value: 123,
+          });
+        }
+
+      }
+
+    }
+
+    return langChildren;
+
+  }
+
+  getCertificationData(){
+
+    var certChildren = [];
+
+    // Languages
+    if (this.props.profile.certifications){
+      for (var certification of this.props.profile.certifications){
+
+        if (!certification.issuer || !certification.title){
+          continue;
+        }
+
+        var issuerName = dbDataSanitizer.issuerName(certification.issuer), 
+            title = dbDataSanitizer.issuerName(certification.title);
+        var itemIndex = certChildren.map(e => e.fullName).indexOf(issuerName);
+        if (itemIndex == -1){
+          certChildren.push({
+            fullName: issuerName,
+            name: this.cropLabel(issuerName),
+            children: [{"name": this.cropLabel(title), "value": 123}],
+          });
+        }
+        else{
+          certChildren[itemIndex].children.push({"name": this.cropLabel(title), "value": 123});
+        }
+
+      }
+
+    }
+
+    return certChildren;
+
+  }
+
+  cropLabel(str){
+    return str.slice(0, 30) + (str.length >= 30 ? "..." : "")
+  }
+
   setChartData(){
 
-    var expChildren = [], edChildren = [];
-    // Experience
-    for (var experience of this.props.profile.experience){
+    var expChildren = this.getExperienceData(), 
+        edChildren = this.getEducationData(), 
+        langChildren = this.getLanguageData(),
+        certChildren = this.getCertificationData();
 
-      var company = dbDataSanitizer.companyName(experience.company), 
-          title = dbDataSanitizer.companyName(experience.title);
-      var itemIndex = expChildren.map(e => e.fullName).indexOf(company);
-      if (itemIndex == -1){
-        expChildren.push({
-          "fullName": company,
-          "name": company.slice(0, 30) + (company.length >= 30 ? "..." : ""),
-          "children": [{"name": (title.slice(0, 30) + (title.length >= 30 ? "..." : "")), "value": 3938}],
-        });
-      }
-      else{
-        expChildren[itemIndex].children.push({"name": (title.slice(0, 30) + (title.length >= 30 ? "..." : "")), "value": 3938});
-      }
 
-    }
-
-    for (var education of this.props.profile.education){
-
-      var institutionName = dbDataSanitizer.institutionName(education.institutionName), 
-          degree = dbDataSanitizer.institutionName(education.degree);
-      var itemIndex = edChildren.map(e => e.fullName).indexOf(institutionName);
-      if (itemIndex == -1){
-        edChildren.push({
-          "fullName": institutionName,
-          "name": institutionName.slice(0, 30) + (institutionName.length >= 30 ? "..." : ""),
-          "children": [{"name": (degree.slice(0, 30) + (degree.length >= 30 ? "..." : "")), "value": 3938}],
-        });
-      }
-      else{
-        edChildren[itemIndex].children.push({"name": (degree.slice(0, 30) + (degree.length >= 30 ? "..." : "")), "value": 3938});
-      }
-
-    }
-
-    var data = {"name":"profile","children":[{"name":"experience","children": expChildren}, {"name":"education","children": edChildren}]};
+    var data = {"name":"profile",
+                "children":[
+                  {"name":"experience","children": expChildren}, 
+                  {"name":"education","children": edChildren}, 
+                  {"name":"languages","children": langChildren},
+                  {"name":"certifications","children": certChildren},
+                ]};
     this.setState({data: data}, () => {
       this.drawChart();
     });

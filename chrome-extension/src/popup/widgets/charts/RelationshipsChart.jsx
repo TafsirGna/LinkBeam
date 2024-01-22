@@ -84,7 +84,7 @@ export default class RelationshipsChart extends React.Component{
         var childrenList = [];
         for (var suggestion of suggestions){
 
-          var suggestedName = dbDataSanitizer.fullName(dbDataSanitizer.suggestionName(suggestion.name));
+          var suggestedName = dbDataSanitizer.suggestionName(suggestion.name);
           suggestedName = suggestedName.replaceAll(" ", "_").replaceAll("'", "_").replaceAll(",", "_");
 
           childrenList.push({
