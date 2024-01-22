@@ -75,20 +75,38 @@ export default class ProfileGanttChart extends React.Component{
 
     // Setting the data for the chart
     this.setBarData();
+
   }
 
   setBarData(){
 
-    var data = [], minDate = moment();
+    var data = [], 
+        minDate = moment(),
+        objects = null;
 
-    for (var experience of this.props.profile.experience){
+    if (this.props.periodLabel == "experience"){
+      objects = this.props.profile.experience;
+    }
+    else{
+      if (this.props.periodLabel == "education"){
+        objects = this.props.profile.education;
+      }
+      else if (this.props.periodLabel == "all"){
+        objects = this.props.profile.experience;
+        objects = objects.concat(this.props.profile.education);
+      }
+    }
 
-      var company = dbDataSanitizer.companyName(experience.company);
+    for (var object of objects){
+
+      var label = (Object.hasOwn(object, "company")) 
+                    ? dbDataSanitizer.companyName(object.company)
+                    : dbDataSanitizer.institutionName(object.institutionName);
       
       // Setting the minDate object
-      if (experience.period.startDateRange < minDate){ minDate = experience.period.startDateRange; }
+      if (object.period.startDateRange < minDate){ minDate = object.period.startDateRange; }
       
-      data.push({x: [experience.period.startDateRange.format("YYYY-MM-DD"), experience.period.endDateRange.format("YYYY-MM-DD")], y: company});
+      data.push({x: [object.period.startDateRange.format("YYYY-MM-DD"), object.period.endDateRange.format("YYYY-MM-DD")], y: label});
 
     }
 
@@ -150,7 +168,14 @@ export default class ProfileGanttChart extends React.Component{
                                     <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
                                   </div>
                                   <p class="small badge text-muted fst-italic p-0">
-                                    <span>Time chart of job experiences</span>
+                                    <span>
+                                      Time chart of 
+                                      {this.props.periodLabel == "experience" 
+                                        ? " job experiences"
+                                        : this.props.periodLabel == "education"
+                                          ? " institutions attended"
+                                          : " job experiences and institutions attended" }
+                                    </span>
                                   </p>
                                 </div>}
       </>

@@ -192,7 +192,7 @@ export const dbDataSanitizer = {
   },
 
 
-  experienceDates: (expPeriod, func) => {
+  periodDates: (expPeriod, func) => {
 
     // handling date range
     var dateRange = (expPeriod.split("\n")[1]).split(appParams.DATE_RANGE_SEPARATOR);
@@ -212,73 +212,73 @@ export const dbDataSanitizer = {
 
 };
 
-export const computeExperienceTime = function(experiences, func){
+export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
   var expTime = 0;
   var refTime = func.moment();
 
-  if (!experiences){
+  if (!objects){
     return 0;
   }
 
   // Setting the refTime
-  for (var experience of experiences){
+  for (var object of objects){
 
-    if (!experience.period){
+    if (!object.period){
       continue;
     }
 
-    if (typeof experience.period == "string"){
-      experience.period = dbDataSanitizer.experienceDates(experience.period, func);
+    if (typeof object.period == "string"){
+      object.period = dbDataSanitizer.periodDates(object.period, func);
     }
     else{
-      if (typeof experience.period.startDateRange == "string"){
-        experience.period.startDateRange = func.moment(experience.period.startDateRange, func.moment.ISO_8601);
+      if (typeof object.period.startDateRange == "string"){
+        object.period.startDateRange = func.moment(object.period.startDateRange, func.moment.ISO_8601);
       }
 
-      if (typeof experience.period.endDateRange == "string"){
-        experience.period.endDateRange = func.moment(experience.period.endDateRange, func.moment.ISO_8601);
+      if (typeof object.period.endDateRange == "string"){
+        object.period.endDateRange = func.moment(object.period.endDateRange, func.moment.ISO_8601);
       }
     }
 
-    refTime = (experience.period.startDateRange < refTime) ? experience.period.startDateRange : refTime;
+    refTime = (object.period.startDateRange < refTime) ? object.period.startDateRange : refTime;
 
   }
 
   const recursiveCompute = function(refTime){
 
-    var currentExperiences = [], futureExperiences = [];
-    for (var experience of experiences){
+    var currentObjects = [], futureObjects = [];
+    for (var object of objects){
 
-      if (!experience.period){
+      if (!object.period){
         continue;
       }
 
-      if (experience.period.startDateRange <= refTime){
-        if (experience.period.endDateRange > refTime){
-          currentExperiences.push(experience);
+      if (object.period.startDateRange <= refTime){
+        if (object.period.endDateRange > refTime){
+          currentObjects.push(object);
         }
       }
       else{
-        futureExperiences.push(experience);
+        futureObjects.push(object);
       }
 
     }
 
-    if (currentExperiences.length > 0){
-      currentExperiences.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });
-      var experience = currentExperiences[0];
-      expTime += (experience.period.endDateRange.toDate() - refTime.toDate());
-      return recursiveCompute(experience.period.endDateRange);
+    if (currentObjects.length > 0){
+      currentObjects.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });
+      var object = currentObjects[0];
+      expTime += (object.period.endDateRange.toDate() - refTime.toDate());
+      return recursiveCompute(object.period.endDateRange);
     }
     else{
-      if (futureExperiences.length > 0){
-        // console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", futureExperiences);
-        futureExperiences.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
-        var experience = futureExperiences[0];
-        console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", typeof experience.period.endDateRange, experience.period.endDateRange);
-        expTime += (experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate());
-        return recursiveCompute(experience.period.endDateRange);
+      if (futureObjects.length > 0){
+        // console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", futureObjects);
+        futureObjects.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
+        var object = futureObjects[0];
+        console.log("¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤¤ : ", typeof object.period.endDateRange, object.period.endDateRange);
+        expTime += (object.period.endDateRange.toDate() - object.period.startDateRange.toDate());
+        return recursiveCompute(object.period.endDateRange);
       }
       else{
         return expTime;

@@ -17,7 +17,7 @@ import { saveAs } from 'file-saver';
 import { 
   dbDataSanitizer,
   saveCanvas,
-  computeExperienceTime
+  computePeriodTimeSpan
 } from "../../Local_library";
 import moment from 'moment';
 
@@ -107,10 +107,16 @@ export default class ExpEdStackBarChart extends React.Component{
         labels.push(fullName);
 
         // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", search.profile);
-        var experienceTime = computeExperienceTime(search.profile.experience, {moment: moment});
+        var experienceTime = computePeriodTimeSpan(search.profile.experience, "experience", {moment: moment}),
+            educationTime = computePeriodTimeSpan(search.profile.education, "education", {moment: moment});
+        
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);
         expTimeData.push(y.toFixed(2));
+
+        educationTime = Math.ceil(educationTime / (1000 * 60 * 60 * 24)) // diff days
+        y = Math.floor(educationTime / 365);
+        edTimeData.push(-(y.toFixed(2)));
         // expTimeData.push(Number(y));
       }
 
@@ -126,7 +132,7 @@ export default class ExpEdStackBarChart extends React.Component{
           },
           {
             label: 'Education Time (years)',
-            data: labels.map(() => faker.datatype.number({ min: -20, max: 0 })),
+            data: edTimeData, // labels.map(() => faker.datatype.number({ min: -20, max: 0 })),
             backgroundColor: 'rgb(75, 192, 192)',
           },
         ],

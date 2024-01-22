@@ -8,6 +8,7 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
+import { BarChartIcon } from "./SVGs";
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -84,11 +85,15 @@ export default class ProfileExperienceSectionView extends React.Component{
             placement="bottom"
             overlay={<Tooltip id="tooltip1">Click to chart education & experience</Tooltip>}
           >
-            <div class="handy-cursor spinner-grow spinner-grow-sm text-secondary ms-1 mb-2" role="status" onClick={this.showEdExpTimeChart}>
-              <span class="visually-hidden">Loading...</span>
-            </div>
+            <span class="border shadow-sm rounded p-1 text-muted">
+              <span  onClick={this.showEdExpTimeChart} class="handy-cursor mx-1 text-primary">
+                <BarChartIcon size="16"/>
+              </span>
+            </span>
           </OverlayTrigger> 
-    			<ProfileGanttChart profile={this.props.profile}/>
+          <div class="mt-3">
+    			   <ProfileGanttChart profile={this.props.profile} periodLabel="experience" />
+          </div>
     		</div>
 
         <div class="mt-2 mx-2">

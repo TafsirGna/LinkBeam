@@ -8,6 +8,7 @@ import RadarOverviewChart from "./charts/RadarOverviewChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
+import { BarChartIcon } from "./SVGs";
 
 export default class ProfileOverviewSectionView extends React.Component{
 
@@ -15,9 +16,10 @@ export default class ProfileOverviewSectionView extends React.Component{
     super(props);
     this.state = {
       languageListModalShow: false,
-      experienceTime: 0,
       radarChartModalShow: false,
     };
+
+    this.getPeriodTimeSpan = this.getPeriodTimeSpan.bind(this);
   }
 
   handleLanguageListModalClose = () => this.setState({languageListModalShow: false});
@@ -25,38 +27,29 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   componentDidMount() {
 
-    if (this.props.computedData.experienceTime){
-      this.setExperienceTime();
-    }
-
   }
 
   componentDidUpdate(prevProps, prevState){
-
-    if (prevProps.computedData != this.props.computedData){
-      if (prevProps.computedData.experienceTime != this.props.computedData.experienceTime){
-        this.setExperienceTime();
-      }
-    }
 
   }
 
   handleRadarChartModalClose = () => this.setState({radarChartModalShow: false});
   handleRadarChartModalShow = () => this.setState({radarChartModalShow: true});
 
-  setExperienceTime(){
+  getPeriodTimeSpan(periodLabel){
 
-    var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
+    var periodtime = (periodLabel == "experience" ? this.props.computedData.experienceTime : this.props.computedData.educationTime);
+    periodtime = Math.ceil(periodtime / (1000 * 60 * 60 * 24)) // diff days
 
-    var y = Math.floor(experienceTime / 365);
-    var m = Math.floor(experienceTime % 365 / 30);
-    var d = Math.floor(experienceTime % 365 % 30);
+    var y = Math.floor(periodtime / 365);
+    var m = Math.floor(periodtime % 365 / 30);
+    var d = Math.floor(periodtime % 365 % 30);
 
     var yDisplay = y > 0 ? y + (y == 1 ? " year " : " years ") : "";
     var mDisplay = m > 0 ? m + (m == 1 ? ", month, " : ", months ") : "";
     var dDisplay = d > 0 ? d + (d == 1 ? ", day" : ", days") : "";
 
-    this.setState({experienceTime: yDisplay + mDisplay/* + dDisplay*/});
+    return (yDisplay + mDisplay/* + dDisplay*/);
 
   }
 
@@ -64,45 +57,47 @@ export default class ProfileOverviewSectionView extends React.Component{
     return (
       <>
 
-        <div class="mt-2 mx-2">
+        <div class="my-3 mx-2">
           <OverlayTrigger
             placement="bottom"
             overlay={<Tooltip id="tooltip1">Click to draw on radar chart</Tooltip>}
           >
-            <div class="handy-cursor spinner-grow spinner-grow-sm text-secondary ms-2" role="status" onClick={() => {this.handleRadarChartModalShow()}}>
-              <span class="visually-hidden">Loading...</span>
-            </div>
+            <span class="border shadow-sm rounded p-1 text-muted ms-2">
+              <span  onClick={this.handleRadarChartModalShow} class="handy-cursor mx-1 text-primary">
+                <BarChartIcon size="16"/>
+              </span>
+            </span>
           </OverlayTrigger> 
         </div>
 
         <div class="row mx-2 mt-1">
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h6 class="card-title">{this.state.experienceTime}</h6>
+              <h6 class="card-title text-primary-emphasis">~{(this.props.computedData && this.props.computedData.experienceTime) ? this.getPeriodTimeSpan("experience") : 0}</h6>
               <p class="card-text">Experience length</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h5 class="card-title">0</h5>
+              <h6 class="card-title text-warning-emphasis">~{(this.props.computedData && this.props.computedData.educationTime) ? this.getPeriodTimeSpan("education") : 0}</h6>
               <p class="card-text">Education length</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {if (this.props.profile.languages){ this.handleLanguageListModalShow(); }}}>
             <div class="card-body">
-              <h5 class="card-title">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h5>
+              <h6 class="card-title text-info-emphasis">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h6>
               <p class="card-text">Languages</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h5 class="card-title">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h5>
+              <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h6>
               <p class="card-text">Projects</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h5 class="card-title">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h5>
+              <h6 class="card-title">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
               <p class="card-text">Certifications</p>
             </div>
           </div>

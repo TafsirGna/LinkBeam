@@ -36,6 +36,8 @@ export default class RadarOverviewChart extends React.Component{
 		};
 
   	this.setChartLabels = this.setChartLabels.bind(this);
+  	this.getExperienceTime = this.getExperienceTime.bind(this);
+  	this.getEducationTime = this.getEducationTime.bind(this);
 
 	}
 
@@ -69,19 +71,21 @@ export default class RadarOverviewChart extends React.Component{
 
   }
 
-  setExperienceTime(){
+  getExperienceTime(){
 
     var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
-
     var y = Math.floor(experienceTime / 365);
-    var m = Math.floor(experienceTime % 365 / 30);
-    var d = Math.floor(experienceTime % 365 % 30);
 
-    var yDisplay = y > 0 ? y + (y == 1 ? " year " : " years ") : "";
-    var mDisplay = m > 0 ? m + (m == 1 ? ", month, " : ", months ") : "";
-    var dDisplay = d > 0 ? d + (d == 1 ? ", day" : ", days") : "";
+    return y.toFixed(2);
 
-    this.setState({experienceTime: yDisplay + mDisplay/* + dDisplay*/});
+  }
+
+  getEducationTime(){
+
+    var educationTime = Math.ceil(this.props.computedData.educationTime / (1000 * 60 * 60 * 24)) // diff days
+    var y = Math.floor(educationTime / 365);
+
+    return y.toFixed(2);
 
   }
 
@@ -98,8 +102,8 @@ export default class RadarOverviewChart extends React.Component{
 			    {
 			      label: 'Count',
 			      data: [
-			      	2, 
-			      	9, 
+			      	this.getEducationTime(), 
+			      	this.getExperienceTime(), 
 			      	(this.props.profile.languages ? this.props.profile.languages.length : 0), 
 			      	(this.props.profile.certifications ? this.props.profile.certifications.length : 0),
 			      	(this.props.profile.projects ? this.props.profile.projects.length : 0)],

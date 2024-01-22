@@ -1,7 +1,7 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { appParams, computeExperienceTime } from "../Local_library";
+import { appParams, computePeriodTimeSpan } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
@@ -38,11 +38,13 @@ export default class ProfileViewBody extends React.Component{
 
   componentDidMount() {
 
-    var experienceTime = computeExperienceTime(this.props.profile.experience, {moment: moment});
+    var experienceTime = computePeriodTimeSpan(this.props.profile.experience, "experience", {moment: moment});
+    var educationTime = computePeriodTimeSpan(this.props.profile.education, "education", {moment: moment});
 
     this.setState(prevState => {
       let computedProfileData = Object.assign({}, prevState.computedProfileData);
       computedProfileData.experienceTime = experienceTime;
+      computedProfileData.educationTime = educationTime;
       return { computedProfileData };
     });
 

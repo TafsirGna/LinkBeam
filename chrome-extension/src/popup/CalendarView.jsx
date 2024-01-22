@@ -46,6 +46,7 @@ export default class CalendarView extends React.Component{
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
     this.tileClassName = this.tileClassName.bind(this);
     this.isSelectedMonthResponse = this.isSelectedMonthResponse.bind(this);
+    this.getDatePostCount = this.getDatePostCount.bind(this);
   }
 
   componentDidMount() {
@@ -231,6 +232,19 @@ export default class CalendarView extends React.Component{
 
   }
 
+  getDatePostCount(){
+
+    var searches = this.getDayObjectList(this.state.monthSearchList),
+        count = 0;
+
+    for (var search of searches){
+      count += (search.profile.activity ? search.profile.activity.length : 0);
+    }
+
+    return count;
+
+  }
+
   isSelectedMonthResponse(context){
     context = context.replace(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, "");
     context = context.replace("|", "");
@@ -307,7 +321,7 @@ export default class CalendarView extends React.Component{
             </div>
             <div class="col-7 ps-3">
               <div>
-                <span class="badge shadow text-muted border border-warning mb-2">{this.state.selectedDate.toString()}</span>
+                <span class="badge shadow text-muted border border-warning mb-2">{moment(this.state.selectedDate).format('dddd, MMMM Do YYYY')}</span>
               </div>
               <Card className="shadow">
                 <Card.Header>
@@ -322,7 +336,7 @@ export default class CalendarView extends React.Component{
                                                           {tabTitle}
                                                           { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
                                                           { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
-                                                          {/*{ (index == 2 && this.state.selectedDateProfiles) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.state.selectedDateProfiles.length}</span>}*/}
+                                                          { (index == 2 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDatePostCount()}</span>}
                                                         </Nav.Link>
                                                       </Nav.Item>
                                                     ))}

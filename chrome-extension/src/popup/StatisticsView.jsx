@@ -13,6 +13,7 @@ import RelationshipsChart from "./widgets/charts/RelationshipsChart";
 import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot"; ConnectedScatterplot
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
+import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
 
 import { 
   saveCurrentPageTitle, 
@@ -141,11 +142,11 @@ export default class StatisticsView extends React.Component{
           {/*View dropdown*/}
           <div class="clearfix">
             { this.state.controlsVisibility && <span class="border shadow-sm rounded p-1 text-muted">
-                          <span title="Expand chart" onClick={this.onChartExpansion}>
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor mx-1 text-primary"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                          <span title="Expand chart" onClick={this.onChartExpansion} class="handy-cursor mx-1 text-primary">
+                            <MaximizeIcon size="16" className=""/>
                           </span>
-                          <span onClick={this.downloadChart} title="Download chart">
-                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor mx-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                          <span onClick={this.downloadChart} title="Download chart" class="handy-cursor mx-1">
+                            <DownloadIcon size="16" className=""/>
                           </span>
                           {/*<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>*/}
                         </span>}

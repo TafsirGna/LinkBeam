@@ -9,6 +9,7 @@ import {
   ack, 
   dbData 
 } from "../../Local_library";
+import ProfileGanttChart from "../charts/ProfileGanttChart";
 
 export default class EducationExperienceTimeChartModal extends React.Component{
 
@@ -19,12 +20,12 @@ export default class EducationExperienceTimeChartModal extends React.Component{
     };
   }
 
-  componentDidMount() {
+  componentDidMount(){
+
   }
 
   listenToMessages(){
 
-    
   }
 
   render(){
@@ -35,6 +36,8 @@ export default class EducationExperienceTimeChartModal extends React.Component{
             <Modal.Title>Education & Experience</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
+            <ProfileGanttChart profile={this.props.profile} periodLabel="all" />
 
           </Modal.Body>
           <Modal.Footer>
