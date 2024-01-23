@@ -27,6 +27,7 @@ export default class ProfileViewBody extends React.Component{
         "Education",
         "Activity",
         "Suggestions",
+        "Network",
       ],
       edExpTimeChartModalShow: false,
       computedProfileData: {
@@ -118,7 +119,7 @@ export default class ProfileViewBody extends React.Component{
           <div class="card-body">
 
             { this.state.currentTabIndex == 0 && <div class="">
-                                                    <ProfileOverviewSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />
+                                                    <ProfileOverviewSectionView profile={this.props.profile} computedData={this.state.computedProfileData} globalData={this.props.globalData} />
                                                 </div>}
 
             { this.state.currentTabIndex == 1 && <div class="">

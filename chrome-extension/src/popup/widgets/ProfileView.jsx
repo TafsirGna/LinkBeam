@@ -20,6 +20,7 @@ export default class MainProfileView extends React.Component{
       searchesChartModalShow: false,
       percentageDoughnutModalShow: false,
       toastMessage: "",
+      allProfiles: null,
     };
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
@@ -29,6 +30,7 @@ export default class MainProfileView extends React.Component{
     this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
     this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
     this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
+    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
 
   }
 
@@ -85,6 +87,21 @@ export default class MainProfileView extends React.Component{
 
   }
 
+  onProfilesDataReceived(message, sendResponse){
+
+    var context = message.data.objectData.context; 
+    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.PROFILE) == -1){
+      return;
+    }
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var profiles = message.data.objectData.list;
+    this.setState({allProfiles: profiles});
+
+  }
+
   listenToMessages(){
 
     startMessageListener([
@@ -103,6 +120,10 @@ export default class MainProfileView extends React.Component{
       {
         param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
         callback: this.onBookmarkDeletionDataReceived
+      },
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
+        callback: this.onProfilesDataReceived
       },
     ]);
     
@@ -166,9 +187,9 @@ export default class MainProfileView extends React.Component{
           </div>
         </div>          
 
-        <ProfileViewHeader profile={this.props.profile} />
+        <ProfileViewHeader profile={this.props.profile} globalData={{profiles: this.state.allProfiles}}/>
 
-        <ProfileViewBody profile={this.props.profile} />
+        <ProfileViewBody profile={this.props.profile} globalData={{profiles: this.state.allProfiles}}/>
 
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
         
