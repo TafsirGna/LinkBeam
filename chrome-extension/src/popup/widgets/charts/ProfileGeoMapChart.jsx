@@ -11,6 +11,10 @@ import {
 } from "chart.js";
 import { 
   saveCanvas,
+  messageParams, 
+  dbData,
+  dbDataSanitizer,
+  sendDatabaseActionMessage,
 } from "../../Local_library";
 
 import { v4 as uuidv4 } from 'uuid';
@@ -35,7 +39,10 @@ export default class ProfileGeoMapChart extends React.Component{
     this.state = {
       countries: null,
       uuid: uuidv4(),
+      profileLocations: null,
     };
+
+    this.setCountries = this.setCountries.bind(this);
   }
 
   componentDidMount() {
@@ -50,11 +57,16 @@ export default class ProfileGeoMapChart extends React.Component{
       }
     );
 
-    fetch('https://unpkg.com/world-atlas/countries-50m.json').then((r) => r.json()).then((data) => {
-      
-      this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
+    // fetch('https://unpkg.com/world-atlas/countries-50m.json').then((r) => r.json()).then((data) => {
+    //   this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
+    // });
 
-    });
+    if (!Object.hasOwn(this.props.globalData.settings, "geoMapData")){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: this.props.context, criteria: { props: ["geoMapData"] }});
+    }
+    else{
+      this.setCountries();
+    }
 
   }
 
@@ -64,7 +76,18 @@ export default class ProfileGeoMapChart extends React.Component{
 
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      this.setCountries();
+    }
+
+  }
+
+  setCountries(){
+
+    var data = this.props.globalData.settings.geoMapData;
+    this.setState({countries: ChartGeo.topojson.feature(data, data.objects.countries).features});
 
   }
 

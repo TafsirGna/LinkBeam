@@ -65,25 +65,43 @@ export default class ChartExpansionView extends React.Component{
 
             <div class="rounded shadow-lg border p-5">
               { this.state.carrouselActiveItemIndex == 0 && 
-                      <SearchesTimelineChart objects={this.state.periodSearches} view={this.state.carrouselChartView} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <SearchesTimelineChart 
+                        objects={this.state.periodSearches} 
+                        view={this.state.carrouselChartView} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 2 && 
-                      <SearchesKeywordsBarChart globalData={this.props.globalData} objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex}/>}
+                      <SearchesKeywordsBarChart 
+                        globalData={this.props.globalData} 
+                        objects={this.state.periodSearches} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex}/>}
 
               { this.state.carrouselActiveItemIndex == 3 && 
-                      <BubbleProfileRelationMetricsChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <BubbleProfileRelationMetricsChart 
+                        objects={this.state.periodSearches} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 4 && 
-                      <ProfileGeoMapChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <ProfileGeoMapChart 
+                        context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
+                        globalData={this.props.globalData} 
+                        objects={this.state.periodProfiles} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 5 && 
-                      <ExpEdStackBarChart objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <ExpEdStackBarChart 
+                        objects={this.state.periodSearches} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 6 && 
-                      <RelationshipsChart objects={this.state.periodProfiles} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <RelationshipsChart 
+                        objects={this.state.periodProfiles} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
 
               { this.state.carrouselActiveItemIndex == 7 && 
-                      <ConnectedScatterplot objects={this.state.periodSearches} carrouselIndex={this.state.carrouselActiveItemIndex} />}
+                      <ConnectedScatterplot 
+                        objects={this.state.periodSearches} 
+                        carrouselIndex={this.state.carrouselActiveItemIndex} />}
     
             </div>
           </div>

@@ -143,7 +143,7 @@ export default class ProfileOverviewSectionView extends React.Component{
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
             <div class="card-body">
-              <h6 class="card-title">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
+              <h6 class="card-title text-success-emphasis">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
               <p class="card-text">Certifications</p>
             </div>
           </div>

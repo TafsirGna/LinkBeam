@@ -198,7 +198,9 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 4 && <ProfileGeoMapChart 
-                              objects={this.state.periodSearches} 
+                              context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
+                              globalData={this.props.globalData} 
+                              objects={this.state.periodProfiles} 
                               carrouselIndex={4} />}
             </Carousel.Item>
             <Carousel.Item>

@@ -1,10 +1,12 @@
-/*import './ProfileViewReminderModal.css'*/
+/*import './ProfileViewHeader.css'*/
 import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
-import ProfileGeoMapModal from "./modals/ProfileGeoMapModal";
+import Button from 'react-bootstrap/Button';
+import ProfileGeoMapChart from "./charts/ProfileGeoMapChart";
 import eventBus from "../EventBus";
+import { appParams } from "../Local_library";
 import { 
   AlertCircleIcon, 
   LocationIcon, 
@@ -124,8 +126,6 @@ export default class ProfileViewHeader extends React.Component{
           </div>
         </div>
 
-        <ProfileGeoMapModal profile={this.props.profile} show={this.state.geoMapModalShow} onHide={this.handleGeoMapModalClose} />
-
         {/* Cover Image Modal */}
         <Modal size={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? "sm" : "lg"} show={this.state.imageModalShow} onHide={this.handleImageModalClose}>
           <Modal.Header closeButton>
@@ -142,6 +142,25 @@ export default class ProfileViewHeader extends React.Component{
             <img src={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? this.props.profile.avatar : ((this.state.imageModalTitle == COVER_IMAGE_MODAL_TITLE) ? this.props.profile.coverImage : "")} class="rounded shadow w-100" onLoad={() => {this.setState({imageLoaded: true});}} onerror={() => {console.log("Error loading cover image!")}}/>
 
           </Modal.Body>
+        </Modal>
+
+        <Modal show={this.state.geoMapModalShow} onHide={this.handleGeoMapModalClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Locations</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+            <ProfileGeoMapChart 
+              viewChoice={0} 
+              context={appParams.COMPONENT_CONTEXT_NAMES.PROFILE}
+              objects={[this.props.profile]} />
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleGeoMapModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
         </Modal>
       </>
     );
