@@ -9,7 +9,7 @@ import PercentageDoughnutModal from "./modals/PercentageDoughnutModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData, appParams } from "../Local_library";
 import eventBus from "../EventBus";
 
-export default class MainProfileView extends React.Component{
+export default class ProfileView extends React.Component{
 
   constructor(props){
     super(props);
@@ -187,7 +187,7 @@ export default class MainProfileView extends React.Component{
           </div>
         </div>          
 
-        <ProfileViewHeader profile={this.props.profile} globalData={{profiles: this.state.allProfiles}}/>
+        <ProfileViewHeader profile={this.props.profile} globalData={this.props.globalData} localData={{profiles: this.state.allProfiles}}/>
 
         <ProfileViewBody profile={this.props.profile} globalData={{profiles: this.state.allProfiles}}/>
 

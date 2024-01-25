@@ -298,7 +298,6 @@ export default class App extends React.Component{
     ack(sendResponse);
 
     var settings = message.data.objectData.object;
-    console.log('################## : ', this.state.globalData.settings, settings);
 
     if (Object.hasOwn(settings, "lastDataResetDate")){
       
