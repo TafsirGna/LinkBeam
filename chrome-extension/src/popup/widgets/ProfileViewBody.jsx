@@ -27,7 +27,7 @@ export default class ProfileViewBody extends React.Component{
         "Education",
         "Activity",
         "Suggestions",
-        "Network",
+        // "Network",
       ],
       edExpTimeChartModalShow: false,
       computedProfileData: {

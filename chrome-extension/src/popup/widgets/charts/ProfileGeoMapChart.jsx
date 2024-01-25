@@ -98,6 +98,10 @@ export default class ProfileGeoMapChart extends React.Component{
 
   setChartCountries(){
 
+    if (!Object.hasOwn(this.props.globalData.settings, "geoMapData")){
+      return;
+    }
+
     var data = this.props.globalData.settings.geoMapData;
     var chartCountries = ChartGeo.topojson.feature(data, data.objects.countries).features;
 

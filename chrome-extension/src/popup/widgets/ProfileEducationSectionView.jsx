@@ -29,7 +29,7 @@ export default class ProfileEducationSectionView extends React.Component{
           // title = dbDataSanitizer.institutionName(education.degree),
           expTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
 
-      var index = doughnutChartsData.map(e => e.label).indexOf(institutionName);
+      var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(institutionName.toLowerCase());
       if (index == -1){
         doughnutChartsData.push({
           label: institutionName,

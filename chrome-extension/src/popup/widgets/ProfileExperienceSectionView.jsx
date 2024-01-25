@@ -31,7 +31,7 @@ export default class ProfileExperienceSectionView extends React.Component{
           title = dbDataSanitizer.companyName(experience.title),
           expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
 
-      var index = doughnutChartsData.map(e => e.label).indexOf(companyLabel);
+      var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(companyLabel.toLowerCase());
       if (index == -1){
         doughnutChartsData.push({
           label: companyLabel,
@@ -42,7 +42,7 @@ export default class ProfileExperienceSectionView extends React.Component{
         doughnutChartsData[index].value += expTime;
       }
 
-      index = jobTitlesBarData.map(e => e.title).indexOf(title);
+      index = jobTitlesBarData.map(e => e.label.toLowerCase()).indexOf(title.toLowerCase());
       if (index == -1){
         jobTitlesBarData.push({
           label: title,
@@ -97,7 +97,7 @@ export default class ProfileExperienceSectionView extends React.Component{
     		</div>
 
         <div class="mt-2 mx-2">
-          <JobTitlesBarChart data={this.state.jobTitlesBarData}/>
+          <JobTitlesBarChart data={this.state.jobTitlesBarData} profile={this.props.profile}/>
         </div>
       </>
     );
