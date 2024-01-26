@@ -167,17 +167,17 @@ export default class JobTitlesBarChart extends React.Component{
           <Modal.Body>
 
             { this.state.selectedChartElementIndex && <div>
-                                <span class="shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{this.props.data[this.state.selectedChartElementIndex].label}</span>
+                                <span class="shadow badge bg-secondary-subtle border border-info-subtle text-info-emphasis rounded-pill">{this.props.data[this.state.selectedChartElementIndex].label}</span>
                                 <ul class="timeline mt-4 mx-2 small">
                                   { this.props.profile.experience.map((experience) => (
                                       (dbDataSanitizer.preSanitize(experience.title).toLowerCase() == this.props.data[this.state.selectedChartElementIndex].label.toLowerCase()) 
-                                        &&  <li class="timeline-item mb-5">
-                                              <h5 class="fw-bold">
+                                        &&  <li class="timeline-item mb-5 small">
+                                              <h6 class="fw-bold">
                                                 <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
                                                   <img class="rounded-circle me-1" width="16" height="16" src={/*profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar :*/ company_icon} alt=""/>
                                                   {dbDataSanitizer.preSanitize(experience.company)}
                                                 </span>
-                                              </h5>
+                                              </h6>
                                               <p class="text-muted mb-2 fw-light">10 Janvier 2019 - 17 Février 2020</p>
                                               <p class="text-muted border rounded p-2 shadow-sm">
                                                 Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit

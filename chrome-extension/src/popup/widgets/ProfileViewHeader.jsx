@@ -6,7 +6,14 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProfileGeoMapChart from "./charts/ProfileGeoMapChart";
 import eventBus from "../EventBus";
-import { appParams } from "../Local_library";
+import { 
+  appParams, 
+  dbDataSanitizer,
+  sendDatabaseActionMessage,
+  messageParams,
+  dbData,
+} from "../Local_library";
+import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import { 
   AlertCircleIcon, 
   LocationIcon, 
@@ -29,10 +36,23 @@ export default class ProfileViewHeader extends React.Component{
       imageModalTitle: "",
       imageModalShow: false,
       geoMapModalShow: false,
+      connectionModalShow: false,
+      followersCompData: null,
+      connectionsCompData: null, 
     };
   }
 
   componentDidMount() {
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.localData != this.props.localData){
+      if (prevProps.localData.profiles != this.props.localData.profiles){
+        this.handleConnectionModalShow();
+      }
+    }
 
   }
 
@@ -41,6 +61,76 @@ export default class ProfileViewHeader extends React.Component{
 
   handleGeoMapModalClose = () => this.setState({geoMapModalShow: false});
   handleGeoMapModalShow = () => this.setState({geoMapModalShow: true});
+
+  handleConnectionModalClose = () => {
+    this.setState({ connectionModalShow: false });
+  };
+  handleConnectionModalShow = () => {
+
+    if (!this.props.localData.profiles){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+      return ;
+    }
+
+    var followersCompData = null, connectionsCompData = null;
+        
+    if (this.props.profile.nFollowers && !this.state.followersCompData){
+
+      followersCompData = {
+        label: "Followers",
+        value: 0,
+      };
+
+      var nFollowers = dbDataSanitizer.profileRelationMetrics(this.props.profile.nFollowers);
+
+      for (var profile of this.props.localData.profiles){
+        if (profile.url == this.props.profile.url){
+          continue;
+        }
+        if (dbDataSanitizer.profileRelationMetrics(profile.nFollowers) <= nFollowers){
+          followersCompData.value += 1;
+        }
+      }
+
+      followersCompData.value /= this.props.localData.profiles.length;
+      followersCompData.value *= 100;
+
+    }
+
+    if (this.props.profile.nConnections && !this.state.connectionsCompData){
+      connectionsCompData = {
+        label: "Connections",
+        value: 0,
+      };
+
+      var nConnections = dbDataSanitizer.profileRelationMetrics(this.props.profile.nConnections);
+
+      for (var profile of this.props.localData.profiles){
+        if (profile.url == this.props.profile.url){
+          continue;
+        }
+        if (dbDataSanitizer.profileRelationMetrics(profile.nConnections) <= nConnections){
+          connectionsCompData.value += 1;
+        }
+      }
+
+      connectionsCompData.value /= this.props.localData.profiles.length;
+      connectionsCompData.value *= 100;
+
+    }
+
+    this.setState({connectionModalShow: true}, () => {
+
+      if (followersCompData){
+        this.setState({followersCompData: followersCompData});
+      }
+
+      if (connectionsCompData){
+        this.setState({connectionsCompData: connectionsCompData});
+      }
+
+    });
+  };
 
   showReminder(){
 
@@ -68,7 +158,9 @@ export default class ProfileViewHeader extends React.Component{
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
-            <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning"><small class="text-body-secondary">{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small></p>
+            <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" onClick={this.handleConnectionModalShow}>
+              <small class="text-body-secondary handy-cursor" >{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small>
+            </p>
             <p class="card-text mb-1 text-center text-muted">
               { this.props.profile.location && <OverlayTrigger
                               placement="bottom"
@@ -144,6 +236,7 @@ export default class ProfileViewHeader extends React.Component{
           </Modal.Body>
         </Modal>
 
+        {/* Geo Map Modal */}
         <Modal show={this.state.geoMapModalShow} onHide={this.handleGeoMapModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Locations</Modal.Title>
@@ -162,6 +255,54 @@ export default class ProfileViewHeader extends React.Component{
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {/* Followers and connections modal */}
+        <Modal 
+          show={this.state.connectionModalShow} 
+          onHide={this.handleConnectionModalClose}
+          size={ this.props.profile.nFollowers && this.props.profile.nConnections ? "lg" : "sm"}>
+          <Modal.Header closeButton>
+            <Modal.Title>Connections</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+            <div class={this.state.connectionsCompData && this.state.followersCompData ? "row" : ""}>
+              {this.state.connectionsCompData && <div class="col">
+                              <div class="text-center col-6 offset-3">
+                                <ItemPercentageDoughnutChart data={this.state.connectionsCompData}/>
+                              </div>
+                            <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
+                              {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s connections pool is larger than "}
+                              <span class="badge text-bg-primary">{this.state.connectionsCompData.value}</span>
+                              {"% of all the profiles you've visited so far." }
+                            </p>
+                            </div>}
+
+              {this.state.followersCompData && <div class="col">
+                              <div class="text-center col-6 offset-3">
+                                <ItemPercentageDoughnutChart data={this.state.followersCompData}/>
+                              </div>
+                            <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
+                              {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s followers pool is larger than "}
+                              <span class="badge text-bg-primary">{this.state.followersCompData.value}</span>
+                              {"% of all the profiles you've visited so far." }
+                            </p>
+                            </div>}
+
+              { !this.state.followersCompData && !this.state.connectionsCompData && <div class="text-center m-5 mt-4">
+                      <AlertCircleIcon size="100" className=""/>
+                      <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
+                    </div>}
+            </div>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleConnectionModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
       </>
     );
   }

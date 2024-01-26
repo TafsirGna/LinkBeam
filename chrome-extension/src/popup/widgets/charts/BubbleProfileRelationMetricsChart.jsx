@@ -93,8 +93,8 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     			(resultsDataset2[itemIndex]).r += (search.timeCount / 60);
     		}
     		else{
-    			var followerCount = search.profile.nFollowers ? dbDataSanitizer.profileFollowers(search.profile.nFollowers) : 0,
-    					connectionCount = search.profile.nConnections ? dbDataSanitizer.profileConnections(search.profile.nConnections) : 0;
+    			var followerCount = dbDataSanitizer.profileRelationMetrics(search.profile.nFollowers),
+    					connectionCount = dbDataSanitizer.profileRelationMetrics(search.profile.nConnections);
 
     			resultsDataset1.push({
     				url: search.url,

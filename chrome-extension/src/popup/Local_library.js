@@ -73,28 +73,14 @@ export const chartData = {
 
 export const dbDataSanitizer = {
 
-  profileFollowers: function(str) {
-    str = str.replace("followers", "");
+  profileRelationMetrics: function(str) {
 
-    let newstr = "";
-    // Loop and traverse string
-    for (let i = 0; i < str.length; i++)
-        if (!(str[i] == "\n" || str[i] == "\r" || str[i] == " " || str[i] == "+")){
-          if (str[i] == "K"){
-            newstr += "000"
-          }
-          else{
-            newstr += str[i];
-          }
-        }
+    if (!str){
+      return 0;
+    }
 
-    return parseInt(newstr);
-
-  },
-
-  profileConnections: function(str) {
-
-    str = str.replace("connections", "");
+    str = str.replace("connections", "")
+             .replace("followers", "");
 
     let newstr = "";
     // Loop and traverse string
