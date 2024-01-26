@@ -40,6 +40,8 @@ export default class ProfileViewHeader extends React.Component{
       followersCompData: null,
       connectionsCompData: null, 
     };
+
+    this.setConnectionModalData = this.setConnectionModalData.bind(this);
   }
 
   componentDidMount() {
@@ -50,7 +52,7 @@ export default class ProfileViewHeader extends React.Component{
 
     if (prevProps.localData != this.props.localData){
       if (prevProps.localData.profiles != this.props.localData.profiles){
-        this.handleConnectionModalShow();
+        this.setConnectionModalData();
       }
     }
 
@@ -62,15 +64,7 @@ export default class ProfileViewHeader extends React.Component{
   handleGeoMapModalClose = () => this.setState({geoMapModalShow: false});
   handleGeoMapModalShow = () => this.setState({geoMapModalShow: true});
 
-  handleConnectionModalClose = () => {
-    this.setState({ connectionModalShow: false });
-  };
-  handleConnectionModalShow = () => {
-
-    if (!this.props.localData.profiles){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-      return ;
-    }
+  setConnectionModalData(){
 
     var followersCompData = null, connectionsCompData = null;
         
@@ -119,17 +113,29 @@ export default class ProfileViewHeader extends React.Component{
 
     }
 
-    this.setState({connectionModalShow: true}, () => {
+    if (followersCompData){
+      this.setState({followersCompData: followersCompData});
+    }
 
-      if (followersCompData){
-        this.setState({followersCompData: followersCompData});
-      }
+    if (connectionsCompData){
+      this.setState({connectionsCompData: connectionsCompData});
+    }
 
-      if (connectionsCompData){
-        this.setState({connectionsCompData: connectionsCompData});
-      }
+  }
 
-    });
+  handleConnectionModalClose = () => {
+    this.setState({ connectionModalShow: false });
+  };
+  handleConnectionModalShow = () => {
+
+    if (!this.props.localData.profiles){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+    }
+    else{
+      this.setConnectionModalData();
+    }
+
+    this.setState({connectionModalShow: true});
   };
 
   showReminder(){
@@ -158,7 +164,7 @@ export default class ProfileViewHeader extends React.Component{
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
-            <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" onClick={this.handleConnectionModalShow}>
+            <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" onClick={this.handleConnectionModalShow} title="Click to see more infos">
               <small class="text-body-secondary handy-cursor" >{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small>
             </p>
             <p class="card-text mb-1 text-center text-muted">

@@ -166,7 +166,7 @@ export default class JobTitlesBarChart extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            { this.state.selectedChartElementIndex && <div>
+            { this.state.selectedChartElementIndex != null && <div>
                                 <span class="shadow badge bg-secondary-subtle border border-info-subtle text-info-emphasis rounded-pill">{this.props.data[this.state.selectedChartElementIndex].label}</span>
                                 <ul class="timeline mt-4 mx-2 small">
                                   { this.props.profile.experience.map((experience) => (
