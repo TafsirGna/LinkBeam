@@ -66,7 +66,9 @@ export default class ItemPercentageDoughnutChart extends React.Component{
   render(){
     return (
       <>
-      	{ this.state.data && <Doughnut data={this.state.data} options={options} /> }
+        <div class={"" + this.props.className} onClick={this.props.onClick}>
+      	 { this.state.data && <Doughnut data={this.state.data} options={options} /> }
+        </div>
       </>
     );
   }

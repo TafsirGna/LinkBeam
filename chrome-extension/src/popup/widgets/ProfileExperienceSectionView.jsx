@@ -64,6 +64,10 @@ export default class ProfileExperienceSectionView extends React.Component{
     eventBus.dispatch(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, null);
   }
 
+  onDonutChartClick(){
+
+  }
+
   render(){
     return (
       <>
@@ -71,7 +75,7 @@ export default class ProfileExperienceSectionView extends React.Component{
                                                 <div class="container-fluid horizontal-scrollable">
                                                   <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
                                                     { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                      <ItemPercentageDoughnutChart data={experienceItem} variant={"primary"}/>
+                                                                                                                      <ItemPercentageDoughnutChart data={experienceItem} variant={"primary"} className="handy-cursor" onClick={this.onDonutChartClick}/>
                                                                                                                     </div>) }
                                                   </div>
                                                 </div>
@@ -99,6 +103,14 @@ export default class ProfileExperienceSectionView extends React.Component{
         <div class="mt-2 mx-2">
           <JobTitlesBarChart data={this.state.jobTitlesBarData} profile={this.props.profile}/>
         </div>
+
+
+
+
+        
+
+
+        
       </>
     );
   }
