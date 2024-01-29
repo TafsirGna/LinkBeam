@@ -184,6 +184,47 @@ export const dbDataSanitizer = {
 
 };
 
+export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
+
+  if (action == "export"){
+
+    const url = window.URL.createObjectURL(jsonDataBlob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+  }
+  else if (action == "archiving"){
+    
+    (async () => {    
+
+      zip.file(fileName, jsonDataBlob);
+
+      // Generate the zip file
+      const zipData = await zip.generateAsync({
+        type: "blob",
+        streamFiles: true,
+      });
+
+      // Create a download link for the zip file
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(zipData);
+
+      fileName = fileName.replace(".json", ".zip");
+
+      link.download = fileName;
+      link.click();
+      link.remove();
+    })();
+
+  }
+
+}
+
 export const performCertComparison = function(theProfile, certName, profileList){
 
   var certNameWords = certName.split(" "), results = [];

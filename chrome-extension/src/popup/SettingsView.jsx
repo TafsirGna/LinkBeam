@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';
+import JSZip from "jszip";
 import { 
   saveCurrentPageTitle, 
   sendDatabaseActionMessage,
@@ -15,6 +16,7 @@ import {
   messageParams,
   dbData, 
   appParams,
+  procExtractedData,
 } from "./Local_library";
 // import Button from 'react-bootstrap/Button';
 
@@ -38,6 +40,7 @@ export default class SettingsView extends React.Component{
       offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
       offCanvasFormSelectValue: "1",
       usageQuota: null,
+      action: null,
     };
 
     this.deleteData = this.deleteData.bind(this);
@@ -158,20 +161,18 @@ export default class SettingsView extends React.Component{
 
     try {
       
-      var jsonData = JSON.stringify(message.data.objectData.list);
+      const jsonData = JSON.stringify(message.data.objectData.list),
+            jsonDataBlob = new Blob([jsonData]);
 
-      const url = window.URL.createObjectURL(new Blob([jsonData]));
-      const link = document.createElement('a');
-      link.href = url;
-      const fileName = "LinkBeam_Data_Export_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      var fileName = "LinkBeam_Data_" + this.state.action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
+
+      procExtractedData(jsonDataBlob, fileName, this.state.action, new JSZip());
 
     } catch (error) {
       console.error('Error while downloading the received data: ', error);
     }
+
+    this.setState({action: null});
 
   }
 
@@ -252,12 +253,14 @@ export default class SettingsView extends React.Component{
     }
   }
 
-  initDataExport(){
-    const response = confirm("Do you confirm the download of your data as specified ?");
+  initDataExport(action){
+    const response = confirm("Do you confirm the "+ action +" of your data as specified ?");
 
     if (response){
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: { props: { date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]} }});
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
+      this.setState({action: action}, () => {
+        var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: { props: { date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]} }});
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
+      });
     }
 
   }
@@ -498,9 +501,13 @@ export default class SettingsView extends React.Component{
             </Form>
 
             <div class="d-flex">
-              { this.state.offCanvasTitle == "Data deletion" && <div><button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button></div>}
+              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
 
-              { this.state.offCanvasTitle == "Data export" && <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={this.initDataExport}>Export</button>}
+              { this.state.offCanvasTitle == "Data export" && 
+                                        <div class="ms-auto">
+                                          <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
+                                          <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
+                                        </div>}
             </div>
 
           </Offcanvas.Body>
