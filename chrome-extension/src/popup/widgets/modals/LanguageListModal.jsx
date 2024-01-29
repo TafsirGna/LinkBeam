@@ -99,7 +99,11 @@ export default class LanguageListModal extends React.Component{
   render(){
     return (
       <>
-        <Modal show={this.props.show} onHide={this.props.onHide}>
+        <Modal 
+          show={this.props.show} 
+          onHide={this.props.onHide} 
+          // size="lg"
+          >
           <Modal.Header closeButton>
             <Modal.Title>Languages</Modal.Title>
           </Modal.Header>
@@ -109,7 +113,13 @@ export default class LanguageListModal extends React.Component{
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
 
-            { this.state.pieData && <Pie data={this.state.pieData} />}
+            { this.state.pieData && <div class="row">
+                                      <div class={"col-6 " + "offset-3"}>
+                                        <Pie data={this.state.pieData} />
+                                      </div>
+                                      <div class="col-6">
+                                      </div>
+                                    </div>}
 
           </Modal.Body>
           <Modal.Footer>

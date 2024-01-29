@@ -184,6 +184,48 @@ export const dbDataSanitizer = {
 
 };
 
+export const performCertComparison = function(theProfile, certName, profileList){
+
+  var certNameWords = certName.split(" "), results = [];
+
+  for (var profile of profileList){
+
+    if (profile.url == theProfile.url){
+      continue;
+    }
+
+    if (!profile.certifications){
+      continue;
+    }
+
+    for (var certification of profile.certifications){
+
+      if (!certification.title){
+        continue;
+      }
+      
+      var certTitle = dbDataSanitizer.preSanitize(certification.title);
+
+      var percentage = 0;
+      for (var word of certNameWords){
+        if (certTitle.indexOf(word) != -1){
+          percentage += 1;
+        }
+      }
+
+      percentage /= certNameWords.length;
+      if (percentage > .75){
+        results.push(profile);
+      }
+
+    } 
+
+  }
+
+  return results;
+
+}
+
 export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
   var expTime = 0;

@@ -122,7 +122,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     this.setState({bubbleData: {
 			  datasets: [
 			    {
-			      label: '# Searches',
+			      label: '# of Searches',
 			      data: resultsDataset1,
 			      borderColor: colorDataset1.borders,
 				    backgroundColor: colorDataset1.borders,

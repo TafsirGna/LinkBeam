@@ -7,6 +7,8 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
 import newspaper_icon from '../../assets/newspaper_icon.png';
 import { PictureIcon } from "./SVGs";
+import Button from 'react-bootstrap/Button';
+import Offcanvas from 'react-bootstrap/Offcanvas';
 
 
 export default class ProfileActivityListView extends React.Component{
@@ -15,6 +17,8 @@ export default class ProfileActivityListView extends React.Component{
     super(props);
     this.state = {
       posts: null,
+      offCanvasShow: false,
+      selectedPost: null,
     };
 
     this.setPosts = this.setPosts.bind(this);
@@ -34,6 +38,14 @@ export default class ProfileActivityListView extends React.Component{
     }
 
   }
+
+  handleOffCanvasClose = () => {
+    this.setState({offCanvasShow: false, selectedPost: null});
+  };
+
+  handleOffCanvasShow = (post) => {
+    this.setState({selectedPost: post, offCanvasShow: true});
+  };
 
   setPosts(){
 
@@ -128,25 +140,9 @@ export default class ProfileActivityListView extends React.Component{
                                                     <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                                   </a>
                                                   <span title="Image" class="mx-1">
-                                                    <OverlayTrigger 
-                                                      trigger="click" 
-                                                      placement="right" 
-                                                      overlay={
-                                                        <Popover id={`popover-positioned-right`}>
-                                                          <Popover.Header as="h3">Picture</Popover.Header>
-                                                          <Popover.Body className="px-0">
-                                                            <img 
-                                                              src={newspaper_icon} 
-                                                              class="" 
-                                                              width="250"
-                                                              alt="..."/>
-                                                          </Popover.Body>
-                                                        </Popover>
-                                                      }>
-                                                      <span class="handy-cursor">
-                                                        <PictureIcon size="15" className=""/>
-                                                      </span>
-                                                    </OverlayTrigger>
+                                                    <span class="handy-cursor" onClick={() => {this.handleOffCanvasShow(profileActivityObject);}}>
+                                                      <PictureIcon size="15" className=""/>
+                                                    </span>
                                                   </span>
                                                 </span>
                                               </p>
@@ -155,6 +151,30 @@ export default class ProfileActivityListView extends React.Component{
                                               </p>
                                             </li>))} 
                                         </ul>
+
+
+                                        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+                                          <Offcanvas.Header closeButton>
+                                            <Offcanvas.Title>Post's Illustration</Offcanvas.Title>
+                                          </Offcanvas.Header>
+                                          <Offcanvas.Body>
+                                            <div>
+
+                                              { !this.state.selectedPost && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                                                                                </div>
+                                                                                <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                                                                              </div>
+                                                                            </div>}
+
+                                              { this.state.selectedPost && <img 
+                                                                                              src={(this.state.selectedPost.picture && this.state.selectedPost.picture != "") ? this.state.selectedPost.picture : newspaper_icon} 
+                                                                                              class="img-thumbnail shadow-lg" 
+                                                                                              width="350"
+                                                                                              alt="..."/>}
+                                            </div>
+                                          </Offcanvas.Body>
+                                        </Offcanvas>
+
                                       </section>}
                   </div>}
 

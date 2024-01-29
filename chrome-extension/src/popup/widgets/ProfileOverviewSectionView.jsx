@@ -9,8 +9,16 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
-import { BarChartIcon } from "./SVGs";
-import { dbDataSanitizer, sendDatabaseActionMessage, computePeriodTimeSpan, appParams, messageParams, dbData } from "../Local_library";
+import { BarChartIcon, AlertCircleIcon } from "./SVGs";
+import { 
+  dbDataSanitizer, 
+  sendDatabaseActionMessage, 
+  computePeriodTimeSpan, 
+  appParams, 
+  messageParams, 
+  dbData,
+  performCertComparison,
+} from "../Local_library";
 
 export default class ProfileOverviewSectionView extends React.Component{
 
@@ -21,13 +29,43 @@ export default class ProfileOverviewSectionView extends React.Component{
       donutChartModalShow: false,
       donutChartModalTitle: null,
       donutChartModalItemData: null,
+      certificationsModalShow: false,
+      certificationsList: null,
     };
 
     this.getPeriodTimeSpan = this.getPeriodTimeSpan.bind(this);
+    this.showCertComparisonData = this.showCertComparisonData.bind(this);
   }
 
   handleLanguageListModalClose = () => this.setState({languageListModalShow: false});
-  handleLanguageListModalShow = () => this.setState({languageListModalShow: true});
+  handleLanguageListModalShow = () => {
+
+    if (!this.props.profile.languages){ 
+      return;
+    }
+
+    this.setState({languageListModalShow: true})
+  };
+
+  handleCertificationsModalClose = () => this.setState({certificationsModalShow: false});
+  handleCertificationsModalShow = () => {
+
+    if (!this.props.profile.certifications){ 
+      return;
+    }
+
+    var certificationsList = [];
+    for (var certification of this.props.profile.certifications){
+      certification["linkedProfiles"] = null;
+      certificationsList.push(certification); 
+    }
+
+    this.setState({
+      certificationsList: certificationsList, 
+      certificationsModalShow: true
+    });
+
+  };
 
   componentDidMount() {
 
@@ -37,9 +75,39 @@ export default class ProfileOverviewSectionView extends React.Component{
 
     if (prevProps.globalData != this.props.globalData){
       if (prevProps.globalData.profiles != this.props.globalData.profiles){
-        this.setDonutChartModalItemData();
+        if (this.state.donutChartModalShow){
+          this.setDonutChartModalItemData();
+        }
+        // if (this.state.certificationsModalShow){
+        //   this.showCertComparisonData()
+        // }
       }
     }
+
+  }
+
+  showCertComparisonData(certName, index){
+
+    if (!certName){
+      alert("Not enough data to perform a comparison task! ");
+      return;
+    }
+
+    if (!this.props.globalData.profiles){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+      return;
+    }
+
+    // To prevent repeat this action multiple times
+    if (this.state.certificationsList[index].linkedProfiles){
+      return;
+    }
+
+    var profiles = performCertComparison(this.props.profile, certName, this.props.globalData.profiles);
+    var certificationsList = this.state.certificationsList;
+    certificationsList[index].linkedProfiles = profiles;
+
+    this.setState({certificationsList: certificationsList});
 
   }
 
@@ -129,7 +197,7 @@ export default class ProfileOverviewSectionView extends React.Component{
               <p class="card-text">Education length</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {if (this.props.profile.languages){ this.handleLanguageListModalShow(); }}}>
+          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleLanguageListModalShow}>
             <div class="card-body">
               <h6 class="card-title text-info-emphasis">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h6>
               <p class="card-text">Languages</p>
@@ -141,7 +209,7 @@ export default class ProfileOverviewSectionView extends React.Component{
               <p class="card-text">Projects</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
+          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleCertificationsModalShow}>
             <div class="card-body">
               <h6 class="card-title text-success-emphasis">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
               <p class="card-text">Certifications</p>
@@ -178,6 +246,7 @@ export default class ProfileOverviewSectionView extends React.Component{
           </Modal.Footer>
         </Modal>
 
+        {/* Donut chart modal */}
         <Modal 
           show={this.state.donutChartModalShow} 
           onHide={this.handleDonutChartModalClose}
@@ -209,6 +278,53 @@ export default class ProfileOverviewSectionView extends React.Component{
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleDonutChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        {/*Certfication Modal*/}
+        <Modal 
+          show={this.state.certificationsModalShow} 
+          onHide={this.handleCertificationsModalClose}
+          size="lg"
+          >
+          <Modal.Header closeButton>
+            <Modal.Title>Certifications</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+            { this.state.certificationsList && <div class="list-group small mt-1 shadow-sm border-0">
+              { this.state.certificationsList.map((certification, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" onClick={() => {this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)}} title="Click to show more data">
+                                            <div class="d-flex gap-2 w-100 justify-content-between">
+                                              <div>
+                                                <p class="mb-1">
+                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
+                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
+                                                    {certification.issuer ? dbDataSanitizer.preSanitize(certification.issuer) : "Missing data"}
+                                                  </span>
+                                                </p>
+                                                <p class="text-muted mb-2">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>
+                                                { certification.linkedProfiles != null && <p class="bg-light fw-light mb-0 opacity-75 border border-warning small p-2 rounded shadow-sm fw-bold">
+                                                                                                  {/*<AlertCircleIcon size="14"/>*/}
+                                                                                                  It seems like 
+                                                                                                  <OverlayTrigger
+                                                                                                    placement="top"
+                                                                                                    overlay={<Tooltip id="tooltip1">{(certification.linkedProfiles.length * 100) / this.props.globalData.profiles.length} %</Tooltip>}
+                                                                                                  >
+                                                                                                    <span class="badge text-bg-primary shadow-sm px-1 mx-1"> {(certification.linkedProfiles.length * 100) / this.props.globalData.profiles.length} </span> 
+                                                                                                  </OverlayTrigger>
+                                                                                                  % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
+                                                                                                </p>}
+                                              </div>
+                                              <small class="opacity-50 text-nowrap">{moment(/*profileActivityObject.date, moment.ISO_8601*/ new Date()).fromNow()}</small>
+                                            </div>
+                                          </a>))}
+              </div>}
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleCertificationsModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

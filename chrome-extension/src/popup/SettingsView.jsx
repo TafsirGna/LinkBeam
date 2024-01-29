@@ -30,6 +30,7 @@ export default class SettingsView extends React.Component{
         status: "NO",
         info: ""
       },
+      postReminderValue: "Never",
       offCanvasShow: false,
       offCanvasTitle: "",
       offCanvasFormValidated: false,
@@ -53,6 +54,7 @@ export default class SettingsView extends React.Component{
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
     this.initDataExport = this.initDataExport.bind(this);
+    this.setPostReminderValue = this.setPostReminderValue.bind(this);
 
   }
 
@@ -287,6 +289,12 @@ export default class SettingsView extends React.Component{
 
   }
 
+  setPostReminderValue(value){
+
+    this.setState({postReminderValue: value});
+
+  }
+
   render(){
     return (
       <>
@@ -322,6 +330,24 @@ export default class SettingsView extends React.Component{
                     checked={this.props.globalData.settings.autoTabOpening}
                     onChange={this.saveAutoTabOpeningState}
                   />
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Outdated profile reminder</strong>
+                  <div class="dropdown">
+                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                      <span class="rounded shadow badge text-bg-secondary">{this.state.postReminderValue}</span>
+                    </div>
+                    <ul class="dropdown-menu shadow-lg border">
+                      {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                            <li><Link class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</Link></li>  
+                        ))}
+                    </ul>
+                  </div>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -472,7 +498,7 @@ export default class SettingsView extends React.Component{
             </Form>
 
             <div class="d-flex">
-              { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
+              { this.state.offCanvasTitle == "Data deletion" && <div><button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button></div>}
 
               { this.state.offCanvasTitle == "Data export" && <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={this.initDataExport}>Export</button>}
             </div>

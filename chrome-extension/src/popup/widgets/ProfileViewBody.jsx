@@ -123,7 +123,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 1 && <div class="">
-                                                    <ProfileAboutSectionView profile={this.props.profile} />
+                                                    <ProfileAboutSectionView profile={this.props.profile} globalData={this.props.globalData}/>
                                                 </div>}
 
             { this.state.currentTabIndex == 2 && <div class="">

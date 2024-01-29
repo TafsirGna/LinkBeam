@@ -52,7 +52,9 @@ export default class ProfileViewHeader extends React.Component{
 
     if (prevProps.localData != this.props.localData){
       if (prevProps.localData.profiles != this.props.localData.profiles){
-        this.setConnectionModalData();
+        if (this.state.connectionModalShow){
+          this.setConnectionModalData();
+        }
       }
     }
 
@@ -156,7 +158,7 @@ export default class ProfileViewHeader extends React.Component{
                 <AlertCircleIcon size="14"/>
               </span>
             </OverlayTrigger>
-          <span>The data below are only the ones made publicly available by this user on its profile page</span>
+          <span>The data below are only the ones made publicly available by this user on its linkedin profile page</span>
         </p>
         <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
@@ -165,7 +167,18 @@ export default class ProfileViewHeader extends React.Component{
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
             <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" onClick={this.handleConnectionModalShow} title="Click to see more infos">
-              <small class="text-body-secondary handy-cursor" >{this.props.profile.nFollowers} · {this.props.profile.nConnections} </small>
+              <small class="text-body-secondary handy-cursor" >
+                {(this.props.profile.nFollowers ? this.props.profile.nFollowers : "") + (this.props.profile.nConnections ? " · " : "")} 
+                {this.props.profile.nConnections ? this.props.profile.nConnections : ""}
+                { !this.props.profile.nFollowers && !this.props.profile.nConnections && <OverlayTrigger
+                                                  placement="top"
+                                                  overlay={<ReactTooltip id="tooltip1">Missing followers and connections count!</ReactTooltip>}
+                                                >
+                                                  <span class="text-warning">
+                                                    <AlertCircleIcon size="14"/>
+                                                  </span>
+                                                </OverlayTrigger>} 
+              </small>
             </p>
             <p class="card-text mb-1 text-center text-muted">
               { this.props.profile.location && <OverlayTrigger

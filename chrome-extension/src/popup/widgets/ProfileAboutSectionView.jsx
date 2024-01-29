@@ -1,11 +1,20 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
-import { appParams } from "../Local_library";
 import Collapse from 'react-bootstrap/Collapse';
 import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
-import { dbDataSanitizer } from "../Local_library";
+import { 
+  dbDataSanitizer,
+  sendDatabaseActionMessage, 
+  appParams,
+  dbData,
+  messageParams,
+} from "../Local_library";
 import eventBus from "../EventBus";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
+
 
 export default class ProfileAboutSectionView extends React.Component{
 
@@ -16,6 +25,8 @@ export default class ProfileAboutSectionView extends React.Component{
       uniqueWordsCount: null,
       oneUseWordCount: 0,
       profileAbout: "",
+      donutChartModalShow: false,
+      donutChartModalItemData: null,
     };
 
     this.setOneUseWordCount = this.setOneUseWordCount.bind(this);
@@ -26,8 +37,6 @@ export default class ProfileAboutSectionView extends React.Component{
 
     // setting profileAbout
     var profileAbout = dbDataSanitizer.profileAbout(this.props.profile.info);
-    // console.log("****************** 1 : ", this.props.profile.info);
-    // console.log("****************** 2 : ", profileAbout);
 
     this.setState({profileAbout: profileAbout}, () => {
       this.setOneUseWordCount();
@@ -36,6 +45,14 @@ export default class ProfileAboutSectionView extends React.Component{
   }
 
   componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.profiles != this.props.globalData.profiles){
+        // if (this.state.donutChartModalShow){
+          this.handleDonutChartModalShow();
+        // }
+      }
+    }
 
   }
 
@@ -100,7 +117,6 @@ export default class ProfileAboutSectionView extends React.Component{
     }
 
     this.setState({uniqueWordsCount: uniqueWordsCount}, () => {
-      console.log("*************** : ", uniqueWordsCount);
       if (callback){
         callback();
       }
@@ -114,11 +130,59 @@ export default class ProfileAboutSectionView extends React.Component{
 
   }
 
-  showPercentageDoughnutModal(data){
+  // showPercentageDoughnutModal(data){
 
-    eventBus.dispatch(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, data);
+  //   // eventBus.dispatch(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, data);
 
-  }
+  // }
+
+  handleDonutChartModalClose = () => {
+    this.setState({donutChartModalShow: false})
+  };
+
+  handleDonutChartModalShow = () => {
+
+    if (!this.props.profile.info){
+      return;
+    }
+
+    if (!this.props.globalData.profiles){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+      return;
+    }
+
+    if (!this.state.donutChartModalItemData){
+
+      var donutChartModalItemData = {
+        label: "intro length",
+        value: 0,
+      }
+
+      var refLength = dbDataSanitizer.preSanitize(this.props.profile.info).length;
+      for (var profile of this.props.globalData.profiles){
+
+        if (profile.url == this.props.profile.url){
+          continue;
+        }
+
+        if (!profile.info
+            || (profile.info && dbDataSanitizer.preSanitize(profile.info).length <= refLength)){
+          donutChartModalItemData.value += 1;
+        }
+
+      }
+
+      donutChartModalItemData.value /= this.props.globalData.profiles.length;
+      donutChartModalItemData.value *= 100;
+
+      this.setState({donutChartModalItemData: donutChartModalItemData});
+
+    }
+
+
+
+    this.setState({donutChartModalShow: true});
+  };
 
   render(){
     return (
@@ -131,25 +195,25 @@ export default class ProfileAboutSectionView extends React.Component{
         { this.props.profile.info && <div class="m-4">
 
                                       <div class="row">
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "WORD_COUNT", value: this.wordCount()})}}>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.wordCount()}</h5>
                                             <p class="card-text">Word count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "CHAR_COUNT", value: this.characterCount()})}}>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "CHAR_COUNT", value: this.characterCount()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.characterCount()}</h5>
                                             <p class="card-text">Character count</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "AVG_WORD_LENGTH", value: this.averageWordLength()})}}>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "AVG_WORD_LENGTH", value: this.averageWordLength()})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.averageWordLength()}</h5>
                                             <p class="card-text">Average word length</p>
                                           </div>
                                         </div>
-                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.showPercentageDoughnutModal({label: "UNIQUE_WORDS_COUNT", value: this.state.oneUseWordCount})}}>
+                                        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "UNIQUE_WORDS_COUNT", value: this.state.oneUseWordCount})}}>
                                           <div class="card-body">
                                             <h5 class="card-title">{this.state.oneUseWordCount}%</h5>
                                             <p class="card-text">Unique words</p>
@@ -185,6 +249,44 @@ export default class ProfileAboutSectionView extends React.Component{
                                         </Collapse>
                                       </div>
                                      </div> } 
+
+
+
+        <Modal 
+          show={this.state.donutChartModalShow} 
+          onHide={this.handleDonutChartModalClose}
+          // size="lg"
+          >
+          <Modal.Header closeButton>
+            <Modal.Title>Intro Length</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            { !this.state.donutChartModalItemData && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                      {/*<span class="visually-hidden">Loading...</span>*/}
+                    </div>
+                    <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                  </div>
+                </div>}
+            
+            { this.state.donutChartModalItemData && <div>
+                                                      <div class="text-center col-6 offset-3">
+                                                        <ItemPercentageDoughnutChart data={this.state.donutChartModalItemData}/>
+                                                      </div>
+                                                    <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
+                                                      {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s intro is longer than "}
+                                                      <span class="badge text-bg-primary">{this.state.donutChartModalItemData.value}</span>
+                                                      {"% of all the profiles you've visited so far." }
+                                                    </p>
+                                                    </div>}
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleDonutChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }

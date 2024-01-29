@@ -21,6 +21,7 @@ import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
 import DailySearchTimeChart from "./widgets/charts/DailySearchTimeChart";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
+import app_logo from '../assets/app_logo.png';
 
 export default class CalendarView extends React.Component{
 
@@ -308,7 +309,11 @@ export default class CalendarView extends React.Component{
     return (
 			<>
         <div class="mt-5 pb-5 pt-3">
-          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}/>
+
+          <div class="text-center">
+            <img src={app_logo}  alt="" width="40" height="40"/>
+            <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}/>
+          </div>
 
   				<div class="offset-1 col-10 mt-4 row">
             <div class="col-4">

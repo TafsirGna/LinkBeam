@@ -186,7 +186,7 @@ export default class SearchesTimelineChart extends React.Component{
 				labels: results.titles,
 				datasets: [
 				  {
-				    label: '# Searches',
+				    label: '# of Searches',
 				    fill: true,
 				    data: results.valuesDataset1,
 				    borderColor: colorDataset1.borders,

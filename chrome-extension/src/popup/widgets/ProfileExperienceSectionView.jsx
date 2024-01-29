@@ -9,6 +9,7 @@ import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon } from "./SVGs";
+import JobDetailsModal from "./modals/JobDetailsModal";
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -17,6 +18,8 @@ export default class ProfileExperienceSectionView extends React.Component{
     this.state = {
       doughnutChartsData: null,
       jobTitlesBarData: null,
+      jobModalShow: false,
+      selectedDonutChartElement: null
     };
   }
 
@@ -64,9 +67,17 @@ export default class ProfileExperienceSectionView extends React.Component{
     eventBus.dispatch(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, null);
   }
 
-  onDonutChartClick(){
+  handleJobModalClose = () => { 
+    this.setState({jobModalShow: false}, 
+    () => { this.setState({selectedDonutChartElement: null}); });
+  };
 
-  }
+  handleJobModalShow = (element) => { 
+    this.setState({selectedDonutChartElement: element}, 
+    () => { 
+      this.setState({jobModalShow: true});
+    }
+  )};
 
   render(){
     return (
@@ -75,7 +86,7 @@ export default class ProfileExperienceSectionView extends React.Component{
                                                 <div class="container-fluid horizontal-scrollable">
                                                   <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
                                                     { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                      <ItemPercentageDoughnutChart data={experienceItem} variant={"primary"} className="handy-cursor" onClick={this.onDonutChartClick}/>
+                                                                                                                      <ItemPercentageDoughnutChart data={experienceItem} variant={"primary"} className="handy-cursor" onClick={() => {this.handleJobModalShow(experienceItem.label)}}/>
                                                                                                                     </div>) }
                                                   </div>
                                                 </div>
@@ -96,7 +107,7 @@ export default class ProfileExperienceSectionView extends React.Component{
             </span>
           </OverlayTrigger> 
           <div class="mt-3">
-    			   <ProfileGanttChart profile={this.props.profile} periodLabel="experience" />
+    			   <ProfileGanttChart profile={this.props.profile} periodLabel="experience" onClick={(label) => {this.handleJobModalShow(label)}}/>
           </div>
     		</div>
 
@@ -105,12 +116,14 @@ export default class ProfileExperienceSectionView extends React.Component{
         </div>
 
 
+        <JobDetailsModal 
+          show={this.state.jobModalShow} 
+          onHide={this.handleJobModalClose} 
+          profile={this.props.profile} 
+          label={this.state.selectedDonutChartElement}
+          labelClass="company"/>
 
 
-        
-
-
-        
       </>
     );
   }

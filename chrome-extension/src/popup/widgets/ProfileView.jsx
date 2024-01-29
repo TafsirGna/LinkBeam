@@ -44,18 +44,18 @@ export default class ProfileView extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, (data) =>
-      {
-        this.handlePercentageDoughnutModalShow();
-      }
-    );
+    // eventBus.on(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, (data) =>
+    //   {
+    //     this.handlePercentageDoughnutModalShow();
+    //   }
+    // );
 
   }
 
   componentWillUnmount() {
 
     eventBus.remove(eventBus.PROFILE_SHOW_REMINDER_OBJECT);
-    eventBus.remove(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL);
+    // eventBus.remove(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL);
 
   }
 

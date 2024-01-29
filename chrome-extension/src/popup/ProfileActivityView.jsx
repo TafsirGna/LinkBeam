@@ -116,7 +116,7 @@ export default class ProfileActivityView extends React.Component{
 																      alt="..."/>
 															      <div class="card-body">
 															        {/*<h5 class="card-title">Card title</h5>*/}
-															        <p class="card-text">{this.state.selectedPost.title}</p>
+															        <p class="card-text small">{this.state.selectedPost.title}</p>
 															      </div>
 															      <div class="card-footer">
 															        <small class="text-body-secondary">

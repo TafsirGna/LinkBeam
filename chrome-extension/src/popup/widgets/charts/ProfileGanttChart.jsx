@@ -18,7 +18,7 @@ import {
 import { OverlayTrigger } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
-import { Line, Bar } from 'react-chartjs-2';
+import { Line, Bar, getElementAtEvent } from 'react-chartjs-2';
 import { 
   appParams, 
   getChartColors ,
@@ -67,8 +67,12 @@ export default class ProfileGanttChart extends React.Component{
     this.state = {
       barOptions: null,
       barData: null,
-
+      chartData: null,
+      chartRef: React.createRef(),
     };
+
+    this.onChartClick = this.onChartClick.bind(this);
+
   }
 
   componentDidMount() {
@@ -110,7 +114,9 @@ export default class ProfileGanttChart extends React.Component{
 
     }
 
-    this.setState({barOptions: {
+    this.setState({
+      chartData: data,
+      barOptions: {
         indexAxis: 'y',
         responsive: true,
         scales: {
@@ -146,12 +152,12 @@ export default class ProfileGanttChart extends React.Component{
           {
             label: 'Dataset',
             data: data,
-            backgroundColor: chartColors.backgrounds,
+            backgroundColor: chartColors.borders/*chartColors.backgrounds*/,
             borderColor: chartColors.borders,
             borderWidth: 1,
             borderSkipped: false,
             borderRadius: 10,
-            barPercentage: .7,
+            barPercentage: .85,
           },
         ],
       }});
@@ -160,12 +166,29 @@ export default class ProfileGanttChart extends React.Component{
 
   }
 
+  onChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      this.props.onClick(this.state.chartData[(elements[0]).index].y);
+    }
+
+  }
+
   render(){
     return (
       <>
         { this.state.barData && <div> 
                                   <div class="shadow border rounded border-1 p-2">
-                                    <Bar options={this.state.barOptions} data={this.state.barData} plugins={[todayLinePlugin]}/>
+                                    <Bar 
+                                      ref={this.state.chartRef}
+                                      options={this.state.barOptions} 
+                                      data={this.state.barData} 
+                                      plugins={[todayLinePlugin]}
+                                      onClick={this.onChartClick}
+                                      />
                                   </div>
                                   <p class="small badge text-muted fst-italic p-0">
                                     <span>
