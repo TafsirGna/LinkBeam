@@ -2,6 +2,8 @@
 import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Collapse from 'react-bootstrap/Collapse';
+import { Offcanvas } from "react-bootstrap";
 import { 
   sendDatabaseActionMessage, 
   startMessageListener, 
@@ -13,7 +15,7 @@ import {
 } from "../../Local_library";
 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Pie } from 'react-chartjs-2';
+import { Pie, getElementAtEvent } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -24,9 +26,17 @@ export default class LanguageListModal extends React.Component{
     super(props);
     this.state = {
       pieData: null,
+      languageData: null,
+      chartRef: React.createRef(),
+      selectedChartElementIndex: null,
+      collapseInfoOpen: false,
+      offCanvasShow: false,
     };
 
     this.setChartData = this.setChartData.bind(this);
+    this.onChartClick = this.onChartClick.bind(this);
+    this.showBelowDeckInfos = this.showBelowDeckInfos.bind(this);
+    this.onHide = this.onHide.bind(this);
 
   }
 
@@ -35,6 +45,26 @@ export default class LanguageListModal extends React.Component{
     this.setChartData();
 
   }
+
+  onChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      this.showBelowDeckInfos((elements[0]).index);
+    }
+
+  }
+
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
+
+  handleOffCanvasShow = () => {
+      this.setState({collapseInfoOpen: false, selectedChartElementIndex: null}, () => {
+        this.setState({offCanvasShow: true});
+        this.props.onHide();
+      });
+  };
 
   setChartData(){
 
@@ -75,6 +105,7 @@ export default class LanguageListModal extends React.Component{
 
 
     this.setState({
+      languageData: languages,
       pieData: {
         labels: languages.map((l) => l.label),
         datasets: [
@@ -91,9 +122,18 @@ export default class LanguageListModal extends React.Component{
 
   }
 
-  listenToMessages(){
+  showBelowDeckInfos = (elementIndex) => { 
+    this.setState({selectedChartElementIndex: elementIndex, /*collapseInfoOpen: true*/}, () => {
+      this.setState({collapseInfoOpen: true});
+    });
+  }
 
-    
+  onHide(){
+
+    this.setState({collapseInfoOpen: false, selectedChartElementIndex: null});
+
+    this.props.onHide();
+
   }
 
   render(){
@@ -101,7 +141,7 @@ export default class LanguageListModal extends React.Component{
       <>
         <Modal 
           show={this.props.show} 
-          onHide={this.props.onHide} 
+          onHide={this.onHide} 
           // size="lg"
           >
           <Modal.Header closeButton>
@@ -115,19 +155,48 @@ export default class LanguageListModal extends React.Component{
 
             { this.state.pieData && <div class="row">
                                       <div class={"col-6 " + "offset-3"}>
-                                        <Pie data={this.state.pieData} />
+                                        <Pie 
+                                          ref={this.state.chartRef}
+                                          data={this.state.pieData}
+                                          onClick={this.onChartClick}
+                                           />
                                       </div>
                                       <div class="col-6">
                                       </div>
                                     </div>}
 
+            { this.state.selectedChartElementIndex != null && 
+                                        <Collapse in={this.state.collapseInfoOpen}>
+                                          <div id="collapseInfo">
+                                            <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
+                                              {dbDataSanitizer.fullName(this.props.profile.fullName)+" speaks "} 
+                                              <span class="rounded p-1 border shadow-sm">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
+                                              {" as well as "}
+                                              <span class="badge text-bg-primary">{/*this.state.followersCompData.value*/0}</span>
+                                              {"% of all the profiles you've visited so far." }
+                                              <span class="badge text-bg-primary handy-cursor ms-2" onClick={this.handleOffCanvasShow}>{"SHOW"}</span>
+                                            </p>
+                                          </div>
+                                        </Collapse>}
+
+
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
+            <Button variant="secondary" size="sm" onClick={this.onHide} className="shadow">
               Close
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Linked Profiles</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            
+          </Offcanvas.Body>
+        </Offcanvas>
+
       </>
     );
   }

@@ -1,4 +1,4 @@
-/*import './ProfileGeoMapChart.css'*/
+/*import './JobTitlesBarChart.css'*/
 import '../../assets/css/JobListView.css';
 import React from 'react';
 import { Bar, getElementAtEvent } from 'react-chartjs-2';

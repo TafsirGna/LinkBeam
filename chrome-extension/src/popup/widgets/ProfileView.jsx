@@ -5,7 +5,6 @@ import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileSearchesChartModal from "./modals/ProfileSearchesChartModal";
-import PercentageDoughnutModal from "./modals/PercentageDoughnutModal";
 import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData, appParams } from "../Local_library";
 import eventBus from "../EventBus";
 
@@ -18,7 +17,6 @@ export default class ProfileView extends React.Component{
       toastShow: false,
       reminderModalShow: false,
       searchesChartModalShow: false,
-      percentageDoughnutModalShow: false,
       toastMessage: "",
       allProfiles: null,
     };
@@ -43,12 +41,6 @@ export default class ProfileView extends React.Component{
         this.handleReminderModalShow();
       }
     );
-
-    // eventBus.on(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL, (data) =>
-    //   {
-    //     this.handlePercentageDoughnutModalShow();
-    //   }
-    // );
 
   }
 
@@ -136,9 +128,6 @@ export default class ProfileView extends React.Component{
   handleSearchesChartModalClose = () => this.setState({searchesChartModalShow: false});
   handleSearchesChartModalShow = () => this.setState({searchesChartModalShow: true});
 
-  handlePercentageDoughnutModalClose = () => this.setState({percentageDoughnutModalShow: false});
-  handlePercentageDoughnutModalShow = () => this.setState({percentageDoughnutModalShow: true});
-
   toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
 
@@ -194,8 +183,6 @@ export default class ProfileView extends React.Component{
         <ProfileViewReminderModal profile={this.props.profile} show={this.state.reminderModalShow} onHide={this.handleReminderModalClose} />
         
         <ProfileSearchesChartModal profile={this.props.profile} show={this.state.searchesChartModalShow} onHide={this.handleSearchesChartModalClose} />
-        
-        <PercentageDoughnutModal show={this.state.percentageDoughnutModalShow} onHide={this.handlePercentageDoughnutModalClose} />
 
         <CustomToast globalData={this.props.globalData} message={this.state.toastMessage} show={this.state.toastShow} onClose={this.toggleToastShow} />
 
