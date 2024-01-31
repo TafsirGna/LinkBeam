@@ -221,7 +221,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                   <SunBurstOverviewChart profile={this.props.profile} />
                 </div>}
 
-        <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose}/>
+        <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose} globalData={this.props.globalData}/>
 
         {/*Radar chart*/}
         <Modal 

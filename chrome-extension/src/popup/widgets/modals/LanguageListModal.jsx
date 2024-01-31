@@ -4,6 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { Offcanvas } from "react-bootstrap";
+import ProfileListItemView from "../ProfileListItemView";
 import { 
   sendDatabaseActionMessage, 
   startMessageListener, 
@@ -12,8 +13,9 @@ import {
   dbData,
   dbDataSanitizer,
   shuffle,
+  performLanguageComparison,
+  appParams,
 } from "../../Local_library";
-
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie, getElementAtEvent } from 'react-chartjs-2';
 
@@ -36,13 +38,26 @@ export default class LanguageListModal extends React.Component{
     this.setChartData = this.setChartData.bind(this);
     this.onChartClick = this.onChartClick.bind(this);
     this.showBelowDeckInfos = this.showBelowDeckInfos.bind(this);
-    this.onHide = this.onHide.bind(this);
+    this.openCollapse = this.openCollapse.bind(this);
+    // this.onHide = this.onHide.bind(this);
 
   }
 
   componentDidMount() {
 
     this.setChartData();
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.profiles != this.props.globalData.profiles){
+        if (this.state.selectedChartElementIndex){
+          this.openCollapse();
+        }
+      }
+    }
 
   }
 
@@ -60,10 +75,10 @@ export default class LanguageListModal extends React.Component{
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false})};
 
   handleOffCanvasShow = () => {
-      this.setState({collapseInfoOpen: false, selectedChartElementIndex: null}, () => {
+      // this.setState({collapseInfoOpen: false, selectedChartElementIndex: null}, () => {
         this.setState({offCanvasShow: true});
         this.props.onHide();
-      });
+      // });
   };
 
   setChartData(){
@@ -122,26 +137,54 @@ export default class LanguageListModal extends React.Component{
 
   }
 
+
+  openCollapse = () => {
+
+    if (!Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex]), "linkedProfiles"){
+
+      if (!this.props.globalData.profiles){
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+        return;
+      }
+
+      var profiles = performLanguageComparison(this.props.profile,
+                                              this.state.languageData[this.state.selectedChartElementIndex].label,
+                                              this.props.globalData.profiles
+                                              );
+
+      this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles = profiles;
+
+    }
+    
+    this.setState({collapseInfoOpen: true});
+
+  };
+
+
   showBelowDeckInfos = (elementIndex) => { 
-    this.setState({selectedChartElementIndex: elementIndex, /*collapseInfoOpen: true*/}, () => {
-      this.setState({collapseInfoOpen: true});
+
+    this.setState({selectedChartElementIndex: elementIndex}, () => {
+
+      this.openCollapse();
+
     });
-  }
-
-  onHide(){
-
-    this.setState({collapseInfoOpen: false, selectedChartElementIndex: null});
-
-    this.props.onHide();
 
   }
+
+  // onHide(){
+
+  //   this.setState({collapseInfoOpen: false, selectedChartElementIndex: null});
+
+  //   this.props.onHide();
+
+  // }
 
   render(){
     return (
       <>
         <Modal 
           show={this.props.show} 
-          onHide={this.onHide} 
+          onHide={this.props.onHide} 
           // size="lg"
           >
           <Modal.Header closeButton>
@@ -172,7 +215,7 @@ export default class LanguageListModal extends React.Component{
                                               {dbDataSanitizer.fullName(this.props.profile.fullName)+" speaks "} 
                                               <span class="rounded p-1 border shadow-sm">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
                                               {" as well as "}
-                                              <span class="badge text-bg-primary">{/*this.state.followersCompData.value*/0}</span>
+                                              <span class="badge text-bg-primary">{ Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex], "linkedProfiles") ? ((this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles.length / this.props.globalData.profiles.length) * 100) : 0}</span>
                                               {"% of all the profiles you've visited so far." }
                                               <span class="badge text-bg-primary handy-cursor ms-2" onClick={this.handleOffCanvasShow}>{"SHOW"}</span>
                                             </p>
@@ -182,7 +225,7 @@ export default class LanguageListModal extends React.Component{
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.onHide} className="shadow">
+            <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
           </Modal.Footer>
@@ -194,6 +237,22 @@ export default class LanguageListModal extends React.Component{
           </Offcanvas.Header>
           <Offcanvas.Body>
             
+            { this.state.selectedChartElementIndex == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                  </div>
+                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                </div>
+              </div>}
+
+            { (this.state.offCanvasShow && (this.state.languageData[this.state.selectedChartElementIndex]).linkedProfiles.length == 0) && <div class="text-center m-5 mt-2">
+                            <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No corresponding profiles</span></p>
+                          </div> }
+                    
+            { (this.state.offCanvasShow && (this.state.languageData[this.state.selectedChartElementIndex]).linkedProfiles.length != 0) && 
+                <div class="list-group m-1 shadow-sm small">
+                  { (this.state.languageData[this.state.selectedChartElementIndex]).linkedProfiles.map((profile) => (<ProfileListItemView profile={profile}/>)) }
+                </div>}
+
           </Offcanvas.Body>
         </Offcanvas>
 

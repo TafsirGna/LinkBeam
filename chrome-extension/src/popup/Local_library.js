@@ -267,6 +267,46 @@ export const performCertComparison = function(theProfile, certName, profileList)
 
 }
 
+export const performLanguageComparison = function(theProfile, langName, profileList){
+
+  var results = [], 
+      altLanguages = {
+        french: "français", 
+        english: "anglais",
+        "français": "french",
+        anglais: "english",
+      };
+
+
+  for (var profile of profileList){
+
+    if (!profile.languages){
+      continue;
+    }
+
+    if (profile.url == theProfile.url){
+      continue;
+    }
+
+    for (var languageObject of profile.languages){
+
+      if ((languageObject.name.toLowerCase().indexOf(langName.toLowerCase()) != -1 
+                || languageObject.name.toLowerCase().indexOf(altLanguages[langName.toLowerCase()]) != -1)
+          && results.map(e => e.url).indexOf(profile.url) == -1){
+
+        results.push(profile);
+
+      }
+
+    }
+
+  }
+
+
+  return results;
+
+}
+
 export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
   var expTime = 0;

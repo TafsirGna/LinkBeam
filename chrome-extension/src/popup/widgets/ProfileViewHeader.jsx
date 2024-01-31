@@ -130,14 +130,17 @@ export default class ProfileViewHeader extends React.Component{
   };
   handleConnectionModalShow = () => {
 
-    if (!this.props.localData.profiles){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-    }
-    else{
-      this.setConnectionModalData();
-    }
+    this.setState({connectionModalShow: true}, () => {
 
-    this.setState({connectionModalShow: true});
+      if (!this.props.localData.profiles){
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+        return;
+      }
+
+      this.setConnectionModalData();
+
+    });
+
   };
 
   showReminder(){
