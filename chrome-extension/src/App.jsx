@@ -357,6 +357,16 @@ export default class App extends React.Component{
 
     }
 
+    if (Object.hasOwn(settings, "outdatedPostReminder")){
+
+      this.setState(prevState => {
+        let globalData = Object.assign({}, prevState.globalData);
+        globalData.settings.outdatedPostReminder = settings.outdatedPostReminder;
+        return { globalData };
+      });
+
+    }
+
   }
 
   onSwResponseReceived(message, sendResponse){

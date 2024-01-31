@@ -32,7 +32,6 @@ export default class SettingsView extends React.Component{
         status: "NO",
         info: ""
       },
-      postReminderValue: "Never",
       offCanvasShow: false,
       offCanvasTitle: "",
       offCanvasFormValidated: false,
@@ -57,7 +56,6 @@ export default class SettingsView extends React.Component{
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
     this.initDataExport = this.initDataExport.bind(this);
-    this.setPostReminderValue = this.setPostReminderValue.bind(this);
 
   }
 
@@ -73,6 +71,10 @@ export default class SettingsView extends React.Component{
 
     if (!Object.hasOwn(this.props.globalData.settings, 'autoTabOpening')){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["autoTabOpening"] } });
+    }
+
+    if (!Object.hasOwn(this.props.globalData.settings, 'outdatedPostReminder')){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["outdatedPostReminder"] } });
     }
 
     if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
@@ -294,7 +296,8 @@ export default class SettingsView extends React.Component{
 
   setPostReminderValue(value){
 
-    this.setState({postReminderValue: value});
+    // Initiating the recording of the new state
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {outdatedPostReminder: value} } });
 
   }
 
@@ -343,7 +346,7 @@ export default class SettingsView extends React.Component{
                   <strong class="text-gray-dark">Outdated profile reminder</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow badge text-bg-secondary">{this.state.postReminderValue}</span>
+                      <span class="rounded shadow badge text-bg-secondary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
