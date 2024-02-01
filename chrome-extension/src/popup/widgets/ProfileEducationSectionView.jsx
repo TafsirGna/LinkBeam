@@ -7,6 +7,7 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon } from "./SVGs";
+import EducationDetailsModal from "./modals/EducationDetailsModal";
 
 export default class ProfileEducationSectionView extends React.Component{
 
@@ -14,7 +15,8 @@ export default class ProfileEducationSectionView extends React.Component{
     super(props);
     this.state = {
       doughnutChartsData: null,
-      // wordCloudData: null,
+      edModalShow: false,
+      selectedDonutChartElement: null,
     };
   }
 
@@ -62,6 +64,18 @@ export default class ProfileEducationSectionView extends React.Component{
     eventBus.dispatch(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, null);
   }
 
+  handleEdModalClose = () => { 
+    this.setState({edModalShow: false}, 
+    () => { this.setState({selectedDonutChartElement: null}); });
+  };
+
+  handleEdModalShow = (element) => { 
+    this.setState({selectedDonutChartElement: element}, 
+    () => { 
+      this.setState({edModalShow: true});
+    }
+  )};
+
   render(){
     return (
       <>
@@ -69,7 +83,7 @@ export default class ProfileEducationSectionView extends React.Component{
                                                 <div class="container-fluid horizontal-scrollable">
                                                   <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
                                                     { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                      <ItemPercentageDoughnutChart data={educationItem} variant={"primary"}/>
+                                                                                                                      <ItemPercentageDoughnutChart data={educationItem} variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
                                                                                                                     </div>) }
                                                   </div>
                                                 </div>
@@ -90,9 +104,20 @@ export default class ProfileEducationSectionView extends React.Component{
             </span>
           </OverlayTrigger> 
           <div class="mt-3">
-             <ProfileGanttChart profile={this.props.profile} periodLabel="education" />
+             <ProfileGanttChart 
+                profile={this.props.profile} 
+                periodLabel="education"
+                onClick={(label) => {this.handleEdModalShow(label)}} />
           </div>
         </div>
+
+
+        <EducationDetailsModal 
+          show={this.state.edModalShow} 
+          onHide={this.handleEdModalClose} 
+          profile={this.props.profile} 
+          label={this.state.selectedDonutChartElement}
+          labelClass="institution"/>
       </>
     );
   }

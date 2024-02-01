@@ -19,7 +19,7 @@ export default class ProfileExperienceSectionView extends React.Component{
       doughnutChartsData: null,
       jobTitlesBarData: null,
       jobModalShow: false,
-      selectedDonutChartElement: null
+      selectedDonutChartElement: null,
     };
   }
 
@@ -107,7 +107,10 @@ export default class ProfileExperienceSectionView extends React.Component{
             </span>
           </OverlayTrigger> 
           <div class="mt-3">
-    			   <ProfileGanttChart profile={this.props.profile} periodLabel="experience" onClick={(label) => {this.handleJobModalShow(label)}}/>
+    			   <ProfileGanttChart 
+                profile={this.props.profile} 
+                periodLabel="experience" 
+                onClick={(label) => {this.handleJobModalShow(label)}}/>
           </div>
     		</div>
 

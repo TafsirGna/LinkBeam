@@ -346,7 +346,7 @@ export default class SettingsView extends React.Component{
                   <strong class="text-gray-dark">Outdated profile reminder</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow badge text-bg-secondary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
