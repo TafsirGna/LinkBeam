@@ -8,7 +8,7 @@ import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 import ProfileEducationSectionView from "./ProfileEducationSectionView";
 import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
-import ProfileSuggestionsSectionView from "./ProfileSuggestionsSectionView";
+import ProfileNetworkSectionView from "./ProfileNetworkSectionView";
 import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
 import moment from 'moment';
@@ -138,7 +138,7 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 5 && <div class="">
-                                                  <ProfileSuggestionsSectionView profile={this.props.profile} />
+                                                  <ProfileNetworkSectionView profile={this.props.profile} globalData={this.props.globalData} />
                                                 </div>}
 
           </div>
