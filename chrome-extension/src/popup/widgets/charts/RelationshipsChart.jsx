@@ -8,6 +8,8 @@ import {
 	dbDataSanitizer,
 	performLanguageComparison, 
 	performCertComparison,
+  performEdInstitutionComparison,
+  performCompanyComparison
 } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
@@ -168,39 +170,146 @@ export default class RelationshipsChart extends React.Component{
 
     for (var profile of this.props.objects){
 
-		var source = dbDataSanitizer.preSanitize(profile.fullName);
-		chartData.nodes.push({
-			id: source,
-			group: "prime",
-		});
+  		var source = dbDataSanitizer.preSanitize(profile.fullName);
+  		chartData.nodes.push({
+  			id: source,
+  			group: "prime",
+  		});
 
-		if (!profile.languages){
-			continue;
-		}
+  		if (!profile.languages){
+  			continue;
+  		}
 
-		for (var language of profile.languages){
+  		for (var language of profile.languages){
 
-			var languageName = dbDataSanitizer.preSanitize(language.name);
-			var certProfiles = performCertComparison(profile, certName, this.props.profiles);
+  			var languageName = dbDataSanitizer.preSanitize(language.name);
+  			var certProfiles = performCertComparison(profile, certName, this.props.profiles);
 
-			for (var certProfile of certProfiles){
+  			for (var certProfile of certProfiles){
 
-          		var target = dbDataSanitizer.preSanitize(certProfile.fullName);
+          var target = dbDataSanitizer.preSanitize(certProfile.fullName);
 
-				chartData.nodes.push({
-					id: target,
-					group: certName,
-				});
+  				chartData.nodes.push({
+  					id: target,
+  					group: certName,
+  				});
 
-				chartData.links.push({
-					source: source,
-					target: target,
-					value: Math.floor(Math.random() * 5) + 1,
-				});
+  				chartData.links.push({
+  					source: source,
+  					target: target,
+  					value: Math.floor(Math.random() * 5) + 1,
+  				});
 
-			}
+  			}
 
-		}
+  		}
+
+    }
+
+    return chartData;
+
+  }
+
+  setEducationData(){
+
+    if (!this.props.profiles){
+      return null;
+    }
+
+    var chartData = {
+          nodes: [],
+          links: [],
+        };
+
+    for (var profile of this.props.objects){
+
+      var source = dbDataSanitizer.preSanitize(profile.fullName);
+      chartData.nodes.push({
+        id: source,
+        group: "prime",
+      });
+
+      if (!profile.education){
+        continue;
+      }
+
+      for (var education of profile.education){
+
+        var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
+        var edProfiles = performEdInstitutionComparison(profile, institutionName, this.props.profiles);
+
+        for (var edProfile of edProfiles){
+
+          var target = dbDataSanitizer.preSanitize(edProfile.fullName);
+
+          chartData.nodes.push({
+            id: target,
+            group: institutionName,
+          });
+
+          chartData.links.push({
+            source: source,
+            target: target,
+            value: Math.floor(Math.random() * 5) + 1,
+          });
+
+        }
+
+      }
+      
+    }
+
+    return chartData;
+
+  }
+
+  setExperienceData(){
+
+    if (!this.props.profiles){
+      return null;
+    }
+
+    var chartData = {
+          nodes: [],
+          links: [],
+        };
+
+    for (var profile of this.props.objects){
+
+      var source = dbDataSanitizer.preSanitize(profile.fullName);
+      chartData.nodes.push({
+        id: source,
+        group: "prime",
+      });
+
+      if (!profile.experience){
+        continue;
+      }
+
+      for (var experience of profile.experience){
+
+        var company = dbDataSanitizer.preSanitize(experience.company);
+        var expProfiles = performCompanyComparison(profile, company, this.props.profiles);
+
+        for (var expProfile of expProfiles){
+
+          var target = dbDataSanitizer.preSanitize(expProfile.fullName);
+
+          chartData.nodes.push({
+            id: target,
+            group: company,
+          });
+
+          chartData.links.push({
+            source: source,
+            target: target,
+            value: Math.floor(Math.random() * 5) + 1,
+          });
+
+        }
+
+      }
+      
     }
 
     return chartData;

@@ -225,6 +225,90 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 }
 
+export const performEdInstitutionComparison = function(theProfile, institutionName, profileList){
+
+  var institutionNameWords = institutionName.split(" "), results = [];
+
+  for (var profile of profileList){
+
+    if (profile.url == theProfile.url){
+      continue;
+    }
+
+    if (!profile.education){
+      continue;
+    }
+
+    for (var education of profile.education){
+
+      if (!education.institutionName){
+        continue;
+      }
+      
+      var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
+
+      var percentage = 0;
+      for (var word of institutionNameWords){
+        if (institutionName.indexOf(word) != -1){
+          percentage += 1;
+        }
+      }
+
+      percentage /= institutionNameWords.length;
+      if (percentage > .75){
+        results.push(profile);
+      }
+
+    } 
+
+  }
+
+  return results;
+
+}
+
+export const performCompanyComparison = function(theProfile, companyName, profileList){
+
+  var companyNameWords = companyName.split(" "), results = [];
+
+  for (var profile of profileList){
+
+    if (profile.url == theProfile.url){
+      continue;
+    }
+
+    if (!profile.experience){
+      continue;
+    }
+
+    for (var experience of profile.experience){
+
+      if (!experience.company){
+        continue;
+      }
+      
+      var companyName = dbDataSanitizer.preSanitize(experience.company);
+
+      var percentage = 0;
+      for (var word of companyNameWords){
+        if (companyName.indexOf(word) != -1){
+          percentage += 1;
+        }
+      }
+
+      percentage /= companyNameWords.length;
+      if (percentage > .75){
+        results.push(profile);
+      }
+
+    } 
+
+  }
+
+  return results;
+
+}
+
 export const performCertComparison = function(theProfile, certName, profileList){
 
   var certNameWords = certName.split(" "), results = [];
