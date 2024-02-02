@@ -172,11 +172,8 @@ export default class LanguageListModal extends React.Component{
   }
 
   // onHide(){
-
   //   this.setState({collapseInfoOpen: false, selectedChartElementIndex: null});
-
   //   this.props.onHide();
-
   // }
 
   render(){
@@ -213,11 +210,11 @@ export default class LanguageListModal extends React.Component{
                                           <div id="collapseInfo">
                                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                                               {dbDataSanitizer.fullName(this.props.profile.fullName)+" speaks "} 
-                                              <span class="rounded p-1 border shadow-sm">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
+                                              <span class="rounded p-1 border shadow-sm badge text-primary">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
                                               {" as well as "}
                                               <span class="badge text-bg-primary">{ Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex], "linkedProfiles") ? ((this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles.length / this.props.globalData.profiles.length) * 100) : 0}</span>
                                               {"% of all the profiles you've visited so far." }
-                                              <span class="badge text-bg-primary handy-cursor ms-2" onClick={this.handleOffCanvasShow}>{"SHOW"}</span>
+                                              {/*<span class="badge text-bg-primary handy-cursor ms-2" onClick={this.handleOffCanvasShow}>{"SHOW"}</span>*/}
                                             </p>
                                           </div>
                                         </Collapse>}

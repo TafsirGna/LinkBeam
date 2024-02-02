@@ -258,8 +258,6 @@ export default class RelationshipsChart extends React.Component{
       
     }
 
-    console.log("pppppppppppppppppppp");
-
     this.setState({data: chartData}, () => { callback(); });
 
   }
@@ -270,7 +268,6 @@ export default class RelationshipsChart extends React.Component{
       return;
     }
 
-
     // if a previous svg has laready been draw, no need to has one new
     var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
     if (chartContainer.firstChild){
@@ -279,15 +276,24 @@ export default class RelationshipsChart extends React.Component{
 
     const drawArcDiagram = () => {
 
+      var increment = 0, 
+          orderCriteria = ["by name", "by group", "by degree"];
+
+      setInterval(
+        () => {
+          increment += 1;
+        }, 
+        10000
+      );
 
       const width = 640;
       const step = 14;
       const marginTop = 20;
       const marginRight = 20;
       const marginBottom = 20;
-      const marginLeft = 130;
+      const marginLeft = 400;
       const height = (this.state.data.nodes.length - 1) * step + marginTop + marginBottom;
-      const y = d3.scalePoint(this.state.data.orders.get("by name"), [marginTop, height - marginBottom]);
+      const y = d3.scalePoint(this.state.data.orders.get(orderCriteria[increment % orderCriteria.length]), [marginTop, height - marginBottom]);
 
       // A color scale for the nodes and links.
       const color = d3.scaleOrdinal()
