@@ -17,6 +17,7 @@ import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { AlertCircleIcon } from "../SVGs";
 import Offcanvas from 'react-bootstrap/Offcanvas';
+import default_user_icon from '../../../assets/user_icons/default.png';
 
 export default class RelationshipsChart extends React.Component{
 
@@ -25,6 +26,7 @@ export default class RelationshipsChart extends React.Component{
     this.state = {
       uuid: uuidv4(),
       data: null,
+      linkedObjects: null,
     };
 
     this.setSuggestionsData = this.setSuggestionsData.bind(this);
@@ -61,7 +63,9 @@ export default class RelationshipsChart extends React.Component{
     }
 
     if (prevProps.displayCriteria != this.props.displayCriteria){
-      this.drawChart();
+      this.setState({linkedObjects: null}, () => {
+        this.drawChart();
+      });
     }
 
     if (prevProps.profiles != this.props.profiles){
@@ -75,7 +79,8 @@ export default class RelationshipsChart extends React.Component{
   	var chartData = {
           nodes: [],
           links: [],
-        };
+        }, 
+        linkedObjects = [];
 
     for (var profile of this.props.objects){
 
@@ -86,8 +91,15 @@ export default class RelationshipsChart extends React.Component{
       });
 
       var suggestions = profile.profileSuggestions;
+      linkedObjects = suggestions;
+
       if (suggestions){
         for (var suggestion of suggestions){
+
+          if (suggestion.name.indexOf(":") != -1){
+            continue;
+          }
+
           var target = dbDataSanitizer.preSanitize(suggestion.name);
 
           chartData.nodes.push({
@@ -104,72 +116,86 @@ export default class RelationshipsChart extends React.Component{
       }
     }
 
-    return chartData;
+    return {chartData: chartData, objects: linkedObjects};
 
   }
 
   setLanguagesData(){
 
   	if (!this.props.profiles){
-    	return null;
+    	return {chartData: null, linkedObjects: null};
     }
 
   	var chartData = {
           nodes: [],
           links: [],
-        };
+        },
+        linkedObjects = [];
 
     for (var profile of this.props.objects){
 
-		var source = dbDataSanitizer.preSanitize(profile.fullName);
-		chartData.nodes.push({
-			id: source,
-			group: "prime",
-		});
+  		var source = dbDataSanitizer.preSanitize(profile.fullName);
+  		chartData.nodes.push({
+  			id: source,
+  			group: "prime",
+  		});
 
-		if (!profile.languages){
-			continue;
-		}
+  		if (!profile.languages){
+  			continue;
+  		}
 
-		for (var language of profile.languages){
+  		for (var language of profile.languages){
 
-			var languageName = dbDataSanitizer.preSanitize(language.name);
-			var langProfiles = performLanguageComparison(profile, languageName, this.props.profiles);
+  			var languageName = dbDataSanitizer.preSanitize(language.name);
+  			var langProfiles = performLanguageComparison(profile, languageName, this.props.profiles);
 
-			for (var langProfile of langProfiles){
+  			for (var langProfile of langProfiles){
 
-          		var target = dbDataSanitizer.preSanitize(langProfile.fullName);
+            		var target = dbDataSanitizer.preSanitize(langProfile.fullName);
 
-				chartData.nodes.push({
-					id: target,
-					group: languageName,
-				});
+  				chartData.nodes.push({
+  					id: target,
+  					group: languageName,
+  				});
 
-				chartData.links.push({
-					source: source,
-					target: target,
-					value: Math.floor(Math.random() * 5) + 1,
-				});
+  				chartData.links.push({
+  					source: source,
+  					target: target,
+  					value: Math.floor(Math.random() * 5) + 1,
+  				});
 
-			}
+          // filling the linkedObjects variables
+          var index = linkedObjects.map(e => e.profile.url).indexOf(langProfile.url);
+          if (index == -1){
+            linkedObjects.push({
+              profile: langProfile,
+              links: [languageName],
+            });
+          }
+          else{
+            linkedObjects[index].links.push(languageName);
+          }
 
-		}
+  			}
+
+  		}
     }
 
-    return chartData;
+    return {chartData: chartData, objects: linkedObjects};
 
   }
 
   setCertificationsData(){
 
   	if (!this.props.profiles){
-    	return null;
+    	return {chartData: null, linkedObjects: null};
     }
 
   	var chartData = {
           nodes: [],
           links: [],
-        };
+        },
+        linkedObjects = [];
 
     for (var profile of this.props.objects){
 
@@ -203,26 +229,39 @@ export default class RelationshipsChart extends React.Component{
   					value: Math.floor(Math.random() * 5) + 1,
   				});
 
+          // filling the linkedObjects variables
+          var index = linkedObjects.map(e => e.profile.url).indexOf(certProfile.url);
+          if (index == -1){
+            linkedObjects.push({
+              profile: certProfile,
+              links: [certName],
+            });
+          }
+          else{
+            linkedObjects[index].links.push(certName);
+          }
+
   			}
 
   		}
 
     }
 
-    return chartData;
+    return {chartData: chartData, objects: linkedObjects};
 
   }
 
   setEducationData(){
 
     if (!this.props.profiles){
-      return null;
+      return {chartData: null, linkedObjects: null};
     }
 
     var chartData = {
           nodes: [],
           links: [],
-        };
+        },
+        linkedObjects = [];
 
     for (var profile of this.props.objects){
 
@@ -256,26 +295,39 @@ export default class RelationshipsChart extends React.Component{
             value: Math.floor(Math.random() * 5) + 1,
           });
 
+          // filling the linkedObjects variables
+          var index = linkedObjects.map(e => e.profile.url).indexOf(edProfile.url);
+          if (index == -1){
+            linkedObjects.push({
+              profile: edProfile,
+              links: [institutionName],
+            });
+          }
+          else{
+            linkedObjects[index].links.push(institutionName);
+          }
+
         }
 
       }
       
     }
 
-    return chartData;
+    return {chartData: chartData, objects: linkedObjects};
 
   }
 
   setExperienceData(){
 
     if (!this.props.profiles){
-      return null;
+      return {chartData: null, linkedObjects: null};
     }
 
     var chartData = {
           nodes: [],
           links: [],
-        };
+        },
+        linkedObjects = [];
 
     for (var profile of this.props.objects){
 
@@ -309,44 +361,56 @@ export default class RelationshipsChart extends React.Component{
             value: Math.floor(Math.random() * 5) + 1,
           });
 
+          // filling the linkedObjects variables
+          var index = linkedObjects.map(e => e.profile.url).indexOf(expProfile.url);
+          if (index == -1){
+            linkedObjects.push({
+              profile: expProfile,
+              links: [company],
+            });
+          }
+          else{
+            linkedObjects[index].links.push(company);
+          }
+
         }
 
       }
       
     }
 
-    return chartData;
+    return {chartData: chartData, objects: linkedObjects};
 
   }
 
   setData(callback){
 
-  	var chartData = null;
+  	var data = null;
 
   	switch(this.props.displayCriteria){
   		case "suggestions":{
-  			chartData = this.setSuggestionsData();
+  			data = this.setSuggestionsData();
   			break;
   		}
   		case "languages":{
-  			chartData = this.setLanguagesData();
+  			data = this.setLanguagesData();
   			break;
   		}
   		case "experience":{
-  			chartData = this.setExperienceData();
+  			data = this.setExperienceData();
   			break;
   		}
   		case "education":{
-  			chartData = this.setEducationData();
+  			data = this.setEducationData();
   			break;
   		}
   		case "certifications":{
-  			chartData = this.setCertificationsData();
+  			data = this.setCertificationsData();
   			break;
   		}
   	}
 
-  	if (!chartData){
+  	if (!data.chartData){
   		return;
   	}
 
@@ -354,23 +418,23 @@ export default class RelationshipsChart extends React.Component{
     if (this.props.objects.length == 1){
        
       const degree = d3.rollup(
-        chartData.links.flatMap(({ source, target, value }) => [
+        data.chartData.links.flatMap(({ source, target, value }) => [
           { node: source, value },
           { node: target, value }
         ]),
         (v) => d3.sum(v, ({ value }) => value),
         ({ node }) => node
       );
-      chartData["orders"] = new Map([
-        ["by name", d3.sort(chartData.nodes.map((d) => d.id))],
-        ["by group", d3.sort(chartData.nodes, ({group}) => group, ({id}) => id).map(({id}) => id)],
+      data.chartData["orders"] = new Map([
+        ["by name", d3.sort(data.chartData.nodes.map((d) => d.id))],
+        ["by group", d3.sort(data.chartData.nodes, ({group}) => group, ({id}) => id).map(({id}) => id)],
         //    ["input", nodes.map(({id}) => id)],
-        ["by degree", d3.sort(chartData.nodes, ({id}) => degree.get(id), ({id}) => id).map(({id}) => id).reverse()]
+        ["by degree", d3.sort(data.chartData.nodes, ({id}) => degree.get(id), ({id}) => id).map(({id}) => id).reverse()]
       ]);
       
     }
 
-    this.setState({data: chartData}, () => { callback(); });
+    this.setState({data: data.chartData, linkedObjects: data.objects}, () => { callback(); });
 
   }
 
@@ -663,28 +727,65 @@ export default class RelationshipsChart extends React.Component{
 
         <Offcanvas show={this.props.offCanvasShow} onHide={this.props.handleOffCanvasClose}>
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Profiles</Offcanvas.Title>
+            <Offcanvas.Title>
+              Linked Profiles: 
+              { this.props.displayCriteria == "suggestions" && <span> Recommandations</span> }
+              { this.props.displayCriteria == "experience" && <span> Experience</span> }
+              { this.props.displayCriteria == "certifications" && <span> Certifications</span> }
+              { this.props.displayCriteria == "languages" && <span> Languages</span> }
+              { this.props.displayCriteria == "education" && <span> Education</span> }
+              </Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
 
-            {/*{ !this.props.profile.profileSuggestions && <div class="text-center m-5 mt-4">
+            { !this.state.linkedObjects && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                  </div>
+                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                </div>
+              </div> }
+
+            { this.state.linkedObjects && this.state.linkedObjects.length == 0 && <div class="text-center m-5 mt-4">
                   <AlertCircleIcon size="100" className="mb-3" />
-                  <p><span class="badge text-bg-primary fst-italic shadow">No data retrieved for this section </span></p>
+                  <p><span class="badge text-bg-primary fst-italic shadow">No linked objects found </span></p>
                 </div>}
 
-            {this.props.profile.profileSuggestions && this.props.profile.profileSuggestions.map((suggestion, index) => (<div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
+            { this.state.linkedObjects && this.state.linkedObjects.length != 0 && <div>
+                                          {/*Suggestions*/}
+                                          { this.props.displayCriteria == "suggestions" && this.state.linkedObjects.map((object, index) => (object.name.indexOf(":") == -1 && <div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
                                                       <div class="position-relative shadow rounded">
                                                         <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                                          {/*<p class="mt-0 mb-2">
+                                                                                                                      <span class="border shadow-sm rounded text-primary badge border-warning-subtle">Linkedin suggestions</span>
+                                                                                                                    </p>*/}
                                                           <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                            <img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>
-                                                            {dbDataSanitizer.suggestionName(suggestion.name)}
+                                                            <img class="rounded-circle me-1" width="24" height="24" src={object.picture ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) : default_user_icon} alt=""/>
+                                                            {dbDataSanitizer.preSanitize(object.name)}
                                                           </span>
-                                                          <strong class="fw-semibold">{dbDataSanitizer.suggestionName(suggestion.name)}</strong>
+                                                          {/*<strong class="fw-semibold">{dbDataSanitizer.suggestionName(object.name)}</strong>*/}
                                                           <span class="d-block small opacity-75 mt-2">With support text underneath to add more detail</span>
                                                         </label>
                                                       </div>
-                                                    </div>)
-                    )}*/}
+                                                    </div>))}
+
+                                          {/*Experience*/}
+                                          { (this.props.displayCriteria == "experience" 
+                                              || this.props.displayCriteria == "education"
+                                              || this.props.displayCriteria == "languages"
+                                              || this.props.displayCriteria == "certifications") && this.state.linkedObjects.map((object, index) => (Object.hasOwn(object, "profile") && <div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
+                                                      <div class="position-relative shadow rounded">
+                                                        <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                                          <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                            <img class="rounded-circle me-1" width="24" height="24" src={object.profile.avatar ? object.profile.avatar : default_user_icon} alt=""/>
+                                                            {dbDataSanitizer.preSanitize(object.profile.fullName)}
+                                                          </span>
+                                                          <strong class="d-block small opacity-75 mt-2">{dbDataSanitizer.preSanitize(object.profile.title)}</strong>
+                                                          <p class="mt-2 mb-0">
+                                                            { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle">{link}</span>)) }                                                            
+                                                          </p>
+                                                        </label>
+                                                      </div>
+                                                    </div>))}
+                                          </div>}
             
           </Offcanvas.Body>
         </Offcanvas>

@@ -161,6 +161,7 @@ function extractExperienceData(){
           experienceItem["company"] = companyName;
           experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
           experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+          // experienceItem["description"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
           experienceData.push(experienceItem);
         });
 
@@ -255,10 +256,10 @@ function extractSuggestionsData(){
 
     Array.from(document.querySelectorAll(sectionName + " li")).forEach((suggestionLiTag) => {
       var profileSuggestion = {
-        name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").innerHTML : null),
+        name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
         location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").innerHTML : null),
         link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
-        picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").href : null),
+        picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
       };
       profileSuggestions.push(profileSuggestion);
     });
