@@ -211,6 +211,8 @@ export default class StatisticsView extends React.Component{
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 6 && <RelationshipsChart 
                               objects={this.state.periodProfiles} 
+                              displayCriteria={"suggestions"} 
+                              profiles={this.state.periodProfiles}
                               carrouselIndex={6} />}
             </Carousel.Item>
             <Carousel.Item> 

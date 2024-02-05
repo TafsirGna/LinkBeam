@@ -213,7 +213,10 @@ export default class SearchesTimelineChart extends React.Component{
 	                                          <span class="visually-hidden">Loading...</span>
 	                                        </div> }
 
-					{ this.state.lineData && <Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} /> }
+					{ this.state.lineData && <div>
+																		<Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} />
+																		{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches over a period of time</p> }
+																	</div>}
 
 				</div>
 			</>

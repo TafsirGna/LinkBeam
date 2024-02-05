@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { AlertCircleIcon } from "../SVGs";
+import Offcanvas from 'react-bootstrap/Offcanvas';
 
 export default class RelationshipsChart extends React.Component{
 
@@ -27,6 +28,8 @@ export default class RelationshipsChart extends React.Component{
     };
 
     this.setSuggestionsData = this.setSuggestionsData.bind(this);
+    this.drawArcDiagram = this.drawArcDiagram.bind(this);
+    this.drawDirectedGraph = this.drawDirectedGraph.bind(this);
   }
 
   componentDidMount() {
@@ -176,13 +179,13 @@ export default class RelationshipsChart extends React.Component{
   			group: "prime",
   		});
 
-  		if (!profile.languages){
+  		if (!profile.certifications){
   			continue;
   		}
 
-  		for (var language of profile.languages){
+  		for (var certification of profile.certifications){
 
-  			var languageName = dbDataSanitizer.preSanitize(language.name);
+  			var certName = dbDataSanitizer.preSanitize(certification.title);
   			var certProfiles = performCertComparison(profile, certName, this.props.profiles);
 
   			for (var certProfile of certProfiles){
@@ -371,160 +374,266 @@ export default class RelationshipsChart extends React.Component{
 
   }
 
+  drawDirectedGraph = () => {
+
+    // Specify the dimensions of the chart.
+    const width = 928;
+    const height = 600;
+
+    // Specify the color scale.
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
+
+    // The force simulation mutates links and nodes, so create a copy
+    // so that re-evaluating this cell produces the same result.
+    const links = this.state.data.links.map(d => ({...d}));
+    const nodes = this.state.data.nodes.map(d => ({...d}));
+
+    // Create a simulation with several forces.
+    const simulation = d3.forceSimulation(nodes)
+        .force("link", d3.forceLink(links).id(d => d.id))
+        .force("charge", d3.forceManyBody())
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .on("tick", ticked);
+
+    // Create the SVG container.
+    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("style", "max-width: 100%; height: auto;");
+
+    // Add a line for each link, and a circle for each node.
+    const link = svg.append("g")
+        .attr("stroke", "#999")
+        .attr("stroke-opacity", 0.6)
+      .selectAll()
+      .data(links)
+      .join("line")
+        .attr("stroke-width", d => Math.sqrt(d.value));
+
+    const node = svg.append("g")
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 1.5)
+      .selectAll()
+      .data(nodes)
+      .join("circle")
+        .attr("r", 5)
+        .attr("fill", d => color(d.group));
+
+    node.append("title")
+        .text(d => d.id);
+
+    // Add a drag behavior.
+    node.call(d3.drag()
+          .on("start", dragstarted)
+          .on("drag", dragged)
+          .on("end", dragended));
+
+    // Set the position attributes of links and nodes each time the simulation ticks.
+    function ticked() {
+      link
+          .attr("x1", d => d.source.x)
+          .attr("y1", d => d.source.y)
+          .attr("x2", d => d.target.x)
+          .attr("y2", d => d.target.y);
+
+      node
+          .attr("cx", d => d.x)
+          .attr("cy", d => d.y);
+    }
+
+    // Reheat the simulation when drag starts, and fix the subject position.
+    function dragstarted(event) {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
+      event.subject.fx = event.subject.x;
+      event.subject.fy = event.subject.y;
+    }
+
+    // Update the subject (dragged node) position during drag.
+    function dragged(event) {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
+
+    // Restore the target alpha so the simulation cools after dragging ends.
+    // Unfix the subject position now that it’s no longer being dragged.
+    function dragended(event) {
+      if (!event.active) simulation.alphaTarget(0);
+      event.subject.fx = null;
+      event.subject.fy = null;
+    }
+
+    // When this cell is re-run, stop the previous simulation. (This doesn’t
+    // really matter since the target alpha is zero and the simulation will
+    // stop naturally, but it’s a good practice.)
+    // invalidation.then(() => simulation.stop());
+
+    return svg.node();
+
+  }
+
+  drawArcDiagram = () => {
+
+    var increment = 0, 
+        orderCriteria = ["by name", "by group", "by degree"];
+
+    setInterval(
+      () => {
+        increment += 1;
+        update(this.state.data.orders.get(orderCriteria[increment % orderCriteria.length]));
+      }, 
+      7000
+    );
+
+    const width = 640;
+    const step = 14;
+    const marginTop = 20;
+    const marginRight = 20;
+    const marginBottom = 20;
+    const marginLeft = 400;
+    const height = (this.state.data.nodes.length - 1) * step + marginTop + marginBottom;
+    const y = d3.scalePoint(this.state.data.orders.get(orderCriteria[0]), [marginTop, height - marginBottom]);
+
+    // A color scale for the nodes and links.
+    const color = d3.scaleOrdinal()
+      .domain(this.state.data.nodes.map(d => d.group).sort(d3.ascending))
+      .range(d3.schemeCategory10)
+      .unknown("#aaa");
+
+    // A function of a link, that checks that source and target have the same group and returns
+    // the group; otherwise null. Used to color the links.
+    const groups = new Map(this.state.data.nodes.map(d => [d.id, d.group]));
+    function samegroup({ source, target }) {
+      return groups.get(source) === groups.get(target) ? groups.get(source) : null;
+    }
+
+    // Create the SVG container.
+    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", [0, 0, width, height])
+        .attr("style", "max-width: 100%; height: auto;");
+
+    // The current position, indexed by id. Will be interpolated.
+    const Y = new Map(this.state.data.nodes.map(({id}) => [id, y(id)]));
+    
+    // Add an arc for each link.
+    function arc(d) {
+      const y1 = Y.get(d.source);
+      const y2 = Y.get(d.target);
+      const r = Math.abs(y2 - y1) / 2;
+      return `M${marginLeft},${y1}A${r},${r} 0,0,${y1 < y2 ? 1 : 0} ${marginLeft},${y2}`;
+    }
+    const path = svg.insert("g", "*")
+        .attr("fill", "none")
+        .attr("stroke-opacity", 0.6)
+        .attr("stroke-width", 1.5)
+      .selectAll("path")
+      .data(this.state.data.links)
+      .join("path")
+        .attr("stroke", d => color(samegroup(d)))
+        .attr("d", arc);
+
+    // Add a text label and a dot for each node.
+    const label = svg.append("g")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("text-anchor", "end")
+      .selectAll("g")
+      .data(this.state.data.nodes)
+      .join("g")
+        .attr("transform", d => `translate(${marginLeft},${Y.get(d.id)})`)
+        .call(g => g.append("text")
+            .attr("x", -6)
+            .attr("dy", "0.35em")
+            .attr("fill", d => d3.lab(color(d.group)).darker(2))
+            .text(d => d.id))
+        .call(g => g.append("circle")
+            .attr("r", 3)
+            .attr("fill", d => color(d.group)));
+
+    // Add invisible rects that update the class of the elements on mouseover.
+    label.append("rect")
+        .attr("fill", "none")
+        .attr("width", marginLeft + 40)
+        .attr("height", step)
+        .attr("x", -marginLeft)
+        .attr("y", -step / 2)
+        .attr("fill", "none")
+        .attr("pointer-events", "all")
+        .on("pointerenter", (event, d) => {
+          svg.classed("hover", true);
+          label.classed("primary", n => n === d);
+          label.classed("secondary", n => this.state.data.links.some(({source, target}) => (
+            n.id === source && d.id == target || n.id === target && d.id === source
+          )));
+          path.classed("primary", l => l.source === d.id || l.target === d.id).filter(".primary").raise();
+        })
+        .on("pointerout", () => {
+          svg.classed("hover", false);
+          label.classed("primary", false);
+          label.classed("secondary", false);
+          path.classed("primary", false).order();
+        });
+
+    // Add styles for the hover interaction.
+    svg.append("style").text(`
+      .hover text { fill: #aaa; }
+      .hover g.primary text { font-weight: bold; fill: #333; }
+      .hover g.secondary text { fill: #333; }
+      .hover path { stroke: #ccc; }
+      .hover path.primary { stroke: #333; }
+    `);
+
+    // A function that updates the positions of the labels and recomputes the arcs
+    // when passed a new order.
+    function update(order) {
+      y.domain(order);
+
+      label
+          .sort((a, b) => d3.ascending(Y.get(a.id), Y.get(b.id)))
+          .transition()
+          .duration(750)
+          .delay((d, i) => i * 20) // Make the movement start from the top.
+          .attrTween("transform", d => {
+            const i = d3.interpolateNumber(Y.get(d.id), y(d.id));
+            return t => {
+              const y = i(t);
+              Y.set(d.id, y);
+              return `translate(${marginLeft},${y})`;
+            }
+          });
+
+      path.transition()
+          .duration(750 + this.state.data.nodes.length * 20) // Cover the maximum delay of the label transition.
+          .attrTween("d", d => () => arc(d));
+    }
+
+    return Object.assign(svg.node(), {update});
+
+  };
+
   drawChart(){
 
     if (!this.props.objects || this.props.objects.length == 0){
       return;
     }
 
-    // if a previous svg has laready been draw, no need to has one new
-    var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
-    if (chartContainer.firstChild){
-      chartContainer.removeChild(chartContainer.firstChild);
-    }
-
-    const drawArcDiagram = () => {
-
-      var increment = 0, 
-          orderCriteria = ["by name", "by group", "by degree"];
-
-      setInterval(
-        () => {
-          increment += 1;
-        }, 
-        10000
-      );
-
-      const width = 640;
-      const step = 14;
-      const marginTop = 20;
-      const marginRight = 20;
-      const marginBottom = 20;
-      const marginLeft = 400;
-      const height = (this.state.data.nodes.length - 1) * step + marginTop + marginBottom;
-      const y = d3.scalePoint(this.state.data.orders.get(orderCriteria[increment % orderCriteria.length]), [marginTop, height - marginBottom]);
-
-      // A color scale for the nodes and links.
-      const color = d3.scaleOrdinal()
-        .domain(this.state.data.nodes.map(d => d.group).sort(d3.ascending))
-        .range(d3.schemeCategory10)
-        .unknown("#aaa");
-
-      // A function of a link, that checks that source and target have the same group and returns
-      // the group; otherwise null. Used to color the links.
-      const groups = new Map(this.state.data.nodes.map(d => [d.id, d.group]));
-      function samegroup({ source, target }) {
-        return groups.get(source) === groups.get(target) ? groups.get(source) : null;
-      }
-
-      // Create the SVG container.
-      const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
-          .attr("width", width)
-          .attr("height", height)
-          .attr("viewBox", [0, 0, width, height])
-          .attr("style", "max-width: 100%; height: auto;");
-
-      // The current position, indexed by id. Will be interpolated.
-      const Y = new Map(this.state.data.nodes.map(({id}) => [id, y(id)]));
-      
-      // Add an arc for each link.
-      function arc(d) {
-        const y1 = Y.get(d.source);
-        const y2 = Y.get(d.target);
-        const r = Math.abs(y2 - y1) / 2;
-        return `M${marginLeft},${y1}A${r},${r} 0,0,${y1 < y2 ? 1 : 0} ${marginLeft},${y2}`;
-      }
-      const path = svg.insert("g", "*")
-          .attr("fill", "none")
-          .attr("stroke-opacity", 0.6)
-          .attr("stroke-width", 1.5)
-        .selectAll("path")
-        .data(this.state.data.links)
-        .join("path")
-          .attr("stroke", d => color(samegroup(d)))
-          .attr("d", arc);
-
-      // Add a text label and a dot for each node.
-      const label = svg.append("g")
-          .attr("font-family", "sans-serif")
-          .attr("font-size", 10)
-          .attr("text-anchor", "end")
-        .selectAll("g")
-        .data(this.state.data.nodes)
-        .join("g")
-          .attr("transform", d => `translate(${marginLeft},${Y.get(d.id)})`)
-          .call(g => g.append("text")
-              .attr("x", -6)
-              .attr("dy", "0.35em")
-              .attr("fill", d => d3.lab(color(d.group)).darker(2))
-              .text(d => d.id))
-          .call(g => g.append("circle")
-              .attr("r", 3)
-              .attr("fill", d => color(d.group)));
-
-      // Add invisible rects that update the class of the elements on mouseover.
-      label.append("rect")
-          .attr("fill", "none")
-          .attr("width", marginLeft + 40)
-          .attr("height", step)
-          .attr("x", -marginLeft)
-          .attr("y", -step / 2)
-          .attr("fill", "none")
-          .attr("pointer-events", "all")
-          .on("pointerenter", (event, d) => {
-            svg.classed("hover", true);
-            label.classed("primary", n => n === d);
-            label.classed("secondary", n => this.state.data.links.some(({source, target}) => (
-              n.id === source && d.id == target || n.id === target && d.id === source
-            )));
-            path.classed("primary", l => l.source === d.id || l.target === d.id).filter(".primary").raise();
-          })
-          .on("pointerout", () => {
-            svg.classed("hover", false);
-            label.classed("primary", false);
-            label.classed("secondary", false);
-            path.classed("primary", false).order();
-          });
-
-      // Add styles for the hover interaction.
-      svg.append("style").text(`
-        .hover text { fill: #aaa; }
-        .hover g.primary text { font-weight: bold; fill: #333; }
-        .hover g.secondary text { fill: #333; }
-        .hover path { stroke: #ccc; }
-        .hover path.primary { stroke: #333; }
-      `);
-
-      // A function that updates the positions of the labels and recomputes the arcs
-      // when passed a new order.
-      function update(order) {
-        y.domain(order);
-
-        label
-            .sort((a, b) => d3.ascending(Y.get(a.id), Y.get(b.id)))
-            .transition()
-            .duration(750)
-            .delay((d, i) => i * 20) // Make the movement start from the top.
-            .attrTween("transform", d => {
-              const i = d3.interpolateNumber(Y.get(d.id), y(d.id));
-              return t => {
-                const y = i(t);
-                Y.set(d.id, y);
-                return `translate(${marginLeft},${y})`;
-              }
-            });
-
-        path.transition()
-            .duration(750 + this.state.data.nodes.length * 20) // Cover the maximum delay of the label transition.
-            .attrTween("d", d => () => arc(d));
-      }
-
-      return Object.assign(svg.node(), {update});
-
-    };
-
     this.setData(() => {
-    	drawArcDiagram();
+
+      // if a previous svg has laready been draw, no need to has one new
+      var chartContainer = document.getElementById("chartTag_"+this.state.uuid);
+      if (chartContainer.firstChild){
+        chartContainer.removeChild(chartContainer.firstChild);
+      }
+
+      if (this.props.objects.length == 1){
+    	 this.drawArcDiagram();
+      }
+      else{
+        this.drawDirectedGraph();
+      }
+
     });
   
   }
@@ -545,7 +654,41 @@ export default class RelationshipsChart extends React.Component{
                       <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
                     </div> }
 
-        { this.props.objects && <div id={"chartTag_"+this.state.uuid} class=""></div> }
+        { this.props.objects && 
+                  <div>
+                    <div id={"chartTag_"+this.state.uuid} class=""></div> 
+                    { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles with their relationships</p> }
+                  </div>}
+
+
+        <Offcanvas show={this.props.offCanvasShow} onHide={this.props.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Profiles</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+
+            {/*{ !this.props.profile.profileSuggestions && <div class="text-center m-5 mt-4">
+                  <AlertCircleIcon size="100" className="mb-3" />
+                  <p><span class="badge text-bg-primary fst-italic shadow">No data retrieved for this section </span></p>
+                </div>}
+
+            {this.props.profile.profileSuggestions && this.props.profile.profileSuggestions.map((suggestion, index) => (<div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
+                                                      <div class="position-relative shadow rounded">
+                                                        <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                                          <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                            <img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>
+                                                            {dbDataSanitizer.suggestionName(suggestion.name)}
+                                                          </span>
+                                                          <strong class="fw-semibold">{dbDataSanitizer.suggestionName(suggestion.name)}</strong>
+                                                          <span class="d-block small opacity-75 mt-2">With support text underneath to add more detail</span>
+                                                        </label>
+                                                      </div>
+                                                    </div>)
+                    )}*/}
+            
+          </Offcanvas.Body>
+        </Offcanvas>
+
       </>
     );
   }

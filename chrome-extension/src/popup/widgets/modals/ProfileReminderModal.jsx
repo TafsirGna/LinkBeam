@@ -103,7 +103,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 <Form.Control
                   type="date"
                   autoFocus
-                  max={new Date().toISOString().slice(0, 10)}
+                  // max={new Date().toISOString().slice(0, 10)}
                   value={(Object.hasOwn(this.props.profile, "reminder") ? this.props.profile.reminder.date : this.state.reminder.date)}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"

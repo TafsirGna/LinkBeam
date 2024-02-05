@@ -150,7 +150,11 @@ export default class ExpEdStackBarChart extends React.Component{
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
 
-          { this.state.stackData && <Bar id={"chartTag_"+this.state.uuid} options={options} data={this.state.stackData} />}
+          { this.state.stackData && 
+                              <div>
+                                <Bar id={"chartTag_"+this.state.uuid} options={options} data={this.state.stackData} />
+                                { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles by experience and education time lengths</p> }
+                              </div>}
           
         </div>
       </>

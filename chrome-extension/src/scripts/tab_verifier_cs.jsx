@@ -34,12 +34,12 @@ function extractHeaderData(){
     location = locationTagContainer.firstElementChild.innerHTML;
   }
 
-  let nFollowers = null; nFollowersTagContainer = document.querySelector('.top-card-layout__first-subline .not-first-middot:nth-child(2) :nth-child(1)');
+  let nFollowers = null; nFollowersTagContainer = (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[0];
   if (nFollowersTagContainer){
     nFollowers = nFollowersTagContainer.innerHTML;
   }
 
-  let nConnections = null, nConnectionsTagContainer = document.querySelector('.top-card-layout__first-subline .not-first-middot:nth-child(2) :nth-child(2)'); // document.querySelector('.top-card-layout__first-subline :nth-child(3)');
+  let nConnections = null, nConnectionsTagContainer = (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[1];
   if (nConnectionsTagContainer){
     nConnections = nConnectionsTagContainer.innerHTML;
   }
@@ -160,7 +160,7 @@ function extractExperienceData(){
           experienceItem["title"] = (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null);
           experienceItem["company"] = companyName;
           experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
-          experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item") ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+          experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
           experienceData.push(experienceItem);
         });
 
@@ -170,7 +170,7 @@ function extractExperienceData(){
         experienceItem["title"] = (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null);
         experienceItem["company"] = (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null); 
         experienceItem["period"] = (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null);
-        experienceItem["location"] = (experienceLiTag.querySelectorAll(".experience-item__meta-item") ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+        experienceItem["location"] = (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
         experienceData.push(experienceItem);
 
       }
@@ -197,6 +197,7 @@ function extractActivityData(){
         link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
         picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
         title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
+        action: (activityLiTag.querySelector(".base-main-card__subtitle") ? activityLiTag.querySelector(".base-main-card__subtitle").innerHTML : null),
       };
       activityData.push(article);
     });
@@ -285,7 +286,6 @@ function extractData(){
       info: extractAboutData(),
       avatar: headerData.avatar,
       coverImage: headerData.coverImage,
-      // date: dateTime,
       nFollowers: headerData.nFollowers,
       nConnections: headerData.nConnections, 
       location: headerData.location,

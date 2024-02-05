@@ -270,7 +270,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                                                       </div>
                                                     <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                                                       {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s "+this.state.donutChartModalTitle+" is longer than "}
-                                                      <span class="badge text-bg-primary">{this.state.donutChartModalItemData.value}</span>
+                                                      <span class="badge text-bg-primary">{(this.state.donutChartModalItemData.value).toFixed(1)}</span>
                                                       {"% of all the profiles you've visited so far." }
                                                     </p>
                                                     </div>}

@@ -5,8 +5,9 @@ import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
+import share_icon from '../../assets/share_icon.png';
 import newspaper_icon from '../../assets/newspaper_icon.png';
-import { PictureIcon } from "./SVGs";
+import { PictureIcon, AlertCircleIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 
@@ -83,7 +84,7 @@ export default class ProfileActivityListView extends React.Component{
               </div> }
 
         { this.state.posts && this.state.posts.length == 0 && <div class="text-center m-5 mt-2">
-                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <AlertCircleIcon size="100" className=""/>
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No profile activity here</span></p>
                     <p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>
                   </div> }
@@ -97,12 +98,15 @@ export default class ProfileActivityListView extends React.Component{
                                                   <span class="badge align-items-center p-1 pe-3 text-secondary-emphasis rounded-pill">
                                                     <img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>
                                                     {profileActivityObject.profile.fullName}
-                                                    <OverlayTrigger
-                                                      placement="top"
-                                                      overlay={<Tooltip id="tooltip1">Liked</Tooltip>}
-                                                    >
-                                                      <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>
-                                                    </OverlayTrigger>
+                                                    { profileActivityObject.action && <OverlayTrigger
+                                                                                        placement="top"
+                                                                                        overlay={<Tooltip id="tooltip1">Liked</Tooltip>}
+                                                                                      >
+                                                                                      <span>
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked")) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared")) &&  <img class="mx-1" width="18" height="18" src={share_icon} alt=""/>}
+                                                                                      </span>
+                                                                                      </OverlayTrigger>}
                                                   </span>
                                                 </p>
                                                 <p class="mb-0 opacity-75 border p-2 rounded shadow">{profileActivityObject.title}</p>
@@ -123,12 +127,15 @@ export default class ProfileActivityListView extends React.Component{
                                                 <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
                                                   <img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>
                                                   {profileActivityObject.profile.fullName}
-                                                  <OverlayTrigger
-                                                    placement="top"
-                                                    overlay={<Tooltip id="tooltip1">Liked</Tooltip>}
-                                                  >
-                                                    <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>
-                                                  </OverlayTrigger>
+                                                  {profileActivityObject.action && <OverlayTrigger
+                                                                                      placement="top"
+                                                                                      overlay={<Tooltip id="tooltip1">Liked</Tooltip>}
+                                                                                    >
+                                                                                      <span>
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked")) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared")) &&  <img class="mx-1" width="18" height="18" src={share_icon} alt=""/>}
+                                                                                      </span>
+                                                                                    </OverlayTrigger>}
                                                 </span>
                                               </h5>
                                               <p class="text-muted mb-2 fw-bold">

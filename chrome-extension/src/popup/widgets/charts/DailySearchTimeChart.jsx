@@ -131,7 +131,11 @@ export default class DailySearchTimeChart extends React.Component{
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
 
-        { this.state.barData && <Bar options={barOptions} data={this.state.barData} /> }
+        { this.state.barData && 
+                    <div>
+                      <Bar options={barOptions} data={this.state.barData} />
+                      { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches of the days with the spent time</p> }
+                    </div> }
 
       </>
     );

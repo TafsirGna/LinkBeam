@@ -247,7 +247,11 @@ export default class ConnectedScatterplot extends React.Component{
                       <p><span class="badge text-bg-primary fst-italic shadow">No data to show yet</span></p>
                     </div>}
 
-        { this.state.chartData && this.state.chartData.length != 0 && <div id={"chartTag_"+this.state.uuid} class=""></div> }
+        { this.state.chartData && this.state.chartData.length != 0 && 
+        		<div>
+        			<div id={"chartTag_"+this.state.uuid} class=""></div>
+        			{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles by their experience and time spent</p> }
+        		</div> }
       </>
     );
   }

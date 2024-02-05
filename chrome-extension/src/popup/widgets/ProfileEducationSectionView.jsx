@@ -6,7 +6,7 @@ import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
-import { BarChartIcon } from "./SVGs";
+import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import EducationDetailsModal from "./modals/EducationDetailsModal";
 
 export default class ProfileEducationSectionView extends React.Component{
@@ -79,45 +79,57 @@ export default class ProfileEducationSectionView extends React.Component{
   render(){
     return (
       <>
-        { this.state.doughnutChartsData &&  <div>
-                                                <div class="container-fluid horizontal-scrollable">
-                                                  <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
-                                                    { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                      <ItemPercentageDoughnutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
-                                                                                                                    </div>) }
-                                                  </div>
-                                                </div>
-                                                <p class="small badge text-muted fst-italic p-0 ps-2">
-                                                  <span>Share of each education institution</span>
-                                                </p>
-                                              </div>}
 
-        <div class="mt-2 mx-2">
-          <OverlayTrigger
-            placement="bottom"
-            overlay={<Tooltip id="tooltip1">Click to chart education & experience</Tooltip>}
-          >
-            <span class="border shadow-sm rounded p-1 text-muted">
-              <span  onClick={this.showEdExpTimeChart} class="handy-cursor mx-1 text-primary">
-                <BarChartIcon size="16"/>
-              </span>
-            </span>
-          </OverlayTrigger> 
-          <div class="mt-3">
-             <ProfileGanttChart 
-                profile={this.props.profile} 
-                periodLabel="education"
-                onClick={(label) => {this.handleEdModalShow(label)}} />
-          </div>
-        </div>
+        {/*<span>{ typeof this.props.profile.education}</span>*/}
 
+        { !this.props.profile.education && <div class="text-center m-5 mt-2">
+                    <AlertCircleIcon size="100" className=""/>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No education data here</span></p>
+                  </div> }
 
-        <EducationDetailsModal 
-          show={this.state.edModalShow} 
-          onHide={this.handleEdModalClose} 
-          profile={this.props.profile} 
-          label={this.state.selectedDonutChartElement}
-          labelClass="institution"/>
+        { this.props.profile.education && <div>
+                
+                  { this.state.doughnutChartsData &&  <div>
+                                                          <div class="container-fluid horizontal-scrollable">
+                                                            <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
+                                                              { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
+                                                                                                                                <ItemPercentageDoughnutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
+                                                                                                                              </div>) }
+                                                            </div>
+                                                          </div>
+                                                          <p class="small badge text-muted fst-italic p-0 ps-2">
+                                                            <span>Share of each education institution</span>
+                                                          </p>
+                                                        </div>}
+        
+                  <div class="mt-2 mx-2">
+                    <OverlayTrigger
+                      placement="bottom"
+                      overlay={<Tooltip id="tooltip1">Click to chart education & experience</Tooltip>}
+                    >
+                      <span class="border shadow-sm rounded p-1 text-muted">
+                        <span  onClick={this.showEdExpTimeChart} class="handy-cursor mx-1 text-primary">
+                          <BarChartIcon size="16"/>
+                        </span>
+                      </span>
+                    </OverlayTrigger> 
+                    <div class="mt-3">
+                       <ProfileGanttChart 
+                          profile={this.props.profile} 
+                          periodLabel="education"
+                          onClick={(label) => {this.handleEdModalShow(label)}} />
+                    </div>
+                  </div>
+        
+        
+                  <EducationDetailsModal 
+                    show={this.state.edModalShow} 
+                    onHide={this.handleEdModalClose} 
+                    profile={this.props.profile} 
+                    label={this.state.selectedDonutChartElement}
+                    labelClass="institution"/>
+        
+                </div>}
       </>
     );
   }

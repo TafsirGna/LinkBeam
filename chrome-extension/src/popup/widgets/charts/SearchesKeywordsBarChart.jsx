@@ -183,12 +183,16 @@ export default class SearchesKeywordsBarChart extends React.Component{
                       <p><span class="badge text-bg-primary fst-italic shadow">No keywords yet</span></p>
                     </div>}
 
-				  { this.state.barData && this.state.labelsData.length != 0 && <Bar 
+				  { this.state.barData && this.state.labelsData.length != 0 && 
+                                <div>
+                                  <Bar 
                                     ref={this.state.chartRef}
                                     id={"chartTag_"+this.state.uuid} 
                                     options={barOptions} 
                                     data={this.state.barData}
-                                    onClick={this.onChartClick} /> }
+                                    onClick={this.onChartClick} />
+                                  { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches distributed by keywords</p> }
+                                </div> }
 
         </div>
 

@@ -148,7 +148,11 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 	                                          <span class="visually-hidden">Loading...</span>
 	                                        </div> }
 
-					{ this.state.bubbleData && <Bubble id={"chartTag_"+this.state.uuid} options={options} data={this.state.bubbleData} /> }
+					{ this.state.bubbleData && 
+												<div>
+													<Bubble id={"chartTag_"+this.state.uuid} options={options} data={this.state.bubbleData} /> 
+													{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small">Chart of profiles by number of searches and time</p> }
+												</div>}
 
 				</div>
 			</>
