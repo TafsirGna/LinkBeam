@@ -27,31 +27,37 @@ export default class ProfileEducationSectionView extends React.Component{
         wordCloudData = []*/;
     for (var education of this.props.profile.education){
 
-      var institutionName = dbDataSanitizer.institutionName(education.institutionName),
-          // title = dbDataSanitizer.institutionName(education.degree),
-          expTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
+      var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
+          // title = dbDataSanitizer.preSanitize(education.degree),
+      var edTime = 0;
+
+      if (education.period){
+        edTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
+      }
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(institutionName.toLowerCase());
       if (index == -1){
         doughnutChartsData.push({
           label: institutionName,
-          value: expTime,
+          value: edTime,
+          missingData: (education.period ? false : true),
         });
       }
       else{
-        doughnutChartsData[index].value += expTime;
+        doughnutChartsData[index].value += edTime;
       }
 
       // index = wordCloudData.map(e => e.title).indexOf(title);
       // if (index == -1){
       //   wordCloudData.push({
       //     label: title,
-      //     value: expTime,
+      //     value: edTime,
       //   });
       // }
       // else{
-      //   wordCloudData[index].value += expTime;
+      //   wordCloudData[index].value += edTime;
       // }
+
     }
     this.setState({
       doughnutChartsData: doughnutChartsData, 
@@ -83,7 +89,7 @@ export default class ProfileEducationSectionView extends React.Component{
         {/*<span>{ typeof this.props.profile.education}</span>*/}
 
         { !this.props.profile.education && <div class="text-center m-5 mt-2">
-                    <AlertCircleIcon size="100" className=""/>
+                    <AlertCircleIcon size="100" className="text-muted"/>
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No education data here</span></p>
                   </div> }
 

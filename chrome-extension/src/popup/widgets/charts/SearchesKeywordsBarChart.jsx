@@ -179,7 +179,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
                                           </div> }
 
           { this.state.barData && this.state.labelsData.length == 0 && <div class="text-center m-5 mt-4">
-                      <AlertCircleIcon size="100" className=""/>
+                      <AlertCircleIcon size="100" className="text-muted"/>
                       <p><span class="badge text-bg-primary fst-italic shadow">No keywords yet</span></p>
                     </div>}
 

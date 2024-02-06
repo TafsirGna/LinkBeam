@@ -34,7 +34,7 @@ export default class ReminderListView extends React.Component{
             </div>}
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-4">
-                  <AlertCircleIcon size="100" className="mb-3" />
+                  <AlertCircleIcon size="100" className="mb-3 text-muted" />
                   <p><span class="badge text-bg-primary fst-italic shadow">{this.props.context == "search" ? "No found reminders" : "No reminders yet"}</span></p>
                 </div>}
 

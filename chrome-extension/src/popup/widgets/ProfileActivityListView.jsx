@@ -84,7 +84,7 @@ export default class ProfileActivityListView extends React.Component{
               </div> }
 
         { this.state.posts && this.state.posts.length == 0 && <div class="text-center m-5 mt-2">
-                    <AlertCircleIcon size="100" className=""/>
+                    <AlertCircleIcon size="100" className="text-muted"/>
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No profile activity here</span></p>
                     <p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>
                   </div> }

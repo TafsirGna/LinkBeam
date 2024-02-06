@@ -158,7 +158,7 @@ export default class ProfileViewHeader extends React.Component{
               overlay={<ReactTooltip id="tooltip1">Warning!</ReactTooltip>}
             >
               <span class="me-1 text-warning">
-                <AlertCircleIcon size="14"/>
+                <AlertCircleIcon size="14" className="text-warning"/>
               </span>
             </OverlayTrigger>
           <span>The data below are only the ones made publicly available by this user on its linkedin profile page</span>
@@ -177,9 +177,7 @@ export default class ProfileViewHeader extends React.Component{
                                                   placement="top"
                                                   overlay={<ReactTooltip id="tooltip1">Missing followers and connections count!</ReactTooltip>}
                                                 >
-                                                  <span class="text-warning">
-                                                    <AlertCircleIcon size="14"/>
-                                                  </span>
+                                                  <AlertCircleIcon size="14" className="text-warning"/>
                                                 </OverlayTrigger>} 
               </small>
             </p>
@@ -312,7 +310,7 @@ export default class ProfileViewHeader extends React.Component{
                             </div>}
 
               { !this.state.followersCompData && !this.state.connectionsCompData && <div class="text-center m-5 mt-4">
-                      <AlertCircleIcon size="100" className=""/>
+                      <AlertCircleIcon size="100" className="text-muted"/>
                       <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
                     </div>}
             </div>

@@ -54,7 +54,7 @@ export default class ProfileNetworkSectionView extends React.Component{
       <>
 
         { !this.props.profile.profileSuggestions && <div class="text-center m-5 mt-4">
-                  <AlertCircleIcon size="100" className="mb-3" />
+                  <AlertCircleIcon size="100" className="mb-3 text-muted" />
                   <p><span class="badge text-bg-primary fst-italic shadow">No data retrieved for this section </span></p>
                 </div>}
 

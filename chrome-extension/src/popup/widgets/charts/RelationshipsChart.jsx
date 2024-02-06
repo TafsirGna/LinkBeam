@@ -745,7 +745,7 @@ export default class RelationshipsChart extends React.Component{
               </div> }
 
             { this.state.linkedObjects && this.state.linkedObjects.length == 0 && <div class="text-center m-5 mt-4">
-                  <AlertCircleIcon size="100" className="mb-3" />
+                  <AlertCircleIcon size="100" className="mb-3 text-muted" />
                   <p><span class="badge text-bg-primary fst-italic shadow">No linked objects found </span></p>
                 </div>}
 

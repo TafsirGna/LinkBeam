@@ -46,7 +46,7 @@ export default class SearchListView extends React.Component{
               </div> }
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
-                    <AlertCircleIcon size="100" className="mb-3" />
+                    <AlertCircleIcon size="100" className="mb-3 text-muted" />
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
                     <p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>
                   </div> }

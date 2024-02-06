@@ -15,7 +15,7 @@ import {
   TimeScale,
   Colors,
 } from 'chart.js';
-import { OverlayTrigger } from "react-bootstrap";
+import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar, getElementAtEvent } from 'react-chartjs-2';
@@ -25,6 +25,7 @@ import {
   dbDataSanitizer,
 } from "../../Local_library";
 import moment from 'moment';
+import { AlertCircleIcon } from "../SVGs";
 
 ChartJS.register(
   CategoryScale,
@@ -69,6 +70,7 @@ export default class ProfileGanttChart extends React.Component{
       barData: null,
       chartData: null,
       chartRef: React.createRef(),
+      missingDataObjects: null,
     };
 
     this.onChartClick = this.onChartClick.bind(this);
@@ -86,7 +88,8 @@ export default class ProfileGanttChart extends React.Component{
 
     var data = [], 
         minDate = moment(),
-        objects = null;
+        objects = null,
+        missingDataObjects = [];
 
     if (this.props.periodLabel == "experience"){
       objects = this.props.profile.experience;
@@ -104,8 +107,13 @@ export default class ProfileGanttChart extends React.Component{
     for (var object of objects){
 
       var label = (Object.hasOwn(object, "company")) 
-                    ? dbDataSanitizer.companyName(object.company)
-                    : dbDataSanitizer.institutionName(object.institutionName);
+                    ? dbDataSanitizer.preSanitize(object.company)
+                    : dbDataSanitizer.preSanitize(object.institutionName);
+
+      if (!object.period){
+        missingDataObjects.push(object);
+        continue;
+      }
       
       // Setting the minDate object
       if (object.period.startDateRange < minDate){ minDate = object.period.startDateRange; }
@@ -146,21 +154,24 @@ export default class ProfileGanttChart extends React.Component{
 
       var chartColors = getChartColors(data.length);
 
-      this.setState({barData: {
-        // labels,
-        datasets: [
-          {
-            label: 'Dataset',
-            data: data,
-            backgroundColor: chartColors.borders/*chartColors.backgrounds*/,
-            borderColor: chartColors.borders,
-            borderWidth: 1,
-            borderSkipped: false,
-            borderRadius: 10,
-            barPercentage: .85,
-          },
-        ],
-      }});
+      this.setState({
+        barData: {
+          // labels,
+          datasets: [
+            {
+              label: 'Dataset',
+              data: data,
+              backgroundColor: chartColors.borders/*chartColors.backgrounds*/,
+              borderColor: chartColors.borders,
+              borderWidth: 1,
+              borderSkipped: false,
+              borderRadius: 10,
+              barPercentage: .85,
+            },
+          ],
+        },
+        missingDataObjects: missingDataObjects,
+      });
 
     });
 
@@ -189,6 +200,20 @@ export default class ProfileGanttChart extends React.Component{
                                       plugins={[todayLinePlugin]}
                                       onClick={this.onChartClick}
                                       />
+                                      { this.state.missingDataObjects && this.state.missingDataObjects.length != 0 && <div class="rounded border shadow mt-2 p-2">
+                                                                              { this.state.missingDataObjects.map((object) => (<span class="badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                                                <OverlayTrigger
+                                                                                  placement="top"
+                                                                                  overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}
+                                                                                >
+                                                                                  <span><AlertCircleIcon size="16" className="text-warning rounded-circle me-1"/></span>
+                                                                                </OverlayTrigger>
+                                                                                {(Object.hasOwn(object, "company")) 
+                                                                                  ? dbDataSanitizer.preSanitize(object.company)
+                                                                                  : dbDataSanitizer.preSanitize(object.institutionName)}
+                                                                              </span>
+                                                                            ))}
+                                                                          </div>}
                                   </div>
                                   <p class="small badge text-muted fst-italic p-0">
                                     <span>

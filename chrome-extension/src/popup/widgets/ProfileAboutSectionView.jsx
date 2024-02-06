@@ -154,7 +154,7 @@ export default class ProfileAboutSectionView extends React.Component{
     if (!this.state.donutChartModalItemData){
 
       var donutChartModalItemData = {
-        label: "intro length",
+        label: "Intro length",
         value: 0,
       }
 

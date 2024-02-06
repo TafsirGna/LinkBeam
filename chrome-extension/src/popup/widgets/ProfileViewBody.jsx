@@ -31,6 +31,7 @@ export default class ProfileViewBody extends React.Component{
       edExpTimeChartModalShow: false,
       computedProfileData: {
         experienceTime: null,
+        educationTime: null,
       }
 
     };

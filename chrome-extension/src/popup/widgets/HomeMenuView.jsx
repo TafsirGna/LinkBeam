@@ -43,6 +43,11 @@ export default class HomeMenu extends React.Component{
             <LayersIcon size="18" className=""/>
           </div>
           <ul class="dropdown-menu shadow-lg">
+            {/*<li>
+              <Link class="dropdown-item small" to="/index.html/Dashboard">
+                Dashboard
+              </Link>
+            </li>*/}
             <li>
               <Link class="dropdown-item small" to="/index.html/ProfileActivity">
                 Activity (Profiles)

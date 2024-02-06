@@ -3,6 +3,8 @@ import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { AlertCircleIcon } from "../SVGs";
+import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -66,6 +68,14 @@ export default class ItemPercentageDoughnutChart extends React.Component{
   render(){
     return (
       <>
+        { this.props.data.missingData && <div>
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}
+                  >
+                    <span class="float-end"><AlertCircleIcon size="20" className="text-warning"/></span>
+                 </OverlayTrigger>
+                </div>}
         <div class={"" + this.props.className} onClick={this.props.onClick}>
       	 { this.state.data && <Doughnut data={this.state.data} options={options} /> }
         </div>
