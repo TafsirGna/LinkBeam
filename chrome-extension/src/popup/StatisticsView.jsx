@@ -14,6 +14,7 @@ import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot"; Connec
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
+import { Link } from 'react-router-dom';
 
 import { 
   saveCurrentPageTitle, 
@@ -36,6 +37,7 @@ export default class StatisticsView extends React.Component{
       view: 0,
       carrouselActiveItemIndex: 0,
       controlsVisibility: true,
+      relChartDisplayCrit: "suggestions",
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
@@ -44,6 +46,7 @@ export default class StatisticsView extends React.Component{
     this.handleCarrouselSelect = this.handleCarrouselSelect.bind(this);
     this.downloadChart = this.downloadChart.bind(this);
     this.onChartExpansion = this.onChartExpansion.bind(this);
+    this.setRelChartDisplayCrit = this.setRelChartDisplayCrit.bind(this);
   }
 
   componentDidMount() {
@@ -125,8 +128,15 @@ export default class StatisticsView extends React.Component{
     // localStorage.setItem('periodProfiles', periodProfiles);
     localStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
     localStorage.setItem('carrouselChartView', this.state.view);
+    localStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
 
     window.open("/index.html?redirect_to=ChartExpansionView", '_blank');
+
+  }
+
+  setRelChartDisplayCrit(value){
+
+    this.setState({relChartDisplayCrit: value});
 
   }
   
@@ -148,8 +158,7 @@ export default class StatisticsView extends React.Component{
                           <span onClick={this.downloadChart} title="Download chart" class="handy-cursor mx-1">
                             <DownloadIcon size="16" className=""/>
                           </span>
-                          {/*<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 handy-cursor"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>*/}
-                        </span>}
+                        </span> }
 
             <div class="btn-group float-end">
               <button class="btn btn-primary btn-sm dropdown-toggle fst-italic badge" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -209,11 +218,25 @@ export default class StatisticsView extends React.Component{
                               carrouselIndex={5} />}
             </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 6 && <RelationshipsChart 
-                              objects={this.state.periodProfiles} 
-                              displayCriteria={"suggestions"} 
-                              profiles={this.state.periodProfiles}
-                              carrouselIndex={6} />}
+              { this.state.carrouselActiveItemIndex == 6 && 
+                            <div>
+                              <RelationshipsChart 
+                                objects={this.state.periodProfiles} 
+                                displayCriteria={ this.state.relChartDisplayCrit } 
+                                profiles={this.state.periodProfiles}
+                                carrouselIndex={6} />
+
+                              <div class="dropdown my-2 offset-5">
+                                <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                  <span class="rounded shadow badge border text-primary border-link">{this.state.relChartDisplayCrit}</span>
+                                </div>
+                                <ul class="dropdown-menu shadow-lg border border-secondary">
+                                  {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
+                                        <li><Link class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</Link></li>  
+                                    ))}
+                                </ul>
+                              </div>
+                            </div>}
             </Carousel.Item>
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 7 && <ConnectedScatterplot 

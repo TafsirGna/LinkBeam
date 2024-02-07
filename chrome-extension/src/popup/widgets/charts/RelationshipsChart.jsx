@@ -135,10 +135,16 @@ export default class RelationshipsChart extends React.Component{
     for (var profile of this.props.objects){
 
   		var source = dbDataSanitizer.preSanitize(profile.fullName);
-  		chartData.nodes.push({
-  			id: source,
-  			group: "prime",
-  		});
+
+      if (chartData.nodes.map(e => e.url).indexOf(profile.url) == -1){
+
+    		chartData.nodes.push({
+    			id: source,
+    			group: "prime",
+          url: profile.url,
+    		});
+
+      }
 
   		if (!profile.languages){
   			continue;
@@ -151,12 +157,17 @@ export default class RelationshipsChart extends React.Component{
 
   			for (var langProfile of langProfiles){
 
-            		var target = dbDataSanitizer.preSanitize(langProfile.fullName);
+          var target = dbDataSanitizer.preSanitize(langProfile.fullName);
 
-  				chartData.nodes.push({
-  					id: target,
-  					group: languageName,
-  				});
+          if (chartData.nodes.map(e => e.url).indexOf(langProfile.url) == -1){
+
+    				chartData.nodes.push({
+    					id: target,
+    					group: languageName,
+              url: langProfile.url,
+    				});
+
+          }
 
   				chartData.links.push({
   					source: source,
@@ -200,16 +211,26 @@ export default class RelationshipsChart extends React.Component{
     for (var profile of this.props.objects){
 
   		var source = dbDataSanitizer.preSanitize(profile.fullName);
-  		chartData.nodes.push({
-  			id: source,
-  			group: "prime",
-  		});
+
+      if (chartData.nodes.map(e => e.url).indexOf(profile.url) == -1){
+
+    		chartData.nodes.push({
+    			id: source,
+    			group: "prime",
+          url: profile.url,
+    		});
+
+      }
 
   		if (!profile.certifications){
   			continue;
   		}
 
   		for (var certification of profile.certifications){
+
+        if (!certification.title){
+          continue;
+        }
 
   			var certName = dbDataSanitizer.preSanitize(certification.title);
   			var certProfiles = performCertComparison(profile, certName, this.props.profiles);
@@ -218,10 +239,15 @@ export default class RelationshipsChart extends React.Component{
 
           var target = dbDataSanitizer.preSanitize(certProfile.fullName);
 
-  				chartData.nodes.push({
-  					id: target,
-  					group: certName,
-  				});
+          if (chartData.nodes.map(e => e.url).indexOf(certProfile.url) == -1){
+
+    				chartData.nodes.push({
+    					id: target,
+    					group: certName,
+              url: certProfile.url,
+    				});
+
+          }
 
   				chartData.links.push({
   					source: source,
@@ -266,10 +292,16 @@ export default class RelationshipsChart extends React.Component{
     for (var profile of this.props.objects){
 
       var source = dbDataSanitizer.preSanitize(profile.fullName);
-      chartData.nodes.push({
-        id: source,
-        group: "prime",
-      });
+
+      if (chartData.nodes.map(e => e.url).indexOf(profile.url) == -1){
+
+        chartData.nodes.push({
+          id: source,
+          group: "prime",
+          url: profile.url,
+        });
+
+      }
 
       if (!profile.education){
         continue;
@@ -284,10 +316,15 @@ export default class RelationshipsChart extends React.Component{
 
           var target = dbDataSanitizer.preSanitize(edProfile.fullName);
 
-          chartData.nodes.push({
-            id: target,
-            group: institutionName,
-          });
+          if (chartData.nodes.map(e => e.url).indexOf(edProfile.url) == -1){
+
+            chartData.nodes.push({
+              id: target,
+              group: institutionName,
+              url: edProfile.url,
+            });
+
+          }
 
           chartData.links.push({
             source: source,
@@ -332,10 +369,16 @@ export default class RelationshipsChart extends React.Component{
     for (var profile of this.props.objects){
 
       var source = dbDataSanitizer.preSanitize(profile.fullName);
-      chartData.nodes.push({
-        id: source,
-        group: "prime",
-      });
+
+      if (chartData.nodes.map(e => e.url).indexOf(profile.url) == -1){
+
+        chartData.nodes.push({
+          id: source,
+          group: "prime",
+          url: profile.url,
+        });
+
+      }
 
       if (!profile.experience){
         continue;
@@ -350,10 +393,15 @@ export default class RelationshipsChart extends React.Component{
 
           var target = dbDataSanitizer.preSanitize(expProfile.fullName);
 
-          chartData.nodes.push({
-            id: target,
-            group: company,
-          });
+          if (chartData.nodes.map(e => e.url).indexOf(expProfile.url) == -1){
+
+            chartData.nodes.push({
+              id: target,
+              group: company,
+              url: expProfile.url,
+            });
+
+          }
 
           chartData.links.push({
             source: source,
@@ -461,8 +509,8 @@ export default class RelationshipsChart extends React.Component{
 
     // Create the SVG container.
     const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", /*window.innerWidth*/ width)
+        .attr("height", /*window.innerHeight*/ height)
         .attr("viewBox", [0, 0, width, height])
         .attr("style", "max-width: 100%; height: auto;");
 
@@ -573,8 +621,8 @@ export default class RelationshipsChart extends React.Component{
 
     // Create the SVG container.
     const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
-        .attr("width", width)
-        .attr("height", height)
+        .attr("width", /*window.innerWidth*/width)
+        .attr("height", /*window.innerHeight*/height)
         .attr("viewBox", [0, 0, width, height])
         .attr("style", "max-width: 100%; height: auto;");
 
@@ -711,7 +759,7 @@ export default class RelationshipsChart extends React.Component{
                     </div>
                     {/*<p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>*/}
                   </div>
-                </div>}
+                </div> }
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-4">
                       <AlertCircleIcon size="100" className=""/>
@@ -720,9 +768,12 @@ export default class RelationshipsChart extends React.Component{
 
         { this.props.objects && 
                   <div>
+
                     <div id={"chartTag_"+this.state.uuid} class=""></div> 
+
                     { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles with their relationships</p> }
-                  </div>}
+
+                  </div> }
 
 
         <Offcanvas show={this.props.offCanvasShow} onHide={this.props.handleOffCanvasClose}>

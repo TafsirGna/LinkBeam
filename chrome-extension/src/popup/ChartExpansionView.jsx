@@ -22,6 +22,7 @@ export default class ChartExpansionView extends React.Component{
       periodSearches: null,
       carrouselActiveItemIndex: 0,
       carrouselChartView: 0,
+      relChartDisplayCrit: "suggestions",
     };
   }
 
@@ -30,7 +31,8 @@ export default class ChartExpansionView extends React.Component{
     var periodSearches = localStorage.getItem('periodSearches'),
         // periodProfiles = localStorage.getItem('periodProfiles'),
         carrouselActiveItemIndex = localStorage.getItem('carrouselActiveItemIndex'),
-        carrouselChartView = localStorage.getItem('carrouselChartView');
+        carrouselChartView = localStorage.getItem('carrouselChartView'),
+        relChartDisplayCrit = localStorage.getItem('relChartDisplayCrit');
     periodSearches = JSON.parse(periodSearches);
 
     var profiles = [];
@@ -45,6 +47,7 @@ export default class ChartExpansionView extends React.Component{
       carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
       carrouselChartView: parseInt(carrouselChartView),
       periodProfiles: profiles,
+      relChartDisplayCrit: relChartDisplayCrit,
     });
 
   }
@@ -101,7 +104,7 @@ export default class ChartExpansionView extends React.Component{
               { this.state.carrouselActiveItemIndex == 6 && 
                       <RelationshipsChart 
                         objects={this.state.periodProfiles} 
-                        displayCriteria={"suggestions"} 
+                        displayCriteria={this.state.relChartDisplayCrit} 
                         profiles={this.state.periodProfiles}
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
