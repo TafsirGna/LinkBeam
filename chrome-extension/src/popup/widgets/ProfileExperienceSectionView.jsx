@@ -25,6 +25,10 @@ export default class ProfileExperienceSectionView extends React.Component{
 
   componentDidMount() {
 
+    if (!this.props.profile.experience){
+      return;
+    }
+
     // setting doughnutChartsData
     var doughnutChartsData = [], 
         jobTitlesBarData = [];
@@ -88,7 +92,7 @@ export default class ProfileExperienceSectionView extends React.Component{
 
         { !this.props.profile.experience && <div class="text-center m-5 mt-2">
                     <AlertCircleIcon size="100" className="text-muted"/>
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No education data here</span></p>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No experience data here</span></p>
                   </div> }
 
         { this.props.profile.experience && <div>

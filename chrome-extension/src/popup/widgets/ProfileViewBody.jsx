@@ -127,11 +127,11 @@ export default class ProfileViewBody extends React.Component{
                                                 </div>}
 
             { this.state.currentTabIndex == 2 && <div class="">
-                                                  { this.props.profile.experience && <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
+                                                  { <ProfileExperienceSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 3 && <div class="">
-                                                  { this.props.profile.education && <ProfileEducationSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
+                                                  { <ProfileEducationSectionView profile={this.props.profile} computedData={this.state.computedProfileData} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">

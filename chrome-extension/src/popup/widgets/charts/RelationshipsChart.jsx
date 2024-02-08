@@ -184,7 +184,9 @@ export default class RelationshipsChart extends React.Component{
             });
           }
           else{
-            linkedObjects[index].links.push(languageName);
+            if (linkedObjects[index].links.indexOf(languageName) == -1){
+              linkedObjects[index].links.push(languageName);
+            }
           }
 
   			}
@@ -264,7 +266,9 @@ export default class RelationshipsChart extends React.Component{
             });
           }
           else{
-            linkedObjects[index].links.push(certName);
+            if (linkedObjects[index].links.indexOf(certName) == -1){
+              linkedObjects[index].links.push(certName);
+            }
           }
 
   			}
@@ -341,7 +345,9 @@ export default class RelationshipsChart extends React.Component{
             });
           }
           else{
-            linkedObjects[index].links.push(institutionName);
+            if (linkedObjects[index].links.indexOf(institutionName) == -1){
+              linkedObjects[index].links.push(institutionName);
+            }
           }
 
         }
@@ -418,7 +424,9 @@ export default class RelationshipsChart extends React.Component{
             });
           }
           else{
-            linkedObjects[index].links.push(company);
+            if (linkedObjects[index].links.indexOf(company) == -1){
+              linkedObjects[index].links.push(company);
+            }
           }
 
         }
@@ -771,7 +779,7 @@ export default class RelationshipsChart extends React.Component{
 
                     <div id={"chartTag_"+this.state.uuid} class=""></div> 
 
-                    { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles with their relationships</p> }
+                    { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles with their relationships ({this.props.displayCriteria})</p> }
 
                   </div> }
 
@@ -829,7 +837,7 @@ export default class RelationshipsChart extends React.Component{
                                                             <img class="rounded-circle me-1" width="24" height="24" src={object.profile.avatar ? object.profile.avatar : default_user_icon} alt=""/>
                                                             {dbDataSanitizer.preSanitize(object.profile.fullName)}
                                                           </span>
-                                                          <strong class="d-block small opacity-75 mt-2">{dbDataSanitizer.preSanitize(object.profile.title)}</strong>
+                                                          <p class="d-block small opacity-75 mt-2">{dbDataSanitizer.preSanitize(object.profile.title)}</p>
                                                           <p class="mt-2 mb-0">
                                                             { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle">{link}</span>)) }                                                            
                                                           </p>

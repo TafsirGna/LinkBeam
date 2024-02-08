@@ -22,6 +22,10 @@ export default class ProfileEducationSectionView extends React.Component{
 
   componentDidMount() {
 
+    if (!this.props.profile.education){
+      return;
+    }
+
     // setting doughnutChartsData
     var doughnutChartsData = []/*, 
         wordCloudData = []*/;
@@ -85,8 +89,6 @@ export default class ProfileEducationSectionView extends React.Component{
   render(){
     return (
       <>
-
-        {/*<span>{ typeof this.props.profile.education}</span>*/}
 
         { !this.props.profile.education && <div class="text-center m-5 mt-2">
                     <AlertCircleIcon size="100" className="text-muted"/>

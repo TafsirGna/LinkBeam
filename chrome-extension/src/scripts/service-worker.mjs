@@ -494,16 +494,6 @@ function isObjectActionable(object, objectStoreName, props){
 
     }
 
-    const isUrlConform = (object, value) => {
-
-        if (object["url"] == value){
-            return object;
-        }
-
-        return null;
-
-    }
-
     const isFullNameConform = (object, value) => {
 
         var searchText = value;
@@ -556,8 +546,7 @@ function isObjectActionable(object, objectStoreName, props){
                     break;
                 }
                 case "url":{
-                    var result = isUrlConform(object, props[prop]);
-                    if (!result){
+                    if (object[prop] != props[prop]){
                         return null;
                     }
                     break;
@@ -577,6 +566,12 @@ function isObjectActionable(object, objectStoreName, props){
                     break;
                 } 
                 case "activated":{
+                    if (object[prop] != props[prop]){
+                        return null;
+                    }
+                    break;
+                } 
+                case "tabId":{
                     if (object[prop] != props[prop]){
                         return null;
                     }
@@ -628,11 +623,14 @@ function addToFilteredSearchList(object, list, objectStoreName, params){
         }
     }
     else{
-        if (list.length == 0 || list[0].date.split("T")[0] == object.date.split("T")[0]){
+        if (list.length == 0){
             list.push(object);
         }
         else{
-            if (list[0].date.split("T")[0] != object.date.split("T")[0]){
+            if (list[0].date.split("T")[0] == object.date.split("T")[0]){
+                list.push(object);
+            }
+            else{
                 stop = true;
             }
         }
@@ -1553,16 +1551,10 @@ function processTabData(tabData){
 
                         getList(
                             dbData.objectStoreNames.SEARCHES,
-                            { context: "", criteria: { props: { url: profileObject.url } } },
+                            { context: "data_export", criteria: { props: { url: profileObject.url, tabId: tabData.tabId } } },
                             (searches) => {
 
-                                var search = null
-                                for (var object of searches){
-                                    if (object.tabId == tabData.tabId){
-                                        search = object;
-                                        break;
-                                    }
-                                }
+                                var search = searches ? searches[0] : null;
 
                                 if (search == null){
                                     addSearchObject();
@@ -1824,6 +1816,7 @@ function checkCurrentTab(tab, changeInfo){
                                 dbData.objectStoreNames.REMINDERS,
                                 { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
                                 (reminders) => {
+                                    console.log("^^^^^^^^^^^^^^^^^^^^^^^^ 1 : ", reminders);
                                     if (reminders && reminders.length != 0){
                                         chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
                                             console.log('Reminders sent', response);

@@ -201,7 +201,7 @@ export default class ProfileGanttChart extends React.Component{
                                       onClick={this.onChartClick}
                                       />
                                       { this.state.missingDataObjects && this.state.missingDataObjects.length != 0 && <div class="rounded border shadow mt-2 p-2">
-                                                                              { this.state.missingDataObjects.map((object) => (<span class="badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                                              { this.state.missingDataObjects.map((object) => (<span class="mx-1 handy-cursor badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
                                                                                 <OverlayTrigger
                                                                                   placement="top"
                                                                                   overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}

@@ -4,6 +4,8 @@
 } from "../react_components/Local_library";*/
 import styles from "../contentScriptUi/styles.min.css";
 import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedReminderToastView";
+import ReactDOM from 'react-dom/client';
+import React from 'react';
 
 // Content script designed to make sure the active tab is a linkedin page
 
@@ -103,7 +105,8 @@ function extractEducationData(){
 
     Array.from(document.querySelectorAll(sectionName + " li")).forEach((educationLiTag) => {
       var education = {
-        institutionName: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").innerHTML : null),
+        institutionName: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").textContent : null),
+        institutionURL: (educationLiTag.querySelector("h3 a") ? educationLiTag.querySelector("h3 a").href : null),
         degree: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
       };
@@ -387,7 +390,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       }
       else{ 
         if (Object.hasOwn(message.data, "reminders")){
-          showReminders(message.data);
+          showReminders(message.data, sendResponse);
         }
       }
 

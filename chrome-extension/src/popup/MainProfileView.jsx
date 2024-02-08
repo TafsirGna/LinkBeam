@@ -39,6 +39,8 @@ export default class MainProfileView extends React.Component{
 
     let profile = message.data.objectData.object;
 
+    console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", profile);
+
     // Setting the retrieved profile as a local variable
     if (!this.state.profile){
       this.setState({profile: profile}, () => {
