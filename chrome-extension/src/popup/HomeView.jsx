@@ -191,9 +191,9 @@ export default class HomeView extends React.Component{
         break;
       }
       case 1: {
-        console.log("************ 0 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
+        // console.log("************ 0 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
         if (this.props.globalData.allSearches.scope == "all" && this.props.globalData.allSearches.searchCount == this.props.globalData.todaySearchList.length){
-          console.log("************ 1 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
+          // console.log("************ 1 : ", this.props.globalData.allSearches, this.props.globalData.allSearches.searchCount, this.props.globalData.todaySearchList.length);
           this.getSearchList("all");  
         }
         break;

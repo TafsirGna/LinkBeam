@@ -2,6 +2,7 @@
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart, getElementAtEvent } from "react-chartjs-2";
+import { countriesNaming } from "../../countriesNamingFile";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -120,21 +121,59 @@ export default class ProfileGeoMapChart extends React.Component{
     var locations = {};
     for (var profile of this.props.objects){
 
-      if (!profile.location){
-        continue;
-      }
-      var location = profile.location.split(",");
-      location = dbDataSanitizer.preSanitize(location[location.length - 1]);
-      location = location.replace("Republic of the ", "")
-                         .replace("Republic of ", ""); 
+      var location = profile.location ? profile.location : "", 
+          domain = "experience", 
+          locationIndex = 0;
 
-      var keys = Object.keys(locations);
-      var index = keys.indexOf(location);
-      if (index == -1){
-        locations[location] = [profile];
-      }
-      else{
-        locations[location].push(profile);
+      while (true) {
+
+        console.log("yyyyyyyyyy : ", location);
+
+        location = location.split(",");
+        location = dbDataSanitizer.preSanitize(location[location.length - 1]);
+        location = location.replace("Republic of the ", "")
+                           .replace("Republic of ", "")
+                           .replace("Republic", "") 
+                           .replace("République", ""); 
+
+        var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" ("))).indexOf(location);
+        if (idx != -1){
+          location = countriesNaming[idx].englishShortName;
+        }
+
+        var keys = Object.keys(locations);
+        var index = keys.indexOf(location);
+        if (index == -1){
+          locations[location] = [profile];
+        }
+        else{
+          if (locations[location].map(e => e.url).indexOf(profile.url) == -1){
+            locations[location].push(profile);
+          }
+        }
+
+        if (domain == "experience"){
+
+          if (!profile.experience || locationIndex == profile.experience.length){
+            domain = "education";
+            locationIndex = 0;
+            continue;
+          }
+
+          location = (profile.experience[locationIndex]).location ? (profile.experience[locationIndex]).location : "";
+        }
+        else if (domain == "education"){
+
+          if (!profile.education || locationIndex == profile.education.length){
+            break;
+          }
+
+          location = (profile.education[locationIndex]).location ? (profile.education[locationIndex]).location : "";
+
+        }
+
+        locationIndex += 1;
+
       }
 
     }
@@ -212,7 +251,7 @@ export default class ProfileGeoMapChart extends React.Component{
                 /> 
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE && <p class="shadow-sm mt-3 border p-2 rounded">
                                   { Object.keys(this.state.locationsData).map((key) => 
-                                    (this.state.locationsData[key].length > 0 && <span class="shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{key}</span>)
+                                    (this.state.locationsData[key].length > 0 && <span class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{key}</span>)
                                   )}
                                 </p>}
 
