@@ -78,8 +78,7 @@ export default class InjectedKeywordToastView extends React.Component{
                   <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
         
                     { this.props.objects &&  <>
-                                                            { this.props.objects.map((reminder, index) => <ReminderListItemView object={reminder} /> ) }
-                                                            
+                                                            { this.props.objects.map((reminder, index) => <ReminderListItemView object={reminder} /> ) }       
                                                         </> } 
                     
                     

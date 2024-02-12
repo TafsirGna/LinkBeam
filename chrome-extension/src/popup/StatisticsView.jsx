@@ -122,10 +122,6 @@ export default class StatisticsView extends React.Component{
 
   onChartExpansion(){
 
-    var periodSearches = JSON.stringify(this.state.periodSearches)/*,
-        periodProfiles = JSON.stringify(this.state.periodProfiles)*/;
-    localStorage.setItem('periodSearches', periodSearches);
-    // localStorage.setItem('periodProfiles', periodProfiles);
     localStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
     localStorage.setItem('carrouselChartView', this.state.view);
     localStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);

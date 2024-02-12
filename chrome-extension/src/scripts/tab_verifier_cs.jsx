@@ -380,7 +380,7 @@ const showToast = (messageData, property, sendResponse) => {
       status: "ACK"
   });
 
-  var objects = messageData["property"];
+  var objects = messageData[property];
 
   var shadowHost = document.createElement('div');
   shadowHost.id = /*appParams.extShadowHostId*/"extShadowHostId";

@@ -2,8 +2,14 @@
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import moment from 'moment';
 import { 
   appParams,
+  startMessageListener,
+  dbData,
+  messageParams,
+  getPeriodSearches,
+  ack,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
 import SearchesTimelineChart from "./widgets/charts/SearchesTimelineChart";
@@ -24,31 +30,59 @@ export default class ChartExpansionView extends React.Component{
       carrouselChartView: 0,
       relChartDisplayCrit: "suggestions",
     };
+
+    this.listenToMessages = this.listenToMessages.bind(this);
+    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
   }
 
   componentDidMount() {
 
-    var periodSearches = localStorage.getItem('periodSearches'),
-        // periodProfiles = localStorage.getItem('periodProfiles'),
-        carrouselActiveItemIndex = localStorage.getItem('carrouselActiveItemIndex'),
+    // Starting the listener
+    this.listenToMessages();
+
+    var carrouselActiveItemIndex = localStorage.getItem('carrouselActiveItemIndex'),
         carrouselChartView = localStorage.getItem('carrouselChartView'),
         relChartDisplayCrit = localStorage.getItem('relChartDisplayCrit');
-    periodSearches = JSON.parse(periodSearches);
 
-    var profiles = [];
-    for (var search of periodSearches){
+    getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, carrouselChartView, {moment: moment});
+
+    this.setState({
+      carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
+      carrouselChartView: parseInt(carrouselChartView),
+      relChartDisplayCrit: relChartDisplayCrit,
+    });
+
+  }
+
+  listenToMessages(){
+    startMessageListener([
+      {
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
+        callback: this.onSearchesDataReceived
+      },
+    ]);
+  }
+
+  onSearchesDataReceived(message, sendResponse){
+
+    // acknowledge receipt
+    ack(sendResponse);
+
+    var context = message.data.objectData.context; 
+    if (context != appParams.COMPONENT_CONTEXT_NAMES.STATISTICS){
+      return;
+    }
+
+    var searches = message.data.objectData.list, 
+        profiles = [];
+
+    for (var search of searches){
       if (profiles.map(e => e.url).indexOf(search.url) == -1){
         profiles.push(search.profile);
       }
     }
 
-    this.setState({
-      periodSearches: periodSearches,
-      carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
-      carrouselChartView: parseInt(carrouselChartView),
-      periodProfiles: profiles,
-      relChartDisplayCrit: relChartDisplayCrit,
-    });
+    this.setState({ periodSearches: searches, periodProfiles: profiles });
 
   }
 
