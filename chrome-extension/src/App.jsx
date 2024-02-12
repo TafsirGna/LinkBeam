@@ -66,8 +66,7 @@ export default class App extends React.Component{
 
     this.listenToMessages();
 
-    eventBus.on(eventBus.RESET_TODAY_REMINDER_LIST, (data) =>
-      {
+    eventBus.on(eventBus.RESET_TODAY_REMINDER_LIST, (data) => {
         // Resetting the today reminder list here too
         this.setState(prevState => {
           let globalData = Object.assign({}, prevState.globalData);
@@ -77,8 +76,7 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, (data) =>
-      {
+    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, (data) => {
         // Resetting the today reminder list here too
         if (this.state.globalData.allSearches.scope == "search"){
 
@@ -98,8 +96,7 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_REMINDER, (data) =>
-      {
+    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_REMINDER, (data) => {
         
         if (this.state.globalData.reminderList.scope == "search"){
 
@@ -116,6 +113,18 @@ export default class App extends React.Component{
           });
 
         }
+      }
+    );
+
+    eventBus.on(eventBus.ALL_SEARCHES_TAB_CLICKED, (data) => {
+        
+        if (this.state.globalData.todaySearchList.length != 0){
+          this.setSearchList(this.state.globalData.todaySearchList, "all");
+        }
+        else{
+          eventBus.dispatch(eventBus.GET_ALL_SEARCHES, null);
+        }
+
       }
     );
 
@@ -137,6 +146,7 @@ export default class App extends React.Component{
     eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY);
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_REMINDER);
+    eventBus.remove(eventBus.ALL_SEARCHES_TAB_CLICKED);
 
   }
 
@@ -472,9 +482,9 @@ export default class App extends React.Component{
         let globalData = Object.assign({}, prevState.globalData);
         globalData.todaySearchList = listData;
         return { globalData };
-      }, () => {
+      }/*, () => {
         this.setSearchList(listData, "all");
-      });
+      }*/);
 
     }
     else if (scope == "search"){

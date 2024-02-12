@@ -43,12 +43,9 @@ export default class JobDetailsModal extends React.Component{
                                                 </span>
                                               </h6>
                                               { experience.period && <p class="text-muted mb-2 fw-light">{experience.period.startDateRange.format("MMMM YYYY")} - {experience.period.endDateRange.format("MMMM YYYY")}</p>}
-                                              <p class="text-muted border rounded p-2 shadow-sm">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit
-                                                necessitatibus adipisci, ad alias, voluptate pariatur officia
-                                                repellendus repellat inventore fugit perferendis totam dolor
-                                                voluptas et corrupti distinctio maxime corporis optio?
-                                              </p>
+                                              { experience.description && <p class="text-muted border rounded p-2 shadow-sm">
+                                                                                              {experience.description}
+                                                                                            </p>}
                                             </li>
                                     )) }
                                 </ul>

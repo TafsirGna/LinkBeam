@@ -1524,6 +1524,44 @@ function processTabData(tabData){
         );
     }
 
+    const checkKeywordData = (profile) => {
+
+        getSettingsData( // checking first if the settings allow it
+            { 
+                context: "", 
+                criteria: {
+                    props: ["notifications"],
+                }
+            },
+            (object) => {
+                if (object.notifications){
+
+                    getList(
+                        dbData.objectStoreNames.KEYWORDS,
+                        { context: "data_export" },
+                        (keywords) => {
+                            var stringified = JSON.stringify(profile);
+                            var detectedKeywords = [];
+                            for (var keyword of keywords){
+                                if (stringified.indexOf(keyword) != -1){
+                                    detectedKeywords.push(keyword);
+                                }
+                            }
+
+                            if (detectedKeywords.length != 0){
+                                chrome.tabs.sendMessage(tabData.tabId, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {detectedKeywords: detectedKeywords}}, (response) => {
+                                    console.log('detectedKeywords sent', response);
+                                });  
+                            }
+                        }
+                    );
+
+                }
+            }
+        );
+
+    }
+
     getObject(
         dbData.objectStoreNames.PROFILES,
         { context: "", criteria: { props: { url: profileObject.url } } },
@@ -1536,6 +1574,9 @@ function processTabData(tabData){
                     dbData.objectStoreNames.PROFILES, 
                     { context: "", criteria: { props: profileObject } },
                     () => {
+                        // Before adding the search object
+                        checkKeywordData(profileObject);
+
                         addSearchObject();
                     }
                 );
@@ -1557,6 +1598,10 @@ function processTabData(tabData){
                                 var search = searches ? searches[0] : null;
 
                                 if (search == null){
+
+                                    // Before adding the search object
+                                    checkKeywordData(profile);
+
                                     addSearchObject();
                                 }
                                 else{

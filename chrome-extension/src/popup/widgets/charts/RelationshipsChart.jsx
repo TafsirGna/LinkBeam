@@ -837,9 +837,9 @@ export default class RelationshipsChart extends React.Component{
                                                             <img class="rounded-circle me-1" width="24" height="24" src={object.profile.avatar ? object.profile.avatar : default_user_icon} alt=""/>
                                                             {dbDataSanitizer.preSanitize(object.profile.fullName)}
                                                           </span>
-                                                          <p class="d-block small opacity-75 mt-2">{dbDataSanitizer.preSanitize(object.profile.title)}</p>
+                                                          { object.profile.title && <p class="d-block small opacity-75 mt-2">{ dbDataSanitizer.preSanitize(object.profile.title)}</p> }
                                                           <p class="mt-2 mb-0">
-                                                            { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle">{link}</span>)) }                                                            
+                                                            { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle mx-1">{link}</span>)) }                                                            
                                                           </p>
                                                         </label>
                                                       </div>

@@ -20,6 +20,7 @@ export default class ProfileActivityListView extends React.Component{
       posts: null,
       offCanvasShow: false,
       selectedPost: null,
+      imageLoaded: false,
     };
 
     this.setPosts = this.setPosts.bind(this);
@@ -36,6 +37,10 @@ export default class ProfileActivityListView extends React.Component{
     // everytime the view choice is changed, the chart is reset
     if (prevProps.objects != this.props.objects){
       this.setPosts();
+    }
+
+    if (prevState.selectedPost != this.state.selectedPost){
+      this.setState({imageLoaded: false});
     }
 
   }
@@ -116,7 +121,7 @@ export default class ProfileActivityListView extends React.Component{
                                           </a>))} 
                                         </div>}
                      
-                    { this.props.variant == "timeline" && <section class="py-5 mx-5 small">
+                    { this.props.variant == "timeline" && <section class="py-4 mx-4 small">
                                         <ul class="timeline-with-icons">
                                           {this.state.posts.map((profileActivityObject) => (<li class="timeline-item mb-5">
                                               <span class="timeline-icon">
@@ -167,17 +172,19 @@ export default class ProfileActivityListView extends React.Component{
                                           <Offcanvas.Body>
                                             <div>
 
-                                              { !this.state.selectedPost && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+                                              { (!this.state.selectedPost || (this.state.selectedPost && !this.state.imageLoaded)) && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
                                                                                 </div>
                                                                                 <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
                                                                               </div>
                                                                             </div>}
 
-                                              { this.state.selectedPost && <img 
+                                              { (this.state.selectedPost) && <img 
                                                                                               src={(this.state.selectedPost.picture && this.state.selectedPost.picture != "") ? this.state.selectedPost.picture : newspaper_icon} 
-                                                                                              class="img-thumbnail shadow-lg" 
+                                                                                              class={"img-thumbnail shadow-lg"}
                                                                                               width="350"
-                                                                                              alt="..."/>}
+                                                                                              alt="..."
+                                                                                              onLoad={() => {this.setState({imageLoaded: true});}} 
+                                                                                              onerror={() => {console.log("Error loading cover image!")}} />}
                                             </div>
                                           </Offcanvas.Body>
                                         </Offcanvas>

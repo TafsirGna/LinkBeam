@@ -68,8 +68,9 @@ export default class ConnectedScatterplot extends React.Component{
   	var sides = ["bottom", "right", "left", "top"];
   	var chartData = [];
 
-  	for (var search of this.props.objects){
+  	for (var i = this.props.objects.length - 1; i >= 0; i--){
 
+  		var search = this.props.objects[i];
   		var index = chartData.map(e => e.url).indexOf(search.url);
   		if (index == -1){
   			chartData.push({

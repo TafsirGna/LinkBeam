@@ -4,6 +4,7 @@
 } from "../react_components/Local_library";*/
 import styles from "../contentScriptUi/styles.min.css";
 import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedReminderToastView";
+import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeywordToastView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 
@@ -52,7 +53,7 @@ function extractHeaderData(){
     companyTagContainer = topCardLinksContainer.querySelector('div[data-section="currentPositionsDetails"]');
     if (companyTagContainer){
       company = {
-        name: (companyTagContainer.firstElementChild.querySelector(":nth-child(2)") ? companyTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
+        name: (companyTagContainer.firstElementChild.querySelector(":nth-child(2)") ? companyTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
         logo: (companyTagContainer.firstElementChild.firstElementChild ? companyTagContainer.firstElementChild.firstElementChild.src : null), 
         link: (companyTagContainer.firstElementChild ? companyTagContainer.firstElementChild.href : null),
       };
@@ -164,7 +165,7 @@ function extractExperienceData(){
           experienceItem["company"] = companyName;
           experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
           experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
-          // experienceItem["description"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+          experienceItem["description"] = (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").textContent : null);
           experienceData.push(experienceItem);
         });
 
@@ -175,6 +176,7 @@ function extractExperienceData(){
         experienceItem["company"] = (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null); 
         experienceItem["period"] = (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null);
         experienceItem["location"] = (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+        experienceItem["description"] = (experienceLiTag.querySelector(".show-more-less-text__text--less") ? experienceLiTag.querySelector(".show-more-less-text__text--less").textContent : null);
         experienceData.push(experienceItem);
 
       }
@@ -223,9 +225,9 @@ function extractCertificationData(){
 
     Array.from(document.querySelectorAll(sectionName + " li")).forEach((certificationLiTag) => {
       var certification = {
-        title: (certificationLiTag.querySelector("h3 a") ? certificationLiTag.querySelector("h3 a").textContent : null),
+        title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
         issuer: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
-        // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        date: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
         // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
       };
@@ -240,7 +242,25 @@ function extractCertificationData(){
 
 function extractProjectData(){
 
-  var projectData = null;
+  var sectionName = ".core-section-container.projects";
+
+  var projectData = null, projectSectionTag = document.querySelector(sectionName);
+  if (projectSectionTag){
+
+    projectData = [];
+
+    Array.from(document.querySelectorAll(sectionName + " li")).forEach((projectLiTag) => {
+      var project = {
+        name: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").textContent : null),
+        period: (projectLiTag.querySelector("h4 span") ? projectLiTag.querySelector("h4 span").textContent : null),
+        // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        link: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").href : null),
+        // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+      };
+      projectData.push(project);
+    });
+
+  }
 
   return projectData;
 
@@ -353,14 +373,14 @@ const getTabId = (messageData, sendResponse) => {
 
 }
 
-const showReminders = (messageData, sendResponse) => {
+const showToast = (messageData, property, sendResponse) => {
 
   // Acknowledge the message
   sendResponse({
       status: "ACK"
   });
 
-  var reminders = messageData.reminders;
+  var objects = messageData["property"];
 
   var shadowHost = document.createElement('div');
   shadowHost.id = /*appParams.extShadowHostId*/"extShadowHostId";
@@ -374,7 +394,8 @@ const showReminders = (messageData, sendResponse) => {
   ReactDOM.createRoot(shadowRoot).render(
     <React.StrictMode>
       <style type="text/css">{styles}</style>
-      <InjectedReminderToastView objects={reminders} />
+      { property == "reminders" && <InjectedReminderToastView objects={objects} />}
+      { property == "detectedKeywords" && <InjectedKeywordToastView objects={objects} />}
     </React.StrictMode>
   );
 
@@ -388,10 +409,11 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       if (Object.hasOwn(message.data, "tabId")){
         getTabId(message.data, sendResponse);
       }
-      else{ 
-        if (Object.hasOwn(message.data, "reminders")){
-          showReminders(message.data, sendResponse);
-        }
+      else if (Object.hasOwn(message.data, "reminders")){
+        showToast(message.data, "reminders", sendResponse);
+      }
+      else if (Object.hasOwn(message.data, "detectedKeywords")){
+        showToast(message.data, "detectedKeywords", sendResponse);
       }
 
   }

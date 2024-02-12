@@ -30,6 +30,7 @@ export default class ProfileOverviewSectionView extends React.Component{
       donutChartModalTitle: null,
       donutChartModalItemData: null,
       certificationsModalShow: false,
+      projectsModalShow: false,
       certificationsList: null,
     };
 
@@ -45,6 +46,16 @@ export default class ProfileOverviewSectionView extends React.Component{
     }
 
     this.setState({languageListModalShow: true})
+  };
+
+  handleProjectsModalClose = () => this.setState({projectsModalShow: false});
+  handleProjectsModalShow = () => {
+
+    if (!this.props.profile.projects){ 
+      return;
+    }
+
+    this.setState({projectsModalShow: true})
   };
 
   handleCertificationsModalClose = () => this.setState({certificationsModalShow: false});
@@ -203,7 +214,7 @@ export default class ProfileOverviewSectionView extends React.Component{
               <p class="card-text">Languages</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {}}>
+          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleProjectsModalShow}>
             <div class="card-body">
               <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h6>
               <p class="card-text">Projects</p>
@@ -317,7 +328,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                                                                                                   % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
                                                                                                 </p>}
                                               </div>
-                                              <small class="opacity-50 text-nowrap">{moment(/*profileActivityObject.date, moment.ISO_8601*/ new Date()).fromNow()}</small>
+                                              { certification.date && <small class="opacity-50 text-nowrap">{moment(dbDataSanitizer.preSanitize(certification.date).replace("Issued ", ""), "MMM YYYY").fromNow()}</small>}
                                             </div>
                                           </a>))}
               </div>}
@@ -325,6 +336,44 @@ export default class ProfileOverviewSectionView extends React.Component{
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleCertificationsModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+
+
+        {/*Projects Modal*/}
+        <Modal 
+          show={this.state.projectsModalShow} 
+          onHide={this.handleProjectsModalClose}
+          size="lg"
+          >
+          <Modal.Header closeButton>
+            <Modal.Title>Projects</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            
+            { this.props.profile.projects && <div class="list-group small mt-1 shadow-sm border-0">
+              { this.props.profile.projects.map((project, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" >
+                                            <div class="d-flex gap-2 w-100 justify-content-between">
+                                              <div>
+                                                <p class="mb-1">
+                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-secondary-subtle border border-secondary rounded-pill mb-2">
+                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
+                                                    {project.name ? dbDataSanitizer.preSanitize(project.name) : "Missing data"}
+                                                  </span>
+                                                </p>
+                                                <p class="text-muted mb-2 small ms-2 fst-italic">{project.period ? dbDataSanitizer.preSanitize(project.period) : "Missing period data"}</p>
+                                              </div>
+                                              {/*<small class="opacity-50 text-nowrap">{moment(new Date()).fromNow()}</small>*/}
+                                            </div>
+                                          </a>))}
+              </div>}
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleProjectsModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

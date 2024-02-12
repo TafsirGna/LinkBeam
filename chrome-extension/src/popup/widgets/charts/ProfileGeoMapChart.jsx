@@ -138,7 +138,7 @@ export default class ProfileGeoMapChart extends React.Component{
 
         var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" ("))).indexOf(location);
         if (idx != -1){
-          location = countriesNaming[idx].englishShortName;
+          location = countriesNaming[idx].englishShortName.replace(" (the)", "");
         }
 
         var keys = Object.keys(locations);

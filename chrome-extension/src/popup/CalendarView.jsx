@@ -63,9 +63,6 @@ export default class CalendarView extends React.Component{
     if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, criteria: { props: ["lastDataResetDate"] }});
     }
-    else{
-
-    }
 
     // Requesting this month's search list
     this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.SEARCHES);
@@ -197,6 +194,7 @@ export default class CalendarView extends React.Component{
       var searchList = this.getDayObjectList(this.state.monthSearchList),
           profileList = [];
 
+      // Setting 'selectedDateProfiles' variable
       for (var search of searchList){
         if (profileList.map(e => e.url).indexOf(search.url) == -1){
           profileList.push(search.profile);
@@ -229,7 +227,20 @@ export default class CalendarView extends React.Component{
     // Grouping the searches by date
     var results = groupObjectsByDate(monthSearchList);
 
-    this.setState({monthSearchList: results});
+    this.setState({monthSearchList: results}, () => {
+
+      var profileList = [];
+
+      // Setting 'selectedDateProfiles' variable
+      for (var search of this.getDayObjectList(this.state.monthSearchList)){
+        if (profileList.map(e => e.url).indexOf(search.url) == -1){
+          profileList.push(search.profile);
+        }
+      }
+
+      this.setState({selectedDateProfiles: profileList});
+
+    });
 
   }
 

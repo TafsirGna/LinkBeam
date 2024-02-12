@@ -212,7 +212,7 @@ export default class LanguageListModal extends React.Component{
                                               {dbDataSanitizer.fullName(this.props.profile.fullName)+" speaks "} 
                                               <span class="rounded p-1 border shadow-sm badge text-primary">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
                                               {" as well as "}
-                                              <span class="badge text-bg-primary">{ Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex], "linkedProfiles") ? ((this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles.length / this.props.globalData.profiles.length) * 100) : 0}</span>
+                                              <span class="badge text-bg-primary">{ Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex], "linkedProfiles") ? ((this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles.length / this.props.globalData.profiles.length) * 100).toFixed(1) : 0}</span>
                                               {"% of all the profiles you've visited so far." }
                                               {/*<span class="badge text-bg-primary handy-cursor ms-2" onClick={this.handleOffCanvasShow}>{"SHOW"}</span>*/}
                                             </p>
