@@ -87,7 +87,7 @@ export default class DailySearchTimeChart extends React.Component{
       if (index == -1){
         var object = {
           url: search.url,
-          label: dbDataSanitizer.fullName(search.profile.fullName),
+          label: dbDataSanitizer.preSanitize(search.profile.fullName),
           time: time,
         };
         results.push(object);

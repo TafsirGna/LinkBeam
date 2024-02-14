@@ -1,3 +1,4 @@
+
 export const appParams = {
   appName: "LinkBeam",
   appVersion: "0.1.0", 
@@ -11,7 +12,7 @@ export const appParams = {
   commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
   PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
-  appAuthor: "Jojo Rabbit" /*"Tafsir GNA"*/,
+  appAuthor: "Jojo Rabbit",
 
   GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "core-section-container",
@@ -127,19 +128,67 @@ export const dbDataSanitizer = {
   },
 
 
-  periodDates: (expPeriod, func) => {
+  periodDates: function(expPeriod, func){
 
     // handling date range
-    var dateRange = (expPeriod.split("\n")[1]).split(appParams.DATE_RANGE_SEPARATOR);
-    var startDateRange = func.moment(dateRange[0], "MMM YYYY"), endDateRange = dateRange[1];
+    var dateRange = (this.preSanitize(expPeriod).split("\n")[0]).split(appParams.DATE_RANGE_SEPARATOR);
+    var startDateRange = this.preSanitize(dateRange[0]), 
+        endDateRange = this.preSanitize(dateRange[1]);
+
+    if (func.moment(startDateRange, "MMM YYYY").isValid()){
+
+      // if ()
+
+      startDateRange = func.moment(startDateRange, "MMM YYYY");
+    }
+    else{
+      if (func.moment.locale() == "en"){
+        func.moment.locale("fr");
+        startDateRange = func.moment(startDateRange, "MMM YYYY");
+        func.moment.locale("en");
+      }
+      else if (func.moment.locale() == "fr"){
+        func.moment.locale("en");
+        startDateRange = func.moment(startDateRange, "MMM YYYY");
+        func.moment.locale("fr");
+      }
+
+      if (!startDateRange.isValid()){
+        console.log("000000000000000000000 1 : ", func.moment.locale(), this.preSanitize(dateRange[0]));
+      }
+
+    }
 
     // then the end date
-    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd’hui") != -1){ // contains Present 
+    if (["aujourd’hui", "Present"].indexOf(endDateRange) != -1){
       endDateRange = func.moment();
     }
     else{
-      endDateRange = func.moment(endDateRange, "MMM YYYY");
+      if (func.moment(endDateRange, "MMM YYYY").isValid()){
+        endDateRange = func.moment(endDateRange, "MMM YYYY");
+      }
+      else{
+
+        if (func.moment.locale() == "en"){
+          func.moment.locale("fr");
+          endDateRange = func.moment(endDateRange, "MMM YYYY");
+          func.moment.locale("en");
+        }
+        else if (func.moment.locale() == "fr"){
+          func.moment.locale("en");
+          endDateRange = func.moment(endDateRange, "MMM YYYY");
+          func.moment.locale("fr");
+        }
+
+        if (!endDateRange.isValid()){
+          console.log("000000000000000000000 2 : ", func.moment.locale(), this.preSanitize(dateRange[1]));
+        }
+
+
+      }
     }
+
+    console.log("000000000000000000000 3 : ", {startDateRange: startDateRange, endDateRange: endDateRange});
 
     return {startDateRange: startDateRange, endDateRange: endDateRange};
 
@@ -387,6 +436,9 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
   }
 
+  // var counter = 0;
+  // console.log("µµµµµµµµµµµµµµµµµ : ", refTime),
+
   const recursiveCompute = function(refTime){
 
     var currentObjects = [], futureObjects = [];
@@ -406,6 +458,8 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
       }
 
     }
+
+    // console.log("?????????????????? : ", refTime, currentObjects, futureObjects);
 
     if (currentObjects.length > 0){
       currentObjects.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });

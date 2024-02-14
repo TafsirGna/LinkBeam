@@ -1,7 +1,6 @@
 /*import './ProfileViewReminderModal.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { appParams, computePeriodTimeSpan } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
@@ -12,6 +11,8 @@ import ProfileNetworkSectionView from "./ProfileNetworkSectionView";
 import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
 import moment from 'moment';
+import 'moment/dist/locale/fr';
+import { appParams, computePeriodTimeSpan } from "../Local_library";
 
 
 export default class ProfileViewBody extends React.Component{

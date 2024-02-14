@@ -292,7 +292,7 @@ export default class ProfileViewHeader extends React.Component{
                                 <ItemPercentageDoughnutChart data={this.state.connectionsCompData}/>
                               </div>
                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
-                              {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s connections pool is larger than "}
+                              {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s connections pool is larger than "}
                               <span class="badge text-bg-primary">{this.state.connectionsCompData.value.toFixed(1)}</span>
                               {"% of all the profiles you've visited so far." }
                             </p>
@@ -303,7 +303,7 @@ export default class ProfileViewHeader extends React.Component{
                                 <ItemPercentageDoughnutChart data={this.state.followersCompData}/>
                               </div>
                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
-                              {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s followers pool is larger than "}
+                              {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s followers pool is larger than "}
                               <span class="badge text-bg-primary">{this.state.followersCompData.value.toFixed(1)}</span>
                               {"% of all the profiles you've visited so far." }
                             </p>

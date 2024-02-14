@@ -209,7 +209,7 @@ export default class LanguageListModal extends React.Component{
                                         <Collapse in={this.state.collapseInfoOpen}>
                                           <div id="collapseInfo">
                                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
-                                              {dbDataSanitizer.fullName(this.props.profile.fullName)+" speaks "} 
+                                              {dbDataSanitizer.preSanitize(this.props.profile.fullName)+" speaks "} 
                                               <span class="rounded p-1 border shadow-sm badge text-primary">{this.state.languageData[this.state.selectedChartElementIndex].label}</span> 
                                               {" as well as "}
                                               <span class="badge text-bg-primary">{ Object.hasOwn(this.state.languageData[this.state.selectedChartElementIndex], "linkedProfiles") ? ((this.state.languageData[this.state.selectedChartElementIndex].linkedProfiles.length / this.props.globalData.profiles.length) * 100).toFixed(1) : 0}</span>

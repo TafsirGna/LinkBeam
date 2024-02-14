@@ -9,6 +9,7 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
+import 'moment/dist/locale/fr';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import { 
   dbDataSanitizer, 
@@ -280,7 +281,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                                                         <ItemPercentageDoughnutChart data={this.state.donutChartModalItemData}/>
                                                       </div>
                                                     <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
-                                                      {dbDataSanitizer.fullName(this.props.profile.fullName)+"'s "+this.state.donutChartModalTitle+" is longer than "}
+                                                      {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s "+this.state.donutChartModalTitle+" is longer than "}
                                                       <span class="badge text-bg-primary">{(this.state.donutChartModalItemData.value).toFixed(1)}</span>
                                                       {"% of all the profiles you've visited so far." }
                                                     </p>

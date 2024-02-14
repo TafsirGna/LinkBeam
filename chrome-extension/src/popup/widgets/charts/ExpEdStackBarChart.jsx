@@ -101,7 +101,7 @@ export default class ExpEdStackBarChart extends React.Component{
     var labels = [], expTimeData = [], edTimeData = [];
     for (var search of this.props.objects){
 
-      var fullName = dbDataSanitizer.fullName(search.profile.fullName);
+      var fullName = dbDataSanitizer.preSanitize(search.profile.fullName);
       var index = labels.indexOf(fullName);
       if (index == -1){
         labels.push(fullName);
