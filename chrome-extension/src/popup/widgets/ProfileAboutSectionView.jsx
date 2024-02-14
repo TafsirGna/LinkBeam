@@ -36,7 +36,7 @@ export default class ProfileAboutSectionView extends React.Component{
   componentDidMount() {
 
     // setting profileAbout
-    var profileAbout = dbDataSanitizer.profileAbout(this.props.profile.info);
+    var profileAbout = dbDataSanitizer.preSanitize(this.props.profile.info);
 
     this.setState({profileAbout: profileAbout}, () => {
       this.setOneUseWordCount();

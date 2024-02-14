@@ -9,7 +9,6 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
-import 'moment/dist/locale/fr';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import { 
   dbDataSanitizer, 

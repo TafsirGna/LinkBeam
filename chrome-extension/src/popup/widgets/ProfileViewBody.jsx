@@ -11,7 +11,6 @@ import ProfileNetworkSectionView from "./ProfileNetworkSectionView";
 import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
 import moment from 'moment';
-import 'moment/dist/locale/fr';
 import { appParams, computePeriodTimeSpan } from "../Local_library";
 
 

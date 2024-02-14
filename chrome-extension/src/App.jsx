@@ -16,6 +16,9 @@ import FeedbackView from "./popup/FeedbackView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
+import moment from 'moment';
+import 'moment/dist/locale/fr';
+import 'moment/dist/locale/en-gb';
 import { 
   sendDatabaseActionMessage,
   ack,

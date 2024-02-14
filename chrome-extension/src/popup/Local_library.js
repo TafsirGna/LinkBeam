@@ -142,19 +142,20 @@ export const dbDataSanitizer = {
       startDateRange = func.moment(startDateRange, "MMM YYYY");
     }
     else{
-      if (func.moment.locale() == "en"){
+      if (func.moment.locale() == "en-gb"){
         func.moment.locale("fr");
         startDateRange = func.moment(startDateRange, "MMM YYYY");
-        func.moment.locale("en");
+        func.moment.locale("en-gb");
       }
       else if (func.moment.locale() == "fr"){
-        func.moment.locale("en");
+        func.moment.locale("en-gb");
         startDateRange = func.moment(startDateRange, "MMM YYYY");
         func.moment.locale("fr");
       }
 
       if (!startDateRange.isValid()){
-        console.log("000000000000000000000 1 : ", func.moment.locale(), this.preSanitize(dateRange[0]));
+        alert("An error occured when converting some dates.");
+        startDateRange = null;
       }
 
     }
@@ -169,26 +170,29 @@ export const dbDataSanitizer = {
       }
       else{
 
-        if (func.moment.locale() == "en"){
+        if (func.moment.locale() == "en-gb"){
           func.moment.locale("fr");
           endDateRange = func.moment(endDateRange, "MMM YYYY");
-          func.moment.locale("en");
+          func.moment.locale("en-gb");
         }
         else if (func.moment.locale() == "fr"){
-          func.moment.locale("en");
+          func.moment.locale("en-gb");
           endDateRange = func.moment(endDateRange, "MMM YYYY");
           func.moment.locale("fr");
         }
 
         if (!endDateRange.isValid()){
-          console.log("000000000000000000000 2 : ", func.moment.locale(), this.preSanitize(dateRange[1]));
+          alert("An error occured when converting some dates.");
+          endDateRange = null;
         }
 
 
       }
     }
 
-    console.log("000000000000000000000 3 : ", {startDateRange: startDateRange, endDateRange: endDateRange});
+    if (!startDateRange || !endDateRange){
+      return null;
+    }
 
     return {startDateRange: startDateRange, endDateRange: endDateRange};
 
@@ -420,7 +424,11 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
     }
 
     if (typeof object.period == "string"){
-      object.period = dbDataSanitizer.periodDates(object.period, func);
+      var period = dbDataSanitizer.periodDates(object.period, func);
+      if (!period){
+        continue;
+      }
+      object.period = period;
     }
     else{
       if (typeof object.period.startDateRange == "string"){
