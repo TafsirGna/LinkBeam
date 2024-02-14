@@ -1861,7 +1861,6 @@ function checkCurrentTab(tab, changeInfo){
                                 dbData.objectStoreNames.REMINDERS,
                                 { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
                                 (reminders) => {
-                                    console.log("^^^^^^^^^^^^^^^^^^^^^^^^ 1 : ", reminders);
                                     if (reminders && reminders.length != 0){
                                         chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
                                             console.log('Reminders sent', response);

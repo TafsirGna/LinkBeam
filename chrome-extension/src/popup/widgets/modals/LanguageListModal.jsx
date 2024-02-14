@@ -93,8 +93,8 @@ export default class LanguageListModal extends React.Component{
 
       var value = null, proficiency = languageObject.proficiency.toLowerCase();
 
-      if (proficiency.indexOf("native") != -1){ value = 5; }
-      if (proficiency.indexOf("full professional") != -1){ value = 4; }
+      if (proficiency.indexOf("native") != -1 || proficiency.indexOf("natale") != -1){ value = 5; }
+      if (proficiency.indexOf("full professional") != -1 || proficiency.indexOf("professionnelle complète") != -1){ value = 4; }
       if (proficiency.indexOf("professional working") != -1){ value = 3; }
       if (proficiency.indexOf("limited working") != -1){ value = 2; }
       if (proficiency.indexOf("elementary") != -1){ value = 1; }

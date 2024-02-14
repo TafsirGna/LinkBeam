@@ -34,8 +34,8 @@ export default class ProfileExperienceSectionView extends React.Component{
         jobTitlesBarData = [];
     for (var experience of this.props.profile.experience){
 
-      var companyLabel = dbDataSanitizer.companyName(experience.company),
-          title = dbDataSanitizer.companyName(experience.title),
+      var companyLabel = dbDataSanitizer.preSanitize(experience.company),
+          title = dbDataSanitizer.preSanitize(experience.title),
           expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(companyLabel.toLowerCase());

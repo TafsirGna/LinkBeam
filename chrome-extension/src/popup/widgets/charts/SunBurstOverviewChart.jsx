@@ -42,8 +42,8 @@ export default class SunBurstOverviewChart extends React.Component{
 
       for (var experience of this.props.profile.experience){
 
-        var company = dbDataSanitizer.companyName(experience.company), 
-            title = dbDataSanitizer.companyName(experience.title);
+        var company = dbDataSanitizer.preSanitize(experience.company), 
+            title = dbDataSanitizer.preSanitize(experience.title);
         var itemIndex = expChildren.map(e => e.fullName).indexOf(company);
         if (itemIndex == -1){
           expChildren.push({
@@ -72,8 +72,8 @@ export default class SunBurstOverviewChart extends React.Component{
 
       for (var education of this.props.profile.education){
 
-        var institutionName = dbDataSanitizer.institutionName(education.institutionName), 
-            degree = dbDataSanitizer.institutionName(education.degree);
+        var institutionName = dbDataSanitizer.preSanitize(education.institutionName), 
+            degree = dbDataSanitizer.preSanitize(education.degree);
         var itemIndex = edChildren.map(e => e.fullName).indexOf(institutionName);
         if (itemIndex == -1){
           edChildren.push({
@@ -102,7 +102,7 @@ export default class SunBurstOverviewChart extends React.Component{
     if (this.props.profile.languages){
       for (var language of this.props.profile.languages){
 
-        var languageName = dbDataSanitizer.languageName(language.name);
+        var languageName = dbDataSanitizer.preSanitize(language.name);
         var itemIndex = langChildren.map(e => e.fullName).indexOf(languageName);
         if (itemIndex == -1){
           langChildren.push({
@@ -133,8 +133,8 @@ export default class SunBurstOverviewChart extends React.Component{
           continue;
         }
 
-        var issuerName = dbDataSanitizer.issuerName(certification.issuer), 
-            title = dbDataSanitizer.issuerName(certification.title);
+        var issuerName = dbDataSanitizer.preSanitize(certification.issuer), 
+            title = dbDataSanitizer.preSanitize(certification.title);
         var itemIndex = certChildren.map(e => e.fullName).indexOf(issuerName);
         if (itemIndex == -1){
           certChildren.push({

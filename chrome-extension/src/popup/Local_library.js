@@ -80,13 +80,17 @@ export const dbDataSanitizer = {
     }
 
     str = str.replace("connections", "")
-             .replace("followers", "");
+             .replace("followers", "")
+             // french
+             .replace("abonnés", "")
+             .replace("relations", "")
+             .replace("+ de ", "");
 
     let newstr = "";
     // Loop and traverse string
     for (let i = 0; i < str.length; i++)
         if (!(str[i] == "\n" || str[i] == "\r" || str[i] == " " || str[i] == "+")){
-          if (str[i] == "K"){
+          if (str[i] == "K" || str[i] == "k"){
             newstr += "000"
           }
           else{
@@ -98,9 +102,10 @@ export const dbDataSanitizer = {
 
   },
 
-  profileAbout: function(str){
+  profileRelationDataPreproc: function(str) {
 
-    var str = this.preSanitize(str);
+    str = str.replaceAll("&nbsp;", " ");
+
     return str;
 
   },
@@ -121,48 +126,6 @@ export const dbDataSanitizer = {
 
   },
 
-  fullName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
-  companyName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
-  suggestionName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
-  languageName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
-  institutionName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
-  issuerName: function(str){
-
-    var str = this.preSanitize(str);
-    return str;
-
-  },
-
 
   periodDates: (expPeriod, func) => {
 
@@ -171,7 +134,7 @@ export const dbDataSanitizer = {
     var startDateRange = func.moment(dateRange[0], "MMM YYYY"), endDateRange = dateRange[1];
 
     // then the end date
-    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd'hui") != -1){ // contains Present 
+    if (endDateRange.indexOf("Present") != -1 || endDateRange.indexOf("aujourd’hui") != -1){ // contains Present 
       endDateRange = func.moment();
     }
     else{

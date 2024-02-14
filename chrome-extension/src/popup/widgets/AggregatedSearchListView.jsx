@@ -5,6 +5,7 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import VisibilitySensor from 'react-visibility-sensor';
+import { dbDataSanitizer } from "../Local_library";
 
 export default class AggregatedSearchListView extends React.Component{
 
@@ -83,7 +84,7 @@ export default class AggregatedSearchListView extends React.Component{
                                       <small class="opacity-50 text-nowrap ms-auto">{moment(search.date, moment.ISO_8601).format("L")}</small>
                                     </div>
                                     <p class="mb-0 opacity-75 small">{search.profile.title}</p>
-                                    <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{search.profile.nFollowers} · {search.profile.nConnections}</p>
+                                    <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{dbDataSanitizer.profileRelationDataPreproc(search.profile.nFollowers)} · {dbDataSanitizer.profileRelationDataPreproc(search.profile.nConnections)}</p>
                                   </div>
                                   {/*<small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>*/}
                                 </div>
