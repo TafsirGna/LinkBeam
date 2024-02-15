@@ -162,7 +162,7 @@ export default class ConnectedScatterplot extends React.Component{
 		      .attr("font-weight", "bold")
 		      .attr("text-anchor", "end")
 		      .attr("fill", "currentColor")
-		      .text("Miles per person per year"));
+		      .text("Experience time length"));
 
 		svg.append("g")
 		.attr("transform", `translate(${marginLeft},0)`)
@@ -175,7 +175,7 @@ export default class ConnectedScatterplot extends React.Component{
 		    .attr("x", 4)
 		    .attr("text-anchor", "start")
 		    .attr("font-weight", "bold")
-		    .text("Cost per gallon"));
+		    .text("Time spent on profile"));
 
 		svg.append("path")
 		  .datum(this.state.chartData)

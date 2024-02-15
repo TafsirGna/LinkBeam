@@ -105,11 +105,11 @@ export default class ProfileActivityListView extends React.Component{
                                                     {profileActivityObject.profile.fullName}
                                                     { profileActivityObject.action && <OverlayTrigger
                                                                                         placement="top"
-                                                                                        overlay={<Tooltip id="tooltip1">{profileActivityObject.action.toLowerCase().indexOf("liked") != -1 ? "liked" : (profileActivityObject.action.toLowerCase().indexOf("shared") != -1 ? "shared" : null)}</Tooltip>}
+                                                                                        overlay={<Tooltip id="tooltip1">{(profileActivityObject.action.toLowerCase().indexOf("liked") != -1 || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) ? "liked" : ((profileActivityObject.action.toLowerCase().indexOf("shared") != -1 || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) ? "shared" : null)}</Tooltip>}
                                                                                       >
                                                                                       <span>
-                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked") != -1) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
-                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared")  != -1) &&  <img class="mx-2" width="16" height="16" src={share_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked") != -1 || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared") != -1 || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) &&  <img class="mx-2" width="16" height="16" src={share_icon} alt=""/>}
                                                                                       </span>
                                                                                       </OverlayTrigger>}
                                                   </span>
@@ -134,11 +134,11 @@ export default class ProfileActivityListView extends React.Component{
                                                   {profileActivityObject.profile.fullName}
                                                   {profileActivityObject.action && <OverlayTrigger
                                                                                       placement="top"
-                                                                                      overlay={<Tooltip id="tooltip1">{profileActivityObject.action.toLowerCase().indexOf("liked") != -1 ? "liked" : (profileActivityObject.action.toLowerCase().indexOf("shared") != -1 ? "shared" : null)}</Tooltip>}
+                                                                                      overlay={<Tooltip id="tooltip1">{(profileActivityObject.action.toLowerCase().indexOf("liked") != -1 || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) ? "liked" : ((profileActivityObject.action.toLowerCase().indexOf("shared") != -1 || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) ? "shared" : null)}</Tooltip>}
                                                                                     >
                                                                                       <span>
-                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked") != -1) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
-                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared") != -1) &&  <img class="mx-2" width="16" height="16" src={share_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("liked") != -1 || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
+                                                                                        { (profileActivityObject.action.toLowerCase().indexOf("shared") != -1 || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) &&  <img class="mx-2" width="16" height="16" src={share_icon} alt=""/>}
                                                                                       </span>
                                                                                     </OverlayTrigger>}
                                                 </span>

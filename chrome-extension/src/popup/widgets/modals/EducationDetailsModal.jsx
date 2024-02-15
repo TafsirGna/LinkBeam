@@ -43,12 +43,9 @@ export default class EducationDetailsModal extends React.Component{
                                                 </span>
                                               </h6>
                                               { education.period && <p class="text-muted mb-2 fw-light">{education.period.startDateRange.format("MMMM YYYY")} - {education.period.endDateRange.format("MMMM YYYY")}</p>}
-                                              <p class="text-muted border rounded p-2 shadow-sm">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit
-                                                necessitatibus adipisci, ad alias, voluptate pariatur officia
-                                                repellendus repellat inventore fugit perferendis totam dolor
-                                                voluptas et corrupti distinctio maxime corporis optio?
-                                              </p>
+                                              { education.description && <p class="text-muted border rounded p-2 shadow-sm" dangerouslySetInnerHTML={{__html: education.description}}>
+                                                                                              { /*education.description*/ }
+                                                                                            </p>}
                                             </li>
                                     )) }
                                 </ul>

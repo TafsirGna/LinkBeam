@@ -15,7 +15,7 @@ import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
-import { AlertCircleIcon } from "../SVGs";
+import { AlertCircleIcon, LocationIcon } from "../SVGs";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import default_user_icon from '../../../assets/user_icons/default.png';
 
@@ -816,12 +816,17 @@ export default class RelationshipsChart extends React.Component{
                                                           {/*<p class="mt-0 mb-2">
                                                                                                                       <span class="border shadow-sm rounded text-primary badge border-warning-subtle">Linkedin suggestions</span>
                                                                                                                     </p>*/}
-                                                          <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                            <img class="rounded-circle me-1" width="24" height="24" src={object.picture ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) : default_user_icon} alt=""/>
-                                                            {dbDataSanitizer.preSanitize(object.name)}
-                                                          </span>
+                                                          <a href={object.link ? object.link : "#"}>
+                                                            <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                              <img class="rounded-circle me-1" width="24" height="24" src={object.picture ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) : default_user_icon} alt=""/>
+                                                              {dbDataSanitizer.preSanitize(object.name)}
+                                                            </span>
+                                                          </a>
                                                           {/*<strong class="fw-semibold">{dbDataSanitizer.suggestionName(object.name)}</strong>*/}
-                                                          <span class="d-block small opacity-75 mt-2">With support text underneath to add more detail</span>
+                                                          { object.location && <span class="d-block small opacity-75 mt-2 fw-bold">
+                                                                                <LocationIcon size="12" className="me-1"/>
+                                                                                {dbDataSanitizer.preSanitize(object.location)}
+                                                                              </span>}
                                                         </label>
                                                       </div>
                                                     </div>))}

@@ -95,9 +95,9 @@ export default class LanguageListModal extends React.Component{
 
       if (proficiency.indexOf("native") != -1 || proficiency.indexOf("natale") != -1){ value = 5; }
       if (proficiency.indexOf("full professional") != -1 || proficiency.indexOf("professionnelle complète") != -1){ value = 4; }
-      if (proficiency.indexOf("professional working") != -1){ value = 3; }
-      if (proficiency.indexOf("limited working") != -1){ value = 2; }
-      if (proficiency.indexOf("elementary") != -1){ value = 1; }
+      if (proficiency.indexOf("professional working") != -1 || proficiency.indexOf("professionnelle générale") != -1){ value = 3; }
+      if (proficiency.indexOf("limited working") != -1 || proficiency.indexOf("limité") != -1){ value = 2; }
+      if (proficiency.indexOf("elementary") != -1 || proficiency.indexOf("notions") != -1){ value = 1; }
       if (value == null){ value = 0.5; }
 
       languages.push({

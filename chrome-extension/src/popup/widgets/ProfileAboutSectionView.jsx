@@ -242,7 +242,7 @@ export default class ProfileAboutSectionView extends React.Component{
                                         </span>
                                         <Collapse in={this.state.collapseInfoOpen}>
                                           <div id="collapseInfo">
-                                            <div class="border fw-light border-1 text-muted rounded shadow p-3 small mt-2">
+                                            <div class="bg-light border fw-light border-1 text-muted rounded shadow p-3 small mt-2">
                                               {this.props.profile.info}
                                             </div>
                                           </div>

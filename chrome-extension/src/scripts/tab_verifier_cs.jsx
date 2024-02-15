@@ -89,6 +89,17 @@ function extractAboutData(){
   let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
   if (userAboutTagContainer){
     userAbout = userAboutTagContainer.textContent;
+
+    var index = userAbout.toLowerCase().indexOf("see more");
+    if (index != -1){
+      userAbout = userAbout.slice(0, index);
+    }
+    else{
+      index = userAbout.toLowerCase().indexOf("voir plus");
+      if (index != -1){
+        userAbout = userAbout.slice(0, index);
+      }
+    }
   }
 
   return userAbout;
@@ -110,6 +121,7 @@ function extractEducationData(){
         institutionURL: (educationLiTag.querySelector("h3 a") ? educationLiTag.querySelector("h3 a").href : null),
         degree: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
+        description: (educationLiTag.querySelector(".show-more-less-text__text--less") ? educationLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
       };
       educationData.push(education);
     });
@@ -280,9 +292,10 @@ function extractSuggestionsData(){
     Array.from(document.querySelectorAll(sectionName + " li")).forEach((suggestionLiTag) => {
       var profileSuggestion = {
         name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
-        location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").innerHTML : null),
+        location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
         link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
         picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
+        title: (suggestionLiTag.querySelector(".base-aside-card__subtitle") ? suggestionLiTag.querySelector(".base-aside-card__subtitle").textContent : null),
       };
       profileSuggestions.push(profileSuggestion);
     });
