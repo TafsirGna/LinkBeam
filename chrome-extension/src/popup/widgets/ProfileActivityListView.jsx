@@ -74,6 +74,10 @@ export default class ProfileActivityListView extends React.Component{
       }
       
     }
+
+    // Sorting the posts by date of viewing
+    posts.sort(function(a, b){return moment(b.date, moment.ISO_8601) - moment(a.date, moment.ISO_8601)});
+
     this.setState({posts: posts});
 
   }

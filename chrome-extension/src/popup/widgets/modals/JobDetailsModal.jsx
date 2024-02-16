@@ -43,8 +43,8 @@ export default class JobDetailsModal extends React.Component{
                                                 </span>
                                               </h6>
                                               { experience.period && <p class="text-muted mb-2 fw-light">{experience.period.startDateRange.format("MMMM YYYY")} - {experience.period.endDateRange.format("MMMM YYYY")}</p>}
-                                              { experience.description && <p class="text-muted border rounded p-2 shadow-sm">
-                                                                                              {experience.description}
+                                              { experience.description && <p class="text-muted border rounded p-2 shadow-sm" dangerouslySetInnerHTML={{__html: experience.description}}>
+                                                                                              {/*experience.description*/}
                                                                                             </p>}
                                             </li>
                                     )) }

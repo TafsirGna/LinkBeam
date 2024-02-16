@@ -1543,7 +1543,7 @@ function processTabData(tabData){
                             var stringified = JSON.stringify(profile);
                             var detectedKeywords = [];
                             for (var keyword of keywords){
-                                if (stringified.indexOf(keyword) != -1){
+                                if (stringified.indexOf(keyword.name) != -1){
                                     detectedKeywords.push(keyword);
                                 }
                             }

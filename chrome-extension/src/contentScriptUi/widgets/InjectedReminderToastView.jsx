@@ -1,35 +1,40 @@
 /*import './WebUiRequestToast.css'*/
 import React from 'react';
-import { appParams, dbDataSanitizer } from "../../popup/Local_library";
+import { appParams, dbDataSanitizer, deactivateTodayReminders } from "../../popup/Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 
 export default class InjectedReminderToastView extends React.Component{
 
-  constructor(props){
-    super(props);
-    this.state = {
-        remindersToastShow: true,
-        remindersModalShow: false,
-    };
+    constructor(props){
+        super(props);
+        this.state = {
+            remindersToastShow: true,
+            remindersModalShow: false,
+        };
 
-    this.handleRemindersToastClose = this.handleRemindersToastClose.bind(this);
-  }
+        this.handleRemindersToastClose = this.handleRemindersToastClose.bind(this);
+    }
 
-  handleRemindersToastShow = () => { this.setState({remindersToastShow: true}); }
-  handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, () => { if (callback) {callback()}}); }
+    handleRemindersToastShow = () => { this.setState({remindersToastShow: true}); }
+    handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, () => { if (callback) {callback()}}); }
 
-  handleRemindersModalShow = () => {
-    if (this.state.remindersToastShow){
-        this.handleRemindersToastClose(() => {
+    handleRemindersModalShow = () => {
+        if (this.state.remindersToastShow){
+            this.handleRemindersToastClose(() => {
+                this.setState({remindersModalShow: true}); 
+            });
+        }
+        else{
             this.setState({remindersModalShow: true}); 
-        });
+        }
     }
-    else{
-        this.setState({remindersModalShow: true}); 
+
+    handleRemindersModalClose = () => {
+       this.setState({remindersModalShow: false}, () => {
+            deactivateTodayReminders(this.props.objects);
+       }); 
     }
-  }
-  handleRemindersModalClose = () => { this.setState({remindersModalShow: false}); }
   
 
   componentDidMount() {
@@ -50,7 +55,7 @@ export default class InjectedReminderToastView extends React.Component{
                             </div>
                             <div class="ml-3 text-sm font-normal">
                                 <span class="mb-1 text-sm font-semibold text-gray-900 dark:text-white">{appParams.appName}</span>
-                                <div class="mb-2 text-sm font-normal">{this.props.objects.length} reminder(s) waiting</div> 
+                                <div class="mb-2 text-sm font-normal">{this.props.objects.length} reminder{ this.props.objects.length > 1 ? "s" : ""} waiting</div> 
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <a onClick={this.handleRemindersModalShow} /*href="#"*/ class="handy-cursor inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">

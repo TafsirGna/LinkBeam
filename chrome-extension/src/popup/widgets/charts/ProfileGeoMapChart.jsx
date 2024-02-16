@@ -127,16 +127,18 @@ export default class ProfileGeoMapChart extends React.Component{
 
       while (true) {
 
-        console.log("yyyyyyyyyy : ", location);
+        location = dbDataSanitizer.preSanitize(location);
 
-        location = location.split(",");
-        location = dbDataSanitizer.preSanitize(location[location.length - 1]);
+        if (location.indexOf(",") != -1){
+          location = location.split(",");
+          location = dbDataSanitizer.preSanitize(location[location.length - 1]);
+        }
         location = location.replace("Republic of the ", "")
                            .replace("Republic of ", "")
                            .replace("Republic", "") 
                            .replace("République", ""); 
 
-        var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" ("))).indexOf(location);
+        var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" (")).toLowerCase()).indexOf(location.toLowerCase());
         if (idx != -1){
           location = countriesNaming[idx].englishShortName.replace(" (the)", "");
         }
