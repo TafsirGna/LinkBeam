@@ -127,31 +127,57 @@ export default class ProfileGeoMapChart extends React.Component{
 
       while (true) {
 
-        location = dbDataSanitizer.preSanitize(location);
+        if (location){
 
-        if (location.indexOf(",") != -1){
-          location = location.split(",");
-          location = dbDataSanitizer.preSanitize(location[location.length - 1]);
-        }
-        location = location.replace("Republic of the ", "")
-                           .replace("Republic of ", "")
-                           .replace("Republic", "") 
-                           .replace("République", ""); 
+          console.log("eeeeeeeeeeeeeeeeeeeee 0 :", location, domain);
 
-        var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" (")).toLowerCase()).indexOf(location.toLowerCase());
-        if (idx != -1){
-          location = countriesNaming[idx].englishShortName.replace(" (the)", "");
-        }
+          location = dbDataSanitizer.preSanitize(location);
 
-        var keys = Object.keys(locations);
-        var index = keys.indexOf(location);
-        if (index == -1){
-          locations[location] = [profile];
-        }
-        else{
-          if (locations[location].map(e => e.url).indexOf(profile.url) == -1){
-            locations[location].push(profile);
+          if (location.indexOf(",") != -1){
+            location = location.split(",");
+            location = dbDataSanitizer.preSanitize(location[location.length - 1]);
           }
+          location = location.replace("Republic of the ", "")
+                             .replace("Republic of ", "")
+                             .replace("Republic", "") 
+                             .replace("République", ""); 
+
+          // console.log("eeeeeeeeeeeeeeeeeeeee 1 :", location);
+          switch(location.toLowerCase()){
+            case "états-unis":{
+              location += " d'Amérique";
+              break;
+            }
+          }
+
+          for (var countryObject of countriesNaming){
+            if (countryObject.frenchShortName.toLowerCase().indexOf(location.toLowerCase()) != -1){
+              location = countryObject.englishShortName.replace(" (the)", "");
+              break;
+            }
+          }
+
+          // var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" (")).toLowerCase()).indexOf(location.toLowerCase());
+          // if (idx != -1){
+          //   location = countriesNaming[idx].englishShortName.replace(" (the)", "");
+          // }
+
+          // console.log("eeeeeeeeeeeeeeeeeeeee 2 :", location);
+
+          var keys = Object.keys(locations);
+          var index = keys.indexOf(location);
+
+          // console.log("eeeeeeeeeeeeeeeeeeeee 3 :", location, index);
+
+          if (index == -1){
+            locations[location] = [profile];
+          }
+          else{
+            if (locations[location].map(e => e.url).indexOf(profile.url) == -1){
+              locations[location].push(profile);
+            }
+          }
+
         }
 
         if (domain == "experience"){
@@ -159,6 +185,7 @@ export default class ProfileGeoMapChart extends React.Component{
           if (!profile.experience || locationIndex == profile.experience.length){
             domain = "education";
             locationIndex = 0;
+            location = null;
             continue;
           }
 
