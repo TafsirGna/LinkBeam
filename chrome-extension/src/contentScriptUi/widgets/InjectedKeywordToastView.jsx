@@ -76,12 +76,6 @@ export default class InjectedKeywordToastView extends React.Component{
                             </button>
                         </div>                        
                     </div>
-
-                    {/*<audio controls autoplay>
-                                          <source src={chrome.runtime.getURL("/assets/gaming-lock.mp3")} type="audio/mp3"/>
-                                          Your browser does not support the audio element.
-                                        </audio>*/}
-
                 </div>}
 
         { this.state.keywordsModalShow && <div class={"modal-container-ac84bbb3728 "}>

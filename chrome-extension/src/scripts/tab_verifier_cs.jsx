@@ -339,7 +339,7 @@ const authDataExtractor = {
 
     let location = null, locationTagContainer = document.querySelectorAll(".text-body-small")[3];
     if (locationTagContainer){
-      location = locationTagContainer.firstElementChild.textContent;
+      location = locationTagContainer.textContent;
     }
 
     let nFollowers = null; nFollowersTagContainer = (document.querySelectorAll(".pv-top-card--list-bullet li")[0]).querySelector("span");
@@ -428,7 +428,7 @@ const authDataExtractor = {
 
       educationData = [];
 
-      Array.from(educationSectionTag.querySelectorAll("li")).forEach((educationLiTag) => {
+      Array.from(educationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((educationLiTag) => {
 
         var education = {
           institutionName: (educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
@@ -630,9 +630,16 @@ function extractData(){
   let pageData = null;
 
   // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
-  var publicHeaderData = publicDataExtractor.header();
+  var publicHeaderData = null;
 
-  if (publicHeaderData.fullName){
+  try {
+    publicHeaderData = publicDataExtractor.header();
+  }
+  catch (e) {
+    console.log("An error occured when parsing as public profile :", e);
+  }
+
+  if (publicHeaderData && publicHeaderData.fullName){
     
     pageData = {
 
@@ -661,9 +668,16 @@ function extractData(){
     
   }
   else{
-    var authHeaderData = authDataExtractor.header();
+    var authHeaderData = null;
 
-    if (authHeaderData.fullName){
+    try {
+      authHeaderData = authDataExtractor.header();
+    }
+    catch (e) {
+      console.log("An error occured when parsing as private profile : ", e);
+    }
+
+    if (authHeaderData && authHeaderData.fullName){
 
       pageData = {
 
@@ -719,17 +733,19 @@ const getTabId = (messageData, sendResponse) => {
   setInterval(
     () => {
 
-      if (webPageData == {}){
-        sendTabData({}, tabId);
-        return;
-      }
+      // if (webPageData == {}){
+      //   sendTabData({}, tabId);
+      //   return;
+      // }
 
-      var data = extractData();
-      if (data == webPageData){
-        data = {};
-      }
-      sendTabData(data, tabId);
-      webPageData = data;
+      // var data = extractData();
+      // if (data == webPageData){
+      //   data = {};
+      // }
+      // sendTabData(data, tabId);
+      // webPageData = data;
+
+      sendTabData(extractData(), tabId);
 
     }, 
     3000
