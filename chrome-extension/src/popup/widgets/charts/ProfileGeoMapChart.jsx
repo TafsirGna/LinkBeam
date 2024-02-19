@@ -129,8 +129,6 @@ export default class ProfileGeoMapChart extends React.Component{
 
         if (location){
 
-          console.log("eeeeeeeeeeeeeeeeeeeee 0 :", location, domain);
-
           location = dbDataSanitizer.preSanitize(location);
 
           if (location.indexOf(",") != -1){
@@ -142,7 +140,6 @@ export default class ProfileGeoMapChart extends React.Component{
                              .replace("Republic", "") 
                              .replace("République", ""); 
 
-          // console.log("eeeeeeeeeeeeeeeeeeeee 1 :", location);
           switch(location.toLowerCase()){
             case "états-unis":{
               location += " d'Amérique";
@@ -161,8 +158,6 @@ export default class ProfileGeoMapChart extends React.Component{
           // if (idx != -1){
           //   location = countriesNaming[idx].englishShortName.replace(" (the)", "");
           // }
-
-          // console.log("eeeeeeeeeeeeeeeeeeeee 2 :", location);
 
           var keys = Object.keys(locations);
           var index = keys.indexOf(location);

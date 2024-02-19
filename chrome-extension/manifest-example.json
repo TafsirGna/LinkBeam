@@ -17,7 +17,10 @@
   ],
   "web_accessible_resources": [{
      "matches": ["*://*/*"],
-     "resources": ["/assets/web_ui.js"]
+     "resources": [
+                    "/assets/web_ui.js",
+                    "/assets/gaming-lock.mp3"
+      ]
   }],
   "host_permissions": ["*://*/*"]
 }

@@ -3,6 +3,7 @@ import React from 'react';
 import { appParams, dbDataSanitizer } from "../../popup/Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
+import gaming_lock_audio from '../../assets/audio/gaming-lock.mp3';
 
 export default class InjectedKeywordToastView extends React.Component{
 
@@ -33,6 +34,9 @@ export default class InjectedKeywordToastView extends React.Component{
   
 
   componentDidMount() {
+
+    var audioElement = new Audio(chrome.runtime.getURL("/assets/gaming-lock.mp3"));
+    audioElement.play();
 
   }
 
@@ -70,8 +74,14 @@ export default class InjectedKeywordToastView extends React.Component{
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
                                 </svg>
                             </button>
-                        </div>
+                        </div>                        
                     </div>
+
+                    {/*<audio controls autoplay>
+                                          <source src={chrome.runtime.getURL("/assets/gaming-lock.mp3")} type="audio/mp3"/>
+                                          Your browser does not support the audio element.
+                                        </audio>*/}
+
                 </div>}
 
         { this.state.keywordsModalShow && <div class={"modal-container-ac84bbb3728 "}>
