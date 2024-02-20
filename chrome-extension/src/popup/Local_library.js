@@ -131,7 +131,15 @@ export const dbDataSanitizer = {
   periodDates: function(expPeriod, func){
 
     // handling date range
-    var dateRange = (this.preSanitize(expPeriod).split("\n")[0]).split(appParams.DATE_RANGE_SEPARATOR);
+    var dateRange = this.preSanitize(expPeriod); 
+    if (dateRange.indexOf("\n") != -1){
+      dateRange = dateRange.split("\n")[0];
+    } 
+    else if (dateRange.indexOf("·") != -1){
+      dateRange = dateRange.split("·")[0];
+    }
+    dateRange = dateRange.split(appParams.DATE_RANGE_SEPARATOR);
+
     var startDateRange = this.preSanitize(dateRange[0]), 
         endDateRange = this.preSanitize(dateRange[1]);
 

@@ -473,38 +473,37 @@ const authDataExtractor = {
 
   experience: function(){
 
-    var sectionName = ".core-section-container.experience";
-
-    let experienceData = null, experienceSectionTag = document.querySelector(sectionName);
+    let experienceData = null, experienceSectionTag = document.getElementById('experience').nextElementSibling.nextElementSibling.querySelector("ul");
     if (experienceSectionTag){
 
       experienceData = [];
 
-      Array.from((document.querySelector(sectionName + " .experience__list")).children).forEach((experienceLiTag) => {
-        
-        var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
-        if (groupPositions){
+      Array.from(experienceSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
+          
+        var experienceItem = {};
+        if (experienceLiTag.querySelector("ul")){
 
-          var companyName = (experienceLiTag.querySelector(".experience-group-header__company") ? experienceLiTag.querySelector(".experience-group-header__company").textContent : null);
+          var companyName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
 
-          Array.from(groupPositions.querySelectorAll(".profile-section-card")).forEach((positionLiTag) => {
+          Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
+            positionLiTag = positionLiTag.parentElement;
             var experienceItem = {};
-            experienceItem["title"] = (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null);
+            experienceItem["title"] = (positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
             experienceItem["company"] = companyName;
-            experienceItem["period"] = (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null);
-            experienceItem["location"] = (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
-            experienceItem["description"] = (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null);
+            experienceItem["period"] = (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null);
+            experienceItem["location"] = null; // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+            experienceItem["description"] = null; // (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null);
             experienceData.push(experienceItem);
           });
 
         }
         else{
 
-          experienceItem["title"] = (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null);
-          experienceItem["company"] = (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null); 
-          experienceItem["period"] = (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null);
-          experienceItem["location"] = (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
-          experienceItem["description"] = (experienceLiTag.querySelector(".show-more-less-text__text--less") ? experienceLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null);
+          experienceItem["title"] = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
+          experienceItem["company"] = (experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null); 
+          experienceItem["period"] = (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null);
+          experienceItem["location"] = null; // (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null);
+          experienceItem["description"] = (experienceLiTag.querySelectorAll(".visually-hidden")[3] ? experienceLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null);
           experienceData.push(experienceItem);
 
         }
