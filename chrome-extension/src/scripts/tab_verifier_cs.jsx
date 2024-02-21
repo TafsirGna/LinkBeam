@@ -401,20 +401,9 @@ const authDataExtractor = {
 
   about: function(){
 
-    let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
+    let userAbout = null, userAboutTagContainer = document.getElementById('about').nextElementSibling.nextElementSibling;
     if (userAboutTagContainer){
-      userAbout = userAboutTagContainer.textContent;
-
-      var index = userAbout.toLowerCase().indexOf("see more");
-      if (index != -1){
-        userAbout = userAbout.slice(0, index);
-      }
-      else{
-        index = userAbout.toLowerCase().indexOf("voir plus");
-        if (index != -1){
-          userAbout = userAbout.slice(0, index);
-        }
-      }
+      userAbout = userAboutTagContainer.querySelector(".visually-hidden").previousElementSibling.textContent;
     }
 
     return userAbout;
@@ -435,7 +424,7 @@ const authDataExtractor = {
           institutionURL: null,
           degree: (educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
           period: (educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
-          description: (educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
+          description: (educationLiTag.querySelectorAll(".visually-hidden")[3] ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
         };
         educationData.push(education);
       });
@@ -450,17 +439,15 @@ const authDataExtractor = {
 
   language: function(){
 
-    var sectionName = ".core-section-container.languages";
-
-    var languageData = null, languageSectionTag = document.querySelector(sectionName);
+    var languageData = null, languageSectionTag = document.getElementById('languages').nextElementSibling.nextElementSibling;
     if (languageSectionTag){
 
       languageData = [];
 
-      Array.from(document.querySelectorAll(sectionName + " li")).forEach((languageLiTag) => {
+      Array.from(languageSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((languageLiTag) => {
         var language = {
-          name: (languageLiTag.querySelector("h3") ? languageLiTag.querySelector("h3").innerHTML : null),
-          proficiency: (languageLiTag.querySelector("h4") ? languageLiTag.querySelector("h4").innerHTML : null),
+          name: (languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          proficiency: (languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
         };
         languageData.push(language);
       });
