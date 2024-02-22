@@ -3,8 +3,8 @@ import React from 'react'
 import moment from 'moment';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import SearchesTimelineChart from "./widgets/charts/SearchesTimelineChart";
-import SearchesKeywordsBarChart from "./widgets/charts/SearchesKeywordsBarChart";
+import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
+import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
@@ -24,7 +24,7 @@ import {
   messageParams,
   dbData,
   appParams,
-  getPeriodSearches,
+  getPeriodVisits,
 } from "./Local_library";
 
 export default class StatisticsView extends React.Component{
@@ -32,7 +32,7 @@ export default class StatisticsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      periodSearches: null,
+      periodVisits: null,
       periodProfiles: null,
       view: 0,
       carrouselActiveItemIndex: 0,
@@ -42,7 +42,7 @@ export default class StatisticsView extends React.Component{
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
     this.handleCarrouselSelect = this.handleCarrouselSelect.bind(this);
     this.downloadChart = this.downloadChart.bind(this);
     this.onChartExpansion = this.onChartExpansion.bind(this);
@@ -56,7 +56,7 @@ export default class StatisticsView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS);
 
-    getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, this.state.view, {moment: moment});
+    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, this.state.view, {moment: moment});
     
     // Requesting the last reset date
     if (!Object.hasOwn(this.props.globalData.settings, "lastDataResetDate")){
@@ -68,13 +68,13 @@ export default class StatisticsView extends React.Component{
   listenToMessages(){
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
+        callback: this.onVisitsDataReceived
       },
     ]);
   }
 
-  onSearchesDataReceived(message, sendResponse){
+  onVisitsDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
@@ -84,23 +84,23 @@ export default class StatisticsView extends React.Component{
       return;
     }
 
-    var searches = message.data.objectData.list, 
+    var visits = message.data.objectData.list, 
         profiles = [];
 
-    for (var search of searches){
-      if (profiles.map(e => e.url).indexOf(search.url) == -1){
-        profiles.push(search.profile);
+    for (var visit of visits){
+      if (profiles.map(e => e.url).indexOf(visit.url) == -1){
+        profiles.push(visit.profile);
       }
     }
 
-    this.setState({ periodSearches: searches, periodProfiles: profiles });
+    this.setState({ periodVisits: visits, periodProfiles: profiles });
 
   }
 
   onViewChange(index){
 
     this.setState({view: index}, () => {
-      getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, index, {moment: moment});
+      getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, index, {moment: moment});
     });
 
   }
@@ -180,25 +180,25 @@ export default class StatisticsView extends React.Component{
             indicators={false}
             activeIndex={this.state.carrouselActiveItemIndex} onSelect={this.handleCarrouselSelect}>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 0 && <SearchesTimelineChart 
-                              objects={this.state.periodSearches} 
+              { this.state.carrouselActiveItemIndex == 0 && <VisitsTimelineChart 
+                              objects={this.state.periodVisits} 
                               view={this.state.view} 
                               carrouselIndex={0} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 1 && <StatIndicatorsView 
-                              objects={this.state.periodSearches}
+                              objects={this.state.periodVisits}
                               carrouselIndex={1} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 2 && <SearchesKeywordsBarChart 
+              { this.state.carrouselActiveItemIndex == 2 && <VisitsKeywordsBarChart 
                               globalData={this.props.globalData} 
-                              objects={this.state.periodSearches} 
+                              objects={this.state.periodVisits} 
                               carrouselIndex={2}/>}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 3 && <BubbleProfileRelationMetricsChart 
-                              objects={this.state.periodSearches} 
+                              objects={this.state.periodVisits} 
                               carrouselIndex={3} />}
             </Carousel.Item>
             <Carousel.Item>
@@ -210,7 +210,7 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 5 && <ExpEdStackBarChart 
-                              objects={this.state.periodSearches} 
+                              objects={this.state.periodVisits} 
                               carrouselIndex={5} />}
             </Carousel.Item>
             <Carousel.Item> 
@@ -236,7 +236,7 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 7 && <ConnectedScatterplot 
-                              objects={this.state.periodSearches} 
+                              objects={this.state.periodVisits} 
                               carrouselIndex={7} />}
             </Carousel.Item>
           </Carousel>

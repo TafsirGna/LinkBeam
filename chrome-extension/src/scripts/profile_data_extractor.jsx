@@ -581,21 +581,20 @@ const authDataExtractor = {
   suggestions: function(){
 
     // PEOPLE ALSO VIEWED SECTION
-    var sectionName = ".aside-section-container";
 
     var profileSuggestions = null,
-        profileSuggestionsContainer = document.querySelector(sectionName);
+        profileSuggestionsContainer = document.getElementById('browsemap_recommendation').nextElementSibling.nextElementSibling;
     if (profileSuggestionsContainer){
 
       profileSuggestions = [];
 
-      Array.from(document.querySelectorAll(sectionName + " li")).forEach((suggestionLiTag) => {
+      Array.from(profileSuggestionsContainer.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
         var profileSuggestion = {
-          name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
-          location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-          link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
-          picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
-          title: (suggestionLiTag.querySelector(".base-aside-card__subtitle") ? suggestionLiTag.querySelector(".base-aside-card__subtitle").textContent : null),
+          name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          location: null, // (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
+          link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href : null),        
+          picture: (suggestionLiTag.querySelector("img") ? suggestionLiTag.querySelector("img").src : null),
+          title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
         };
         profileSuggestions.push(profileSuggestion);
       });

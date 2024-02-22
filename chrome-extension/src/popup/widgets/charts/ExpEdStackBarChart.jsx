@@ -99,16 +99,16 @@ export default class ExpEdStackBarChart extends React.Component{
     }
 
     var labels = [], expTimeData = [], edTimeData = [];
-    for (var search of this.props.objects){
+    for (var visit of this.props.objects){
 
-      var fullName = dbDataSanitizer.preSanitize(search.profile.fullName);
+      var fullName = dbDataSanitizer.preSanitize(visit.profile.fullName);
       var index = labels.indexOf(fullName);
       if (index == -1){
         labels.push(fullName);
 
-        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", search.profile);
-        var experienceTime = computePeriodTimeSpan(search.profile.experience, "experience", {moment: moment}),
-            educationTime = computePeriodTimeSpan(search.profile.education, "education", {moment: moment});
+        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", visit.profile);
+        var experienceTime = computePeriodTimeSpan(visit.profile.experience, "experience", {moment: moment}),
+            educationTime = computePeriodTimeSpan(visit.profile.education, "education", {moment: moment});
         
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);

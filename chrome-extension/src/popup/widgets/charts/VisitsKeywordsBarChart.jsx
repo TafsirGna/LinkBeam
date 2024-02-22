@@ -51,7 +51,7 @@ const barOptions = {
   },
 };
 
-export default class SearchesKeywordsBarChart extends React.Component{
+export default class VisitsKeywordsBarChart extends React.Component{
 
 	constructor(props){
 		super(props);
@@ -76,7 +76,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
           return;
         }
 
-        saveCanvas(this.state.uuid, "Searches-keywords-bar-chart.png", saveAs);
+        saveCanvas(this.state.uuid, "visits-keywords-bar-chart.png", saveAs);
       }
     );
 
@@ -118,10 +118,10 @@ export default class SearchesKeywordsBarChart extends React.Component{
     var barData = [];
     for (var keyword of this.props.globalData.keywordList){ 
       var profiles = [];
-      for (var search of this.props.objects){
-        if (JSON.stringify(search.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1 
-            && profiles.map(e => e.url).indexOf(search.url) == -1){
-          profiles.push(search.profile);
+      for (var visit of this.props.objects){
+        if (JSON.stringify(visit.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1 
+            && profiles.map(e => e.url).indexOf(visit.url) == -1){
+          profiles.push(visit.profile);
         }
       }
       barData.push({label: keyword.name, profiles: profiles}); 
@@ -191,7 +191,7 @@ export default class SearchesKeywordsBarChart extends React.Component{
                                     options={barOptions} 
                                     data={this.state.barData}
                                     onClick={this.onChartClick} />
-                                  { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches distributed by keywords</p> }
+                                  { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits distributed by keywords</p> }
                                 </div> }
 
         </div>

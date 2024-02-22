@@ -1,4 +1,4 @@
-/*import './SearchListView.css'*/
+/*import './PageTitleView.css'*/
 import React from 'react';
 
 export default class PageTitleView extends React.Component{

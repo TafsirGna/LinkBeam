@@ -46,13 +46,13 @@ function createDatabase(context) {
     request.onupgradeneeded = function (event) {
         db = event.target.result;
 
-        // Search object store
-        let searchObjectStore = db.createObjectStore(dbData.objectStoreNames.SEARCHES, { keyPath: 'id', autoIncrement: true });
-        searchObjectStore.createIndex("url", "url", { unique: false });
-        // searchObjectStore.createIndex("urlIndex", "url", { unique: false });
+        // Visit object store
+        let visitObjectStore = db.createObjectStore(dbData.objectStoreNames.VISITS, { keyPath: 'id', autoIncrement: true });
+        visitObjectStore.createIndex("url", "url", { unique: false });
+        // visitObjectStore.createIndex("urlIndex", "url", { unique: false });
 
-        searchObjectStore.transaction.oncomplete = function (event) {
-            console.log("ObjectStore 'Search' created.");
+        visitObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Visit' created.");
         }
 
         // Profile Object store
@@ -305,7 +305,7 @@ function getAssociatedProfiles(objects, callback){
     pairObjectProfile(objects);
 }
 
-function getAssociatedSearches(objects, callback){
+function getAssociatedVisits(objects, callback){
 
     if (objects.length == 0){
         callback(objects);
@@ -314,11 +314,11 @@ function getAssociatedSearches(objects, callback){
 
     let results = [];
     let objectStore = db
-                        .transaction(dbData.objectStoreNames.SEARCHES, "readonly")
-                        .objectStore(dbData.objectStoreNames.SEARCHES);
+                        .transaction(dbData.objectStoreNames.VISITS, "readonly")
+                        .objectStore(dbData.objectStoreNames.VISITS);
     let index = objectStore.index("url");
 
-    const pairProfileSearches = (profiles) => {
+    const pairProfileVisits = (profiles) => {
 
         if (profiles.length == 0){
             callback(results);
@@ -329,20 +329,20 @@ function getAssociatedSearches(objects, callback){
         index.openCursor(IDBKeyRange.only(profile.url)).onsuccess = (event) => {
             const cursor = event.target.result;
             if (cursor) {
-                var search = cursor.value;
-                search.profile = profile;
-                results.push(search);
+                var visit = cursor.value;
+                visit.profile = profile;
+                results.push(visit);
                 cursor.continue();
             } else {
                 // console.log("Entries all displayed.");
                 profiles.shift();
-                pairProfileSearches(profiles);
+                pairProfileVisits(profiles);
             }
         };
 
     };
 
-    pairProfileSearches(objects);
+    pairProfileVisits(objects);
 
 }
 
@@ -376,9 +376,9 @@ function getBookmarkList(params, callback){
 
 }
 
-// Script for getting all saved searches
+// Script for getting all saved visits
 
-function getSearchList(params, callback) {
+function getVisitList(params, callback) {
 
     if (Object.hasOwn(params, 'criteria')){
         var filteredCallback = callback;
@@ -387,10 +387,10 @@ function getSearchList(params, callback) {
                 getAssociatedProfiles(objects, callback);
             }
         }
-        getFilteredList(params, dbData.objectStoreNames.SEARCHES, filteredCallback);
+        getFilteredList(params, dbData.objectStoreNames.VISITS, filteredCallback);
     }
     else{
-        getObjectStoreAllData(dbData.objectStoreNames.SEARCHES, (results) => {
+        getObjectStoreAllData(dbData.objectStoreNames.VISITS, (results) => {
             callback(results);
         });
     }
@@ -416,7 +416,7 @@ function getProfileList(params, callback) {
         var filteredCallback = callback;
         if (["data_export", "data_deletion"].indexOf(params.context) == -1){
             filteredCallback = (objects) => {
-                getAssociatedSearches(objects, callback);
+                getAssociatedVisits(objects, callback);
             }
         }
         getFilteredList(params, dbData.objectStoreNames.PROFILES, filteredCallback);
@@ -612,7 +612,7 @@ function addToFilteredReminderList(object, list, objectStoreName, params){
 
 }
 
-function addToFilteredSearchList(object, list, objectStoreName, params){
+function addToFilteredVisitList(object, list, objectStoreName, params){
 
     var stop = false;
 
@@ -741,8 +741,8 @@ function addToFilteredList(object, list, objectStoreName, params){
             break;
         }
 
-        case dbData.objectStoreNames.SEARCHES:{
-            result = addToFilteredSearchList(object, list, objectStoreName, params);
+        case dbData.objectStoreNames.VISITS:{
+            result = addToFilteredVisitList(object, list, objectStoreName, params);
             break;
         }
 
@@ -909,8 +909,8 @@ function getObjectStoreAllData(objectStoreName, callback = null){
 function getList(objectStoreName, objectData, callback){
 
     switch(objectStoreName){
-        case dbData.objectStoreNames.SEARCHES:{
-            getSearchList(objectData, callback);
+        case dbData.objectStoreNames.VISITS:{
+            getVisitList(objectData, callback);
             break;
         }
 
@@ -1213,7 +1213,7 @@ function getIdFromParams(objectStoreName, params){
             break;
         }
 
-        case dbData.objectStoreNames.SEARCHES:{
+        case dbData.objectStoreNames.VISITS:{
             id = params.criteria.props.id;
             break;
         }
@@ -1506,8 +1506,8 @@ function processTabData(tabData){
         );
     }
 
-    const addSearchObject = () => {
-        var searchObject = {
+    const addVisitObject = () => {
+        var visitObject = {
             date: dateTime,
             url: profileObject.url,
             timeCount: 0, 
@@ -1515,8 +1515,8 @@ function processTabData(tabData){
         };
 
         addObject(
-            dbData.objectStoreNames.SEARCHES, 
-            {context: "", criteria: { props: searchObject }},
+            dbData.objectStoreNames.VISITS, 
+            {context: "", criteria: { props: visitObject }},
             () => {
                 // open new tab
                 openNewTab(profileObject);
@@ -1574,10 +1574,10 @@ function processTabData(tabData){
                     dbData.objectStoreNames.PROFILES, 
                     { context: "", criteria: { props: profileObject } },
                     () => {
-                        // Before adding the search object
+                        // Before adding the visit object
                         checkKeywordData(profileObject);
 
-                        addSearchObject();
+                        addVisitObject();
                     }
                 );
             }
@@ -1591,24 +1591,24 @@ function processTabData(tabData){
                     () => {
 
                         getList(
-                            dbData.objectStoreNames.SEARCHES,
+                            dbData.objectStoreNames.VISITS,
                             { context: "data_export", criteria: { props: { url: profileObject.url, tabId: tabData.tabId } } },
-                            (searches) => {
+                            (visits) => {
 
-                                var search = searches ? searches[0] : null;
+                                var visit = visits ? visits[0] : null;
 
-                                if (search == null){
+                                if (visit == null){
 
-                                    // Before adding the search object
+                                    // Before adding the visit object
                                     checkKeywordData(profile);
 
-                                    addSearchObject();
+                                    addVisitObject();
                                 }
                                 else{
-                                    var timeCount = search.timeCount + 3;
+                                    var timeCount = visit.timeCount + 3;
                                     updateObject(
-                                        dbData.objectStoreNames.SEARCHES, 
-                                        { context: "", criteria: { props: { object: search, timeCount: timeCount } } },
+                                        dbData.objectStoreNames.VISITS, 
+                                        { context: "", criteria: { props: { object: visit, timeCount: timeCount } } },
                                         () => {},
                                     );
                                 }
@@ -1665,7 +1665,7 @@ function processMessageEvent(message, sender, sendResponse){
 
     // testUpDb();
 
-    // Script for getting all the searches done so far
+    // Script for getting all the visits done so far
     switch(message.header){
 
         case messageParams.requestHeaders.GET_LIST:{
@@ -1982,22 +1982,22 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 // function testUpDb(){
 
 
-//     // getList(dbData.objectStoreNames.SEARCHES, { context: "" }, (results) => {
-//     //     for (var search of results){
+//     // getList(dbData.objectStoreNames.VISITS, { context: "" }, (results) => {
+//     //     for (var visit of results){
             
-//     //         if (search.timeCount == undefined){
-//     //             search.timeCount = (Math.random() * (180 - 30) + 30);
+//     //         if (visit.timeCount == undefined){
+//     //             visit.timeCount = (Math.random() * (180 - 30) + 30);
 //     //         }
 
 //     //         // then adding the given profile into the database
-//     //         const objectStore = db.transaction(dbData.objectStoreNames.SEARCHES, "readwrite").objectStore(dbData.objectStoreNames.SEARCHES);
-//     //         const request = objectStore.put(search);
+//     //         const objectStore = db.transaction(dbData.objectStoreNames.VISITS, "readwrite").objectStore(dbData.objectStoreNames.VISITS);
+//     //         const request = objectStore.put(visit);
 //     //         request.onsuccess = (event) => {
-//     //             console.log("Search updated");
+//     //             console.log("Visit updated");
 //     //         };
 
 //     //         request.onerror = (event) => {
-//     //             console.log("An error occured when updating a new search");
+//     //             console.log("An error occured when updating a new visit");
 //     //         };
 //     //     }
 //     // });

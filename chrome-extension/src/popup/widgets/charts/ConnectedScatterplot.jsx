@@ -70,19 +70,19 @@ export default class ConnectedScatterplot extends React.Component{
 
   	for (var i = this.props.objects.length - 1; i >= 0; i--){
 
-  		var search = this.props.objects[i];
-  		var index = chartData.map(e => e.url).indexOf(search.url);
+  		var visit = this.props.objects[i];
+  		var index = chartData.map(e => e.url).indexOf(visit.url);
   		if (index == -1){
   			chartData.push({
   				side: shuffle(sides)[0],
-  				url: search.url,
-  				label: dbDataSanitizer.preSanitize(search.profile.fullName).split(" ")[0],
-  				experience: computePeriodTimeSpan(search.profile.experience, "experience", {moment: moment}),
-  				time: search.timeCount,
+  				url: visit.url,
+  				label: dbDataSanitizer.preSanitize(visit.profile.fullName).split(" ")[0],
+  				experience: computePeriodTimeSpan(visit.profile.experience, "experience", {moment: moment}),
+  				time: visit.timeCount,
   			});
   		}
   		else{
-  			chartData[index].time += search.timeCount;
+  			chartData[index].time += visit.timeCount;
   		}
 
   	}

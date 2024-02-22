@@ -8,15 +8,15 @@ import {
   startMessageListener,
   dbData,
   messageParams,
-  getPeriodSearches,
+  getPeriodVisits,
   ack,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
-import SearchesTimelineChart from "./widgets/charts/SearchesTimelineChart";
+import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
-import SearchesKeywordsBarChart from "./widgets/charts/SearchesKeywordsBarChart";
+import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import RelationshipsChart from "./widgets/charts/RelationshipsChart";
 import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
 
@@ -25,14 +25,14 @@ export default class ChartExpansionView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      periodSearches: null,
+      periodVisits: null,
       carrouselActiveItemIndex: 0,
       carrouselChartView: 0,
       relChartDisplayCrit: "suggestions",
     };
 
     this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
   }
 
   componentDidMount() {
@@ -44,7 +44,7 @@ export default class ChartExpansionView extends React.Component{
         carrouselChartView = localStorage.getItem('carrouselChartView'),
         relChartDisplayCrit = localStorage.getItem('relChartDisplayCrit');
 
-    getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, carrouselChartView, {moment: moment});
+    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, carrouselChartView, {moment: moment});
 
     this.setState({
       carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
@@ -57,13 +57,13 @@ export default class ChartExpansionView extends React.Component{
   listenToMessages(){
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
+        callback: this.onVisitsDataReceived
       },
     ]);
   }
 
-  onSearchesDataReceived(message, sendResponse){
+  onVisitsDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
@@ -73,16 +73,16 @@ export default class ChartExpansionView extends React.Component{
       return;
     }
 
-    var searches = message.data.objectData.list, 
+    var visits = message.data.objectData.list, 
         profiles = [];
 
-    for (var search of searches){
-      if (profiles.map(e => e.url).indexOf(search.url) == -1){
-        profiles.push(search.profile);
+    for (var visit of visits){
+      if (profiles.map(e => e.url).indexOf(visit.url) == -1){
+        profiles.push(visit.profile);
       }
     }
 
-    this.setState({ periodSearches: searches, periodProfiles: profiles });
+    this.setState({ periodVisits: visits, periodProfiles: profiles });
 
   }
 
@@ -102,22 +102,22 @@ export default class ChartExpansionView extends React.Component{
 
             <div class="rounded shadow-lg border p-5">
               { this.state.carrouselActiveItemIndex == 0 && 
-                      <SearchesTimelineChart 
-                        objects={this.state.periodSearches} 
+                      <VisitsTimelineChart 
+                        objects={this.state.periodVisits} 
                         view={this.state.carrouselChartView} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 2 && 
-                      <SearchesKeywordsBarChart 
+                      <VisitsKeywordsBarChart 
                         globalData={this.props.globalData} 
-                        objects={this.state.periodSearches} 
+                        objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 3 && 
                       <BubbleProfileRelationMetricsChart 
-                        objects={this.state.periodSearches} 
+                        objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
@@ -131,7 +131,7 @@ export default class ChartExpansionView extends React.Component{
 
               { this.state.carrouselActiveItemIndex == 5 && 
                       <ExpEdStackBarChart 
-                        objects={this.state.periodSearches} 
+                        objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
@@ -145,7 +145,7 @@ export default class ChartExpansionView extends React.Component{
 
               { this.state.carrouselActiveItemIndex == 7 && 
                       <ConnectedScatterplot 
-                        objects={this.state.periodSearches} 
+                        objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
     

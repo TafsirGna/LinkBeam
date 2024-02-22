@@ -1,4 +1,4 @@
-/*import './SearchListView.css'*/
+/*import './VisitListView.css'*/
 import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { AlertCircleIcon } from "./SVGs";
 import { dbDataSanitizer } from "../Local_library";
 
-export default class SearchListView extends React.Component{
+export default class VisitListView extends React.Component{
 
   constructor(props){
     super(props);
@@ -17,7 +17,7 @@ export default class SearchListView extends React.Component{
 
   componentDidMount() {
 
-    var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
+    var seeMoreButtonShow = (!this.props.loading && this.props.visitLeft);
     this.setState({seeMoreButtonShow: seeMoreButtonShow}, () => {
       //
     });
@@ -26,7 +26,7 @@ export default class SearchListView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    var seeMoreButtonShow = (!this.props.loading && this.props.searchLeft);
+    var seeMoreButtonShow = (!this.props.loading && this.props.visitLeft);
     if (seeMoreButtonShow != prevState.seeMoreButtonShow){
       this.setState({seeMoreButtonShow: seeMoreButtonShow});
     }
@@ -55,19 +55,19 @@ export default class SearchListView extends React.Component{
         { this.props.objects && this.props.objects.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((search) => (<Link to={"/index.html?redirect_to=ProfileView&data=" + search.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                <img src={search.profile.avatar ? search.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                    this.props.objects.map((visit) => (<Link to={"/index.html?redirect_to=ProfileView&data=" + visit.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                <img src={visit.profile.avatar ? visit.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
                                     <div class="d-flex gap-2 align-items-center">
-                                      <h6 class="mb-0">{search.profile.fullName}</h6>
+                                      <h6 class="mb-0">{visit.profile.fullName}</h6>
                                       <span>·</span>
-                                      <small class={ search.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{moment(search.date, moment.ISO_8601).fromNow()}</small>
+                                      <small class={ visit.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{moment(visit.date, moment.ISO_8601).fromNow()}</small>
                                     </div>
-                                    <p class="mb-0 opacity-75 small">{search.profile.title}</p>
-                                    <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{dbDataSanitizer.profileRelationDataPreproc(search.profile.nFollowers)} · {dbDataSanitizer.profileRelationDataPreproc(search.profile.nConnections)}</p>
+                                    <p class="mb-0 opacity-75 small">{visit.profile.title}</p>
+                                    <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{dbDataSanitizer.profileRelationDataPreproc(visit.profile.nFollowers)} · {dbDataSanitizer.profileRelationDataPreproc(visit.profile.nConnections)}</p>
                                   </div>
-                                  {/*<small class="opacity-50 text-nowrap">{moment(search.date, moment.ISO_8601).fromNow()}</small>*/}
+                                  {/*<small class="opacity-50 text-nowrap">{moment(visit.date, moment.ISO_8601).fromNow()}</small>*/}
                                 </div>
                               </Link>))
                   }

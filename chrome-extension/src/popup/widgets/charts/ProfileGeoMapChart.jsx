@@ -279,7 +279,7 @@ export default class ProfileGeoMapChart extends React.Component{
                                   )}
                                 </p>}
 
-                { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches mapped by country</p> }
+                { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits mapped by country</p> }
 
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.STATISTICS && <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
                                   <Offcanvas.Header closeButton>

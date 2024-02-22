@@ -34,12 +34,13 @@ export const appParams = {
     PROFILE: "Profile",
     MY_ACCOUNT: "MyAccount",
     FEEDBACK: "Feedback",
+    FEED_DASHBOARD: "Feed's Dashboard",
   },
 }
 
 export const dbData = {
   objectStoreNames: {
-    SEARCHES: "searches",
+    VISITS: "searches",
     BOOKMARKS: "bookmarks",
     SETTINGS: "settings",
     REMINDERS: "reminders",
@@ -533,7 +534,7 @@ export const groupObjectsByDate = (objectList) => {
 
   var results = {};
 
-  // Grouping the searches by date
+  // Grouping the visits by date
   for (var object of objectList){
     var objectDate = object.date.split("T")[0];
     if (objectDate in results){
@@ -552,7 +553,7 @@ export const groupObjectsByMonth = (objectList) => {
 
   var results = {};
 
-  // Grouping the searches by date
+  // Grouping the visits by date
   for (var object of objectList){
     var objectMonth = (new Date(object.date)).getMonth();
     if (objectMonth in results){
@@ -567,7 +568,7 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
-export const getPeriodSearches = (context, index, func, profile = null) => {
+export const getPeriodVisits = (context, index, func, profile = null) => {
 
   var startDate = null;
     switch(index){
@@ -590,7 +591,7 @@ export const getPeriodSearches = (context, index, func, profile = null) => {
     if (profile){
       props.url = profile.url;
     }
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.SEARCHES, { context: context, criteria: { props: props }});
+    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.VISITS, { context: context, criteria: { props: props }});
 
 }
 
@@ -745,29 +746,29 @@ export const checkWebPage = (callback) => {
   }
 };
 
-export const groupSearchByProfile = (searches) => {
+export const groupVisitsByProfile = (visits) => {
 
   var results = [];
-  for (var search of searches){
-    var index = results.map(e => e.url).indexOf(search.url);
+  for (var visit of visits){
+    var index = results.map(e => e.url).indexOf(visit.url);
     if (index == -1){
-      search.count = 1;
-      results.push(search);
+      visit.count = 1;
+      results.push(visit);
     }
     else{
-      if (new Date(results[index].date) >= new Date(search.date)){
+      if (new Date(results[index].date) >= new Date(visit.date)){
         (results[index]).count++;
       }
       else{
-        search.count = (results[index]).count + 1;
-        results[index] = search;
+        visit.count = (results[index]).count + 1;
+        results[index] = visit;
       }
     }
   }
 
   results.sort((a,b) => new Date(b.date.split("T")[0]) - new Date(a.date.split("T")[0]));
 
-  return {list: results, searchCount: searches.length};
+  return {list: results, visitCount: visits.length};
 
 }
 

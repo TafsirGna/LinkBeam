@@ -51,7 +51,7 @@ export default class SearchInputView extends React.Component{
 
       switch(this.props.objectStoreName){
         case dbData.objectStoreNames.PROFILES:{
-          eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, null);
+          eventBus.dispatch(eventBus.EMPTY_SEARCH_TEXT_VISIT, null);
           return;
           break;
         }

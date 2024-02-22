@@ -3,31 +3,31 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import SearchesTimelineChart from "../charts/SearchesTimelineChart";
+import VisitsTimelineChart from "../charts/VisitsTimelineChart";
 import { 
   sendDatabaseActionMessage, 
   startMessageListener, 
   messageParams, 
   ack, 
   dbData ,
-  getPeriodSearches,
+  getPeriodVisits,
   appParams
 } from "../../Local_library";
 import moment from 'moment';
 
-export default class ProfileSearchesChartModal extends React.Component{
+export default class ProfileVisitsChartModal extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
       // currentTabIndex: 0,
       view: 0,
-      periodSearches: null,
+      periodVisits: null,
     };
 
     this.onViewChange = this.onViewChange.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
 
   }
 
@@ -35,20 +35,20 @@ export default class ProfileSearchesChartModal extends React.Component{
 
     this.listenToMessages();
 
-    getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, this.props.profile);
+    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, this.props.profile);
   }
 
   listenToMessages(){
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
+        callback: this.onVisitsDataReceived
       },
     ]);
   }
 
-  onSearchesDataReceived(message, sendResponse){
+  onVisitsDataReceived(message, sendResponse){
 
     // acknowledge receipt
     ack(sendResponse);
@@ -58,15 +58,15 @@ export default class ProfileSearchesChartModal extends React.Component{
       return;
     }
 
-    var searches = message.data.objectData.list
-    this.setState({ periodSearches: searches });
+    var visits = message.data.objectData.list
+    this.setState({ periodVisits: visits });
 
   }
 
   onViewChange(index){
 
     this.setState({view: index}, () => {
-      getPeriodSearches(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, index, {moment: moment}, this.props.profile);
+      getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, index, {moment: moment}, this.props.profile);
     });
 
   }
@@ -76,16 +76,16 @@ export default class ProfileSearchesChartModal extends React.Component{
       <>
         <Modal show={this.props.show} onHide={this.props.onHide}>
           <Modal.Header closeButton>
-            <Modal.Title>Searches Chart</Modal.Title>
+            <Modal.Title>Visits Chart</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
             {/*<div class="text-center">
               <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
-                <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Search count" onClick={() => {this.switchCurrentTab(0)}} >
+                <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Visit count" onClick={() => {this.switchCurrentTab(0)}} >
                   Count 
                 </button>
-                <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="Search time" onClick={() => {this.switchCurrentTab(1)}}>
+                <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="Visit time" onClick={() => {this.switchCurrentTab(1)}}>
                   Time
                 </button>
               </div>
@@ -110,7 +110,7 @@ export default class ProfileSearchesChartModal extends React.Component{
               </div>
             </div>
 
-            { <SearchesTimelineChart view={this.state.view} objects={this.state.periodSearches} /> }
+            { <VisitsTimelineChart view={this.state.view} objects={this.state.periodVisits} /> }
 
           </Modal.Body>
           <Modal.Footer>

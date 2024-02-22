@@ -48,12 +48,12 @@ const lineOptions = {
 		},
 		title: {
 			display: true,
-			text: 'Searches Line Chart',
+			text: 'Visits Line Chart',
 		},
 	},
 };
 
-export default class SearchesTimelineChart extends React.Component{
+export default class VisitsTimelineChart extends React.Component{
 
 	constructor(props){
 		super(props);
@@ -74,7 +74,7 @@ export default class SearchesTimelineChart extends React.Component{
           return;
         }
 
-        saveCanvas(this.state.uuid, "Searches-timeline-chart.png", saveAs);
+        saveCanvas(this.state.uuid, "visits-timeline-chart.png", saveAs);
       }
     );
 
@@ -91,21 +91,21 @@ export default class SearchesTimelineChart extends React.Component{
 
 	}
 
-	getDaysSearchesChartLabels(view){
+	getDaysVisitsChartLabels(view){
 
 		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
-		var searches = groupObjectsByDate(this.props.objects);
+		var visits = groupObjectsByDate(this.props.objects);
 
 		var upperLimit = (view == 0 ? 7 : 31);
 		for (var i=0; i < upperLimit; i++){
 			var date = moment().subtract(i, 'days');
 			results.titles.push(view == 0 ? date.format('dddd') : date.format("DD-MM"));
-			results.valuesDataset1.push((date.toISOString().split("T")[0] in searches) ? searches[date.toISOString().split("T")[0]].length : 0);
+			results.valuesDataset1.push((date.toISOString().split("T")[0] in visits) ? visits[date.toISOString().split("T")[0]].length : 0);
 
 			var valueDataset2 = 0;
-			if (date.toISOString().split("T")[0] in searches){
-				for (var search of searches[date.toISOString().split("T")[0]]){
-					valueDataset2 += (search.timeCount / 60);
+			if (date.toISOString().split("T")[0] in visits){
+				for (var visit of visits[date.toISOString().split("T")[0]]){
+					valueDataset2 += (visit.timeCount / 60);
 				}
 				
 			}
@@ -120,21 +120,21 @@ export default class SearchesTimelineChart extends React.Component{
 
 	}
 
-	getYearSearchesChartLabels(){
+	getYearVisitsChartLabels(){
 
 		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
-		var searches = groupObjectsByMonth(this.props.objects);
+		var visits = groupObjectsByMonth(this.props.objects);
 		const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 		for (var i=0; i < 12; i++){
 			var month = moment().subtract(i, 'months').toDate().getMonth();
 			results.titles.push(months[month]);
-			results.valuesDataset1.push((month in searches) ? searches[month].length : 0);
+			results.valuesDataset1.push((month in visits) ? visits[month].length : 0);
 
 			var valueDataset2 = 0;
-			if (month in searches){
-				for (var search of searches[month]){
-					valueDataset2 += (search.timeCount / 60);
+			if (month in visits){
+				for (var visit of visits[month]){
+					valueDataset2 += (visit.timeCount / 60);
 				}
 			}
 			results.valuesDataset2.push(valueDataset2);
@@ -163,15 +163,15 @@ export default class SearchesTimelineChart extends React.Component{
 		var results = null;
 		switch(this.props.view){
 			case 0: {
-				results = this.getDaysSearchesChartLabels(this.props.view);
+				results = this.getDaysVisitsChartLabels(this.props.view);
 				break;
 			}
 			case 1: {
-				results = this.getDaysSearchesChartLabels(this.props.view);
+				results = this.getDaysVisitsChartLabels(this.props.view);
 				break;
 			}
 			case 2: {
-				results = this.getYearSearchesChartLabels();
+				results = this.getYearVisitsChartLabels();
 				break;
 			}
 		}
@@ -186,7 +186,7 @@ export default class SearchesTimelineChart extends React.Component{
 				labels: results.titles,
 				datasets: [
 				  {
-				    label: '# of Searches',
+				    label: '# of Visits',
 				    fill: true,
 				    data: results.valuesDataset1,
 				    borderColor: colorDataset1.borders,
@@ -215,7 +215,7 @@ export default class SearchesTimelineChart extends React.Component{
 
 					{ this.state.lineData && <div>
 																		<Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} />
-																		{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches over a period of time</p> }
+																		{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits over a period of time</p> }
 																	</div>}
 
 				</div>

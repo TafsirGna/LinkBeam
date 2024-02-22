@@ -16,6 +16,7 @@ import FeedbackView from "./popup/FeedbackView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
+import FeedDashView from "./popup/FeedDashView";
 import moment from 'moment';
 import 'moment/dist/locale/fr';
 import 'moment/dist/locale/en-gb';
@@ -26,7 +27,7 @@ import {
   messageParams,
   dbData,
   appParams,
-  groupSearchByProfile,
+  groupVisitsByProfile,
 } from "./popup/Local_library";
 import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
@@ -39,7 +40,7 @@ export default class App extends React.Component{
       redirect_to: null,
       swDbStatus: null,
       tmps: {
-        searchList: null,
+        visitsList: null,
         reminderList: null,
       },
       globalData: {
@@ -47,8 +48,8 @@ export default class App extends React.Component{
         bookmarkList: null,
         reminderList: null,
         todayReminderList: null,
-        allSearches: null,
-        todaySearchList: null,
+        allVisits: null,
+        todayVisitsList: null,
         settings: {},
         currentTabWebPageData: null,
       }
@@ -56,7 +57,7 @@ export default class App extends React.Component{
 
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
     this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
@@ -79,18 +80,18 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY, (data) => {
+    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_VISIT, (data) => {
         // Resetting the today reminder list here too
-        if (this.state.globalData.allSearches.scope == "search"){
+        if (this.state.globalData.allVisits.scope == "search"){
 
           this.setState(prevState => {
             let globalData = Object.assign({}, prevState.globalData);
-            globalData.allSearches = this.state.tmps.searchList;
+            globalData.allVisits = this.state.tmps.visitList;
             return { globalData };
           }, () => {
             this.setState(prevState => {
               let tmps = Object.assign({}, prevState.tmps);
-              tmps.searchList = null;
+              tmps.visitList = null;
               return { tmps };
             });
           });
@@ -119,13 +120,13 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.ALL_SEARCHES_TAB_CLICKED, (data) => {
+    eventBus.on(eventBus.ALL_VISITS_TAB_CLICKED, (data) => {
         
-        if (this.state.globalData.todaySearchList.length != 0){
-          this.setSearchList(this.state.globalData.todaySearchList, "all");
+        if (this.state.globalData.todayVisitsList.length != 0){
+          this.setVisitList(this.state.globalData.todayVisitsList, "all");
         }
         else{
-          eventBus.dispatch(eventBus.GET_ALL_SEARCHES, null);
+          eventBus.dispatch(eventBus.GET_ALL_VISITS, null);
         }
 
       }
@@ -147,9 +148,9 @@ export default class App extends React.Component{
   componentWillUnmount() {
 
     eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
-    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_ACTIVITY);
+    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_VISIT);
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_REMINDER);
-    eventBus.remove(eventBus.ALL_SEARCHES_TAB_CLICKED);
+    eventBus.remove(eventBus.ALL_VISITS_TAB_CLICKED);
 
   }
 
@@ -165,7 +166,7 @@ export default class App extends React.Component{
 
   }
 
-  onSearchesDataReceived(message, sendResponse){
+  onVisitsDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
     if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
@@ -179,7 +180,7 @@ export default class App extends React.Component{
     var listData = message.data.objectData.list,
         scope = context.split("-")[1];
 
-    this.setSearchList(listData, scope);
+    this.setVisitList(listData, scope);
 
   }
 
@@ -197,7 +198,7 @@ export default class App extends React.Component{
     var listData = message.data.objectData.list,
         scope = context.split("-")[1];
 
-    this.setSearchList(listData, scope);
+    this.setVisitList(listData, scope);
 
   }
 
@@ -208,7 +209,7 @@ export default class App extends React.Component{
 
     var bookmarkList = message.data.objectData.list;
 
-    // Setting the search list here too
+    // Setting the visit list here too
     this.setState(prevState => {
       let globalData = Object.assign({}, prevState.globalData);
       globalData.bookmarkList = bookmarkList;
@@ -232,7 +233,7 @@ export default class App extends React.Component{
       keywordList.push(keywordObject);
     }
 
-    // Setting the search list here too
+    // Setting the visit list here too
     this.setState(prevState => {
       let globalData = Object.assign({}, prevState.globalData);
       globalData.keywordList = keywordList;
@@ -409,8 +410,8 @@ export default class App extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
+        callback: this.onVisitsDataReceived
       },
 
       {
@@ -458,23 +459,23 @@ export default class App extends React.Component{
 
   }
 
-  setSearchList(listData, scope){
+  setVisitList(listData, scope){
 
     if (scope == "all"){
 
-      listData = groupSearchByProfile(listData);
+      listData = groupVisitsByProfile(listData);
 
-      if (this.state.globalData.allSearches){
+      if (this.state.globalData.allVisits){
         listData = {
-          list: this.state.globalData.allSearches.list.concat(listData.list),
-          searchCount: this.state.globalData.allSearches.searchCount + listData.searchCount,
+          list: this.state.globalData.allVisits.list.concat(listData.list),
+          visitCount: this.state.globalData.allVisits.visitCount + listData.visitCount,
         };
       }
 
       listData.scope = scope;
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.allSearches = listData;
+        globalData.allVisits = listData;
         return { globalData };
       });
 
@@ -483,29 +484,29 @@ export default class App extends React.Component{
 
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.todaySearchList = listData;
+        globalData.todayVisitsList = listData;
         return { globalData };
       }/*, () => {
-        this.setSearchList(listData, "all");
+        this.setVisitList(listData, "all");
       }*/);
 
     }
     else if (scope == "search"){
 
-      listData = groupSearchByProfile(listData);
+      listData = groupVisitsByProfile(listData);
 
-      // var tmp = (this.state.globalData.allSearches.scope == "all") ? this.state.globalData.allSearches : null;
-      var tmp = { ...this.state.globalData.allSearches };
+      // var tmp = (this.state.globalData.allVisits.scope == "all") ? this.state.globalData.allVisits : null;
+      var tmp = { ...this.state.globalData.allVisits };
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.allSearches = listData;
-        globalData.allSearches.scope = "search";
+        globalData.allVisits = listData;
+        globalData.allVisits.scope = "search";
         return { globalData };
       }, () => {
-        if (!this.state.tmps.searchList || (this.state.tmps.searchList && tmp.scope == "all")){
+        if (!this.state.tmps.visitList || (this.state.tmps.visitList && tmp.scope == "all")){
           this.setState(prevState => {
             let tmps = Object.assign({}, prevState.tmps);
-            tmps.searchList = tmp;
+            tmps.visitList = tmp;
             return { tmps };
           });
         }
@@ -527,12 +528,15 @@ export default class App extends React.Component{
                   <Navigate replace to={"/index.html/Profile?url=" + this.state.redirect_to.data} />
                   : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
                       <Navigate replace to={"/index.html/Calendar"} />
-                      : this.state.redirect_to && this.state.redirect_to.view == "ChartExpansionView" ?
-                        <Navigate replace to={"/index.html/ChartExpansion"} />
-                        : <HomeView globalData={this.state.globalData} />
+                      : this.state.redirect_to && this.state.redirect_to.view == "FeedDashView" ?
+                        <Navigate replace to={"/index.html/FeedDash"} />
+                        : this.state.redirect_to && this.state.redirect_to.view == "ChartExpansionView" ?
+                          <Navigate replace to={"/index.html/ChartExpansion"} />
+                          : <HomeView globalData={this.state.globalData} />
             }/>
             <Route path="/index.html/About" element={<AboutView />} />
             <Route path="/index.html/Settings" element={<SettingsView globalData={this.state.globalData} />} />
+            <Route path="/index.html/FeedDash" element={<FeedDashView globalData={this.state.globalData} />} />
             <Route path="/index.html/Statistics" element={<StatisticsView globalData={this.state.globalData}/>} />
             <Route path="/index.html/Keywords" element={<KeywordView globalData={this.state.globalData} />} />
             <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />

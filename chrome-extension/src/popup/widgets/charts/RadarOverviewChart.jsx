@@ -49,7 +49,7 @@ export default class RadarOverviewChart extends React.Component{
     //       return;
     //     }
 
-    //     saveCanvas(this.state.uuid, "Searches-timeline-chart.png", saveAs);
+    //     saveCanvas(this.state.uuid, "visits-timeline-chart.png", saveAs);
     //   }
     // );
 

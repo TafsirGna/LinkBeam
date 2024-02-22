@@ -43,19 +43,19 @@ export default class HomeMenu extends React.Component{
             <LayersIcon size="18" className=""/>
           </div>
           <ul class="dropdown-menu shadow-lg">
-            {/*<li>
-              <Link class="dropdown-item small" to="/index.html/Dashboard">
-                Dashboard
-              </Link>
-            </li>*/}
+            <li><Link class="dropdown-item small" to="/index.html/Statistics">Profiles' stats</Link></li>
             <li>
-              <Link class="dropdown-item small" to="/index.html/ProfileActivity">
-                Activity (Profiles)
+              <Link class="dropdown-item small" to="/index.html?redirect_to=FeedDashView" target="_blank">
+                Feed's stats
               </Link>
             </li>
             <li><Link class="dropdown-item small" to="/index.html?redirect_to=CalendarView" target="_blank">Calendar</Link></li>
-            <li><Link class="dropdown-item small" to="/index.html/Statistics">Statistics</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/Bookmarks">Bookmarks</Link></li>
+            <li>
+              <Link class="dropdown-item small" to="/index.html/ProfileActivity">
+                All Profiles' Activity
+              </Link>
+            </li>
             <li><Link class="dropdown-item small" to="/index.html/Settings">Settings</Link></li>
             <li><Link class="dropdown-item small" to="/index.html/About">About</Link></li>
           </ul>

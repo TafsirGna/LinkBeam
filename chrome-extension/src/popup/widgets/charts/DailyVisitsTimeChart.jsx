@@ -52,12 +52,12 @@ const barOptions = {
     },
     title: {
       display: true,
-      text: 'Searches Bar Chart',
+      text: 'Visits Bar Chart',
     },
   },
 };
 
-export default class DailySearchTimeChart extends React.Component{
+export default class DailyVisitsTimeChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -81,13 +81,13 @@ export default class DailySearchTimeChart extends React.Component{
     }
 
     var results = [];
-    for (var search of this.props.objects){
-      var index = results.map(e => e.url).indexOf(search.url),
-          time = (search.timeCount / 60)
+    for (var visit of this.props.objects){
+      var index = results.map(e => e.url).indexOf(visit.url),
+          time = (visit.timeCount / 60)
       if (index == -1){
         var object = {
-          url: search.url,
-          label: dbDataSanitizer.preSanitize(search.profile.fullName),
+          url: visit.url,
+          label: dbDataSanitizer.preSanitize(visit.profile.fullName),
           time: time,
         };
         results.push(object);
@@ -136,7 +136,7 @@ export default class DailySearchTimeChart extends React.Component{
         { this.state.barData && 
                     <div>
                       <Bar options={barOptions} data={this.state.barData} />
-                      { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of searches of the days with the spent time</p> }
+                      { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits of the days with the spent time</p> }
                     </div> }
 
       </>

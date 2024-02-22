@@ -18,7 +18,7 @@ import {
 const PROFILE_LABEL = "Profiles",
       TIME_SPENT_LABEL = "Time spent",
       PROFILES_ACTIVITY_LABEL = "Profiles' Activity",
-      SEARCH_LABEL = "Searches";
+      VISIT_LABEL = "Visits";
 
 
 class IndicatorWidget extends React.Component {
@@ -58,8 +58,8 @@ export default class StatIndicatorsView extends React.Component{
           color: "text-warning",
           icon: default_user_icon,
         },
-        searchData: {
-          label: SEARCH_LABEL,
+        visitData: {
+          label: VISIT_LABEL,
           value: 0,
           color: "text-success",
           icon: search_icon,
@@ -82,7 +82,7 @@ export default class StatIndicatorsView extends React.Component{
       // ],
     };
 
-    this.setSearchData = this.setSearchData.bind(this);
+    this.setVisitsData = this.setVisitsData.bind(this);
     this.setProfileData = this.setProfileData.bind(this);
     this.setTimeSpentData = this.setTimeSpentData.bind(this);
     this.setProfileActivityData = this.setProfileActivityData.bind(this);
@@ -110,7 +110,7 @@ export default class StatIndicatorsView extends React.Component{
 
     this.setProfileData();
 
-    this.setSearchData();
+    this.setVisitsData();
 
     this.setTimeSpentData();
 
@@ -125,10 +125,10 @@ export default class StatIndicatorsView extends React.Component{
     }
 
     var profiles = [];
-    for (var search of this.props.objects){
-      var index = profiles.map(e => e.url).indexOf(search.url);
+    for (var visit of this.props.objects){
+      var index = profiles.map(e => e.url).indexOf(visit.url);
       if (index == -1){
-        profiles.push(search.profile);
+        profiles.push(visit.profile);
       }
     }
 
@@ -139,7 +139,7 @@ export default class StatIndicatorsView extends React.Component{
     });
   }
 
-  setSearchData(){
+  setVisitsData(){
 
     if (!this.props.objects){
       return;
@@ -147,7 +147,7 @@ export default class StatIndicatorsView extends React.Component{
 
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.searchData.value = this.props.objects.length;
+      indicatorData.visitData.value = this.props.objects.length;
       return { indicatorData };
     });
   }
@@ -159,8 +159,8 @@ export default class StatIndicatorsView extends React.Component{
     }
 
     var time = 0;
-    for (var search of this.props.objects){
-      time += search.timeCount;
+    for (var visit of this.props.objects){
+      time += visit.timeCount;
     }
 
     this.setState(prevState => {
@@ -177,8 +177,8 @@ export default class StatIndicatorsView extends React.Component{
     }
 
     var count = 0;
-    for (var search of this.props.objects){
-      count += (search.profile.activity ? search.profile.activity.length : 0);
+    for (var visit of this.props.objects){
+      count += (visit.profile.activity ? visit.profile.activity.length : 0);
     }
 
     this.setState(prevState => {

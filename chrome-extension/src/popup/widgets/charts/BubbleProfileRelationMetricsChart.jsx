@@ -51,7 +51,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
           return;
         }
 
-        saveCanvas(this.state.uuid, "Searches-bubble-chart.png", saveAs);
+        saveCanvas(this.state.uuid, "Visits-bubble-chart.png", saveAs);
       }
     );
 
@@ -85,29 +85,29 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     var resultsDataset1 = [], 
     		resultsDataset2 = [];
 
-    for (let search of this.props.objects){
+    for (let visit of this.props.objects){
 
-    		var itemIndex = resultsDataset1.map(e => e.url).indexOf(search.url);
+    		var itemIndex = resultsDataset1.map(e => e.url).indexOf(visit.url);
     		if (itemIndex >= 0){
     			(resultsDataset1[itemIndex]).r += 1;
-    			(resultsDataset2[itemIndex]).r += (search.timeCount / 60);
+    			(resultsDataset2[itemIndex]).r += (visit.timeCount / 60);
     		}
     		else{
-    			var followerCount = dbDataSanitizer.profileRelationMetrics(search.profile.nFollowers),
-    					connectionCount = dbDataSanitizer.profileRelationMetrics(search.profile.nConnections);
+    			var followerCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nFollowers),
+    					connectionCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nConnections);
 
     			resultsDataset1.push({
-    				url: search.url,
-    				fullName: search.profile.fullName,
+    				url: visit.url,
+    				fullName: visit.profile.fullName,
     				r: 1,
     				x: followerCount,
     				y: connectionCount,
     			});
 
     			resultsDataset2.push({
-    				url: search.url,
-    				fullName: search.profile.fullName,
-    				r: (search.timeCount / 60),
+    				url: visit.url,
+    				fullName: visit.profile.fullName,
+    				r: (visit.timeCount / 60),
     				x: followerCount,
     				y: connectionCount,
     			});
@@ -122,7 +122,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     this.setState({bubbleData: {
 			  datasets: [
 			    {
-			      label: '# of Searches',
+			      label: '# of Visits',
 			      data: resultsDataset1,
 			      borderColor: colorDataset1.borders,
 				    backgroundColor: colorDataset1.borders,
@@ -151,7 +151,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 					{ this.state.bubbleData && 
 												<div>
 													<Bubble id={"chartTag_"+this.state.uuid} options={options} data={this.state.bubbleData} /> 
-													{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small">Chart of profiles by number of searches and time</p> }
+													{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small">Chart of profiles by number of visits and time</p> }
 												</div>}
 
 				</div>

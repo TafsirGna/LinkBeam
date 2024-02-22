@@ -14,12 +14,12 @@ import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
-import SearchListView from "./widgets/SearchListView";
+import VisitListView from "./widgets/VisitListView";
 import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
 import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
-import DailySearchTimeChart from "./widgets/charts/DailySearchTimeChart";
+import DailyVisitsTimeChart from "./widgets/charts/DailyVisitsTimeChart";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import app_logo from '../assets/app_logo.png';
 
@@ -28,11 +28,11 @@ export default class CalendarView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      monthSearchList: null,
+      monthVisitsList: null,
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Searches", "Reminders", "Activity List", "Time Chart"],
+      tabTitles: ["Visits", "Reminders", "Activity List", "Time Chart"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
@@ -41,7 +41,7 @@ export default class CalendarView extends React.Component{
 
     this.onClickDay = this.onClickDay.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSearchesDataReceived = this.onSearchesDataReceived.bind(this);
+    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
     this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.tileDisabled = this.tileDisabled.bind(this);
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
@@ -64,8 +64,8 @@ export default class CalendarView extends React.Component{
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, criteria: { props: ["lastDataResetDate"] }});
     }
 
-    // Requesting this month's search list
-    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.SEARCHES);
+    // Requesting this month's visits list
+    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
 
     this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
 
@@ -111,7 +111,7 @@ export default class CalendarView extends React.Component{
         break;
       }
 
-      case dbData.objectStoreNames.SEARCHES: {
+      case dbData.objectStoreNames.VISITS: {
         props = {date: timePeriod};
         break;
       }
@@ -147,7 +147,7 @@ export default class CalendarView extends React.Component{
 
       this.setState({activeStartDate: activeDate}, () => {
 
-        this.getMonthObjectList(activeDate, dbData.objectStoreNames.SEARCHES);
+        this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
         this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
 
       });
@@ -162,7 +162,7 @@ export default class CalendarView extends React.Component{
       return null;
     }
 
-    if (!this.state.monthReminderList && !this.state.monthSearchList){
+    if (!this.state.monthReminderList && !this.state.monthVisitsList){
       return null
     }
 
@@ -174,8 +174,8 @@ export default class CalendarView extends React.Component{
       return "bg-info text-white shadow";
     }
 
-    // month search list
-    if (this.state.monthSearchList && date in this.state.monthSearchList){
+    // month visits list
+    if (this.state.monthVisitsList && date in this.state.monthVisitsList){
       return "bg-warning text-black shadow text-muted";
     }
 
@@ -191,13 +191,13 @@ export default class CalendarView extends React.Component{
 
     this.setState({selectedDate: date}, () => {
 
-      var searchList = this.getDayObjectList(this.state.monthSearchList),
+      var visitList = this.getDayObjectList(this.state.monthVisitsList),
           profileList = [];
 
       // Setting 'selectedDateProfiles' variable
-      for (var search of searchList){
-        if (profileList.map(e => e.url).indexOf(search.url) == -1){
-          profileList.push(search.profile);
+      for (var visit of visitList){
+        if (profileList.map(e => e.url).indexOf(visit.url) == -1){
+          profileList.push(visit.profile);
         }
       }
 
@@ -207,7 +207,7 @@ export default class CalendarView extends React.Component{
 
   }
 
-  onSearchesDataReceived(message, sendResponse){
+  onVisitsDataReceived(message, sendResponse){
 
     var context = message.data.objectData.context; 
     if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR) == -1){
@@ -217,24 +217,24 @@ export default class CalendarView extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
-    var monthSearchList = message.data.objectData.list;
+    var monthVisitsList = message.data.objectData.list;
 
     // Following code essential to avoid crossover between calendar tabs
     if (!this.isSelectedMonthResponse(context)){
       return;
     }
 
-    // Grouping the searches by date
-    var results = groupObjectsByDate(monthSearchList);
+    // Grouping the visits by date
+    var results = groupObjectsByDate(monthVisitsList);
 
-    this.setState({monthSearchList: results}, () => {
+    this.setState({monthVisitsList: results}, () => {
 
       var profileList = [];
 
       // Setting 'selectedDateProfiles' variable
-      for (var search of this.getDayObjectList(this.state.monthSearchList)){
-        if (profileList.map(e => e.url).indexOf(search.url) == -1){
-          profileList.push(search.profile);
+      for (var visit of this.getDayObjectList(this.state.monthVisitsList)){
+        if (profileList.map(e => e.url).indexOf(visit.url) == -1){
+          profileList.push(visit.profile);
         }
       }
 
@@ -246,11 +246,11 @@ export default class CalendarView extends React.Component{
 
   getDatePostCount(){
 
-    var searches = this.getDayObjectList(this.state.monthSearchList),
+    var visits = this.getDayObjectList(this.state.monthVisitsList),
         count = 0;
 
-    for (var search of searches){
-      count += (search.profile.activity ? search.profile.activity.length : 0);
+    for (var visit of visits){
+      count += (visit.profile.activity ? visit.profile.activity.length : 0);
     }
 
     return count;
@@ -299,8 +299,8 @@ export default class CalendarView extends React.Component{
 
     startMessageListener([
       {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.SEARCHES].join(messageParams.separator), 
-        callback: this.onSearchesDataReceived
+        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
+        callback: this.onVisitsDataReceived
       },
       {
         param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
@@ -350,9 +350,9 @@ export default class CalendarView extends React.Component{
                                                       <Nav.Item>
                                                         <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
                                                           {tabTitle}
-                                                          { (index == 0 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthSearchList).length}</span>}
+                                                          { (index == 0 && this.getDayObjectList(this.state.monthVisitsList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthVisitsList).length}</span>}
                                                           { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
-                                                          { (index == 2 && this.getDayObjectList(this.state.monthSearchList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDatePostCount()}</span>}
+                                                          { (index == 2 && this.getDayObjectList(this.state.monthVisitsList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDatePostCount()}</span>}
                                                         </Nav.Link>
                                                       </Nav.Item>
                                                     ))}
@@ -364,11 +364,11 @@ export default class CalendarView extends React.Component{
                   <Card.Text>
                     With supporting text below as a natural lead-in to additional content.
                   </Card.Text>*/}
-                  { this.state.tabActiveKey == this.state.tabTitles[0] && <SearchListView 
-                                                                            objects={this.getDayObjectList(this.state.monthSearchList)} 
+                  { this.state.tabActiveKey == this.state.tabTitles[0] && <VisitListView 
+                                                                            objects={this.getDayObjectList(this.state.monthVisitsList)} 
                                                                             seeMore={() => {}} 
                                                                             loading={false} 
-                                                                            searchLeft={false}/>}
+                                                                            visitLeft={false}/>}
 
                   { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView 
                                                                             objects={this.getDayObjectList(this.state.monthReminderList)}/>}
@@ -377,8 +377,8 @@ export default class CalendarView extends React.Component{
                                                                             objects={this.state.selectedDateProfiles} 
                                                                             variant="timeline"/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailySearchTimeChart 
-                                                                            objects={this.getDayObjectList(this.state.monthSearchList)}/>}
+                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailyVisitsTimeChart 
+                                                                            objects={this.getDayObjectList(this.state.monthVisitsList)}/>}
 
                 </Card.Body>
               </Card>
