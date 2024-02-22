@@ -1841,7 +1841,7 @@ function checkCurrentTab(tab, changeInfo){
         currentTabID = tab.id;
         chrome.scripting.executeScript({
                 target: { tabId: tab.id },
-                files: ["./assets/tab_verifier_cs.js"],
+                files: ["./assets/profile_data_extractor.js"],
             }, 
             () => {
                 chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {tabId: tab.id}}, (response) => {

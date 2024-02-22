@@ -12,7 +12,7 @@ export default defineConfig({
 
         // web_ui: resolve(__dirname, 'web_ui.html'),
         install: resolve(__dirname, 'install.html'),
-        tab_verifier_cs: resolve(__dirname, 'src/scripts/tab_verifier_cs.jsx'),
+        profile_data_extractor: resolve(__dirname, 'src/scripts/profile_data_extractor.jsx'),
         index: resolve(__dirname, 'index.html'),
         service_worker: resolve(__dirname, 'src/scripts/service-worker.mjs'),
 

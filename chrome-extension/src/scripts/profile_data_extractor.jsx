@@ -530,18 +530,16 @@ const authDataExtractor = {
 
   certification: function(){
 
-    var sectionName = ".core-section-container.certifications";
-
-    var certificationData = null, certificationSectionTag = document.querySelector(sectionName);
+    var certificationData = null, certificationSectionTag = document.getElementById('licenses_and_certifications').nextElementSibling.nextElementSibling;
     if (certificationSectionTag){
 
       certificationData = [];
 
-      Array.from(document.querySelectorAll(sectionName + " li")).forEach((certificationLiTag) => {
+      Array.from(certificationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
         var certification = {
-          title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
-          issuer: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
-          date: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
+          title: (certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          issuer: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+          date: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
           // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
