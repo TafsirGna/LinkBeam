@@ -40,7 +40,7 @@ export const appParams = {
 
 export const dbData = {
   objectStoreNames: {
-    VISITS: "searches",
+    VISITS: "visits",
     BOOKMARKS: "bookmarks",
     SETTINGS: "settings",
     REMINDERS: "reminders",
@@ -250,51 +250,9 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 }
 
-export const performEdInstitutionComparison = function(theProfile, institutionName, profileList){
+export const performProfileSubPartComparison = function(theProfile, entityName, profileList, category){
 
-  var institutionNameWords = institutionName.split(" "), results = [];
-
-  for (var profile of profileList){
-
-    if (profile.url == theProfile.url){
-      continue;
-    }
-
-    if (!profile.education){
-      continue;
-    }
-
-    for (var education of profile.education){
-
-      if (!education.institutionName){
-        continue;
-      }
-      
-      var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
-
-      var percentage = 0;
-      for (var word of institutionNameWords){
-        if (institutionName.indexOf(word) != -1){
-          percentage += 1;
-        }
-      }
-
-      percentage /= institutionNameWords.length;
-      if (percentage > .75){
-        results.push(profile);
-      }
-
-    } 
-
-  }
-
-  return results;
-
-}
-
-export const performCompanyComparison = function(theProfile, companyName, profileList){
-
-  var companyNameWords = companyName.split(" "), results = [];
+  var entityNameWords = entityName.split(" "), results = [];
 
   for (var profile of profileList){
 
@@ -302,68 +260,26 @@ export const performCompanyComparison = function(theProfile, companyName, profil
       continue;
     }
 
-    if (!profile.experience){
+    if (!profile[category]){
       continue;
     }
 
-    for (var experience of profile.experience){
+    for (var object of profile[category]){
 
-      if (!experience.company){
+      if (!object.entity.name){
         continue;
       }
       
-      var companyName = dbDataSanitizer.preSanitize(experience.company);
+      var entityName = dbDataSanitizer.preSanitize(object.entity.name);
 
       var percentage = 0;
-      for (var word of companyNameWords){
-        if (companyName.indexOf(word) != -1){
+      for (var word of entityNameWords){
+        if (entityName.indexOf(word) != -1){
           percentage += 1;
         }
       }
 
-      percentage /= companyNameWords.length;
-      if (percentage > .75){
-        results.push(profile);
-      }
-
-    } 
-
-  }
-
-  return results;
-
-}
-
-export const performCertComparison = function(theProfile, certName, profileList){
-
-  var certNameWords = certName.split(" "), results = [];
-
-  for (var profile of profileList){
-
-    if (profile.url == theProfile.url){
-      continue;
-    }
-
-    if (!profile.certifications){
-      continue;
-    }
-
-    for (var certification of profile.certifications){
-
-      if (!certification.title){
-        continue;
-      }
-      
-      var certTitle = dbDataSanitizer.preSanitize(certification.title);
-
-      var percentage = 0;
-      for (var word of certNameWords){
-        if (certTitle.indexOf(word) != -1){
-          percentage += 1;
-        }
-      }
-
-      percentage /= certNameWords.length;
+      percentage /= entityNameWords.length;
       if (percentage > .75){
         results.push(profile);
       }

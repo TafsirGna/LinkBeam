@@ -34,12 +34,12 @@ export default class JobDetailsModal extends React.Component{
                                 <ul class="timeline mt-4 mx-2 small">
                                   { this.props.profile.experience.map((experience) => (
                                       ((this.props.labelClass == "title" && dbDataSanitizer.preSanitize(experience.title).toLowerCase() == this.props.label.toLowerCase())
-                                        || (this.props.labelClass == "company" && dbDataSanitizer.preSanitize(experience.company).toLowerCase() == this.props.label.toLowerCase()))
+                                        || (this.props.labelClass == "company" && dbDataSanitizer.preSanitize(experience.entity.name).toLowerCase() == this.props.label.toLowerCase()))
                                         &&  <li class="timeline-item mb-5 small">
                                               <h6 class="fw-bold">
                                                 <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
                                                   <img class="rounded-circle me-1" width="16" height="16" src={/*profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar :*/ company_icon} alt=""/>
-                                                  { this.props.labelClass == "title" ? dbDataSanitizer.preSanitize(experience.company) : dbDataSanitizer.preSanitize(experience.title)}
+                                                  { this.props.labelClass == "title" ? dbDataSanitizer.preSanitize(experience.entity.name) : dbDataSanitizer.preSanitize(experience.title)}
                                                 </span>
                                               </h6>
                                               { experience.period && <p class="text-muted mb-2 fw-light">{experience.period.startDateRange.format("MMMM YYYY")} - {experience.period.endDateRange.format("MMMM YYYY")}</p>}

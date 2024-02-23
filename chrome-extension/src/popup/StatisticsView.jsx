@@ -99,7 +99,11 @@ export default class StatisticsView extends React.Component{
 
   onViewChange(index){
 
-    this.setState({view: index}, () => {
+    this.setState({
+      view: index, 
+      periodVisits: null,
+      periodProfiles: null,
+    }, () => {
       getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, index, {moment: moment});
     });
 

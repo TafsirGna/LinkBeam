@@ -106,9 +106,7 @@ export default class ProfileGanttChart extends React.Component{
 
     for (var object of objects){
 
-      var label = (Object.hasOwn(object, "company")) 
-                    ? dbDataSanitizer.preSanitize(object.company)
-                    : dbDataSanitizer.preSanitize(object.institutionName);
+      var label = dbDataSanitizer.preSanitize(object.entity.name);
 
       if (!object.period){
         missingDataObjects.push(object);
@@ -208,9 +206,7 @@ export default class ProfileGanttChart extends React.Component{
                                                                                 >
                                                                                   <span><AlertCircleIcon size="16" className="text-warning rounded-circle me-1"/></span>
                                                                                 </OverlayTrigger>
-                                                                                {(Object.hasOwn(object, "company")) 
-                                                                                  ? dbDataSanitizer.preSanitize(object.company)
-                                                                                  : dbDataSanitizer.preSanitize(object.institutionName)}
+                                                                                {dbDataSanitizer.preSanitize(object.entity.name)}
                                                                               </span>
                                                                             ))}
                                                                           </div>}

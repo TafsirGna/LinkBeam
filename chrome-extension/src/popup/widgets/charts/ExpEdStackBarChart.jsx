@@ -95,6 +95,7 @@ export default class ExpEdStackBarChart extends React.Component{
   setChartData(){
 
     if (!this.props.objects){
+      this.setState({stackData: null});
       return;
     }
 

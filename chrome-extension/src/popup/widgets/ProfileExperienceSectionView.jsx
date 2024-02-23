@@ -34,7 +34,7 @@ export default class ProfileExperienceSectionView extends React.Component{
         jobTitlesBarData = [];
     for (var experience of this.props.profile.experience){
 
-      var companyLabel = dbDataSanitizer.preSanitize(experience.company),
+      var companyLabel = dbDataSanitizer.preSanitize(experience.entity.name),
           title = dbDataSanitizer.preSanitize(experience.title),
           expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
 

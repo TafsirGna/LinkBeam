@@ -17,7 +17,7 @@ import {
   appParams, 
   messageParams, 
   dbData,
-  performCertComparison,
+  performProfileSubPartComparison,
 } from "../Local_library";
 
 export default class ProfileOverviewSectionView extends React.Component{
@@ -114,7 +114,7 @@ export default class ProfileOverviewSectionView extends React.Component{
       return;
     }
 
-    var profiles = performCertComparison(this.props.profile, certName, this.props.globalData.profiles);
+    var profiles = performProfileSubPartComparison(this.props.profile, certName, this.props.globalData.profiles, "certifications");
     var certificationsList = this.state.certificationsList;
     certificationsList[index].linkedProfiles = profiles;
 

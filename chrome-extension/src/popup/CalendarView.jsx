@@ -32,7 +32,7 @@ export default class CalendarView extends React.Component{
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Visits", "Reminders", "Activity List", "Time Chart"],
+      tabTitles: ["Profile Visits", "Reminders", "Activity List", "Time Chart", "Feed"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,

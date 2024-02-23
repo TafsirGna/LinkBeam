@@ -103,6 +103,10 @@ export default class ConnectedScatterplot extends React.Component{
 
   drawChart(){
 
+  	if (!this.props.objects){
+  		this.setState({chartData: null});
+  	}
+
     if (!this.state.chartData){
       return;
     }

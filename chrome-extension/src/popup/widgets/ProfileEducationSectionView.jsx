@@ -31,18 +31,18 @@ export default class ProfileEducationSectionView extends React.Component{
         wordCloudData = []*/;
     for (var education of this.props.profile.education){
 
-      var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
-          // title = dbDataSanitizer.preSanitize(education.degree),
+      var entityName = dbDataSanitizer.preSanitize(education.entity.name);
+          // title = dbDataSanitizer.preSanitize(education.title),
       var edTime = 0;
 
       if (education.period){
         edTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
       }
 
-      var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(institutionName.toLowerCase());
+      var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(entityName.toLowerCase());
       if (index == -1){
         doughnutChartsData.push({
-          label: institutionName,
+          label: entityName,
           value: edTime,
           missingData: (education.period ? false : true),
         });

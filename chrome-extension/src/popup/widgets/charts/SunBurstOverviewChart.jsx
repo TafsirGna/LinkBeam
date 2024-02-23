@@ -42,13 +42,13 @@ export default class SunBurstOverviewChart extends React.Component{
 
       for (var experience of this.props.profile.experience){
 
-        var company = dbDataSanitizer.preSanitize(experience.company), 
+        var entityName = dbDataSanitizer.preSanitize(experience.entity.name), 
             title = dbDataSanitizer.preSanitize(experience.title);
-        var itemIndex = expChildren.map(e => e.fullName).indexOf(company);
+        var itemIndex = expChildren.map(e => e.fullName).indexOf(entityName);
         if (itemIndex == -1){
           expChildren.push({
-            fullName: company,
-            name: this.cropLabel(company),
+            fullName: entityName,
+            name: this.cropLabel(entityName),
             children: [{"name": this.cropLabel(title), "value": 123}],
           });
         }
@@ -72,13 +72,13 @@ export default class SunBurstOverviewChart extends React.Component{
 
       for (var education of this.props.profile.education){
 
-        var institutionName = dbDataSanitizer.preSanitize(education.institutionName), 
-            degree = dbDataSanitizer.preSanitize(education.degree);
-        var itemIndex = edChildren.map(e => e.fullName).indexOf(institutionName);
+        var entityName = dbDataSanitizer.preSanitize(education.entity.name), 
+            degree = dbDataSanitizer.preSanitize(education.title);
+        var itemIndex = edChildren.map(e => e.fullName).indexOf(entityName);
         if (itemIndex == -1){
           edChildren.push({
-            fullName: institutionName,
-            name: this.cropLabel(institutionName),
+            fullName: entityName,
+            name: this.cropLabel(entityName),
             children: [{"name": this.cropLabel(degree), "value": 123}],
           });
         }

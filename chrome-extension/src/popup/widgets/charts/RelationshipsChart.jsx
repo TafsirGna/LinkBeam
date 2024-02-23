@@ -7,9 +7,7 @@ import {
 	saveCanvas, 
 	dbDataSanitizer,
 	performLanguageComparison, 
-	performCertComparison,
-  performEdInstitutionComparison,
-  performCompanyComparison
+	performProfileSubPartComparison,
 } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
@@ -235,7 +233,7 @@ export default class RelationshipsChart extends React.Component{
         }
 
   			var certName = dbDataSanitizer.preSanitize(certification.title);
-  			var certProfiles = performCertComparison(profile, certName, this.props.profiles);
+  			var certProfiles = performProfileSubPartComparison(profile, certName, this.props.profiles, "certifications");
 
   			for (var certProfile of certProfiles){
 
@@ -313,8 +311,8 @@ export default class RelationshipsChart extends React.Component{
 
       for (var education of profile.education){
 
-        var institutionName = dbDataSanitizer.preSanitize(education.institutionName);
-        var edProfiles = performEdInstitutionComparison(profile, institutionName, this.props.profiles);
+        var entityName = dbDataSanitizer.preSanitize(education.entity.name);
+        var edProfiles = performProfileSubPartComparison(profile, entityName, this.props.profiles, "education");
 
         for (var edProfile of edProfiles){
 
@@ -324,7 +322,7 @@ export default class RelationshipsChart extends React.Component{
 
             chartData.nodes.push({
               id: target,
-              group: institutionName,
+              group: entityName,
               url: edProfile.url,
             });
 
@@ -341,12 +339,12 @@ export default class RelationshipsChart extends React.Component{
           if (index == -1){
             linkedObjects.push({
               profile: edProfile,
-              links: [institutionName],
+              links: [entityName],
             });
           }
           else{
-            if (linkedObjects[index].links.indexOf(institutionName) == -1){
-              linkedObjects[index].links.push(institutionName);
+            if (linkedObjects[index].links.indexOf(entityName) == -1){
+              linkedObjects[index].links.push(entityName);
             }
           }
 
@@ -392,8 +390,8 @@ export default class RelationshipsChart extends React.Component{
 
       for (var experience of profile.experience){
 
-        var company = dbDataSanitizer.preSanitize(experience.company);
-        var expProfiles = performCompanyComparison(profile, company, this.props.profiles);
+        var entityName = dbDataSanitizer.preSanitize(experience.entity.name);
+        var expProfiles = performProfileSubPartComparison(profile, entityName, this.props.profiles, "experience");
 
         for (var expProfile of expProfiles){
 
@@ -403,7 +401,7 @@ export default class RelationshipsChart extends React.Component{
 
             chartData.nodes.push({
               id: target,
-              group: company,
+              group: entityName,
               url: expProfile.url,
             });
 
@@ -420,12 +418,12 @@ export default class RelationshipsChart extends React.Component{
           if (index == -1){
             linkedObjects.push({
               profile: expProfile,
-              links: [company],
+              links: [entityName],
             });
           }
           else{
-            if (linkedObjects[index].links.indexOf(company) == -1){
-              linkedObjects[index].links.push(company);
+            if (linkedObjects[index].links.indexOf(entityName) == -1){
+              linkedObjects[index].links.push(entityName);
             }
           }
 

@@ -1979,29 +1979,43 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
 
 
-// function testUpDb(){
+function testUpDb(){
 
 
-//     // getList(dbData.objectStoreNames.VISITS, { context: "" }, (results) => {
-//     //     for (var visit of results){
-            
-//     //         if (visit.timeCount == undefined){
-//     //             visit.timeCount = (Math.random() * (180 - 30) + 30);
-//     //         }
+    // getList(dbData.objectStoreNames.PROFILES, { context: "" }, (results) => {
+    //     for (var profile of results){
 
-//     //         // then adding the given profile into the database
-//     //         const objectStore = db.transaction(dbData.objectStoreNames.VISITS, "readwrite").objectStore(dbData.objectStoreNames.VISITS);
-//     //         const request = objectStore.put(visit);
-//     //         request.onsuccess = (event) => {
-//     //             console.log("Visit updated");
-//     //         };
+    //         if (!profile.certifications){
+    //             continue;
+    //         }
 
-//     //         request.onerror = (event) => {
-//     //             console.log("An error occured when updating a new visit");
-//     //         };
-//     //     }
-//     // });
+    //         for (var certification of profile.certifications){
 
-//     updateSettingObject({ context: "", criteria: { props: { outdatedPostReminder: "Never"} }}, () => {});
+    //             if (!certification.issuer || certification.issuer == undefined){
+    //                 continue;
+    //             }
 
-// }
+    //             certification.entity = {
+    //                 name: certification.issuer,
+    //                 url: null,
+    //             };
+
+    //             delete certification.issuer;
+    //         }
+
+    //         // then adding the given profile into the database
+    //         const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+    //         const request = objectStore.put(profile);
+    //         request.onsuccess = (event) => {
+    //             console.log("Profile updated");
+    //         };
+
+    //         request.onerror = (event) => {
+    //             console.log("An error occured when updating a new profile");
+    //         };
+    //     }
+    // });
+
+    // updateSettingObject({ context: "", criteria: { props: { outdatedPostReminder: "Never"} }}, () => {});
+
+}

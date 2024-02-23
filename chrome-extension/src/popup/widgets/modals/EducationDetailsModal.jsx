@@ -34,12 +34,12 @@ export default class EducationDetailsModal extends React.Component{
                                 <ul class="timeline mt-4 mx-2 small">
                                   { this.props.profile.education.map((education) => (
                                       (/*(this.props.labelClass = "title" && dbDataSanitizer.preSanitize(experience.title).toLowerCase() == this.props.label.toLowerCase())
-                                        ||*/ (this.props.labelClass = "institution" && dbDataSanitizer.preSanitize(education.institutionName).toLowerCase() == this.props.label.toLowerCase()))
+                                        ||*/ (this.props.labelClass = "institution" && dbDataSanitizer.preSanitize(education.entity.name).toLowerCase() == this.props.label.toLowerCase()))
                                         &&  <li class="timeline-item mb-5 small">
                                               <h6 class="fw-bold">
                                                 <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
                                                   <img class="rounded-circle me-1" width="16" height="16" src={/*profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar :*/ company_icon} alt=""/>
-                                                  { this.props.labelClass == "degree" ? dbDataSanitizer.preSanitize(education.institutionName) : dbDataSanitizer.preSanitize(education.degree)}
+                                                  { this.props.labelClass == "degree" ? dbDataSanitizer.preSanitize(education.entity.name) : dbDataSanitizer.preSanitize(education.title)}
                                                 </span>
                                               </h6>
                                               { education.period && <p class="text-muted mb-2 fw-light">{education.period.startDateRange.format("MMMM YYYY")} - {education.period.endDateRange.format("MMMM YYYY")}</p>}

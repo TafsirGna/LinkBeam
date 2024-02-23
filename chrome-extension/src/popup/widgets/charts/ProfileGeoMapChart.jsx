@@ -98,6 +98,11 @@ export default class ProfileGeoMapChart extends React.Component{
 
   setChartCountries(){
 
+    if (!this.props.objects){
+      this.setState({chartCountries: null});
+      return;
+    }
+
     if (!Object.hasOwn(this.props.globalData.settings, "geoMapData")){
       return;
     }

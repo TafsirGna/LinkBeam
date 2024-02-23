@@ -79,6 +79,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 	setChartData(){
 
 		if (!this.props.objects){
+			this.setState({bubbleData: null});
 			return;
 		}
 

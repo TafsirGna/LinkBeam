@@ -157,6 +157,7 @@ export default class VisitsTimelineChart extends React.Component{
 	setChartLabels(){
 
 		if (!this.props.objects){
+			this.setState({lineData: null});
 			return;
 		}
 		

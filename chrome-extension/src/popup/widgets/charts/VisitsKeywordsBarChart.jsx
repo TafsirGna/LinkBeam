@@ -112,6 +112,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
 	setChartData(){
 
     if (!this.props.objects){
+      this.setState({barData: null});
       return;
     }
 
