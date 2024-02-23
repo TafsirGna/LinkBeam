@@ -99,6 +99,13 @@ function createDatabase(context) {
             console.log("ObjectStore 'Bookmark' created.");
         }
 
+        // tracked posts object store
+        let trackedPostObjectStore = db.createObjectStore(dbData.objectStoreNames.TRACKED_POSTS, { keyPath: "url" });
+
+        trackedPostObjectStore.transaction.oncomplete = function (event) {
+            console.log("ObjectStore 'Tracked posts' created.");
+        }
+
     }
 
     request.onsuccess = function (event) {
@@ -1982,39 +1989,39 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 function testUpDb(){
 
 
-    // getList(dbData.objectStoreNames.PROFILES, { context: "" }, (results) => {
-    //     for (var profile of results){
+    getList(dbData.objectStoreNames.PROFILES, { context: "" }, (results) => {
+        for (var profile of results){
 
-    //         if (!profile.certifications){
-    //             continue;
-    //         }
+            if (!profile.certifications){
+                continue;
+            }
 
-    //         for (var certification of profile.certifications){
+            for (var certification of profile.certifications){
 
-    //             if (!certification.issuer || certification.issuer == undefined){
-    //                 continue;
-    //             }
+                if (!certification.issuer){
 
-    //             certification.entity = {
-    //                 name: certification.issuer,
-    //                 url: null,
-    //             };
+                    certification.entity = {
+                        name: null,
+                        url: null,
+                    };
 
-    //             delete certification.issuer;
-    //         }
+                    delete certification.issuer;
 
-    //         // then adding the given profile into the database
-    //         const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-    //         const request = objectStore.put(profile);
-    //         request.onsuccess = (event) => {
-    //             console.log("Profile updated");
-    //         };
+                }
+            }
 
-    //         request.onerror = (event) => {
-    //             console.log("An error occured when updating a new profile");
-    //         };
-    //     }
-    // });
+            // then adding the given profile into the database
+            const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+            const request = objectStore.put(profile);
+            request.onsuccess = (event) => {
+                console.log("Profile updated");
+            };
+
+            request.onerror = (event) => {
+                console.log("An error occured when updating a new profile");
+            };
+        }
+    });
 
     // updateSettingObject({ context: "", criteria: { props: { outdatedPostReminder: "Never"} }}, () => {});
 

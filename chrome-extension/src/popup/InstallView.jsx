@@ -22,6 +22,7 @@ export default class About extends React.Component{
       alertTagShow: false,
       alertVariant: "warning",
       opDone: false,
+      processing: false,
     };
 
     this.onNewInstanceSetUp = this.onNewInstanceSetUp.bind(this);
@@ -36,41 +37,48 @@ export default class About extends React.Component{
     const formFileElement = document.getElementById("formFile");
     formFileElement.onchange = (e => { 
     
-      var file = e.target.files[0]; 
+      this.setState({processing: true}, () => {
 
-      // setting up the reader
-      var reader = new FileReader();
-      reader.readAsText(file,'UTF-8');
+        var file = e.target.files[0]; 
 
-      // here we tell the reader what to do when it's done reading...
-      reader.onload = readerEvent => {
-        var content = readerEvent.target.result; // this is the content!
+        // setting up the reader
+        var reader = new FileReader();
+        reader.readAsText(file,'UTF-8');
 
-        try{
-          content = JSON.parse(content);
-        } catch (error) {
-          var message = "Something wrong happent with the uploaded file. Check the file and try again! ";
-          console.error(message+': ', error);
-          
-          this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
-              setTimeout(() => {
-                this.setState({alertMessage: "", alertTagShow: false});
-              }, appParams.TIMER_VALUE);
+        // here we tell the reader what to do when it's done reading...
+        reader.onload = readerEvent => {
+          var content = readerEvent.target.result; // this is the content!
+
+          try{
+            content = JSON.parse(content);
+          } catch (error) {
+
+            this.setState({processing: false}, () => {
+
+              var message = "Something wrong happent with the uploaded file. Check the file and try again! ";
+              console.error(message+': ', error);
+              
+              this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
+                  setTimeout(() => {
+                    this.setState({alertMessage: "", alertTagShow: false});
+                  }, appParams.TIMER_VALUE);
+              });
+
+            });
+
+            return;
+          }
+
+          // Sending the content for initializing the db
+          // Send message to the background
+          chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: content}, (response) => {
+            // Got an asynchronous response with the data from the service worker
+            console.log("Create db Request sent !");
           });
 
-          return;
         }
 
-        console.log( content );
-
-        // Sending the content for initializing the db
-        // Send message to the background
-        chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: content}, (response) => {
-          // Got an asynchronous response with the data from the service worker
-          console.log("Create db Request sent !");
-        });
-
-      }
+      });
 
     }).bind(this);
 
@@ -79,9 +87,13 @@ export default class About extends React.Component{
   onNewInstanceClicked(){
 
     // Send message to the background
-    chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log("Create db Request sent !");
+    this.setState({processing: true}, () => {
+
+      chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: null}, (response) => {
+        // Got an asynchronous response with the data from the service worker
+        console.log("Create db Request sent !");
+      });
+
     });
 
   }
@@ -90,9 +102,11 @@ export default class About extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
 
+    this.setState({processing: false});
+
     switch(message.data.objectData){
 
-      case  messageParams.contentMetaData.SW_PROCESS_FAILED:{
+      case messageParams.contentMetaData.SW_PROCESS_FAILED: {
         var message = "Failed to initialized the app. Try again later!";
         this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
         break;
@@ -106,7 +120,7 @@ export default class About extends React.Component{
     // acknowledge receipt
     ack(sendResponse);
     
-    this.setState({opDone: true});
+    this.setState({opDone: true, processing: false});
 
   }
 
@@ -148,7 +162,7 @@ export default class About extends React.Component{
                                             {this.state.alertMessage}
                                           </Alert>}
 
-            {!this.state.opDone && <div class="mt-5 text-center row">
+            { !this.state.opDone && !this.state.processing && <div class="mt-5 text-center row">
                           <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 handy-cursor border border-secondary-subtle">
                             <img src={import_icon} alt="twbs" width="40" height="40" class=""/>
                             <p class="mt-3">Import data</p>
@@ -158,6 +172,10 @@ export default class About extends React.Component{
                             <p class="mt-3">New Instance</p>
                           </div>
                         </div>}
+
+            { !this.state.opDone && this.state.processing && <div class="text-center mt-5"><div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                      </div></div>}
 
             { this.state.opDone && <div class="mt-5 text-center row">
                           <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 border border-secondary-subtle">

@@ -48,6 +48,7 @@ export const dbData = {
     PROFILES: "profiles",
     NOTIFICATIONS: "notifications",
     PROFILE_ACTIVITY: "profile_activity",
+    TRACKED_POSTS: "tracked_posts",
   }
 }
 
@@ -265,6 +266,8 @@ export const performProfileSubPartComparison = function(theProfile, entityName, 
     }
 
     for (var object of profile[category]){
+
+      // console.log("%%%%%%%%%%% : ", profile, object);
 
       if (!object.entity.name){
         continue;
