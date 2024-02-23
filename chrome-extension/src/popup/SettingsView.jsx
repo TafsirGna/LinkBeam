@@ -343,7 +343,25 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Outdated profile reminder</strong>
+                  <strong class="text-gray-dark">Outdated profiles reminder</strong>
+                  <div class="dropdown">
+                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
+                    </div>
+                    <ul class="dropdown-menu shadow-lg border">
+                      {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                            <li><Link class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</Link></li>  
+                        ))}
+                    </ul>
+                  </div>
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Max time alarm</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
                       <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
