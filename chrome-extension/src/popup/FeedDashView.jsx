@@ -7,109 +7,27 @@ import {
   appParams,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
-import { Calendar as Cal } from 'react-calendar';
-import 'react-calendar/dist/Calendar.css';
+import Form from 'react-bootstrap/Form';
 
 export default class FeedDashView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      selectedDate: (new Date()).toISOString().split('T')[0],
     };
 
-    this.tileDisabled = this.tileDisabled.bind(this);
-    this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
-    this.tileClassName = this.tileClassName.bind(this);
-    this.onClickDay = this.onClickDay.bind(this);
+    this.handleDateInputChange = this.handleDateInputChange.bind(this);
+
   }
 
   componentDidMount() {
 
   }
 
-  tileDisabled({ activeStartDate, date, view }){
+  handleDateInputChange(event){
 
-    // if (view != "month"){
-    //   return false;
-    // }
-    
-    // date = date.toLocaleDateString();
-    // date = new Date(moment(new Date(date)).format("YYYY-MM-DD"));
-
-    // return date < (new Date(this.props.globalData.settings.lastDataResetDate.split('T')[0])); 
-
-  }
-
-  onActiveStartDateChange({ action, activeStartDate, value, view }){
-
-    // console.log('Changed view to: ', activeStartDate, view, activeStartDate.getMonth());
-    
-    // if (view === "month"){
-
-    //   var month = activeStartDate.getMonth() + 1;
-    //   month = (month >= 10 ? "" : "0") + month;
-
-    //   var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
-
-    //   this.setState({activeStartDate: activeDate}, () => {
-
-    //     this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
-    //     this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
-
-    //   });
-
-    // }
-
-  }
-
-  tileClassName({ activeStartDate, date, view }){
-
-    // if (view != "month"){
-    //   return null;
-    // }
-
-    // if (!this.state.monthReminderList && !this.state.monthVisitsList){
-    //   return null
-    // }
-
-    // var date = date.toLocaleDateString();
-    // date = moment(new Date(date)).format("YYYY-MM-DD");
-
-    // // month reminder list
-    // if (this.state.monthReminderList && date in this.state.monthReminderList){
-    //   return "bg-info text-white shadow";
-    // }
-
-    // // month visits list
-    // if (this.state.monthVisitsList && date in this.state.monthVisitsList){
-    //   return "bg-warning text-black shadow text-muted";
-    // }
-
-
-    return null;
-
-  }
-
-  onClickDay(value, event){
-    
-    // var date = value.toLocaleDateString();
-    // date = new Date(date);
-
-    // this.setState({selectedDate: date}, () => {
-
-    //   var visitList = this.getDayObjectList(this.state.monthVisitsList),
-    //       profileList = [];
-
-    //   // Setting 'selectedDateProfiles' variable
-    //   for (var visit of visitList){
-    //     if (profileList.map(e => e.url).indexOf(visit.url) == -1){
-    //       profileList.push(visit.profile);
-    //     }
-    //   }
-
-    //   this.setState({selectedDateProfiles: profileList});
-
-    // });
+    this.setState({selectedDate: event.target.value});
 
   }
 
@@ -126,20 +44,14 @@ export default class FeedDashView extends React.Component{
   			<div class="offset-2 col-8 mt-4">
 
           <div class="clearfix my-3 me-3">
-            <div class="dropdown">
-              <button type="button" class="btn btn-sm dropdown-toggle float-end shadow-sm border" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                Dropdown form
-              </button>
-
-              <Cal 
-                onClickDay={this.onClickDay} 
-                tileDisabled={this.tileDisabled} 
-                onActiveStartDateChange={this.onActiveStartDateChange} 
-                value={new Date()} 
-                tileClassName={this.tileClassName}
-                className="rounded shadow-lg dropdown-menu"/>
-
-            </div>
+            <Form.Control
+              type="date"
+              autoFocus
+              max={new Date().toISOString().slice(0, 10)}
+              value={this.state.selectedDate}
+              onChange={this.handleDateInputChange}
+              className="float-end shadow-sm w-25"
+            />
           </div>
 
           <div class="row mx-2 mt-1">

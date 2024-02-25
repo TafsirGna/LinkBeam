@@ -9,7 +9,7 @@ import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
-import JobDetailsModal from "./modals/JobDetailsModal";
+import EdExpInfoModal from "./modals/EdExpInfoModal";
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -134,12 +134,13 @@ export default class ProfileExperienceSectionView extends React.Component{
                 </div>
         
         
-                <JobDetailsModal 
+                <EdExpInfoModal 
                   show={this.state.jobModalShow} 
                   onHide={this.handleJobModalClose} 
                   profile={this.props.profile} 
                   label={this.state.selectedDonutChartElement}
-                  labelClass="company"/>
+                  section="experience"
+                  labelName="entityName"/>
 
 
               </div>}

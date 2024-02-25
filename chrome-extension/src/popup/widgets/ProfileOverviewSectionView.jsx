@@ -312,7 +312,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                                                 <p class="mb-1">
                                                   <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
                                                     {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {certification.issuer ? dbDataSanitizer.preSanitize(certification.issuer) : "Missing data"}
+                                                    {certification.entity.name ? dbDataSanitizer.preSanitize(certification.entity.name) : "Missing data"}
                                                   </span>
                                                 </p>
                                                 <p class="text-muted mb-2">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>
@@ -328,7 +328,7 @@ export default class ProfileOverviewSectionView extends React.Component{
                                                                                                   % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
                                                                                                 </p>}
                                               </div>
-                                              { certification.date && <small class="opacity-50 text-nowrap">{moment(dbDataSanitizer.preSanitize(certification.date).replace("Issued ", ""), "MMM YYYY").fromNow()}</small>}
+                                              { certification.period && <small class="opacity-50 text-nowrap">{moment(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM YYYY").fromNow()}</small>}
                                             </div>
                                           </a>))}
               </div>}

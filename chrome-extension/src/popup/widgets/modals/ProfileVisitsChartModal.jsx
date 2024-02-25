@@ -80,17 +80,6 @@ export default class ProfileVisitsChartModal extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            {/*<div class="text-center">
-              <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
-                <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Visit count" onClick={() => {this.switchCurrentTab(0)}} >
-                  Count 
-                </button>
-                <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="Visit time" onClick={() => {this.switchCurrentTab(1)}}>
-                  Time
-                </button>
-              </div>
-            </div>*/}
-
             {/*View dropdown*/}
             <div class="clearfix">
               <div class="btn-group float-end">

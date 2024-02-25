@@ -24,7 +24,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Colors } from 'chart.js';
-import JobDetailsModal from "../modals/JobDetailsModal";
+import EdExpInfoModal from "../modals/EdExpInfoModal";
 
 // Chart.register(Colors);
 
@@ -158,12 +158,13 @@ export default class JobTitlesBarChart extends React.Component{
                                   onClick={this.onChartClick} /> }
 
 
-        <JobDetailsModal 
+        <EdExpInfoModal 
           show={this.state.jobModalShow} 
           onHide={this.handleJobModalClose} 
           profile={this.props.profile} 
           label={this.state.selectedChartElementIndex != null ? this.props.data[this.state.selectedChartElementIndex].label : null}
-          labelClass="title"/>
+          section="experience"
+          labelName="title"/>
 
 
       </>

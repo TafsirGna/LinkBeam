@@ -19,7 +19,7 @@ import moment from 'moment';
 import ReminderListView from "./widgets/ReminderListView";
 import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
-import DailyVisitsTimeChart from "./widgets/charts/DailyVisitsTimeChart";
+import DailyVisitsBarChart from "./widgets/charts/DailyVisitsBarChart";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import app_logo from '../assets/app_logo.png';
 
@@ -377,7 +377,7 @@ export default class CalendarView extends React.Component{
                                                                             objects={this.state.selectedDateProfiles} 
                                                                             variant="timeline"/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailyVisitsTimeChart 
+                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailyVisitsBarChart 
                                                                             objects={this.getDayObjectList(this.state.monthVisitsList)}/>}
 
                 </Card.Body>

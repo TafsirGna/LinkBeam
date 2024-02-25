@@ -10,11 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
 
-        // web_ui: resolve(__dirname, 'web_ui.html'),
-        install: resolve(__dirname, 'install.html'),
-        profile_data_extractor: resolve(__dirname, 'src/scripts/profile_data_extractor.jsx'),
-        index: resolve(__dirname, 'index.html'),
-        service_worker: resolve(__dirname, 'src/scripts/service-worker.mjs'),
+        feed_data_extractor: resolve(__dirname, 'src/scripts/feed_data_extractor.jsx'),
 
       },
       output: {

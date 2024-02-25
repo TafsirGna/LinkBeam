@@ -57,7 +57,7 @@ const barOptions = {
   },
 };
 
-export default class DailyVisitsTimeChart extends React.Component{
+export default class DailyVisitsBarChart extends React.Component{
 
   constructor(props){
     super(props);

@@ -2,11 +2,8 @@
   messageParams,
   appParams,
 } from "../react_components/Local_library";*/
-import styles from "../contentScriptUi/styles.min.css";
-import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedReminderToastView";
-import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeywordToastView";
-import ReactDOM from 'react-dom/client';
-import React from 'react';
+
+import { DataExtractorBase } from "./data_extractor_lib";
 
 // Content script designed to make sure the active tab is a linkedin page
 
@@ -252,8 +249,11 @@ const publicDataExtractor = {
       Array.from(document.querySelectorAll(sectionName + " li")).forEach((certificationLiTag) => {
         var certification = {
           title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
-          issuer: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
-          date: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
+          entity: {
+            name: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
+            url: null,
+          },
+          period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
           // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
@@ -560,8 +560,11 @@ const authDataExtractor = {
       Array.from(certificationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
         var certification = {
           title: (certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-          issuer: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
-          date: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          entity: {
+            name: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+            url: null,
+          }, 
+          period: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
           // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
@@ -630,179 +633,101 @@ const authDataExtractor = {
 }
 
 
-function extractData(){
+     
 
-  let pageData = null;
+class ProfileDataExtractor extends DataExtractorBase {
 
-  // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
-  var publicHeaderData = null;
-
-  try {
-    publicHeaderData = publicDataExtractor.header();
-  }
-  catch (e) {
-    console.log("An error occured when parsing as public profile :", e);
+  constructor(){
+    super();
   }
 
-  if (publicHeaderData && publicHeaderData.fullName){
-    
-    pageData = {
+  extractData(){
 
-      url: (window.location.href.split("?"))[0],
-      fullName: publicHeaderData.fullName,
-      title: publicHeaderData.title,
-      info: publicDataExtractor.about(),
-      avatar: publicHeaderData.avatar,
-      coverImage: publicHeaderData.coverImage,
-      nFollowers: publicHeaderData.nFollowers,
-      nConnections: publicHeaderData.nConnections, 
-      location: publicHeaderData.location,
-      featuredSchool: publicHeaderData.featuredSchool,
-      company: publicHeaderData.company,
-      education: publicDataExtractor.education(),
-      experience: publicDataExtractor.experience(),
-      certifications: publicDataExtractor.certification(),
-      activity: publicDataExtractor.activity(),
-      languages: publicDataExtractor.language(),
-      projects: publicDataExtractor.project(),
-      profileSuggestions: publicDataExtractor.suggestions(),
-      //
-      codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
+    let pageData = null;
 
-    };
-    
-  }
-  else{
-    var authHeaderData = null;
+    // let fullName = (document.getElementsByClassName("top-card-layout__title")[0]).firstChild.textContent;
+    var publicHeaderData = null;
 
     try {
-      authHeaderData = authDataExtractor.header();
+      publicHeaderData = publicDataExtractor.header();
     }
     catch (e) {
-      console.log("An error occured when parsing as private profile : ", e);
+      console.log("An error occured when parsing as public profile :", e);
     }
 
-    if (authHeaderData && authHeaderData.fullName){
-
+    if (publicHeaderData && publicHeaderData.fullName){
+      
       pageData = {
 
         url: (window.location.href.split("?"))[0],
-        fullName: authHeaderData.fullName,
-        title: authHeaderData.title,
-        info: authDataExtractor.about(),
-        avatar: authHeaderData.avatar,
-        coverImage: authHeaderData.coverImage,
-        nFollowers: authHeaderData.nFollowers,
-        nConnections: authHeaderData.nConnections, 
-        location: authHeaderData.location,
-        featuredSchool: authHeaderData.featuredSchool,
-        company: authHeaderData.company,
-        education: authDataExtractor.education(),
-        experience: authDataExtractor.experience(),
-        certifications: authDataExtractor.certification(),
-        activity: authDataExtractor.activity(),
-        languages: authDataExtractor.language(),
-        projects: authDataExtractor.project(),
-        profileSuggestions: authDataExtractor.suggestions(),
+        fullName: publicHeaderData.fullName,
+        title: publicHeaderData.title,
+        info: publicDataExtractor.about(),
+        avatar: publicHeaderData.avatar,
+        coverImage: publicHeaderData.coverImage,
+        nFollowers: publicHeaderData.nFollowers,
+        nConnections: publicHeaderData.nConnections, 
+        location: publicHeaderData.location,
+        featuredSchool: publicHeaderData.featuredSchool,
+        company: publicHeaderData.company,
+        education: publicDataExtractor.education(),
+        experience: publicDataExtractor.experience(),
+        certifications: publicDataExtractor.certification(),
+        activity: publicDataExtractor.activity(),
+        languages: publicDataExtractor.language(),
+        projects: publicDataExtractor.project(),
+        profileSuggestions: publicDataExtractor.suggestions(),
         //
         codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
 
       };
-
-    } 
-  }
-
-  return pageData;
-}     
-
-let webPageData = null;
-
-// Function for sending the page data
-const sendTabData = (data, tabId) => {
-
-  chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: {profileData: data, tabId: tabId}}, (response) => {
-    console.log('linkedin-data response sent', response, data);
-  });
-
-};
-
-const getTabId = (messageData, sendResponse) => {
-
-  // Acknowledge the message
-  sendResponse({
-      status: "ACK"
-  });
-
-  let tabId = messageData.tabId;
-
-  setInterval(
-    () => {
-
-      // if (webPageData == {}){
-      //   sendTabData({}, tabId);
-      //   return;
-      // }
-
-      // var data = extractData();
-      // if (data == webPageData){
-      //   data = {};
-      // }
-      // sendTabData(data, tabId);
-      // webPageData = data;
-
-      sendTabData(extractData(), tabId);
-
-    }, 
-    3000
-  );
-
-}
-
-const showToast = (messageData, property, sendResponse) => {
-
-  // Acknowledge the message
-  sendResponse({
-      status: "ACK"
-  });
-
-  var objects = messageData[property];
-
-  var shadowHost = document.createElement('div');
-  shadowHost.id = /*appParams.extShadowHostId*/"extShadowHostId";
-  shadowHost.style.cssText='all:initial';
-  document.body.appendChild(shadowHost);
-
-  shadowHost = document.getElementById(/*appParams.extShadowHostId*/"extShadowHostId");
-  shadowHost.attachShadow({ mode: 'open' });
-  const shadowRoot = shadowHost.shadowRoot;
-
-  ReactDOM.createRoot(shadowRoot).render(
-    <React.StrictMode>
-      <style type="text/css">{styles}</style>
-      { property == "reminders" && <InjectedReminderToastView objects={objects} />}
-      { property == "detectedKeywords" && <InjectedKeywordToastView objects={objects} />}
-
-    </React.StrictMode>
-  );
-
-}
-
-// Retrieving the tabId variable
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
-
-  if (message.header == "web-ui-app-settings-data") /*messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA*/ {
       
-      if (Object.hasOwn(message.data, "tabId")){
-        getTabId(message.data, sendResponse);
+    }
+    else{
+      var authHeaderData = null;
+
+      try {
+        authHeaderData = authDataExtractor.header();
       }
-      else if (Object.hasOwn(message.data, "reminders")){
-        showToast(message.data, "reminders", sendResponse);
-      }
-      else if (Object.hasOwn(message.data, "detectedKeywords")){
-        showToast(message.data, "detectedKeywords", sendResponse);
+      catch (e) {
+        console.log("An error occured when parsing as private profile : ", e);
       }
 
+      if (authHeaderData && authHeaderData.fullName){
+
+        pageData = {
+
+          url: (window.location.href.split("?"))[0],
+          fullName: authHeaderData.fullName,
+          title: authHeaderData.title,
+          info: authDataExtractor.about(),
+          avatar: authHeaderData.avatar,
+          coverImage: authHeaderData.coverImage,
+          nFollowers: authHeaderData.nFollowers,
+          nConnections: authHeaderData.nConnections, 
+          location: authHeaderData.location,
+          featuredSchool: authHeaderData.featuredSchool,
+          company: authHeaderData.company,
+          education: authDataExtractor.education(),
+          experience: authDataExtractor.experience(),
+          certifications: authDataExtractor.certification(),
+          activity: authDataExtractor.activity(),
+          languages: authDataExtractor.language(),
+          projects: authDataExtractor.project(),
+          profileSuggestions: authDataExtractor.suggestions(),
+          //
+          codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
+
+        };
+
+      } 
+    }
+
+    return pageData;
   }
 
-});
+}
+
+// Building the object 
+var profileDataExtractor = new ProfileDataExtractor();
 

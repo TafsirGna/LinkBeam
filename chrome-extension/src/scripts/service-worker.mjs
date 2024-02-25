@@ -4,7 +4,7 @@ import {
   dbData,
   messageParams,
   ack,
-  testTabUrl
+  testTabBaseUrl
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -1840,46 +1840,75 @@ function processTabEvent(tabId, changeInfo, tab){
 function checkCurrentTab(tab, changeInfo){
 
     var url = (changeInfo ? changeInfo.url : tab.url); 
-    // console.log("POOOOOOOOOOOO : ", url, testTabUrl(url));
-    if (url && testTabUrl(url)) 
+    // console.log("POOOOOOOOOOOO : ", url, testTabBaseUrl(url));
+    if (url && testTabBaseUrl(url)) 
     {
 
         // Starting the verifier script in order to make sure this is a linkedin page
         currentTabID = tab.id;
-        chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ["./assets/profile_data_extractor.js"],
-            }, 
-            () => {
-                chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {tabId: tab.id}}, (response) => {
-                    console.log('tabId sent', response);
-                });  
 
-                getSettingsData(
-                    { 
-                        context: "", 
-                        criteria: {
-                            props: ["notifications"],
-                        }
-                    },
-                    (object) => {
-                        if (object.notifications){
-                            getList(
-                                dbData.objectStoreNames.REMINDERS,
-                                { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
-                                (reminders) => {
-                                    if (reminders && reminders.length != 0){
-                                        chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
-                                            console.log('Reminders sent', response);
-                                        }); 
-                                    }
-                                }
-                            );
-                        }                
+        const injectDataExtractorParams = () => {
+
+            // Inject tab id
+            chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {tabId: tab.id}}, (response) => {
+                console.log('tabId sent', response);
+            }); 
+
+
+            getSettingsData(
+                { 
+                    context: "", 
+                    criteria: {
+                        props: ["notifications"],
                     }
-                );
-            }
-        );
+                },
+                (object) => {
+                    if (object.notifications){
+                        getList(
+                            dbData.objectStoreNames.REMINDERS,
+                            { context: "", criteria: { props: { date: (new Date()).toISOString(), activated: true } } },
+                            (reminders) => {
+                                if (reminders && reminders.length != 0){
+                                    chrome.tabs.sendMessage(tab.id, {header: messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA, data: {reminders: reminders}}, (response) => {
+                                        console.log('Reminders sent', response);
+                                    }); 
+                                }
+                            }
+                        );
+                    }                
+                }
+            ); 
+
+        };
+
+        // If the user is browsing linkedin's feed
+        if (url.indexOf("/feed") != -1){
+
+            chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ["./assets/feed_data_extractor.js"],
+                }, 
+                () => {
+
+                    injectDataExtractorParams();
+                }
+            );
+
+        }
+        else{
+
+            chrome.scripting.executeScript({
+                    target: { tabId: tab.id },
+                    files: ["./assets/profile_data_extractor.js"],
+                }, 
+                () => {
+
+                    injectDataExtractorParams();
+
+                }
+            );
+
+        }
 
     }
     else{
@@ -1887,6 +1916,7 @@ function checkCurrentTab(tab, changeInfo){
         if (currentTabCheckContext == "popup"){
             sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, null);
         }
+
     }
 }
 
@@ -1989,39 +2019,36 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 function testUpDb(){
 
 
-    getList(dbData.objectStoreNames.PROFILES, { context: "" }, (results) => {
-        for (var profile of results){
+    // getList(dbData.objectStoreNames.PROFILES, { context: "" }, (results) => {
+    //     for (var profile of results){
 
-            if (!profile.certifications){
-                continue;
-            }
+    //         if (!profile.certifications){
+    //             continue;
+    //         }
 
-            for (var certification of profile.certifications){
+    //         for (var certification of profile.certifications){
 
-                if (!certification.issuer){
+    //             if (certification.date){
 
-                    certification.entity = {
-                        name: null,
-                        url: null,
-                    };
+    //                 certification.period = certification.date;
 
-                    delete certification.issuer;
+    //                 delete certification.date;
 
-                }
-            }
+    //             }
+    //         }
 
-            // then adding the given profile into the database
-            const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
-            const request = objectStore.put(profile);
-            request.onsuccess = (event) => {
-                console.log("Profile updated");
-            };
+    //         // then adding the given profile into the database
+    //         const objectStore = db.transaction(dbData.objectStoreNames.PROFILES, "readwrite").objectStore(dbData.objectStoreNames.PROFILES);
+    //         const request = objectStore.put(profile);
+    //         request.onsuccess = (event) => {
+    //             console.log("Profile updated");
+    //         };
 
-            request.onerror = (event) => {
-                console.log("An error occured when updating a new profile");
-            };
-        }
-    });
+    //         request.onerror = (event) => {
+    //             console.log("An error occured when updating a new profile");
+    //         };
+    //     }
+    // });
 
     // updateSettingObject({ context: "", criteria: { props: { outdatedPostReminder: "Never"} }}, () => {});
 

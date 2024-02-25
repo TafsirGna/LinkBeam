@@ -7,7 +7,7 @@ import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
-import EducationDetailsModal from "./modals/EducationDetailsModal";
+import EdExpInfoModal from "./modals/EdExpInfoModal";
 
 export default class ProfileEducationSectionView extends React.Component{
 
@@ -130,12 +130,13 @@ export default class ProfileEducationSectionView extends React.Component{
                   </div>
         
         
-                  <EducationDetailsModal 
+                  <EdExpInfoModal 
                     show={this.state.edModalShow} 
                     onHide={this.handleEdModalClose} 
                     profile={this.props.profile} 
                     label={this.state.selectedDonutChartElement}
-                    labelClass="institution"/>
+                    section="education"
+                    labelName="entityName"/>
         
                 </div>}
       </>

@@ -129,17 +129,17 @@ export default class SunBurstOverviewChart extends React.Component{
     if (this.props.profile.certifications){
       for (var certification of this.props.profile.certifications){
 
-        if (!certification.issuer || !certification.title){
+        if (!certification.entity.name || !certification.title){
           continue;
         }
 
-        var issuerName = dbDataSanitizer.preSanitize(certification.issuer), 
+        var entityName = dbDataSanitizer.preSanitize(certification.entity.name), 
             title = dbDataSanitizer.preSanitize(certification.title);
-        var itemIndex = certChildren.map(e => e.fullName).indexOf(issuerName);
+        var itemIndex = certChildren.map(e => e.fullName).indexOf(entityName);
         if (itemIndex == -1){
           certChildren.push({
-            fullName: issuerName,
-            name: this.cropLabel(issuerName),
+            fullName: entityName,
+            name: this.cropLabel(entityName),
             children: [{"name": this.cropLabel(title), "value": 123}],
           });
         }

@@ -1,4 +1,4 @@
-/*import './ProfileViewReminderModal.css'*/
+/*import './ProfileViewBody.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
@@ -8,10 +8,11 @@ import ProfileEducationSectionView from "./ProfileEducationSectionView";
 import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
 import ProfileNetworkSectionView from "./ProfileNetworkSectionView";
-import EducationExperienceTimeChartModal from "./modals/EducationExperienceTimeChartModal";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { appParams, computePeriodTimeSpan } from "../Local_library";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 
 export default class ProfileViewBody extends React.Component{
@@ -155,7 +156,25 @@ export default class ProfileViewBody extends React.Component{
           </div>
         </div>
 
-        <EducationExperienceTimeChartModal profile={this.props.profile} show={this.state.edExpTimeChartModalShow} onHide={this.handleEdExpTimeChartModalClose} />
+
+        {/*Modals*/}
+        
+        {/*EdExpTimeChartModal*/}
+        <Modal show={this.state.edExpTimeChartModalShow} onHide={this.handleEdExpTimeChartModalClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Education & Experience</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            <ProfileGanttChart profile={this.props.profile} periodLabel="all" />
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleEdExpTimeChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </>
     );
   }

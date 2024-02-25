@@ -107,6 +107,10 @@ export const dbDataSanitizer = {
 
   profileRelationDataPreproc: function(str) {
 
+    if (!str){
+      return str;
+    }
+
     str = str.replaceAll("&nbsp;", " ");
 
     return str;
@@ -641,7 +645,7 @@ export const messageParams = {
 
 };
 
-export const testTabUrl = (url) => {
+export const testTabBaseUrl = (url) => {
 
   return (new RegExp(appParams.WEB_PAGE_URL_PATTERNS.join("|"))).test(url);
 
