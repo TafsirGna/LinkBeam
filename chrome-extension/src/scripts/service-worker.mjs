@@ -1506,7 +1506,7 @@ function processTabData(tabData){
                 if (object.autoTabOpening){
                     chrome.tabs.create({
                       active: true,
-                      url:  "/index.html?redirect_to=ProfileView&data="+profileObject.url,
+                      url:  "/index.html?view=Profile&data="+profileObject.url,
                     }, null);
                 }                
             }

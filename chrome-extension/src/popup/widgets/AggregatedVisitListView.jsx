@@ -72,7 +72,7 @@ export default class AggregatedVisitListView extends React.Component{
                                   <div>
                                     <div class="d-flex gap-2 align-items-center">
                                       <h6 class="mb-0 d-flex align-items-center gap-1">
-                                        <a class="text-decoration-none text-black" href={"/index.html?redirect_to=ProfileView&data=" + visit.url} target="_blank" dangerouslySetInnerHTML={{__html: visit.profile.fullName}}></a> 
+                                        <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + visit.url} target="_blank" dangerouslySetInnerHTML={{__html: visit.profile.fullName}}></a> 
                                         <OverlayTrigger
                                           placement="top"
                                           overlay={<Tooltip id="tooltip1">{visit.count} visit{visit.count > 1 ? "es" : ""} { this.props.context == "all" ? " | " + moment(visit.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}

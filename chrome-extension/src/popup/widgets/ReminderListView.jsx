@@ -44,7 +44,7 @@ export default class ReminderListView extends React.Component{
                                             <div class="d-flex gap-2 w-100 justify-content-between">
                                               <div>
                                                 <h6 class="mb-0 d-flex gap-2 w-100">
-                                                  <a href={"/index.html?redirect_to=ProfileView&data=" + reminder.profile.url} target="_blank" class="text-decoration-none text-muted w-100">{reminder.profile.fullName}</a>
+                                                  <a href={"/index.html?view=Profile&data=" + reminder.profile.url} target="_blank" class="text-decoration-none text-muted w-100">{reminder.profile.fullName}</a>
                                                   <span class="text-muted">·</span>
                                                   <OverlayTrigger
                                                     placement="top"

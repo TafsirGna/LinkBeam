@@ -39,6 +39,10 @@ export default class ProfileAboutSectionView extends React.Component{
 
       // setting profileAbout
       var profileAbout = dbDataSanitizer.preSanitize(this.props.profile.info);
+      // Further sanitizing the string
+      ([".", "?", ",", ";", "!"]).forEach((item) => {
+      	profileAbout = profileAbout.replaceAll(item, "");
+      });
 
       this.setState({profileAbout: profileAbout}, () => {
         this.setOneUseWordCount();

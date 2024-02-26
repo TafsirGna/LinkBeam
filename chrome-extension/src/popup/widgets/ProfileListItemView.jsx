@@ -33,7 +33,7 @@ export default class ProfileListItemView extends React.Component{
             <div>
               <div class="d-flex gap-2 align-items-center">
                 <h6 class="mb-0 d-flex align-items-center gap-1">
-                  <a class="text-decoration-none text-black" href={"/index.html?redirect_to=ProfileView&data=" + this.props.profile.url} target="_blank">{this.props.profile.fullName}</a> 
+                  <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + this.props.profile.url} target="_blank">{this.props.profile.fullName}</a> 
                 </h6>
                 
                 <small class="opacity-50 text-nowrap ms-auto">{moment(this.props.profile.date, moment.ISO_8601).format("L")}</small>

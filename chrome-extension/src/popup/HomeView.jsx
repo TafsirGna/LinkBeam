@@ -25,7 +25,6 @@ export default class HomeView extends React.Component{
     super(props);
     this.state = {
       allVisitLeft: true,
-      currentPageTitle: null,
       currentTabIndex: 0,
       loadingAllVisits: false,
       offCanvasShow: false,
@@ -35,9 +34,9 @@ export default class HomeView extends React.Component{
     this.getVisitList = this.getVisitList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
-    this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
+    // this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
+    // this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
+    // this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
 
   }
 
@@ -53,15 +52,6 @@ export default class HomeView extends React.Component{
 
       }
     );
-
-    // Getting the window url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const origin = urlParams.get("origin");
-
-    if (!origin){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["currentPageTitle"] }});
-      return;
-    }
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
@@ -125,81 +115,64 @@ export default class HomeView extends React.Component{
     )
   };
 
-  onSettingsDataReceived(message, sendResponse){
+  // onSettingsDataReceived(message, sendResponse){
     
-    // acknowledge receipt
-    ack(sendResponse);
+  //   // acknowledge receipt
+  //   ack(sendResponse);
 
-    var settings = message.data.objectData.object;
-    if (Object.hasOwn(settings, "currentPageTitle")){
+  //   var settings = message.data.objectData.object;
+  //   if (Object.hasOwn(settings, "notifications")){
       
-      var pageTitle = settings.currentPageTitle;
-      this.setState({currentPageTitle: pageTitle}, () => {
-        if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
-          // Getting the list of all visits
-          if (this.props.globalData.todayVisitsList == null){
-            this.getVisitList("today");
-          }
+  //     // Deciding whether to display the grow spinner for plugin activation or not 
+  //     if (settings.notifications){
+  //       return;
+  //     }
 
-          // Requesting the notification settings
-          sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
-        }
-      });
-
-    }
-
-    if (Object.hasOwn(settings, "notifications")){
+  //     checkCurrentTab();
       
-      // Deciding whether to display the grow spinner for plugin activation or not 
-      if (settings.notifications){
-        return;
-      }
+  //   }
 
-      checkCurrentTab();
-      
-    }
+  // }
 
-  }
-
-  onExtensionCodeInjected(message, sendResponse){
+  // onExtensionCodeInjected(message, sendResponse){
     
-    // acknowledge receipt
-    ack(sendResponse);
+  //   // acknowledge receipt
+  //   ack(sendResponse);
 
-    // hiding the popup
-    // window.close();
+  //   // hiding the popup
+  //   // window.close();
 
-  }
+  // }
 
-  onExtensionWebUiVisible(message, sendResponse){
+  // onExtensionWebUiVisible(message, sendResponse){
     
-    // acknowledge receipt
-    ack(sendResponse);
+  //   // acknowledge receipt
+  //   ack(sendResponse);
 
-    // hiding the popup
-    window.close();
+  //   // hiding the popup
+  //   window.close();
 
-  }
+  // }
 
   listenToMessages(){
 
     startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onSettingsDataReceived
-      },
+      // {
+      //   param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
+      //   callback: this.onSettingsDataReceived
+      // },
       // {
       //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
       //   callback: this.onSwResponseReceived
       // },
-      {
-        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED].join(messageParams.separator), 
-        callback: this.onExtensionCodeInjected
-      },
-      {
-        param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_LOADED].join(messageParams.separator), 
-        callback: this.onExtensionWebUiVisible
-      },
+      // {
+      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED].join(messageParams.separator), 
+      //   callback: this.onExtensionCodeInjected
+      // },
+      // {
+      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_LOADED].join(messageParams.separator), 
+      //   callback: this.onExtensionWebUiVisible
+      // },
     ]);
 
   }
@@ -238,57 +211,46 @@ export default class HomeView extends React.Component{
 
   render(){
 
-    if (!this.state.currentPageTitle){
-      return (<></>)
-    }
+    return (
+      <>
 
-    // Redirecting to a different interface depending on the url params
-    if (this.state.currentPageTitle != appParams.COMPONENT_CONTEXT_NAMES.HOME){
-      return <Navigate replace to={"/index.html/" + this.state.currentPageTitle} />;
-    }
-
-    if (this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME){
-      return (
-        <>
-
-          <div class="clearfix">
-            {/*setting icon*/}
-            <HomeMenuView globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
+        <div class="clearfix">
+          {/*setting icon*/}
+          <HomeMenuView globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
+        </div>
+        <div class="text-center">
+          <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
+            <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's visits" onClick={() => {this.switchCurrentTab(0)}} >
+              Today {(this.props.globalData.todayVisitsList && this.props.globalData.todayVisitsList.length != 0) ? "("+this.props.globalData.todayVisitsList.length+")" : null}
+            </button>
+            <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
+              All {(this.props.globalData.allVisits && this.props.globalData.allVisits.visitCount != this.props.globalData.todayVisitsList.length) ? "("+this.props.globalData.allVisits.visitCount+")" : null}
+            </button>
           </div>
-          <div class="text-center">
-            <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
-              <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's visits" onClick={() => {this.switchCurrentTab(0)}} >
-                Today {(this.props.globalData.todayVisitsList && this.props.globalData.todayVisitsList.length != 0) ? "("+this.props.globalData.todayVisitsList.length+")" : null}
-              </button>
-              <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
-                All {(this.props.globalData.allVisits && this.props.globalData.allVisits.visitCount != this.props.globalData.todayVisitsList.length) ? "("+this.props.globalData.allVisits.visitCount+")" : null}
-              </button>
-            </div>
-          </div>
+        </div>
 
-          {/* Today visits List Tab */}
-          { this.state.currentTabIndex == 0 && <div class="mt-4">
-                                                <VisitListView objects={this.props.globalData.todayVisitsList} seeMore={() => {}} loading={false} visitLeft={false} />
-                                                </div>}
-
-          {/* All visits List Tab */}
-          { this.state.currentTabIndex == 1 && <div>
-                                                <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES} context={appParams.COMPONENT_CONTEXT_NAMES.HOME} />
-                                                <AggregatedVisitListView objects={this.props.globalData.allVisits ? this.props.globalData.allVisits.list : null} seeMore={() => {this.getVisitList("all")}} loading={this.state.loadingAllVisits} visitLeft={this.state.allVisitLeft} context={this.props.globalData.allVisits ? this.props.globalData.allVisits.scope : "all"}/>
+        {/* Today visits List Tab */}
+        { this.state.currentTabIndex == 0 && <div class="mt-4">
+                                              <VisitListView objects={this.props.globalData.todayVisitsList} seeMore={() => {}} loading={false} visitLeft={false} />
                                               </div>}
 
-          <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
-            <Offcanvas.Header closeButton>
-              <Offcanvas.Title>Reminders</Offcanvas.Title>
-            </Offcanvas.Header>
-            <Offcanvas.Body>
-              { this.props.globalData.todayReminderList && <ReminderListView objects={this.props.globalData.todayReminderList} />}
-            </Offcanvas.Body>
-          </Offcanvas>
+        {/* All visits List Tab */}
+        { this.state.currentTabIndex == 1 && <div>
+                                              <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES} context={appParams.COMPONENT_CONTEXT_NAMES.HOME} />
+                                              <AggregatedVisitListView objects={this.props.globalData.allVisits ? this.props.globalData.allVisits.list : null} seeMore={() => {this.getVisitList("all")}} loading={this.state.loadingAllVisits} visitLeft={this.state.allVisitLeft} context={this.props.globalData.allVisits ? this.props.globalData.allVisits.scope : "all"}/>
+                                            </div>}
 
-        </>
-      )
-    }
+        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Reminders</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            { this.props.globalData.todayReminderList && <ReminderListView objects={this.props.globalData.todayReminderList} />}
+          </Offcanvas.Body>
+        </Offcanvas>
+
+      </>
+    )
 
   }
 }

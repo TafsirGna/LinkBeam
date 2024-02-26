@@ -350,7 +350,7 @@ export default class SettingsView extends React.Component{
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li><Link class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</Link></li>  
+                            <li><a class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</a></li>  
                         ))}
                     </ul>
                   </div>
@@ -367,7 +367,7 @@ export default class SettingsView extends React.Component{
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li><Link class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</Link></li>  
+                            <li><a class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</a></li>  
                         ))}
                     </ul>
                   </div>
@@ -392,7 +392,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
-                  <Link to="/index.html/Keywords" class="text-primary badge" title="Add new keyword">Add</Link>
+                  <a href="/index.html?view=Keywords" class="text-primary badge" title="Add new keyword">Add</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -401,7 +401,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.reminderCount}</span></strong>
-                  <Link to="/index.html/Reminders" class="text-primary badge" title="View reminders">View</Link>
+                  <a href="/index.html/Reminders" class="text-primary badge" title="View reminders">View</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -410,7 +410,7 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">My identity</strong>
-                  <Link to="/index.html/MyAccount" class="text-primary badge" title="View My ID">View</Link>
+                  <a href="/index.html/MyAccount" class="text-primary badge" title="View My ID">View</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

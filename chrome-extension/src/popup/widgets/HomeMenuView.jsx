@@ -32,8 +32,8 @@ export default class HomeMenu extends React.Component{
                               </div>
                             </div>
                             <ul class="dropdown-menu shadow-lg border border-secondary">
-                              {/*{ (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false) && <li><Link class="dropdown-item small" onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}>Show ui in tab</Link></li>}*/}
-                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><Link class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow()}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</Link></li>}
+                              {/*{ (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false) && <li><a class="dropdown-item small" onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}>Show ui in tab</a></li>}*/}
+                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow()}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
                             </ul>
                           </div>}
 
@@ -43,21 +43,21 @@ export default class HomeMenu extends React.Component{
             <LayersIcon size="18" className=""/>
           </div>
           <ul class="dropdown-menu shadow-lg">
-            <li><Link class="dropdown-item small" to="/index.html/Statistics">Profiles' stats</Link></li>
+            <li><a class="dropdown-item small" href="/index.html?view=Statistics">Profiles' stats</a></li>
             <li>
-              <Link class="dropdown-item small" to="/index.html?redirect_to=FeedDashView" target="_blank">
+              <a class="dropdown-item small" href="/index.html?view=FeedDash" target="_blank">
                 Feed's stats
-              </Link>
+              </a>
             </li>
-            <li><Link class="dropdown-item small" to="/index.html?redirect_to=CalendarView" target="_blank">Calendar</Link></li>
-            <li><Link class="dropdown-item small" to="/index.html/Bookmarks">Bookmarks</Link></li>
+            <li><a class="dropdown-item small" href="/index.html?view=Calendar" target="_blank">Calendar</a></li>
+            <li><a class="dropdown-item small" href="/index.html?view=Bookmarks">Bookmarks</a></li>
             <li>
-              <Link class="dropdown-item small" to="/index.html/ProfileActivity">
+              <a class="dropdown-item small" href="/index.html?view=ProfileActivity">
                 All Profiles' Activity
-              </Link>
+              </a>
             </li>
-            <li><Link class="dropdown-item small" to="/index.html/Settings">Settings</Link></li>
-            <li><Link class="dropdown-item small" to="/index.html/About">About</Link></li>
+            <li><a class="dropdown-item small" href="/index.html?view=Settings">Settings</a></li>
+            <li><a class="dropdown-item small" href="/index.html?view=About">About</a></li>
           </ul>
         </div>
       </>

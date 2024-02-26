@@ -53,12 +53,12 @@ export default class AboutView extends React.Component{
               <a href="https://github.com/TafsirGna/LinkBeam" target="_blank" title="View on github" class="mx-2">
                 <GithubIcon size="24"/>
               </a>
-              <Link to="mailto:gnatafsir@yahoo.fr" /*"/index.html/Feedback"*/ title="Send feedback" class="mx-2">
+              <a href="mailto:gnatafsir@yahoo.fr" /*"/index.html/Feedback"*/ title="Send feedback" class="mx-2">
                 <SendIcon size="24"/>                
-              </Link>
-              <Link to="/index.html/LicenseCredits" title="See License and Credits" class="mx-2">
+              </a>
+              <a href="/index.html?view=LicenseCredits" title="See License and Credits" class="mx-2">
                 <TagIcon size="24" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

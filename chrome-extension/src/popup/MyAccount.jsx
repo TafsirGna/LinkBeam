@@ -185,7 +185,7 @@ export default class MyAccount extends React.Component{
     return (
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle="Settings"/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
           <div class="">
             <div class="text-center">
             	<img src={this.getUserIcon()} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>

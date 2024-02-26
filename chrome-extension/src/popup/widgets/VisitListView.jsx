@@ -2,7 +2,6 @@
 import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
-import { Link } from 'react-router-dom';
 import { AlertCircleIcon } from "./SVGs";
 import { dbDataSanitizer } from "../Local_library";
 
@@ -55,7 +54,7 @@ export default class VisitListView extends React.Component{
         { this.props.objects && this.props.objects.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((visit) => (<Link to={"/index.html?redirect_to=ProfileView&data=" + visit.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    this.props.objects.map((visit) => (<a href={"/index.html?view=Profile&data=" + visit.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                 <img src={visit.profile.avatar ? visit.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                 <div class="d-flex gap-2 w-100 justify-content-between">
                                   <div>
@@ -69,7 +68,7 @@ export default class VisitListView extends React.Component{
                                   </div>
                                   {/*<small class="opacity-50 text-nowrap">{moment(visit.date, moment.ISO_8601).fromNow()}</small>*/}
                                 </div>
-                              </Link>))
+                              </a>))
                   }
                 </div>
                 <div class="text-center my-2 ">

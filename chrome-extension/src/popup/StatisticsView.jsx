@@ -14,7 +14,6 @@ import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot"; Connec
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
-import { Link } from 'react-router-dom';
 
 import { 
   saveCurrentPageTitle, 
@@ -130,7 +129,7 @@ export default class StatisticsView extends React.Component{
     localStorage.setItem('carrouselChartView', this.state.view);
     localStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
 
-    window.open("/index.html?redirect_to=ChartExpansionView", '_blank');
+    window.open("/index.html?view=ChartExpansion", '_blank');
 
   }
 
@@ -232,7 +231,7 @@ export default class StatisticsView extends React.Component{
                                 </div>
                                 <ul class="dropdown-menu shadow-lg border border-secondary">
                                   {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
-                                        <li><Link class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</Link></li>  
+                                        <li><a class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</a></li>  
                                     ))}
                                 </ul>
                               </div>

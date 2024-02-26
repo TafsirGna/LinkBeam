@@ -21,6 +21,7 @@ export class DataExtractorBase {
 
 	  chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: {profileData: data, tabId: this.tabId}}, (response) => {
 	    console.log('linkedin-data response sent', response, data);
+	    this.webPageData = data;
 	  });
 
 	}
@@ -41,19 +42,22 @@ export class DataExtractorBase {
 	  setInterval(
 	    () => {
 
-	      // if (this.webPageData == {}){
-	      //   sendTabData({}, tabId);
-	      //   return;
-	      // }
+			// if (this.webPageData == {}){
+			//   sendTabData({}, tabId);
+			//   return;
+			// }
 
-	      // var data = extractData();
-	      // if (data == this.webPageData){
-	      //   data = {};
-	      // }
-	      // sendTabData(data, tabId);
-	      // this.webPageData = data;
+			// var data = extractData();
+			// if (data == this.webPageData){
+			//   data = {};
+			// }
+			// sendTabData(data, tabId);
+			// this.webPageData = data;
 
-	      this.sendTabData(this.extractData());
+	    	var webPageData = this.extractData();
+	    	if (webPageData != this.webPageData){
+	    		this.sendTabData(webPageData);
+	    	}
 
 	    }, 
 	    3000

@@ -37,7 +37,7 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      redirect_to: null,
+      urlTarget: null,
       swDbStatus: null,
       tmps: {
         visitsList: null,
@@ -133,11 +133,16 @@ export default class App extends React.Component{
     );
 
     // Getting the window url params
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("redirect_to") != null){
-      var redirect_to = {view: urlParams.get("redirect_to"), data: urlParams.get("data")};
-
-      this.setState({redirect_to: redirect_to});
+    const urlParams = new URLSearchParams(window.location.search),
+          urlTarget = urlParams.get("view");
+    console.log("UUUUUUUUUUUUUU  0:", urlTarget, urlParams.get("view"));
+    if (urlTarget != null){
+      if (urlTarget == (new URLSearchParams(window.location.search)).get("view")){
+        this.setState({urlTarget: urlTarget});
+      }
+    }
+    else{
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["currentPageTitle"] }});
     }
 
     // Sending a request to know if some reminders are set for today
@@ -312,6 +317,20 @@ export default class App extends React.Component{
     ack(sendResponse);
 
     var settings = message.data.objectData.object;
+
+    if (Object.hasOwn(settings, "currentPageTitle")){
+      
+      var urlTarget = settings.currentPageTitle;
+      console.log("UUUUUUUUUUUUUU  4:", (new URLSearchParams(window.location.search)).get("view"));
+
+      if (!(new URLSearchParams(window.location.search)).get("view")){
+        this.setState({urlTarget: urlTarget}/*, () => {
+          // Requesting the notification settings
+          // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
+        }*/);
+      }
+
+    }
 
     if (Object.hasOwn(settings, "lastDataResetDate")){
       
@@ -519,38 +538,54 @@ export default class App extends React.Component{
 
     return(
       <>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/index.html" element={
-              this.state.swDbStatus == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET ?
-                <Navigate replace to={"/index.html/Error?data="+this.state.swDbStatus} />
-                : this.state.redirect_to && this.state.redirect_to.view == "ProfileView" ? 
-                  <Navigate replace to={"/index.html/Profile?url=" + this.state.redirect_to.data} />
-                  : this.state.redirect_to && this.state.redirect_to.view == "CalendarView" ?
-                      <Navigate replace to={"/index.html/Calendar"} />
-                      : this.state.redirect_to && this.state.redirect_to.view == "FeedDashView" ?
-                        <Navigate replace to={"/index.html/FeedDash"} />
-                        : this.state.redirect_to && this.state.redirect_to.view == "ChartExpansionView" ?
-                          <Navigate replace to={"/index.html/ChartExpansion"} />
-                          : <HomeView globalData={this.state.globalData} />
-            }/>
-            <Route path="/index.html/About" element={<AboutView />} />
-            <Route path="/index.html/Settings" element={<SettingsView globalData={this.state.globalData} />} />
-            <Route path="/index.html/FeedDash" element={<FeedDashView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Statistics" element={<StatisticsView globalData={this.state.globalData}/>} />
-            <Route path="/index.html/Keywords" element={<KeywordView globalData={this.state.globalData} />} />
-            <Route path="/index.html/MyAccount" element={<MyAccount globalData={this.state.globalData} />} />
-            <Route path="/index.html/Profile" element={<MainProfileView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Reminders" element={<ReminderView globalData={this.state.globalData} />} />
-            <Route path="/index.html/ProfileActivity" element={<ProfileActivityView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Bookmarks" element={<BookmarkView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Feedback" element={<FeedbackView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Calendar" element={<CalendarView globalData={this.state.globalData} />} />
-            <Route path="/index.html/LicenseCredits" element={<LicenseCreditsView globalData={this.state.globalData} />} />
-            <Route path="/index.html/ChartExpansion" element={<ChartExpansionView globalData={this.state.globalData} />} />
-            <Route path="/index.html/Error" element={<ErrorPageView />} />
-          </Routes>
-        </BrowserRouter>
+
+        {/*Error Page */}
+        { this.state.swDbStatus == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET && <ErrorPageView />}
+
+        {/*Index Page*/}
+        { this.state.urlTarget == "Home" && <HomeView globalData={this.state.globalData} /> }
+
+        {/*About Page*/}
+        { this.state.urlTarget == "About" && <AboutView /> }
+
+        {/*Settings Page */}
+        { this.state.urlTarget == "Settings" && <SettingsView globalData={this.state.globalData} /> }
+
+        {/*FeedDash Page */}
+        { this.state.urlTarget == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
+
+        {/*Statistics Page*/}
+        { this.state.urlTarget == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
+
+        {/*Keywords Page */}
+        { this.state.urlTarget == "Keywords" && <KeywordView globalData={this.state.globalData} />}
+
+        {/*MyAccount Page */}
+        { this.state.urlTarget == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
+
+        {/*Profile Page */}
+        { this.state.urlTarget == "Profile" && <MainProfileView globalData={this.state.globalData} />}
+
+        {/*Reminders Page*/}
+        { this.state.urlTarget == "Reminders" && <ReminderView globalData={this.state.globalData} />}
+
+        {/*ProfileActivity Page*/}
+        { this.state.urlTarget == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
+
+        {/*Bookmarks Page*/}
+        { this.state.urlTarget == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
+
+        {/*Feedback Page*/}
+        { this.state.urlTarget == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
+
+        {/*Calendar Page*/}
+        { this.state.urlTarget == "Calendar" && <CalendarView globalData={this.state.globalData} />}
+
+        {/*LicenseCredits Page */}
+        { this.state.urlTarget == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
+
+        {/*ChartExpansion Page*/}
+        { this.state.urlTarget == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
 
       </>
     );
