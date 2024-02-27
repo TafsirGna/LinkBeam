@@ -1466,32 +1466,16 @@ function sendBackResponse(action, objectStoreName, data){
     });
 }
 
-// Script for processing linkedin data
-
-function processTabData(tabData){
-
-    console.log("linkedInData : ", tabData);
-
-    if (currentTabCheckContext == "popup"){
-        sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, tabData.profileData);
-        // resetting the variable
-        currentTabCheckContext = null;
-        return;   
-    }
-
-    if (!tabData.profileData){
-        console.log("Not a valid linkedin page");
-        return;
-    }
+function recordProfileVisit(tabData){
 
     if (currentTabID != tabData.tabId){
         return;
     }
 
-    delete tabData.profileData.codeInjected;
+    delete tabData.extractedData.codeInjected;
 
-    var profileObject = tabData.profileData;
-    var dateTime = new Date().toISOString();
+    var profileObject = tabData.extractedData;
+    const dateTime = new Date().toISOString();
 
     const openNewTab = (profileObject) => {
         // open new tab
@@ -1628,6 +1612,74 @@ function processTabData(tabData){
             }
         }
     );
+
+}
+
+function recordFeedVisit(tabData){
+
+    const dateTime = new Date().toISOString();
+
+    const addVisitObject = () => {
+        var visitObject = {
+            date: dateTime,
+            url: tabData.extractedData.url,
+            timeCount: 0, 
+            tabId: tabData.tabId,
+        };
+
+        addObject(
+            dbData.objectStoreNames.VISITS, 
+            {context: "", criteria: { props: visitObject }},
+            () => {},
+        );
+    }
+
+    addVisitObject();
+
+}
+
+// Script for processing linkedin data
+
+function processTabData(tabData){
+
+    // console.log("linkedInData : ", tabData);
+
+    // if (currentTabCheckContext == "popup"){
+    //     sendBackResponse(messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED, tabData.extractedData);
+    //     // resetting the variable
+    //     currentTabCheckContext = null;
+    //     return;   
+    // }
+
+    if (!tabData.extractedData){
+        
+        getList(
+            dbData.objectStoreNames.VISITS,
+            { context: "data_export", criteria: { props: { url: tabData.extractedData.url, tabId: tabData.tabId } } },
+            (visits) => {
+
+                var visit = visits ? visits[0] : null;
+                if (visit){
+                    var timeCount = visit.timeCount + 3;
+                    updateObject(
+                        dbData.objectStoreNames.VISITS, 
+                        { context: "", criteria: { props: { object: visit, timeCount: timeCount } } },
+                        () => {},
+                    );
+                }
+
+            },
+        );
+
+    }
+    else{
+        if (tabData.extractedData.url.indexOf("/feed") != -1){ // feed data
+            recordFeedVisit(tabData);
+        }
+        else{ // profile data
+            recordProfileVisit(tabData);
+        }
+    }
 
     // checking that the setting allows the injection
     // getSettingsData(["notifications", "productID"], (results) => {

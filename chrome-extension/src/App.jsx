@@ -135,7 +135,7 @@ export default class App extends React.Component{
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search),
           urlTarget = urlParams.get("view");
-    console.log("UUUUUUUUUUUUUU  0:", urlTarget, urlParams.get("view"));
+    // console.log("UUUUUUUUUUUUUU  0:", urlTarget, urlParams.get("view"));
     if (urlTarget != null){
       if (urlTarget == (new URLSearchParams(window.location.search)).get("view")){
         this.setState({urlTarget: urlTarget});
@@ -321,9 +321,8 @@ export default class App extends React.Component{
     if (Object.hasOwn(settings, "currentPageTitle")){
       
       var urlTarget = settings.currentPageTitle;
-      console.log("UUUUUUUUUUUUUU  4:", (new URLSearchParams(window.location.search)).get("view"));
 
-      if (!(new URLSearchParams(window.location.search)).get("view")){
+      if (!(new URLSearchParams(window.location.search)).get("view")){ // dumb but necessary to prevent tabs from mimicing the same behaviour
         this.setState({urlTarget: urlTarget}/*, () => {
           // Requesting the notification settings
           // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
