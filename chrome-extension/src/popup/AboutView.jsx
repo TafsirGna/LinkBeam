@@ -1,6 +1,7 @@
 /*import './About.css'*/
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
+import beaver_icon from '../assets/beaver_icon.png';
 import BackToPrev from "./widgets/BackToPrev";
 import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -47,7 +48,9 @@ export default class AboutView extends React.Component{
               LinkBeam is a light app designed to vizualize in a different way all publicly available linkedin profiles.
             </p>
             <p class="mt-2 small">
-              Designed by {appParams.appAuthor}.
+              Designed by {appParams.appAuthor}
+              <img src={beaver_icon} alt="twbs" width="14" height="14" class="rounded-circle flex-shrink-0"/>
+              .
             </p>
             <div>
               <a href="https://github.com/TafsirGna/LinkBeam" target="_blank" title="View on github" class="mx-2">

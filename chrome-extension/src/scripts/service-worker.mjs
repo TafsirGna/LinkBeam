@@ -1655,7 +1655,7 @@ function processTabData(tabData){
         
         getList(
             dbData.objectStoreNames.VISITS,
-            { context: "data_export", criteria: { props: { url: tabData.extractedData.url, tabId: tabData.tabId } } },
+            { context: "data_export", criteria: { props: { url: tabData.tabUrl, tabId: tabData.tabId } } },
             (visits) => {
 
                 var visit = visits ? visits[0] : null;
