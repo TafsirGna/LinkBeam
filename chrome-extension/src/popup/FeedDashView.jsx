@@ -51,6 +51,7 @@ export default class FeedDashView extends React.Component{
               value={this.state.selectedDate}
               onChange={this.handleDateInputChange}
               className="float-end shadow-sm w-25"
+              size="sm"
             />
           </div>
 

@@ -13,15 +13,15 @@ import {
   registerParseUser,
   appParams,
 } from "./Local_library";
-import { env } from "../../.env.js";
-import Parse from 'parse/dist/parse.min.js';
-import { genPassword } from "../.private_library";
+// import { env } from "../../.env.js";
+// import Parse from 'parse/dist/parse.min.js';
+// import { genPassword } from "../.private_library";
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 
 // Parse initialization configuration goes here
-Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
-Parse.serverURL = appParams.PARSE_HOST_URL;
+// Parse.initialize(env.PARSE_APPLICATION_ID, env.PARSE_JAVASCRIPT_KEY);
+// Parse.serverURL = appParams.PARSE_HOST_URL;
 
 export default class FeedbackView extends React.Component{
 
@@ -42,7 +42,7 @@ export default class FeedbackView extends React.Component{
     this.onSendButtonClick = this.onSendButtonClick.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    this.storeObjectInParse = this.storeObjectInParse.bind(this);
+    // this.storeObjectInParse = this.storeObjectInParse.bind(this);
   }
 
   componentDidMount() {
@@ -154,29 +154,29 @@ export default class FeedbackView extends React.Component{
 
   }
 
-  storeObjectInParse = () => {
+  // storeObjectInParse = () => {
 
-    (async () => {
-      const myNewObject = new Parse.Object('UsageFeedback');
-      myNewObject.set('createdBy', Parse.User.current());
-      myNewObject.set('text', this.state.feedback.text);
-      myNewObject.set('subject', this.state.feedback.title);
-      try {
-        const result = await myNewObject.save();
-        // Access the Parse Object attributes using the .GET method
-        console.log('UsageFeedback created', result);
+  //   (async () => {
+  //     const myNewObject = new Parse.Object('UsageFeedback');
+  //     myNewObject.set('createdBy', Parse.User.current());
+  //     myNewObject.set('text', this.state.feedback.text);
+  //     myNewObject.set('subject', this.state.feedback.title);
+  //     try {
+  //       const result = await myNewObject.save();
+  //       // Access the Parse Object attributes using the .GET method
+  //       console.log('UsageFeedback created', result);
 
-        var feedbackObject = this.state.feedback;
-        sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: feedbackObject});
+  //       var feedbackObject = this.state.feedback;
+  //       sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, {property: "feedback", value: feedbackObject});
 
-        // this.setState({sending: false});
+  //       // this.setState({sending: false});
 
-      } catch (error) {
-        console.error('Error while creating UsageFeedback: ', error);
-      }
-    })();
+  //     } catch (error) {
+  //       console.error('Error while creating UsageFeedback: ', error);
+  //     }
+  //   })();
 
-  }
+  // }
 
   onFeedbackTextInputChange(event){
 

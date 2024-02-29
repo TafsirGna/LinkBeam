@@ -9,6 +9,7 @@ const eventBus = {
   DOWNLOAD_CHART_IMAGE: "downloadChartImage",
   ALL_VISITS_TAB_CLICKED: "allVisitsTabClicked",
   GET_ALL_VISITS: "getAllVisits",
+  SWITCH_TO_VIEW: "switchToView",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

@@ -37,7 +37,6 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      urlTarget: null,
       swDbStatus: null,
       tmps: {
         visitsList: null,
@@ -50,7 +49,9 @@ export default class App extends React.Component{
         todayReminderList: null,
         allVisits: null,
         todayVisitsList: null,
-        settings: {},
+        settings: {
+          currentPageTitle: null,
+        },
         currentTabWebPageData: null,
       }
     };
@@ -132,14 +133,28 @@ export default class App extends React.Component{
       }
     );
 
+    eventBus.on(eventBus.SWITCH_TO_VIEW, (data) => {
+        
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.settings.currentPageTitle = data.pageTitle;
+          return { globalData };
+        });
+
+      }
+    );
+
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search),
           urlTarget = urlParams.get("view");
-    // console.log("UUUUUUUUUUUUUU  0:", urlTarget, urlParams.get("view"));
     if (urlTarget != null){
-      if (urlTarget == (new URLSearchParams(window.location.search)).get("view")){
-        this.setState({urlTarget: urlTarget});
-      }
+      // if (urlTarget == (new URLSearchParams(window.location.search)).get("view")){
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.settings.currentPageTitle = urlTarget;
+          return { globalData };
+        });
+      // }
     }
     else{
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["currentPageTitle"] }});
@@ -156,6 +171,7 @@ export default class App extends React.Component{
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_VISIT);
     eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_REMINDER);
     eventBus.remove(eventBus.ALL_VISITS_TAB_CLICKED);
+    eventBus.remove(eventBus.SWITCH_TO_VIEW);
 
   }
 
@@ -320,20 +336,6 @@ export default class App extends React.Component{
 
     Object.keys(settings).forEach(property => {
 
-      if (property == "currentPageTitle"){
-
-        var urlTarget = settings.currentPageTitle;
-
-        if (!(new URLSearchParams(window.location.search)).get("view")){ // dumb but necessary to prevent tabs from mimicing the same behaviour
-          this.setState({urlTarget: urlTarget}/*, () => {
-            // Requesting the notification settings
-            // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
-          }*/);
-        }
-
-        return;
-      }
-
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
         globalData.settings[property] = settings[property];
@@ -341,7 +343,7 @@ export default class App extends React.Component{
       });
 
     });
-    
+
   }
 
   onSwResponseReceived(message, sendResponse){
@@ -485,49 +487,49 @@ export default class App extends React.Component{
         { this.state.swDbStatus == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET && <ErrorPageView />}
 
         {/*Index Page*/}
-        { this.state.urlTarget == "Home" && <HomeView globalData={this.state.globalData} /> }
+        { this.state.globalData.settings.currentPageTitle == "Home" && <HomeView globalData={this.state.globalData} /> }
 
         {/*About Page*/}
-        { this.state.urlTarget == "About" && <AboutView /> }
+        { this.state.globalData.settings.currentPageTitle == "About" && <AboutView /> }
 
         {/*Settings Page */}
-        { this.state.urlTarget == "Settings" && <SettingsView globalData={this.state.globalData} /> }
+        { this.state.globalData.settings.currentPageTitle == "Settings" && <SettingsView globalData={this.state.globalData} /> }
 
         {/*FeedDash Page */}
-        { this.state.urlTarget == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
+        { this.state.globalData.settings.currentPageTitle == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
 
         {/*Statistics Page*/}
-        { this.state.urlTarget == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
+        { this.state.globalData.settings.currentPageTitle == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
 
         {/*Keywords Page */}
-        { this.state.urlTarget == "Keywords" && <KeywordView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Keywords" && <KeywordView globalData={this.state.globalData} />}
 
         {/*MyAccount Page */}
-        { this.state.urlTarget == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
 
         {/*Profile Page */}
-        { this.state.urlTarget == "Profile" && <MainProfileView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Profile" && <MainProfileView globalData={this.state.globalData} />}
 
         {/*Reminders Page*/}
-        { this.state.urlTarget == "Reminders" && <ReminderView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Reminders" && <ReminderView globalData={this.state.globalData} />}
 
         {/*ProfileActivity Page*/}
-        { this.state.urlTarget == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
 
         {/*Bookmarks Page*/}
-        { this.state.urlTarget == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
 
         {/*Feedback Page*/}
-        { this.state.urlTarget == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
 
         {/*Calendar Page*/}
-        { this.state.urlTarget == "Calendar" && <CalendarView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "Calendar" && <CalendarView globalData={this.state.globalData} />}
 
         {/*LicenseCredits Page */}
-        { this.state.urlTarget == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
 
         {/*ChartExpansion Page*/}
-        { this.state.urlTarget == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
+        { this.state.globalData.settings.currentPageTitle == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
 
       </>
     );

@@ -17,7 +17,9 @@ import {
   dbData, 
   appParams,
   procExtractedData,
+  switchToView,
 } from "./Local_library";
+import eventBus from "./EventBus";
 // import Button from 'react-bootstrap/Button';
 
 export default class SettingsView extends React.Component{
@@ -366,7 +368,13 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
-                  <a href="/index.html?view=Keywords" class="text-primary badge" title="Add new keyword">Add</a>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="Add new keyword"
+                    onClick={() => {switchToView(eventBus, "Keywords")}}>
+                      Add
+                  </a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -375,7 +383,13 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.reminderCount}</span></strong>
-                  <a href="/index.html/Reminders" class="text-primary badge" title="View reminders">View</a>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="View reminders"
+                    onClick={() => {switchToView(eventBus, "Reminders")}}>
+                      View
+                  </a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
@@ -384,7 +398,13 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">My identity</strong>
-                  <a href="/index.html/MyAccount" class="text-primary badge" title="View My ID">View</a>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="View My ID"
+                    onClick={() => {switchToView(eventBus, "MyAccount")}}>
+                      View
+                  </a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>

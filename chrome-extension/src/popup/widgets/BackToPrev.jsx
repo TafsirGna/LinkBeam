@@ -1,5 +1,7 @@
 /*import './BackToPrev.css'*/
 import { appParams } from "../Local_library";
+import { switchToView } from "../Local_library";
+import eventBus from "../EventBus";
 
 function BackToPrev(props) {
   /*const [count, setCount] = useState(0)*/
@@ -8,7 +10,8 @@ function BackToPrev(props) {
     <>
     	<div class="clearfix">
         <a 
-          href={ "/index.html?view=" + props.prevPageTitle }
+          href="#"
+          onClick={() => {switchToView(eventBus, props.prevPageTitle)}}
           title={"Back" + (props.prevPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME ? "" : " to " + props.prevPageTitle)}>
        		<svg viewBox="0 0 24 24" width="20" height="20" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 me-3 handy-cursor float-start"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         </a>

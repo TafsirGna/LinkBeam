@@ -16,8 +16,8 @@ import {
   appParams, 
   checkCurrentTab,
   deactivateTodayReminders,
-  } from "./Local_library";
-  import eventBus from "./EventBus";
+} from "./Local_library";
+import eventBus from "./EventBus";
 
 export default class HomeView extends React.Component{
 

@@ -10,6 +10,10 @@ import {
   appParams,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
+import eventBus from "./EventBus";
+import { 
+  switchToView,  
+} from "./Local_library";
 
 export default class AboutView extends React.Component{
 
@@ -59,7 +63,7 @@ export default class AboutView extends React.Component{
               <a href="mailto:gnatafsir@yahoo.fr" /*"/index.html/Feedback"*/ title="Send feedback" class="mx-2">
                 <SendIcon size="24"/>                
               </a>
-              <a href="/index.html?view=LicenseCredits" title="See License and Credits" class="mx-2">
+              <a href="#" title="See License and Credits" class="mx-2" onClick={() => {switchToView(eventBus, "LicenseCredits")}}>
                 <TagIcon size="24" />
               </a>
             </div>

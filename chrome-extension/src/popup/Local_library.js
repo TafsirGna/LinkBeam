@@ -23,6 +23,7 @@ export const appParams = {
   WEB_APP_ITEM_LIMIT_NUM: 3,
   DATE_RANGE_SEPARATOR: "-",
   COMPONENT_CONTEXT_NAMES: {
+    ABOUT: "About",
     HOME: "Home",
     CALENDAR: "Calendar",
     REMINDERS: "Reminders",
@@ -73,6 +74,13 @@ export const chartData = {
         ],
 
 }
+
+export const switchToView = (eventBus, pageTitle) => {
+
+  eventBus.dispatch(eventBus.SWITCH_TO_VIEW, {pageTitle: pageTitle});
+  
+}
+
 
 export const dbDataSanitizer = {
 

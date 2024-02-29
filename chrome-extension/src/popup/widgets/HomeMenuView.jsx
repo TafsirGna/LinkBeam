@@ -2,9 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { activateInCurrentTab } from "../Local_library";
+import { activateInCurrentTab, switchToView } from "../Local_library";
 import bell_icon from '../../assets/bell_icon.png';
 import { LayersIcon } from "./SVGs";
+import eventBus from "../EventBus";
 
 export default class HomeMenu extends React.Component{
 
@@ -43,21 +44,21 @@ export default class HomeMenu extends React.Component{
             <LayersIcon size="18" className=""/>
           </div>
           <ul class="dropdown-menu shadow-lg">
-            <li><a class="dropdown-item small" href="/index.html?view=Statistics">Profiles' stats</a></li>
+            <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "Statistics")}}>Profiles' stats</a></li>
             <li>
               <a class="dropdown-item small" href="/index.html?view=FeedDash" target="_blank">
                 Feed's stats
               </a>
             </li>
             <li><a class="dropdown-item small" href="/index.html?view=Calendar" target="_blank">Calendar</a></li>
-            <li><a class="dropdown-item small" href="/index.html?view=Bookmarks">Bookmarks</a></li>
+            <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "Bookmarks")}}>Bookmarks</a></li>
             <li>
-              <a class="dropdown-item small" href="/index.html?view=ProfileActivity">
+              <a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "ProfileActivity")}}>
                 All Profiles' Activity
               </a>
             </li>
-            <li><a class="dropdown-item small" href="/index.html?view=Settings">Settings</a></li>
-            <li><a class="dropdown-item small" href="/index.html?view=About">About</a></li>
+            <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "Settings")}}>Settings</a></li>
+            <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "About")}}>About</a></li>
           </ul>
         </div>
       </>
