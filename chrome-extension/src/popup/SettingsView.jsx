@@ -43,9 +43,7 @@ export default class SettingsView extends React.Component{
     };
 
     this.deleteData = this.deleteData.bind(this);
-    this.saveCheckBoxNewState = this.saveCheckBoxNewState.bind(this);
-    this.saveAutoTabOpeningState = this.saveAutoTabOpeningState.bind(this);
-    this.saveDarkThemeState = this.saveDarkThemeState.bind(this);
+    this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
     this.listenToMessages = this.listenToMessages.bind(this);
     this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
@@ -65,25 +63,16 @@ export default class SettingsView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
-    if (!Object.hasOwn(this.props.globalData.settings, 'notifications')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["notifications"] } });
-    }
-
-    if (!Object.hasOwn(this.props.globalData.settings, 'autoTabOpening')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["autoTabOpening"] } });
-    }
-
-    if (!Object.hasOwn(this.props.globalData.settings, 'outdatedPostReminder')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["outdatedPostReminder"] } });
-    }
-
-    if (!Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: ["lastDataResetDate"] } });
-    }
-    else{
-      // Offcanvas
-      this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
-    }
+    (['notifications', 'autoTabOpening', 'outdatedPostReminder', 'maxTimeAlarm', 'lastDataResetDate']).forEach(property => {
+      if (!Object.hasOwn(this.props.globalData.settings, property)){
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: [property] } });
+      }
+      else{
+        if (property == "lastDataResetDate"){
+          this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+        }
+      }
+    });
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
@@ -226,22 +215,6 @@ export default class SettingsView extends React.Component{
 
   }
 
-  saveCheckBoxNewState(event){
-
-    // Initiating the recording of the new state
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {notifications: event.target.checked} } });
-  }
-
-  saveAutoTabOpeningState(event){
-
-    // Initiating the recording of the new state
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {autoTabOpening: event.target.checked} } });
-  }
-
-  saveDarkThemeState(){
-
-  }
-
   deleteData(){
     const response = confirm("Do you confirm the erase of your data as specified ?");
     if (response){
@@ -294,10 +267,11 @@ export default class SettingsView extends React.Component{
 
   }
 
-  setPostReminderValue(value){
-
+  saveSettingsPropertyValue(property, value){
+    var props = {};
+    props[property] = value;
     // Initiating the recording of the new state
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: {outdatedPostReminder: value} } });
+    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: props } });
 
   }
 
@@ -319,7 +293,7 @@ export default class SettingsView extends React.Component{
                     id="notif-custom-switch"
                     label=""
                     checked={this.props.globalData.settings.notifications}
-                    onChange={this.saveCheckBoxNewState}
+                    onChange={(event) => {this.saveSettingsPropertyValue("notifications", event.target.checked);}}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
@@ -334,13 +308,13 @@ export default class SettingsView extends React.Component{
                     id="notif-custom-switch"
                     label=""
                     checked={this.props.globalData.settings.autoTabOpening}
-                    onChange={this.saveAutoTabOpeningState}
+                    onChange={(event) => {this.saveSettingsPropertyValue("autoTabOpening", event.target.checked);}}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
-            {/*<div class="d-flex text-body-secondary pt-3">
+            <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Outdated profiles reminder</strong>
@@ -350,30 +324,30 @@ export default class SettingsView extends React.Component{
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li><a class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</a></li>  
+                            <li><a class="dropdown-item small" onClick={() => {this.saveSettingsPropertyValue("outdatedPostReminder", value)}}>{value}</a></li>  
                         ))}
                     </ul>
                   </div>
                 </div>
               </div>
-            </div>*/}
-            {/*<div class="d-flex text-body-secondary pt-3">
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">Max time alarm</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "maxTimeAlarm") ? this.props.globalData.settings.maxTimeAlarm : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
-                      {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li><a class="dropdown-item small" onClick={() => {this.setPostReminderValue(value)}}>{value}</a></li>  
+                      {["Never", "15 mins", "30 mins", "1 hour"].map((value) => (
+                            <li><a class="dropdown-item small" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>{value}</a></li>  
                         ))}
                     </ul>
                   </div>
                 </div>
               </div>
-            </div>*/}
+            </div>
             {/*<div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">

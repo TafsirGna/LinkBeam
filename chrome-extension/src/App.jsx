@@ -318,87 +318,30 @@ export default class App extends React.Component{
 
     var settings = message.data.objectData.object;
 
-    if (Object.hasOwn(settings, "currentPageTitle")){
-      
-      var urlTarget = settings.currentPageTitle;
+    Object.keys(settings).forEach(property => {
 
-      if (!(new URLSearchParams(window.location.search)).get("view")){ // dumb but necessary to prevent tabs from mimicing the same behaviour
-        this.setState({urlTarget: urlTarget}/*, () => {
-          // Requesting the notification settings
-          // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
-        }*/);
+      if (property == "currentPageTitle"){
+
+        var urlTarget = settings.currentPageTitle;
+
+        if (!(new URLSearchParams(window.location.search)).get("view")){ // dumb but necessary to prevent tabs from mimicing the same behaviour
+          this.setState({urlTarget: urlTarget}/*, () => {
+            // Requesting the notification settings
+            // sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.HOME, criteria: { props: ["notifications"] }});
+          }*/);
+        }
+
+        return;
       }
 
-    }
-
-    if (Object.hasOwn(settings, "lastDataResetDate")){
-      
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.lastDataResetDate = settings.lastDataResetDate;
+        globalData.settings[property] = settings[property];
         return { globalData };
       });
 
-    }
-
-    if (Object.hasOwn(settings, "geoMapData")){
-      
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.geoMapData = settings.geoMapData;
-        return { globalData };
-      });
-
-    }
-
-    if (Object.hasOwn(settings, "productID")){
-
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.productID = settings.productID;
-        return { globalData };
-      });
-
-    }
-
-    if (Object.hasOwn(settings, "notifications")){
-
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.notifications = settings.notifications;
-        return { globalData };
-      });
-
-      if (settings.notifications){
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.currentTabWebPageData = null;
-          return { globalData };
-        });
-      }
-
-    }
-
-    if (Object.hasOwn(settings, "autoTabOpening")){
-
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.autoTabOpening = settings.autoTabOpening;
-        return { globalData };
-      });
-
-    }
-
-    if (Object.hasOwn(settings, "outdatedPostReminder")){
-
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.settings.outdatedPostReminder = settings.outdatedPostReminder;
-        return { globalData };
-      });
-
-    }
-
+    });
+    
   }
 
   onSwResponseReceived(message, sendResponse){

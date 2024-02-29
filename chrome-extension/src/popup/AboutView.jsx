@@ -45,7 +45,7 @@ export default class AboutView extends React.Component{
               </OverlayTrigger>
             </p>
             <p class="fw-light mt-2">
-              LinkBeam is a light app designed to vizualize in a different way all publicly available linkedin profiles.
+              LinkBeam is a light app designed to assist you in your browsing of Linkedin platform.
             </p>
             <p class="mt-2 small">
               Designed by {appParams.appAuthor}
