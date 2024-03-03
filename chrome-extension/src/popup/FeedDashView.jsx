@@ -8,6 +8,7 @@ import {
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
+import moment from 'moment';
 
 export default class FeedDashView extends React.Component{
 
@@ -22,6 +23,13 @@ export default class FeedDashView extends React.Component{
   }
 
   componentDidMount() {
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const date = urlParams.get("data");
+
+    if (date){
+      this.setState({selectedDate: date.split("T")[0]});
+    }
 
   }
 

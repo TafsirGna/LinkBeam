@@ -16,8 +16,8 @@ import {
 	ack,
 	messageParams,
   dbData, 
-	startMessageListener,
   appParams,
+  getUserIcon,
 } from "./Local_library";
 // import Offcanvas from 'react-bootstrap/Offcanvas';
 
@@ -28,15 +28,9 @@ export default class MyAccount extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-    	productID: "",
-    	installedOn: "",
-      userIcon: "default",
       userIconOffCanvasShow: false,
       productIdOverlayText: productIdOverlayText,
     };
-
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
   }
 
   handleOffCanvasClose = () => {this.setState({userIconOffCanvasShow: false})};
@@ -44,26 +38,31 @@ export default class MyAccount extends React.Component{
 
   componentDidMount() {
 
-  	this.listenToMessages();
-
     // Saving the current page title
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT);
 
   	// Setting the local data with the global ones
-  	if (this.props.globalData.productID){
-  		this.setState({productID: this.props.globalData.productID});
-  	}
+    (["productID", "installedOn", "userIcon"]).forEach(property => {
 
-  	if (this.props.globalData.installedOn){
-  		this.setState({installedOn: this.props.globalData.installedOn});
-  	}
+      if (!Object.hasOwn(this.props.globalData.settings, property)){
+        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: [property] } });
+      }
 
-  	if (this.props.globalData.productID == null || this.props.globalData.installedOn == null){
-  		sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: ["installedOn", "productID"] } });
-  	}
+    });
 
-    // Getting the user icon to display
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: ["userIcon"] } });
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.settings != this.props.globalData.settings){
+        if (prevProps.globalData.settings.userIcon != undefined){
+          if (prevProps.globalData.settings.userIcon != this.props.globalData.settings.userIcon){
+            this.handleOffCanvasClose();
+          }
+        }
+      }
+    }
 
   }
 
@@ -73,61 +72,15 @@ export default class MyAccount extends React.Component{
 
   }
 
-  onSettingsDataReceived(message, sendResponse){
-
-      var settings = message.data.objectData.object;
-
-  		if (Object.hasOwn(settings, "installedOn")){
-
-  			// acknowledge receipt
-  			ack(sendResponse);
-
-				// setting the value
-				let installedOn = settings.installedOn;
-				this.setState({installedOn: installedOn});
-		  	
-		  }
-
-  		if (Object.hasOwn(settings, "productID")){
-
-  			// acknowledge receipt
-  			ack(sendResponse);
-
-				let productID = settings.productID;
-				this.setState({productID: productID});
-		  	
-		  }
-
-      if (Object.hasOwn(settings, "userIcon")){
-
-        // acknowledge receipt
-        ack(sendResponse);
-
-        let userIcon = settings.userIcon;
-        this.setState({userIcon: userIcon});
-
-        this.handleOffCanvasClose();
-
-      }
-
-  }
-
-  listenToMessages(){
-
-  	startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-        callback: this.onSettingsDataReceived
-      },
-    ]);
-
-  }
-
   verifyAccount(){
 
   }
 
   copyToClipboard(){
+
+    if (this.props.globalData.settings.productID == undefined){
+      return;
+    }
 
     if (!navigator.clipboard) {
       console.error('Async: Could not copy text: 1');
@@ -135,7 +88,7 @@ export default class MyAccount extends React.Component{
       return;
     }
 
-    navigator.clipboard.writeText(this.state.productID).then((function() {
+    navigator.clipboard.writeText(this.props.globalData.settings.productID).then((function() {
       this.setState({productIdOverlayText: "Copied!"}, () => {
           setTimeout(() => {
               this.setState({productIdOverlayText: productIdOverlayText});
@@ -150,37 +103,6 @@ export default class MyAccount extends React.Component{
 
   }
 
-  getUserIcon(){
-
-    var userIcon = null;
-
-    switch(this.state.userIcon){
-      case "default":
-        userIcon = default_user_icon;
-        break;
-      case "man":
-        userIcon = man_user_icon;
-        break;
-      case "boy":
-        userIcon = boy_user_icon;
-        break;
-      case "lady":
-        userIcon = lady_user_icon;
-        break;
-      case "woman":
-        userIcon = woman_user_icon;
-        break;
-      case "gamer":
-        userIcon = gamer_user_icon;
-        break;
-      case "mom":
-        userIcon = mom_user_icon;
-        break;
-    }
-
-    return userIcon;
-  }
-
   render(){
     return (
       <>
@@ -188,7 +110,7 @@ export default class MyAccount extends React.Component{
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
           <div class="">
             <div class="text-center">
-            	<img src={this.getUserIcon()} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
+            	<img src={getUserIcon(this.props.globalData.settings.userIcon)} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
             </div>
             <div class="mx-auto w-75 mt-4">
             	<OverlayTrigger
@@ -197,11 +119,11 @@ export default class MyAccount extends React.Component{
               >
                 <div class="input-group mb-3 shadow input-group-sm" onClick={() => {this.copyToClipboard();}}>
 								  <span class="input-group-text handy-cursor" id="basic-addon1">ID</span>
-								  <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.state.productID} />
+								  { this.props.globalData.settings.productID != undefined && <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.props.globalData.settings.productID} /> }
 								</div>
               </OverlayTrigger>
             	<hr/>
-            	<p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.state.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p>
+            	{ this.props.globalData.settings.installedOn != undefined && <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.props.globalData.settings.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p> }
 
               {/*<div class="text-center">
                 <button type="button" class="btn btn-primary badge mt-3" onClick={() => {this.verifyAccount()}} >

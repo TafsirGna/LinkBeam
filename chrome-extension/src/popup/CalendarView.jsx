@@ -32,7 +32,7 @@ export default class CalendarView extends React.Component{
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Profile Visits", "Reminders", "Activity List", "Time Chart", "Feed"],
+      tabTitles: ["Profile Visits", "Reminders", "Activity List", "Time Chart"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
@@ -338,6 +338,11 @@ export default class CalendarView extends React.Component{
             <div class="col-7 ps-3">
               <div>
                 <span class="badge shadow text-muted border border-warning mb-2">{moment(this.state.selectedDate).format('dddd, MMMM Do YYYY')}</span>
+              </div>
+              <div class="small shadow-sm mb-3 mt-2 p-1 fst-italic border-start border-info ps-2 border-4 bg-info-subtle text-muted">
+                Explore 
+                <a href={`/index.html?view=FeedDash&data=${moment(this.state.selectedDate).toISOString()}`} target="_blank" class="mx-1">feed</a> 
+                data as well for that {moment(this.state.selectedDate).format('dddd, MMMM Do YYYY').split(",")[0].toLowerCase()}
               </div>
               <Card className="shadow">
                 <Card.Header>

@@ -12,8 +12,6 @@ let db = null,
     currentTabID = null,
     currentTabCheckContext = null;
 
-const dbName = "LinkBeamDB";
-const dbVersion = 1;
 let timeCountInterval = null;
 let tabIds = [];
 
@@ -36,7 +34,7 @@ const settingData = [{
 
 function createDatabase(context) {
 
-    const request = indexedDB.open(dbName, dbVersion);
+    const request = indexedDB.open(appParams.appDbName, appParams.appDbVersion);
 
     request.onerror = function (event) {
         console.log("An error occured when opening the database");
@@ -51,7 +49,6 @@ function createDatabase(context) {
         // Visit object store
         let visitObjectStore = db.createObjectStore(dbData.objectStoreNames.VISITS, { keyPath: 'id', autoIncrement: true });
         visitObjectStore.createIndex("url", "url", { unique: false });
-        // visitObjectStore.createIndex("urlIndex", "url", { unique: false });
 
         visitObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Visit' created.");
@@ -59,8 +56,6 @@ function createDatabase(context) {
 
         // Profile Object store
         let profileObjectStore = db.createObjectStore(dbData.objectStoreNames.PROFILES, { keyPath: "url" });
-
-        // profileObjectStore.createIndex("bookmarked", "bookmarked", { unique: false });
 
         profileObjectStore.transaction.oncomplete = function (event) {
             console.log("ObjectStore 'Profile' created.");
@@ -155,7 +150,7 @@ chrome.runtime.onInstalled.addListener(details => {
 
 function deleteDatabase(onSuccessCallback = null){
 
-    var req = indexedDB.deleteDatabase(dbName);
+    var req = indexedDB.deleteDatabase(appParams.appDbName);
 
     req.onsuccess = function () {
         console.log("Deleted database successfully");
@@ -853,7 +848,7 @@ function getProfileActivityList(params, callback) {
 
 function getMyData(params, callback){
 
-    var results = {dbVersion: dbVersion}, objectStoreNames = [];
+    var results = {dbVersion: appParams.appDbVersion}, objectStoreNames = [];
 
     // convert DOMStringList to js array
     for (var key in db.objectStoreNames){ 
@@ -1598,12 +1593,7 @@ function recordProfileVisit(tabData){
                                     addVisitObject();
                                 }
                                 else{
-                                    var timeCount = visit.timeCount + 3;
-                                    updateObject(
-                                        dbData.objectStoreNames.VISITS, 
-                                        { context: "", criteria: { props: { object: visit, timeCount: timeCount } } },
-                                        () => {},
-                                    );
+                                    incVisitTimeCount(visit);
                                 }
 
                             },
@@ -1617,6 +1607,15 @@ function recordProfileVisit(tabData){
 
 }
 
+function incVisitTimeCount(visit){
+    var timeCount = visit.timeCount + 3;
+    updateObject(
+        dbData.objectStoreNames.VISITS, 
+        { context: "", criteria: { props: { object: visit, timeCount: timeCount } } },
+        () => {},
+    );
+}
+
 function recordFeedVisit(tabData){
 
     const dateTime = new Date().toISOString();
@@ -1624,9 +1623,10 @@ function recordFeedVisit(tabData){
     const addVisitObject = () => {
         var visitObject = {
             date: dateTime,
-            url: tabData.extractedData.url,
+            url: tabData.tabUrl,
             timeCount: 0, 
             tabId: tabData.tabId,
+            itemsMetrics: tabData.extractedData.metrics,
         };
 
         addObject(
@@ -1636,7 +1636,24 @@ function recordFeedVisit(tabData){
         );
     }
 
-    addVisitObject();
+    getList(
+        dbData.objectStoreNames.VISITS,
+        { context: "data_export", criteria: { props: { url: tabData.tabUrl, tabId: tabData.tabId } } },
+        (visits) => {
+
+            var visit = visits ? visits[0] : null;
+
+            if (visit == null){
+                // adding a new visit object
+                addVisitObject();
+            }
+            else{
+                // updating the existing one to increase the time count
+                incVisitTimeCount(visit);
+            }
+
+        },
+    );
 
 }
 
@@ -1662,12 +1679,7 @@ function processTabData(tabData){
 
                 var visit = visits ? visits[0] : null;
                 if (visit){
-                    var timeCount = visit.timeCount + 3;
-                    updateObject(
-                        dbData.objectStoreNames.VISITS, 
-                        { context: "", criteria: { props: { object: visit, timeCount: timeCount } } },
-                        () => {},
-                    );
+                    incVisitTimeCount(visit);
                 }
 
             },
@@ -1675,7 +1687,8 @@ function processTabData(tabData){
 
     }
     else{
-        if (tabData.extractedData.url.indexOf("/feed") != -1){ // feed data
+        console.log("mmmmmmmmmmmmmmmmmmmmmmmmm ", tabData.tabUrl);
+        if (tabData.tabUrl.indexOf("/feed") != -1){ // feed data
             recordFeedVisit(tabData);
         }
         else{ // profile data
@@ -2021,7 +2034,7 @@ function dbExists(onExistStatus = null, onNotExistStatus = null){
 
     // initialize db object
     // var dbExists = true;
-    var request = indexedDB.open(dbName);
+    var request = indexedDB.open(appParams.appDbName);
     request.onupgradeneeded = function (e){
         e.target.transaction.abort();
         // dbExists = false;

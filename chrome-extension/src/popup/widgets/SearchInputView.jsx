@@ -88,7 +88,7 @@ export default class SearchInputView extends React.Component{
 		<>
 			<div class="px-1 my-2">
 			  <div class="input-group mb-3 input-group-sm shadow">
-			    <input type="text" class="form-control" placeholder="Search..." aria-label="Search" aria-describedby="basic-addon2" onChange={this.handleInputChange} onKeyDown={this.handleKeyDown}/>
+			    <input type="text" class="form-control" placeholder="Search a profile..." aria-label="Search" aria-describedby="basic-addon2" onChange={this.handleInputChange} onKeyDown={this.handleKeyDown}/>
 			    <span class="input-group-text handy-cursor text-muted" id="basic-addon2" onClick={() => {this.searchText()}} title="search">
 			      <SearchIcon size="20" />
 			    </span>

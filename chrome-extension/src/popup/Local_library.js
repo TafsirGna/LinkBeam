@@ -2,6 +2,8 @@
 export const appParams = {
   appName: "LinkBeam",
   appVersion: "0.1.0", 
+  appDbName: "LinkBeamDB",
+  appDbVersion: 1,
   keywordCountLimit: 5, 
   searchPageLimit: 3, 
   bookmarkCountLimit: 5,
@@ -221,6 +223,37 @@ export const dbDataSanitizer = {
   }
 
 };
+
+export const getUserIcon = (userIconLabel) => {
+
+  var userIcon = null;
+
+  switch(userIconLabel){
+    case "default":
+      userIcon = default_user_icon;
+      break;
+    case "man":
+      userIcon = man_user_icon;
+      break;
+    case "boy":
+      userIcon = boy_user_icon;
+      break;
+    case "lady":
+      userIcon = lady_user_icon;
+      break;
+    case "woman":
+      userIcon = woman_user_icon;
+      break;
+    case "gamer":
+      userIcon = gamer_user_icon;
+      break;
+    case "mom":
+      userIcon = mom_user_icon;
+      break;
+  }
+
+  return userIcon;
+}
 
 export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
@@ -518,7 +551,7 @@ export const getPeriodVisits = (context, index, func, profile = null) => {
         break;
       }
     }
-    var props = { date: [startDate, "to", (new Date())] };
+    var props = { date: [startDate, "to", (new Date())], url: "!includes(/feed)" };
     if (profile){
       props.url = profile.url;
     }

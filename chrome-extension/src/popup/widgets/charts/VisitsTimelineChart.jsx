@@ -48,7 +48,7 @@ const lineOptions = {
 		},
 		title: {
 			display: true,
-			text: 'Visits Line Chart',
+			text: 'Visits Chart',
 		},
 	},
 };

@@ -326,7 +326,11 @@ export default class SettingsView extends React.Component{
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li><a class="dropdown-item small" onClick={() => {this.saveSettingsPropertyValue("outdatedPostReminder", value)}}>{value}</a></li>  
+                            <li>
+                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedPostReminder", value)}}>
+                                {value}
+                              </a>
+                            </li>  
                         ))}
                     </ul>
                   </div>
@@ -343,7 +347,11 @@ export default class SettingsView extends React.Component{
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "15 mins", "30 mins", "1 hour"].map((value) => (
-                            <li><a class="dropdown-item small" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>{value}</a></li>  
+                            <li>
+                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                {value}
+                              </a>
+                            </li>  
                         ))}
                     </ul>
                   </div>

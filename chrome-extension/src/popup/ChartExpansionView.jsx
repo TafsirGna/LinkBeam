@@ -40,9 +40,9 @@ export default class ChartExpansionView extends React.Component{
     // Starting the listener
     this.listenToMessages();
 
-    var carrouselActiveItemIndex = localStorage.getItem('carrouselActiveItemIndex'),
-        carrouselChartView = localStorage.getItem('carrouselChartView'),
-        relChartDisplayCrit = localStorage.getItem('relChartDisplayCrit');
+    var carrouselActiveItemIndex = /*localStorage*/sessionStorage.getItem('carrouselActiveItemIndex'),
+        carrouselChartView = /*localStorage*/sessionStorage.getItem('carrouselChartView'),
+        relChartDisplayCrit = /*localStorage*/sessionStorage.getItem('relChartDisplayCrit');
 
     getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, carrouselChartView, {moment: moment});
 

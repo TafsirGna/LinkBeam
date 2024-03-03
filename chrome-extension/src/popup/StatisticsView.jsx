@@ -125,9 +125,9 @@ export default class StatisticsView extends React.Component{
 
   onChartExpansion(){
 
-    localStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
-    localStorage.setItem('carrouselChartView', this.state.view);
-    localStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
+    /*localStorage*/sessionStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
+    /*localStorage*/sessionStorage.setItem('carrouselChartView', this.state.view);
+    /*localStorage*/sessionStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
 
     window.open("/index.html?view=ChartExpansion", '_blank');
 

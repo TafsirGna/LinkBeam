@@ -20,6 +20,7 @@ import FeedDashView from "./popup/FeedDashView";
 import moment from 'moment';
 import 'moment/dist/locale/fr';
 import 'moment/dist/locale/en-gb';
+import { v4 as uuidv4 } from 'uuid';
 import { 
   sendDatabaseActionMessage,
   ack,
@@ -37,6 +38,7 @@ export default class App extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      uuid: uuidv4(),
       swDbStatus: null,
       tmps: {
         visitsList: null,
@@ -335,6 +337,12 @@ export default class App extends React.Component{
     var settings = message.data.objectData.object;
 
     Object.keys(settings).forEach(property => {
+
+      if (property == "currentPageTitle"){
+        if ((new URLSearchParams(window.location.search)).get("view")){
+          return;
+        }
+      }
 
       this.setState(prevState => {
         let globalData = Object.assign({}, prevState.globalData);

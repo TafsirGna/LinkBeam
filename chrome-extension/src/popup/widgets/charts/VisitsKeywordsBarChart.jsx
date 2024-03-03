@@ -46,7 +46,7 @@ const barOptions = {
     },
     title: {
       display: true,
-      text: 'Keywords Bar Chart',
+      text: 'Keywords Chart',
     },
   },
 };
@@ -135,7 +135,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
     		labels: barData.map((obj) => obj.label),
     		datasets: [
 	        {
-	          label: 'Dataset',
+	          label: 'Keyword occurences',
 	          data: barData.map((obj) => obj.profiles.length),
 	          backgroundColor: colors.backgrounds,
             borderColor: colors.borders,

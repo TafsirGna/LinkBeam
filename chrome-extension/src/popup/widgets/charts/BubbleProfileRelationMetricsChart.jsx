@@ -30,6 +30,17 @@ const options = {
       beginAtZero: true,
     },
   },
+  plugins: {
+  	tooltip: {
+  		callbacks: {
+  			label: ((tooltipItem, data) => {
+  				// console.log(tooltipItem);
+  				var subjectLabel = dbDataSanitizer.preSanitize(tooltipItem.raw.fullName);
+  				return `${tooltipItem.dataset.label} [${tooltipItem.raw.r}] | ${subjectLabel}`;
+  			})
+  		}
+  	}
+  }
 };
 
 export default class BubbleProfileRelationMetricsChart extends React.Component{
@@ -83,21 +94,28 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 			return;
 		}
 
-    var resultsDataset1 = [], 
-    		resultsDataset2 = [];
+		var colors = getChartColors(2);
+    var datasets = ["# of Visits", "Time spent (minutes)"].map((label, index) => (
+    	{
+	      label: label,
+	      data: [],
+	      borderColor: [colors.borders[index]],
+		    backgroundColor: [colors.borders[index]],
+	    }
+    )); 
 
     for (let visit of this.props.objects){
 
-    		var itemIndex = resultsDataset1.map(e => e.url).indexOf(visit.url);
+    		var itemIndex = datasets[0].data.map(e => e.url).indexOf(visit.url);
     		if (itemIndex >= 0){
-    			(resultsDataset1[itemIndex]).r += 1;
-    			(resultsDataset2[itemIndex]).r += (visit.timeCount / 60);
+    			(datasets[0].data[itemIndex]).r += 1;
+    			(datasets[1].data[itemIndex]).r += (visit.timeCount / 60);
     		}
     		else{
     			var followerCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nFollowers),
     					connectionCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nConnections);
 
-    			resultsDataset1.push({
+    			datasets[0].data.push({
     				url: visit.url,
     				fullName: visit.profile.fullName,
     				r: 1,
@@ -105,7 +123,7 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
     				y: connectionCount,
     			});
 
-    			resultsDataset2.push({
+    			datasets[1].data.push({
     				url: visit.url,
     				fullName: visit.profile.fullName,
     				r: (visit.timeCount / 60),
@@ -116,25 +134,8 @@ export default class BubbleProfileRelationMetricsChart extends React.Component{
 
     }
 
-    var colors = getChartColors(2);
-    var colorDataset1 = {borders: [colors.borders[0]], backgrounds: [colors.backgrounds[0]]};
-		var colorDataset2 = {borders: [colors.borders[1]], backgrounds: [colors.backgrounds[1]]};
-
     this.setState({bubbleData: {
-			  datasets: [
-			    {
-			      label: '# of Visits',
-			      data: resultsDataset1,
-			      borderColor: colorDataset1.borders,
-				    backgroundColor: colorDataset1.borders,
-			    },
-			    {
-			      label: 'Time spent (minutes)',
-			      data: resultsDataset2,
-			      borderColor: colorDataset2.borders,
-				    backgroundColor: colorDataset2.borders,
-			    },
-			  ],
+			  datasets: datasets,
 			}
 		});
 

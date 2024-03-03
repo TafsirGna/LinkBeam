@@ -1,11 +1,11 @@
 /*import './AggregatedVisitListView.css'*/
 import React from 'react';
-import moment from 'moment';
-import default_user_icon from '../../assets/user_icons/default.png';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import VisibilitySensor from 'react-visibility-sensor';
 import { dbDataSanitizer } from "../Local_library";
+import ProfileVisitListItemView from "./ProfileVisitListItemView";
+import FeedVisitListItemView from "./FeedVisitListItemView";
 
 export default class AggregatedVisitListView extends React.Component{
 
@@ -66,29 +66,10 @@ export default class AggregatedVisitListView extends React.Component{
         { this.props.objects && this.props.objects.length != 0 && <div>
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((visit) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                <img src={visit.profile.avatar ? visit.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                                <div class="d-flex gap-2 w-100 justify-content-between">
-                                  <div>
-                                    <div class="d-flex gap-2 align-items-center">
-                                      <h6 class="mb-0 d-flex align-items-center gap-1">
-                                        <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + visit.url} target="_blank" dangerouslySetInnerHTML={{__html: visit.profile.fullName}}></a> 
-                                        <OverlayTrigger
-                                          placement="top"
-                                          overlay={<Tooltip id="tooltip1">{visit.count} visit{visit.count > 1 ? "es" : ""} { this.props.context == "all" ? " | " + moment(visit.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}
-                                        >
-                                          <span class="text-muted badge text-bg-light shadow-sm border">{visit.count}</span>
-                                        </OverlayTrigger>
-                                      </h6>
-                                      
-                                      <small class="opacity-50 text-nowrap ms-auto">{moment(visit.date, moment.ISO_8601).format("L")}</small>
-                                    </div>
-                                    <p class="mb-0 opacity-75 small">{visit.profile.title}</p>
-                                    <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{dbDataSanitizer.profileRelationDataPreproc(visit.profile.nFollowers)} · {dbDataSanitizer.profileRelationDataPreproc(visit.profile.nConnections)}</p>
-                                  </div>
-                                  {/*<small class="opacity-50 text-nowrap">{moment(visit.date, moment.ISO_8601).fromNow()}</small>*/}
-                                </div>
-                              </a>))
+                    this.props.objects.map((visit) => (<>
+                        { visit.url.indexOf("/feed") != -1 && <FeedVisitListItemView object={visit} parentList="aggregated" />}
+                        { visit.url.indexOf("/feed") == -1 && <ProfileVisitListItemView object={visit} parentList="aggregated"/> }
+                      </>))
                   }
                 </div>
                 <div class="text-center my-2 ">
