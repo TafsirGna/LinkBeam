@@ -156,11 +156,20 @@ export default class HomeView extends React.Component{
     else{ // today      
 
       (async () => {
-        const visits = await db
+        var visits = await db
                                .visits
                                .where("date")
-                               .equals((new Date()).toISOString())
+                               .startsWith((new Date()).toISOString().split("T")[0])
                                .toArray();
+
+        await Promise.all (visits.map (async visit => {
+          [visit.profile] = await Promise.all([
+            db.profiles.where('url').equals(visit.url).first()
+          ]);
+        }));
+
+        visits.sort((a,b) => new Date(b.date) - new Date(a.date));
+
         eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeTodayVisitsList", value: visits});
       })();
     }

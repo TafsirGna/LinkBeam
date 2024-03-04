@@ -9,6 +9,7 @@ import {
   appParams
 } from "../../Local_library";
 import moment from 'moment';
+import { db } from "../../../db";
 
 export default class ProfileVisitsChartModal extends React.Component{
 
@@ -21,47 +22,33 @@ export default class ProfileVisitsChartModal extends React.Component{
     };
 
     this.onViewChange = this.onViewChange.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
+    this.setPeriodVisits = this.setPeriodVisits.bind(this);
 
   }
 
   componentDidMount() {
 
-    this.listenToMessages();
+    
 
-    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, this.props.profile);
   }
 
-  listenToMessages(){
+  setPeriodVisits(){
 
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
-        callback: this.onVisitsDataReceived
-      },
-    ]);
-  }
+    (async () => {
 
-  onVisitsDataReceived(message, sendResponse){
+      var periodVisits = getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, db, this.props.profile);
+      this.setState({periodVisits: periodVisits});
 
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var context = message.data.objectData.context; 
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.PROFILE){
-      return;
-    }
-
-    var visits = message.data.objectData.list
-    this.setState({ periodVisits: visits });
+    }).bind(this)();
 
   }
 
   onViewChange(index){
 
     this.setState({view: index}, () => {
-      getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, index, {moment: moment}, this.props.profile);
+      
+      this.setPeriodVisits();
+
     });
 
   }

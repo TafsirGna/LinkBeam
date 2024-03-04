@@ -23,7 +23,6 @@ export default class ProfileView extends React.Component{
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
     this.onReminderMenuActionClick = this.onReminderMenuActionClick.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
     this.onReminderAdditionDataReceived = this.onReminderAdditionDataReceived.bind(this);
     this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
     this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
@@ -33,8 +32,6 @@ export default class ProfileView extends React.Component{
   }
 
   componentDidMount() {
-
-    this.listenToMessages();
 
     eventBus.on(eventBus.PROFILE_SHOW_REMINDER_OBJECT, (data) =>
       {
@@ -92,33 +89,6 @@ export default class ProfileView extends React.Component{
     var profiles = message.data.objectData.list;
     this.setState({allProfiles: profiles});
 
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderAdditionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkAdditionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderDeletionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkDeletionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
-        callback: this.onProfilesDataReceived
-      },
-    ]);
-    
   }
 
 

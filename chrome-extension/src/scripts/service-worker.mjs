@@ -8,6 +8,8 @@ import {
 } from "../popup/Local_library";
 import Dexie from 'dexie';
 
+let currentTabId = null;
+
 // Extension installation script
 
 chrome.runtime.onInstalled.addListener(details => {
@@ -111,11 +113,21 @@ function checkCurrentTab(tab, changeInfo){
 
 }
 
+chrome.tabs.onActivated.addListener(function(activeInfo) {
+
+    // console.log(activeInfo.tabId);
+    currentTabId = activeInfo.tabId;
+
+});
+
 // Script for processing linkedin data
 
 async function processTabData(tabData){
 
     // console.log("linkedInData : ", tabData);
+    if (currentTabId != tabData.tabId){
+        return;
+    }
 
     if (!tabData.extractedData){
 

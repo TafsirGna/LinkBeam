@@ -37,6 +37,7 @@ export default class App extends React.Component{
     this.state = {
       // uuid: uuidv4(),
       missingDatabase: null,
+      currentPageTitle: null,
       tmps: {
         visitsList: null,
         reminderList: null,
@@ -48,9 +49,7 @@ export default class App extends React.Component{
         todayReminderList: null,
         allVisits: null,
         homeTodayVisitsList: null,
-        settings: {
-          currentPageTitle: null,
-        },
+        settings: null,
         currentTabWebPageData: null,
       }
     };
@@ -76,24 +75,8 @@ export default class App extends React.Component{
           currentPageTitle = localStorage.getItem('currentPageTitle');
         }
 
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.currentPageTitle = currentPageTitle;
-          return { globalData };
-        });
-
-        // Sending a request to know if some reminders are set for today
-        // (async () => {
-        //     const reminders = await db.reminders.get({ date: (new Date()).toISOString(), activated: true }).toArray();
-            
-        //     this.setState(prevState => {
-        //       let globalData = Object.assign({}, prevState.globalData);
-        //       globalData.todayReminderList = reminders;
-        //       return { globalData };
-        //     });
-
-        //   }).bind(this)();
-
+        this.setState({currentPageTitle: currentPageTitle});
+        
       }
     }).bind(this));
 
@@ -175,11 +158,7 @@ export default class App extends React.Component{
 
     eventBus.on(eventBus.SWITCH_TO_VIEW, (data) => {
         
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.settings.currentPageTitle = data.pageTitle;
-          return { globalData };
-        });
+        this.setState({currentPageTitle: data.pageTitle});
 
       }
     );
@@ -243,22 +222,6 @@ export default class App extends React.Component{
   //       scope = context.split("-")[1];
 
   //   this.setVisitList(listData, scope);
-
-  // }
-
-  // onBookmarksDataReceived(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var bookmarkList = message.data.objectData.list;
-
-  //   // Setting the visit list here too
-  //   this.setState(prevState => {
-  //     let globalData = Object.assign({}, prevState.globalData);
-  //     globalData.bookmarkList = bookmarkList;
-  //     return { globalData };
-  //   });
 
   // }
 
@@ -350,31 +313,6 @@ export default class App extends React.Component{
 
   // }
 
-  // onSettingsDataReceived(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var settings = message.data.objectData.object;
-
-  //   Object.keys(settings).forEach(property => {
-
-  //     if (property == "currentPageTitle"){
-  //       if ((new URLSearchParams(window.location.search)).get("view")){
-  //         return;
-  //       }
-  //     }
-
-  //     this.setState(prevState => {
-  //       let globalData = Object.assign({}, prevState.globalData);
-  //       globalData.settings[property] = settings[property];
-  //       return { globalData };
-  //     });
-
-  //   });
-
-  // }
-
   // onSwResponseReceived(message, sendResponse){
     
   //   // acknowledge receipt
@@ -463,49 +401,49 @@ export default class App extends React.Component{
         { this.state.missingDatabase == true && <ErrorPageView data="missingDb" />}
 
         {/*Index Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Home" && <HomeView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == "Home" && <HomeView globalData={this.state.globalData} /> }
 
         {/*About Page*/}
-        { this.state.globalData.settings.currentPageTitle == "About" && <AboutView /> }
+        { this.state.currentPageTitle == "About" && <AboutView /> }
 
         {/*Settings Page */}
-        { this.state.globalData.settings.currentPageTitle == "Settings" && <SettingsView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == "Settings" && <SettingsView globalData={this.state.globalData} /> }
 
         {/*FeedDash Page */}
-        { this.state.globalData.settings.currentPageTitle == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
 
         {/*Statistics Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
+        { this.state.currentPageTitle == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
 
         {/*Keywords Page */}
-        { this.state.globalData.settings.currentPageTitle == "Keywords" && <KeywordView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Keywords" && <KeywordView globalData={this.state.globalData} />}
 
         {/*MyAccount Page */}
-        { this.state.globalData.settings.currentPageTitle == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
 
         {/*Profile Page */}
-        { this.state.globalData.settings.currentPageTitle == "Profile" && <MainProfileView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Profile" && <MainProfileView globalData={this.state.globalData} />}
 
         {/*Reminders Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Reminders" && <ReminderView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Reminders" && <ReminderView globalData={this.state.globalData} />}
 
         {/*ProfileActivity Page*/}
-        { this.state.globalData.settings.currentPageTitle == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
 
         {/*Bookmarks Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
 
         {/*Feedback Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
 
         {/*Calendar Page*/}
-        { this.state.globalData.settings.currentPageTitle == "Calendar" && <CalendarView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Calendar" && <CalendarView globalData={this.state.globalData} />}
 
         {/*LicenseCredits Page */}
-        { this.state.globalData.settings.currentPageTitle == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
 
         {/*ChartExpansion Page*/}
-        { this.state.globalData.settings.currentPageTitle == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
 
       </>
     );

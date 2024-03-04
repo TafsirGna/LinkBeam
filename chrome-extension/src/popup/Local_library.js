@@ -535,30 +535,36 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
-export const getPeriodVisits = (context, index, func, profile = null) => {
+export async function getPeriodVisits(context, index, func, db, profile = null){
 
   var startDate = null;
-    switch(index){
-      case 0: {
-        startDate = func.moment().subtract(6, 'days').toDate();
-        break;
-      }
-
-      case 1: {
-        startDate = func.moment().subtract(30, 'days').toDate();
-        break;
-      }
-
-      case 2: {
-        startDate = func.moment().subtract(12, 'months').toDate();
-        break;
-      }
+  switch(index){
+    case 0: {
+      startDate = func.moment().subtract(6, 'days').toDate();
+      break;
     }
-    var props = { date: [startDate, "to", (new Date())], url: "!includes(/feed)" };
-    if (profile){
-      props.url = profile.url;
+
+    case 1: {
+      startDate = func.moment().subtract(30, 'days').toDate();
+      break;
     }
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.VISITS, { context: context, criteria: { props: props }});
+
+    case 2: {
+      startDate = func.moment().subtract(12, 'months').toDate();
+      break;
+    }
+  }
+
+  var collection = db.visits
+                      .filter(visit => (startDate < new Date(visit.date) && new Date(visit.date) <= new Date()));
+
+  if (profile){
+    collection.where("url").equals(profile.url);
+  }
+
+  var visits = await query.toArray();
+
+  return visits;
 
 }
 

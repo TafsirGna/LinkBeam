@@ -2,6 +2,7 @@
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
 import { appParams } from "./Local_library";
+import { db } from "../db";
 
 export default class MainProfileView extends React.Component{
 
@@ -11,7 +12,6 @@ export default class MainProfileView extends React.Component{
       profile: null, 
     };
 
-    this.listenToMessages = this.listenToMessages.bind(this);
     this.onProfileDataReceived = this.onProfileDataReceived.bind(this);
     this.onReminderDataReceived = this.onReminderDataReceived.bind(this);
     this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
@@ -21,14 +21,20 @@ export default class MainProfileView extends React.Component{
 
   componentDidMount() {
 
-    this.listenToMessages();
-
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
     const profileUrl = urlParams.get("data");
 
     // Retrieving the profile for the url given throught the url paremeters 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: encodeURI(profileUrl) } }});
+    (async () => {
+      const profile = await db.profiles
+                              .where("url")
+                              .equals(encodeURI(profileUrl))
+                              .first();
+
+      this.setState({profile: profile});
+
+      }).bind(this)();
 
   }
 
@@ -132,41 +138,6 @@ export default class MainProfileView extends React.Component{
       return { profile };
     });
 
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onReminderDeletionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.BOOKMARKS].join(messageParams.separator), 
-        callback: this.onBookmarkDeletionDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
-        callback: this.onProfileDataReceived
-      },
-    ]);
-    
   }
 
   render(){

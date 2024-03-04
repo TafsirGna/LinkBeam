@@ -6,6 +6,8 @@ import {
   saveCurrentPageTitle, 
   appParams
 } from "./Local_library";
+import { db } from "../db";
+import eventBus from "./EventBus";
 
 
 export default class BookmarkView extends React.Component{
@@ -15,22 +17,25 @@ export default class BookmarkView extends React.Component{
     this.state = {
 
     };
-
-    // this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
   }
 
   componentDidMount() {
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS);
 
-    this.getBookmarkList();
+    (async () => {
 
-  }
+      const bookmarks = await db.bookmarks.toArray();
 
-  getBookmarkList(){
+      await Promise.all (bookmarks.map (async bookmark => {
+        [bookmark.profile] = await Promise.all([
+          db.profiles.where('url').equals(bookmark.url).first()
+        ]);
+      }));
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS });
+      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "bookmarkList", value: bookmarks});
 
+    }).bind(this)();
   }
 
 

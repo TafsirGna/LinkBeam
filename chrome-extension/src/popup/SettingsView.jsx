@@ -15,6 +15,7 @@ import {
   switchToView,
 } from "./Local_library";
 import eventBus from "./EventBus";
+import { db } from "../db";
 // import Button from 'react-bootstrap/Button';
 
 export default class SettingsView extends React.Component{
@@ -41,10 +42,7 @@ export default class SettingsView extends React.Component{
 
     this.deleteData = this.deleteData.bind(this);
     this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
     this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
-    this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.onExportDataReceived = this.onExportDataReceived.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
@@ -56,20 +54,22 @@ export default class SettingsView extends React.Component{
 
   componentDidMount() {
 
-    this.listenToMessages();
-
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
-    (['notifications', 'autoTabOpening', 'outdatedPostReminder', 'maxTimeAlarm', 'lastDataResetDate']).forEach(property => {
-      if (!Object.hasOwn(this.props.globalData.settings, property)){
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: [property] } });
-      }
-      else{
-        if (property == "lastDataResetDate"){
-          this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
-        }
-      }
-    });
+    if (!this.props.globalData.settings){
+
+      (async () => {
+
+        const settings = await db.settings
+                               .where("id")
+                               .equals(1)
+                               .first();
+
+        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
+
+      })();
+
+    }
 
     // setting the local variable with the global data
     if (this.props.globalData.keywordList){
@@ -77,7 +77,12 @@ export default class SettingsView extends React.Component{
     }
     else{
       // Getting the keyword count
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
+      (async () => {
+
+        const count = await db.keywords.count();
+        this.setState({keywordCount: count});
+
+      }).bind(this)();
     }
 
     if (this.props.globalData.reminderList && this.props.globalData.reminderList.scope == "all"){
@@ -85,7 +90,12 @@ export default class SettingsView extends React.Component{
     }
     else{
       // Getting the reminder count
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
+      (async () => {
+
+        const count = await db.reminders.count();
+        this.setState({keywordCount: count});
+
+      }).bind(this)();
     }
 
     this.checkStorageUsage();
@@ -95,11 +105,7 @@ export default class SettingsView extends React.Component{
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.globalData != this.props.globalData){
-      if (Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')){
-
-        this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
-
-      }
+      this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
     }
 
   }
@@ -117,28 +123,6 @@ export default class SettingsView extends React.Component{
         this.setState({usageQuota: usageQuota});
       }).bind(this));
     }
-
-  }
-
-  onKeywordsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var count = message.data.objectData.count;
-    this.setState({keywordCount: count});
-
-  }
-
-  onRemindersDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    var count = message.data.objectData.count;
-    this.setState({reminderCount: count});
 
   }
 
@@ -186,29 +170,6 @@ export default class SettingsView extends React.Component{
     setTimeout(() => {
       this.setState({processingState: {status: "NO", info: ""}});
     }, appParams.TIMER_VALUE);
-
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
-        callback: this.onKeywordsDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_COUNT, dbData.objectStoreNames.REMINDERS].join(messageParams.separator), 
-        callback: this.onRemindersDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, "all"].join(messageParams.separator), 
-        callback: this.onDbDataDeleted
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, "all"].join(messageParams.separator), 
-        callback: this.onExportDataReceived
-      },
-    ]);
 
   }
 
@@ -265,10 +226,18 @@ export default class SettingsView extends React.Component{
   }
 
   saveSettingsPropertyValue(property, value){
-    var props = {};
-    props[property] = value;
-    // Initiating the recording of the new state
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS, criteria: { props: props } });
+
+    var settings = this.props.globalData.settings;
+    settings[property] = value;
+
+    (async () => {
+
+      await db.settings
+              .update(1, settings);
+
+      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
+
+    })();
 
   }
 
@@ -289,7 +258,7 @@ export default class SettingsView extends React.Component{
                     type="switch"
                     id="notif-custom-switch"
                     label=""
-                    checked={this.props.globalData.settings.notifications}
+                    checked={ this.props.globalData.settings ? this.props.globalData.settings.notifications : false }
                     onChange={(event) => {this.saveSettingsPropertyValue("notifications", event.target.checked);}}
                   />
                 </div>
@@ -304,7 +273,7 @@ export default class SettingsView extends React.Component{
                     type="switch"
                     id="notif-custom-switch"
                     label=""
-                    checked={this.props.globalData.settings.autoTabOpening}
+                    checked={ this.props.globalData.settings ? this.props.globalData.settings.autoTabOpening : false }
                     onChange={(event) => {this.saveSettingsPropertyValue("autoTabOpening", event.target.checked);}}
                   />
                 </div>
@@ -317,7 +286,7 @@ export default class SettingsView extends React.Component{
                   <strong class="text-gray-dark">Outdated profiles reminder</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "outdatedPostReminder") ? this.props.globalData.settings.outdatedPostReminder : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedPostReminder : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
@@ -338,7 +307,7 @@ export default class SettingsView extends React.Component{
                   <strong class="text-gray-dark">Max time alarm</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{Object.hasOwn(this.props.globalData.settings, "maxTimeAlarm") ? this.props.globalData.settings.maxTimeAlarm : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.maxTimeAlarm : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "15 mins", "30 mins", "1 hour"].map((value) => (
@@ -482,7 +451,7 @@ export default class SettingsView extends React.Component{
                   type="date"
                   autoFocus
                   max={(new Date(this.state.offCanvasFormEndDate)).toISOString().split("T")[0]}
-                  min={(Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')) ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
+                  min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
                   value={this.state.offCanvasFormStartDate}
                   onChange={this.handleOffCanvasFormStartDateInputChange}
                   className=""
@@ -501,7 +470,7 @@ export default class SettingsView extends React.Component{
                   type="date"
                   autoFocus
                   max={new Date().toISOString().slice(0, 10)}
-                  min={(Object.hasOwn(this.props.globalData.settings, 'lastDataResetDate')) ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
+                  min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
                   value={this.state.offCanvasFormEndDate}
                   onChange={this.handleOffCanvasFormEndDateInputChange}
                   className=""
