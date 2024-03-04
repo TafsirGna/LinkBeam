@@ -2,22 +2,17 @@ import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
 import VisitListView from "./widgets/VisitListView";
 import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
-import { Navigate } from "react-router-dom";
 import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import { 
   saveCurrentPageTitle, 
-  sendDatabaseActionMessage, 
-  ack, 
-  startMessageListener,
-  messageParams,
-  dbData,
   appParams, 
-  checkCurrentTab,
   deactivateTodayReminders,
+  getTodayReminders,
 } from "./Local_library";
 import eventBus from "./EventBus";
+import { db } from "../db";
 
 export default class HomeView extends React.Component{
 
@@ -33,17 +28,10 @@ export default class HomeView extends React.Component{
     // Binding all the needed functions
     this.getVisitList = this.getVisitList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-    // this.onSettingsDataReceived = this.onSettingsDataReceived.bind(this);
-    // this.onExtensionCodeInjected = this.onExtensionCodeInjected.bind(this);
-    // this.onExtensionWebUiVisible = this.onExtensionWebUiVisible.bind(this);
 
   }
 
   componentDidMount() {
-
-    // Start the message listener
-    this.listenToMessages();
 
     // Listening to every event dictating the retrieving of all visits
     eventBus.on(eventBus.GET_ALL_VISITS, (data) => {
@@ -55,7 +43,11 @@ export default class HomeView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
-    if (!this.props.globalData.todayVisitsList){
+    getTodayReminders(db, (reminders) => {
+      
+    });
+
+    if (!this.props.globalData.homeTodayVisitsList){
       this.getVisitList("today");
     }
     
@@ -83,8 +75,8 @@ export default class HomeView extends React.Component{
         else{
 
           if (this.props.globalData.allVisits.scope == "all" 
-              && this.props.globalData.allVisits.visitCount == this.props.globalData.todayVisitsList.length){
-            // console.log("************ 1 : ", this.props.globalData.allVisits, this.props.globalData.allVisits.visitCount, this.props.globalData.todayVisitsList.length);
+              && this.props.globalData.allVisits.visitCount == this.props.globalData.homeTodayVisitsList.length){
+            // console.log("************ 1 : ", this.props.globalData.allVisits, this.props.globalData.allVisits.visitCount, this.props.globalData.homeTodayVisitsList.length);
             this.getVisitList("all");  
           }
 
@@ -115,25 +107,6 @@ export default class HomeView extends React.Component{
     )
   };
 
-  // onSettingsDataReceived(message, sendResponse){
-    
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var settings = message.data.objectData.object;
-  //   if (Object.hasOwn(settings, "notifications")){
-      
-  //     // Deciding whether to display the grow spinner for plugin activation or not 
-  //     if (settings.notifications){
-  //       return;
-  //     }
-
-  //     checkCurrentTab();
-      
-  //   }
-
-  // }
-
   // onExtensionCodeInjected(message, sendResponse){
     
   //   // acknowledge receipt
@@ -153,29 +126,6 @@ export default class HomeView extends React.Component{
   //   window.close();
 
   // }
-
-  listenToMessages(){
-
-    startMessageListener([
-      // {
-      //   param: [messageParams.responseHeaders.OBJECT_DATA, dbData.objectStoreNames.SETTINGS].join(messageParams.separator), 
-      //   callback: this.onSettingsDataReceived
-      // },
-      // {
-      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_CHECKED].join(messageParams.separator), 
-      //   callback: this.onSwResponseReceived
-      // },
-      // {
-      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_ACTIVATED].join(messageParams.separator), 
-      //   callback: this.onExtensionCodeInjected
-      // },
-      // {
-      //   param: [messageParams.responseHeaders.SW_CS_MESSAGE_SENT, messageParams.contentMetaData.SW_WEB_PAGE_LOADED].join(messageParams.separator), 
-      //   callback: this.onExtensionWebUiVisible
-      // },
-    ]);
-
-  }
 
   // Function for switching between tabs
   switchCurrentTab(index){
@@ -204,7 +154,15 @@ export default class HomeView extends React.Component{
       }
     }
     else{ // today      
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.VISITS, { context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { props: {"date": (new Date()).toISOString()} }});
+
+      (async () => {
+        const visits = await db
+                               .visits
+                               .where("date")
+                               .equals((new Date()).toISOString())
+                               .toArray();
+        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeTodayVisitsList", value: visits});
+      })();
     }
 
   }
@@ -221,17 +179,17 @@ export default class HomeView extends React.Component{
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
             <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's visits" onClick={() => {this.switchCurrentTab(0)}} >
-              Today {(this.props.globalData.todayVisitsList && this.props.globalData.todayVisitsList.length != 0) ? "("+this.props.globalData.todayVisitsList.length+")" : null}
+              Today {(this.props.globalData.homeTodayVisitsList && this.props.globalData.homeTodayVisitsList.length != 0) ? "("+this.props.globalData.homeTodayVisitsList.length+")" : null}
             </button>
             <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
-              All {(this.props.globalData.allVisits && this.props.globalData.allVisits.visitCount != this.props.globalData.todayVisitsList.length) ? "("+this.props.globalData.allVisits.visitCount+")" : null}
+              All {(this.props.globalData.allVisits && this.props.globalData.allVisits.visitCount != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.allVisits.visitCount+")" : null}
             </button>
           </div>
         </div>
 
         {/* Today visits List Tab */}
         { this.state.currentTabIndex == 0 && <div class="mt-4">
-                                              <VisitListView objects={this.props.globalData.todayVisitsList} seeMore={() => {}} loading={false} visitLeft={false} />
+                                              <VisitListView objects={this.props.globalData.homeTodayVisitsList} seeMore={() => {}} loading={false} visitLeft={false} />
                                               </div>}
 
         {/* All visits List Tab */}

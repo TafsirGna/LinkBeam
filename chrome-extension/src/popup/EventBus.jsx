@@ -11,6 +11,8 @@ const eventBus = {
   GET_ALL_VISITS: "getAllVisits",
   SWITCH_TO_VIEW: "switchToView",
 
+  SET_APP_GLOBAL_DATA: "SET_APP_GLOBAL_DATA",
+
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));
   },

@@ -771,8 +771,19 @@ export const activateInCurrentTab = (params) => {
 
 export function saveCurrentPageTitle(pageTitle){
 
-  // Saving the current page title
-  sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: pageTitle, criteria: { props: {currentPageTitle: pageTitle} } });
+  localStorage.setItem('currentPageTitle', pageTitle);
+
+}
+
+export async function getTodayReminders(db, callback){
+
+  const reminders = await db
+                            .reminders
+                            .where('[date+activated]')
+                            .equals([(new Date()).toISOString(), true])
+                            .toArray();
+
+  callback(reminders);  
 
 }
 
