@@ -1,5 +1,5 @@
 /*import { 
-  messageParams,
+  messageMeta,
   appParams,
 } from "../react_components/Local_library";*/
 
@@ -54,7 +54,7 @@ class ProfileDataExtractor extends DataExtractorBase {
         projects: publicDataExtractor.project(),
         profileSuggestions: publicDataExtractor.suggestions(),
         //
-        codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
+        // codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
 
       };
       
@@ -92,7 +92,7 @@ class ProfileDataExtractor extends DataExtractorBase {
           projects: authDataExtractor.project(),
           profileSuggestions: authDataExtractor.suggestions(),
           //
-          codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
+          // codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
 
         };
 

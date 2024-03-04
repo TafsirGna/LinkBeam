@@ -4,9 +4,6 @@ import PageTitleView from "./widgets/PageTitleView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { 
   saveCurrentPageTitle, 
-  sendDatabaseActionMessage,
-  messageParams,
-  dbData,
   appParams
 } from "./Local_library";
 

@@ -3,11 +3,7 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import { 
-	sendDatabaseActionMessage, 
-	getChartColors, 
-	startMessageListener, 
-	ack, 
-	messageParams, 
+	getChartColors,
 	groupObjectsByDate, 
 	groupObjectsByMonth, 
 	saveCanvas,

@@ -12,10 +12,7 @@ import {
 } from "chart.js";
 import { 
   saveCanvas,
-  messageParams, 
-  dbData,
   dbDataSanitizer,
-  sendDatabaseActionMessage,
   appParams,
 } from "../../Local_library";
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { Offcanvas } from "react-bootstrap";
-import { sendDatabaseActionMessage, getChartColors, messageParams, dbData, appParams, saveCanvas } from "../../Local_library";
+import { getChartColors, appParams, saveCanvas } from "../../Local_library";
 import {
   Chart as ChartJS,
   CategoryScale,

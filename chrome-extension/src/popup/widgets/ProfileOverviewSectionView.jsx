@@ -11,12 +11,9 @@ import Button from 'react-bootstrap/Button';
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import { 
-  dbDataSanitizer, 
-  sendDatabaseActionMessage, 
+  dbDataSanitizer,  
   computePeriodTimeSpan, 
   appParams, 
-  messageParams, 
-  dbData,
   performProfileSubPartComparison,
 } from "../Local_library";
 

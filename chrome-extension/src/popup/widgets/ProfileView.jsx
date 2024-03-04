@@ -5,7 +5,7 @@ import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
-import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData, appParams } from "../Local_library";
+import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
 
 export default class ProfileView extends React.Component{

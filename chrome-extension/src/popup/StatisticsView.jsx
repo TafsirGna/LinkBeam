@@ -17,11 +17,6 @@ import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
 
 import { 
   saveCurrentPageTitle, 
-  sendDatabaseActionMessage,
-  ack,
-  startMessageListener,
-  messageParams,
-  dbData,
   appParams,
   getPeriodVisits,
 } from "./Local_library";

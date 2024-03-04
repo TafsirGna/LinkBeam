@@ -12,10 +12,6 @@ import moment from 'moment';
 import { OverlayTrigger, Tooltip, Offcanvas } from "react-bootstrap";
 import { 
 	saveCurrentPageTitle, 
-	sendDatabaseActionMessage,
-	ack,
-	messageParams,
-  dbData, 
   appParams,
   getUserIcon,
 } from "./Local_library";

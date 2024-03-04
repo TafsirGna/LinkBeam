@@ -6,11 +6,6 @@ import Collapse from 'react-bootstrap/Collapse';
 import { Offcanvas } from "react-bootstrap";
 import ProfileListItemView from "../ProfileListItemView";
 import { 
-  sendDatabaseActionMessage, 
-  startMessageListener, 
-  messageParams, 
-  ack, 
-  dbData,
   dbDataSanitizer,
   shuffle,
   performLanguageComparison,

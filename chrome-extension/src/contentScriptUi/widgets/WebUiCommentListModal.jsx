@@ -1,6 +1,6 @@
 /*import './WebUiCommentListModal.css'*/
 import React, { useState } from 'react';
-import { appParams, messageParams, expandToTab } from "../../popup/Local_library";
+import { appParams, expandToTab } from "../../popup/Local_library";
 // import { Drawer } from 'flowbite';
 import { Spinner, Tooltip } from 'flowbite-react';
 import Parse from 'parse/dist/parse.min.js';

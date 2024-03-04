@@ -3,12 +3,7 @@ import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
-  sendDatabaseActionMessage, 
   getChartColors, 
-  startMessageListener, 
-  messageParams, 
-  dbData, 
-  ack, 
   dbDataSanitizer 
 } from "../../Local_library";
 import {

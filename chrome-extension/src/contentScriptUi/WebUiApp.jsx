@@ -1,8 +1,6 @@
 import React from 'react';
 import { 
   appParams,
-  messageParams,
-  ack,
   logInParseUser,
   registerParseUser
 } from "../popup/Local_library";

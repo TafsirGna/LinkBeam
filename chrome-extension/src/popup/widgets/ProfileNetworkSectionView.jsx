@@ -4,9 +4,6 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import RelationshipsChart from "./charts/RelationshipsChart";
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
-  sendDatabaseActionMessage, 
-  messageParams, 
-  dbData, 
   appParams, 
   dbDataSanitizer 
 } from "../Local_library";

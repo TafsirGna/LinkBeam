@@ -6,7 +6,7 @@ export const db = new Dexie(appParams.appDbName);
 
 db.version(1).stores({
   visits: '++id, url, date, tabId',
-  profiles: '++id, url, date, fullName, title',
+  profiles: '++id, url, fullName, title',
   keywords: '++id, name, createdOn',
   reminders: '++id, url, createdOn, activated, date',
   settings: '++id',

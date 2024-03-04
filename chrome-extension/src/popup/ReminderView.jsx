@@ -4,11 +4,6 @@ import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
 import { 
   saveCurrentPageTitle, 
-  sendDatabaseActionMessage,
-  ack,
-  startMessageListener, 
-  messageParams,
-  dbData,
   appParams
 } from "./Local_library";
 import ReminderListView from "./widgets/ReminderListView";

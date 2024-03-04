@@ -9,12 +9,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';
 import JSZip from "jszip";
 import { 
-  saveCurrentPageTitle, 
-  sendDatabaseActionMessage,
-  ack,
-  startMessageListener, 
-  messageParams,
-  dbData, 
+  saveCurrentPageTitle,
   appParams,
   procExtractedData,
   switchToView,

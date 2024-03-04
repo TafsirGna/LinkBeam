@@ -7,11 +7,6 @@ import search_icon from '../../assets/search_icon.png';
 import news_icon from '../../assets/newspaper_icon.png';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
-  sendDatabaseActionMessage,
-  ack,
-  startMessageListener, 
-  messageParams,
-  dbData, 
   secondsToHms,
 } from "../Local_library";
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import ProfileActivityListView from "./ProfileActivityListView";
-import { sendDatabaseActionMessage, messageParams, dbData, appParams } from "../Local_library";
+import { appParams } from "../Local_library";
 
 
 export default class ProfileActivitySectionView extends React.Component{

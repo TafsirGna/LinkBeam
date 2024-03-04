@@ -2,11 +2,6 @@
 import React from 'react';
 import { 
   appParams,
-  sendDatabaseActionMessage,
-  startMessageListener,
-  messageParams,
-  dbData,
-  ack,
 } from "../popup/Local_library";
 import { Spinner, Tooltip } from 'flowbite-react';
 import { DateTime as LuxonDateTime } from "luxon";

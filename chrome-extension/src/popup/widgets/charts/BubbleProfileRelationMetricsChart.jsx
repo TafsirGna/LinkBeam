@@ -4,8 +4,6 @@ import { Bubble } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
 	getChartColors, 
-	messageParams, 
-	dbData,
 	appParams, 
 	dbDataSanitizer,
 	saveCanvas,

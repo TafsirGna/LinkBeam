@@ -4,10 +4,6 @@ import PageTitleView from "./widgets/PageTitleView";
 import KeywordListView from "./widgets/KeywordListView";
 import { 
   saveCurrentPageTitle, 
-  sendDatabaseActionMessage,
-  startMessageListener, 
-  ack, messageParams,
-  dbData,
   appParams
 } from "./Local_library";
 import eventBus from "./EventBus";

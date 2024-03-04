@@ -1,7 +1,7 @@
 /*import './MainProfileView.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
-import { sendDatabaseActionMessage, startMessageListener, ack, messageParams, dbData, appParams } from "./Local_library";
+import { appParams } from "./Local_library";
 
 export default class MainProfileView extends React.Component{
 

@@ -1,9 +1,7 @@
 // Script of extension database creation
 import { 
   appParams, 
-  dbData,
-  messageParams,
-  ack,
+  messageMeta,
   testTabBaseUrl
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';

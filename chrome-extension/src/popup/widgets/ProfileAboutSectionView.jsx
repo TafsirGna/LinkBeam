@@ -5,10 +5,6 @@ import Collapse from 'react-bootstrap/Collapse';
 import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
 import { 
 	dbDataSanitizer,
-	sendDatabaseActionMessage, 
-	appParams,
-	dbData,
-	messageParams,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import Modal from 'react-bootstrap/Modal';

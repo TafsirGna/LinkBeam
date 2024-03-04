@@ -5,11 +5,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import moment from 'moment';
 import { 
   appParams,
-  startMessageListener,
-  dbData,
-  messageParams,
   getPeriodVisits,
-  ack,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";

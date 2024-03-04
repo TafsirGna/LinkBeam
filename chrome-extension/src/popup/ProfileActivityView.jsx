@@ -5,7 +5,7 @@ import PageTitleView from "./widgets/PageTitleView";
 import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Offcanvas } from "react-bootstrap";
-import { saveCurrentPageTitle, appParams, sendDatabaseActionMessage, messageParams, ack, dbData, startMessageListener } from "./Local_library";
+import { saveCurrentPageTitle, appParams } from "./Local_library";
 import heart_icon from '../assets/heart_icon.png';
 import share_icon from '../assets/share_icon.png';
 import newspaper_icon from '../assets/newspaper_icon.png';

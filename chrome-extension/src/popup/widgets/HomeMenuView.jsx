@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { activateInCurrentTab, switchToView } from "../Local_library";
+import { switchToView } from "../Local_library";
 import bell_icon from '../../assets/bell_icon.png';
 import { LayersIcon } from "./SVGs";
 import eventBus from "../EventBus";

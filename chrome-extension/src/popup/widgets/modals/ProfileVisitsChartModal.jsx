@@ -5,11 +5,6 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import VisitsTimelineChart from "../charts/VisitsTimelineChart";
 import { 
-  sendDatabaseActionMessage, 
-  startMessageListener, 
-  messageParams, 
-  ack, 
-  dbData ,
   getPeriodVisits,
   appParams
 } from "../../Local_library";

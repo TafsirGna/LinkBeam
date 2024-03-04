@@ -19,7 +19,7 @@ export class DataExtractorBase {
 	// Function for sending the page data
 	sendTabData(data){
 
-	  chrome.runtime.sendMessage({header: /*messageParams.responseHeaders.CS_WEB_PAGE_DATA*/ "sw-web-page-data", data: {extractedData: data, tabId: this.tabId, tabUrl: (window.location.href.split("?"))[0] }}, (response) => {
+	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: (window.location.href.split("?"))[0] }}, (response) => {
 	    console.log('linkedin-data response sent', response, data);
 	    this.webPageData = data;
 	  });
@@ -100,7 +100,7 @@ export class DataExtractorBase {
 		// Retrieving the tabId variable
 		chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
 
-		  if (message.header == "web-ui-app-settings-data") /*messageParams.responseHeaders.WEB_UI_APP_SETTINGS_DATA*/ {
+		  if (message.header == "CS_SETUP_DATA") {
 		      
 		      if (Object.hasOwn(message.data, "tabId")){
 		        this.getTabId(message.data, sendResponse);

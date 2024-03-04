@@ -6,12 +6,7 @@ import { SearchIcon } from './SVGs';
 import { Link } from 'react-router-dom';
 import eventBus from "../EventBus";
 import { 
-  sendDatabaseActionMessage,
-  ack,
-  startMessageListener, 
-  messageParams,
   appParams,
-  dbData,
 } from "../Local_library";
 
 export default class SearchInputView extends React.Component{

@@ -9,9 +9,6 @@ import eventBus from "../EventBus";
 import { 
   appParams, 
   dbDataSanitizer,
-  sendDatabaseActionMessage,
-  messageParams,
-  dbData,
 } from "../Local_library";
 import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
 import { 
