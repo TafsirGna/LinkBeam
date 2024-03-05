@@ -575,11 +575,16 @@ export async function getPeriodVisits(index, func, db, profile = null){
     }
   }
 
-  var collection = db.visits
-                      .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date()));
+  var collection = null;
 
   if (profile){
-    collection.where("url").equals(profile.url);
+    collection = db.visits
+                    .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date())
+                                      && visit.url == profile.url);
+  }
+  else{
+    collection = db.visits
+                    .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date()));
   }
 
   var visits = await collection.toArray();
@@ -723,7 +728,7 @@ export const groupVisitsByProfile = (visits) => {
 
   results.sort((a,b) => new Date(b.date.split("T")[0]) - new Date(a.date.split("T")[0]));
 
-  return {list: results, visitCount: visits.length};
+  return results;
 
 }
 

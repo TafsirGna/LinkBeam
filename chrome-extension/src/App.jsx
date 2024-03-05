@@ -25,7 +25,7 @@ import Dexie from 'dexie';
 import { db } from "./db";
 import { 
   appParams,
-  groupVisitsByProfile,
+  // groupVisitsByProfile,
 } from "./popup/Local_library";
 // import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
@@ -110,11 +110,9 @@ export default class App extends React.Component{
 
           if (!this.state.globalData.homeAllVisitsList){
           
-            var homeAllVisitsList = groupVisitsByProfile(this.state.globalData.homeTodayVisitsList);
-            homeAllVisitsList.scope = "all";
             this.setState(prevState => {
               let globalData = Object.assign({}, prevState.globalData);
-              globalData.homeAllVisitsList = homeAllVisitsList;
+              globalData.homeAllVisitsList = {list: this.state.globalData.homeTodayVisitsList, scope: "all"};
               return { globalData };
             });
 

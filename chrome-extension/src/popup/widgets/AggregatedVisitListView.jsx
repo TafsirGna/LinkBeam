@@ -40,7 +40,6 @@ export default class AggregatedVisitListView extends React.Component{
   }
 
   onSeeMoreButtonVisibilityChange = (isVisible) => {
-    console.log("************ --------------------------- : ", this.props.context);
     this.setState({seeMoreButtonVisibility: isVisible}, () => {
       if (this.state.seeMoreButtonVisibility){
         this.props.seeMore();
@@ -67,8 +66,14 @@ export default class AggregatedVisitListView extends React.Component{
                 <div class="list-group m-1 shadow-sm small">
                   {
                     this.props.objects.map((visit) => (<>
-                        { visit.url.indexOf("/feed") != -1 && <FeedVisitListItemView object={visit} parentList="aggregated" />}
-                        { visit.url.indexOf("/feed") == -1 && <ProfileVisitListItemView object={visit} parentList="aggregated"/> }
+                        { visit.url.indexOf("/feed") != -1 
+                          && <FeedVisitListItemView 
+                            object={visit} 
+                            parentList="aggregated" />}
+                        { visit.url.indexOf("/feed") == -1 
+                          && <ProfileVisitListItemView 
+                            object={visit} 
+                            parentList="aggregated"/> }
                       </>))
                   }
                 </div>
@@ -76,7 +81,7 @@ export default class AggregatedVisitListView extends React.Component{
                     { (this.props.context != "search" && this.state.seeMoreButtonShow) && <VisibilitySensor
                                                         onChange={this.onSeeMoreButtonVisibilityChange}
                                                       >
-                                                        <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={() => this.props.seeMore()} type="button">
+                                                        <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
                                                           See more
                                                         </button>
                                                       </VisibilitySensor>}

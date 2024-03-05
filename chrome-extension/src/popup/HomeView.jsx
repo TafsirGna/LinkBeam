@@ -69,7 +69,7 @@ export default class HomeView extends React.Component{
         if (prevProps.globalData.homeAllVisitsList){
           // check if the end of the all visits list has been hit
           if (prevProps.globalData.homeAllVisitsList.scope == "all"
-              && this.props.globalData.homeAllVisitsList.visitCount == prevProps.globalData.homeAllVisitsList.visitCount){
+              && this.props.globalData.homeAllVisitsList.list.length == prevProps.globalData.homeAllVisitsList.list.length){
             this.setState({allVisitLeft: false});
           }
 
@@ -161,13 +161,12 @@ export default class HomeView extends React.Component{
               ]);
             }));
 
-            visits = groupVisitsByProfile(visits);
-
             var homeAllVisitsList = this.props.globalData.homeAllVisitsList;
             homeAllVisitsList.list = this.props.globalData.homeAllVisitsList.list.concat(visits); 
-            homeAllVisitsList.visitCount += visits.visitCount;
 
-            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: homeAllVisitsList, scope: "all"}});
+            console.log("eeeeeeeeeeeeeeeeeeeeeeee: ", homeAllVisitsList);
+
+            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
             
           })();
 
@@ -213,7 +212,7 @@ export default class HomeView extends React.Component{
               Today {(this.props.globalData.homeTodayVisitsList && this.props.globalData.homeTodayVisitsList.length != 0) ? "("+this.props.globalData.homeTodayVisitsList.length+")" : null}
             </button>
             <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
-              All {(this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.visitCount != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.homeAllVisitsList.visitCount+")" : null}
+              All {(this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.list.length != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.homeAllVisitsList.list.length+")" : null}
             </button>
           </div>
         </div>
@@ -237,7 +236,7 @@ export default class HomeView extends React.Component{
                                                 globalData={this.props.globalData} />
 
                                               <AggregatedVisitListView 
-                                                objects={this.props.globalData.homeAllVisitsList ? this.props.globalData.homeAllVisitsList.list : null} 
+                                                objects={this.props.globalData.homeAllVisitsList ? groupVisitsByProfile(this.props.globalData.homeAllVisitsList.list) : null} 
                                                 seeMore={() => {this.getVisitList("all")}} 
                                                 loading={this.state.loadingAllVisits} 
                                                 visitLeft={this.state.allVisitLeft} 

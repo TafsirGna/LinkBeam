@@ -43,7 +43,7 @@ export default class ProfileListItemView extends React.Component{
                                         <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + this.props.object.url} target="_blank" dangerouslySetInnerHTML={{__html: this.props.object.profile.fullName}}></a> 
                                         <OverlayTrigger
                                           placement="top"
-                                          overlay={<Tooltip id="tooltip1">{this.props.object.count} visit{this.props.object.count > 1 ? "es" : ""} { this.props.context == "all" ? " | " + moment(this.props.object.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}
+                                          overlay={<Tooltip id="tooltip1">{this.props.object.count} visit{this.props.object.count > 1 ? "s" : ""} { this.props.context == "all" ? " | " + moment(this.props.object.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}
                                         >
                                           <span class="text-muted badge text-bg-light shadow-sm border">{this.props.object.count}</span>
                                         </OverlayTrigger>

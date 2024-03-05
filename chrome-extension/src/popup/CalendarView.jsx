@@ -5,6 +5,7 @@ import {
   appParams ,
   groupObjectsByDate,
   setGlobalDataSettings,
+  dbData,
 } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -38,12 +39,9 @@ export default class CalendarView extends React.Component{
     };
 
     this.onClickDay = this.onClickDay.bind(this);
-    // this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
-    // this.onRemindersDataReceived = this.onRemindersDataReceived.bind(this);
     this.tileDisabled = this.tileDisabled.bind(this);
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
     this.tileClassName = this.tileClassName.bind(this);
-    this.isSelectedMonthResponse = this.isSelectedMonthResponse.bind(this);
     this.getDatePostCount = this.getDatePostCount.bind(this);
   }
 
@@ -60,9 +58,9 @@ export default class CalendarView extends React.Component{
     }
 
     // Requesting this month's visits list
-    // this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
+    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
 
-    // this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
+    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
 
   }
 
@@ -91,28 +89,70 @@ export default class CalendarView extends React.Component{
 
   }
 
-  getMonthObjectList(date, objectStoreName){
+  async getMonthObjectList(date, objectStoreName){
 
     const startOfMonth = moment(date).startOf('month').toDate();
     const endOfMonth   = moment(date).endOf('month').toDate();
-
-    var timePeriod = [startOfMonth, "to", endOfMonth];
 
     var props = null;
     switch(objectStoreName){
 
       case dbData.objectStoreNames.REMINDERS: {
-        props = {createdOn: timePeriod};
+
+        var monthReminderList = await db.reminders
+                             .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
+                             .toArray();
+
+        await Promise.all (monthReminderList.map (async reminder => {
+          [reminder.profile] = await Promise.all([
+            db.profiles.where('url').equals(reminder.url).first()
+          ]);
+        }));
+
+        // Grouping the reminders by date
+        var results = groupObjectsByDate(monthReminderList);
+
+        this.setState({monthReminderList: results});
+
         break;
       }
 
       case dbData.objectStoreNames.VISITS: {
-        props = {date: timePeriod};
+
+        var monthVisitsList = await db.visits
+                             .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
+                             .toArray();
+
+        await Promise.all (monthVisitsList.map (async visit => {
+          [visit.profile] = await Promise.all([
+            db.profiles.where('url').equals(visit.url).first()
+          ]);
+        }));
+
+        // Grouping the visits by date
+        var results = groupObjectsByDate(monthVisitsList);
+
+        this.setState({monthVisitsList: results}, () => {
+
+          var profileList = [];
+
+          // Setting 'selectedDateProfiles' variable
+          for (var visit of this.getDayObjectList(this.state.monthVisitsList)){
+            if (profileList.map(e => e.url).indexOf(visit.url) == -1){
+              profileList.push(visit.profile);
+            }
+          }
+
+          this.setState({selectedDateProfiles: profileList});
+
+        });
+
         break;
       }
 
     };
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, objectStoreName, { context: appParams.COMPONENT_CONTEXT_NAMES.CALENDAR+"|"+JSON.stringify(timePeriod), criteria: { props: props }});
+  
+
 
   }
 
@@ -135,17 +175,17 @@ export default class CalendarView extends React.Component{
     
     if (view === "month"){
 
-      // var month = activeStartDate.getMonth() + 1;
-      // month = (month >= 10 ? "" : "0") + month;
+      var month = activeStartDate.getMonth() + 1;
+      month = (month >= 10 ? "" : "0") + month;
 
-      // var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
+      var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
 
-      // this.setState({activeStartDate: activeDate}, () => {
+      this.setState({activeStartDate: activeDate}, () => {
 
-      //   this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
-      //   this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+        this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
+        this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
 
-      // });
+      });
 
     }
 
@@ -181,8 +221,7 @@ export default class CalendarView extends React.Component{
 
   onClickDay(value, event){
     
-    var date = value.toLocaleDateString();
-    date = new Date(date);
+    var date = new Date(value.toLocaleDateString());
 
     this.setState({selectedDate: date}, () => {
 
@@ -202,43 +241,6 @@ export default class CalendarView extends React.Component{
 
   }
 
-  // onVisitsDataReceived(message, sendResponse){
-
-  //   var context = message.data.objectData.context; 
-  //   if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR) == -1){
-  //     return;
-  //   }
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var monthVisitsList = message.data.objectData.list;
-
-  //   // Following code essential to avoid crossover between calendar tabs
-  //   if (!this.isSelectedMonthResponse(context)){
-  //     return;
-  //   }
-
-  //   // Grouping the visits by date
-  //   var results = groupObjectsByDate(monthVisitsList);
-
-  //   this.setState({monthVisitsList: results}, () => {
-
-  //     var profileList = [];
-
-  //     // Setting 'selectedDateProfiles' variable
-  //     for (var visit of this.getDayObjectList(this.state.monthVisitsList)){
-  //       if (profileList.map(e => e.url).indexOf(visit.url) == -1){
-  //         profileList.push(visit.profile);
-  //       }
-  //     }
-
-  //     this.setState({selectedDateProfiles: profileList});
-
-  //   });
-
-  // }
-
   getDatePostCount(){
 
     var visits = this.getDayObjectList(this.state.monthVisitsList),
@@ -251,44 +253,6 @@ export default class CalendarView extends React.Component{
     return count;
 
   }
-
-  isSelectedMonthResponse(context){
-    context = context.replace(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR, "");
-    context = context.replace("|", "");
-    var timePeriod = JSON.parse(context);
-
-    var activeStartDate = new Date(this.state.activeStartDate);
-    if ((new Date(timePeriod[0])) <= activeStartDate && activeStartDate <= (new Date(timePeriod[2]))){
-      return true;
-    }
-
-    return false;
-
-  }
-
-  // onRemindersDataReceived(message, sendResponse){
-
-  //   var context = message.data.objectData.context; 
-  //   if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.CALENDAR) == -1){
-  //     return;
-  //   }
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var monthReminderList = message.data.objectData.list;
-
-  //   // Following code essential to avoid crossover between calendar tabs
-  //   if (!this.isSelectedMonthResponse(context)){
-  //     return;
-  //   }
-
-  //   // Grouping the reminders by date
-  //   var results = groupObjectsByDate(monthReminderList);
-
-  //   this.setState({monthReminderList: results});
-
-  // }
 
   onNavSelectKey = (selectedKey) => {
 

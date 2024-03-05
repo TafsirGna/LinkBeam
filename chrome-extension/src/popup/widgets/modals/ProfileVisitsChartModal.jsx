@@ -28,18 +28,14 @@ export default class ProfileVisitsChartModal extends React.Component{
 
   componentDidMount() {
 
-    
+    this.setPeriodVisits();
 
   }
 
-  setPeriodVisits(){
+  async setPeriodVisits(){
 
-    (async () => {
-
-      var periodVisits = await getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, db, this.props.profile);
-      this.setState({periodVisits: periodVisits});
-
-    }).bind(this)();
+    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment}, db, this.props.profile);
+    this.setState({periodVisits: periodVisits});
 
   }
 

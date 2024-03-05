@@ -3,6 +3,7 @@ import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart, getElementAtEvent } from "react-chartjs-2";
 import { countriesNaming } from "../../countriesNamingFile";
+import { db } from "../../../db";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +15,7 @@ import {
   saveCanvas,
   dbDataSanitizer,
   appParams,
+  setGlobalDataSettings,
 } from "../../Local_library";
 
 import { v4 as uuidv4 } from 'uuid';
@@ -66,8 +68,8 @@ export default class ProfileGeoMapChart extends React.Component{
     //   this.setState({chartCountries: ChartGeo.topojson.feature(data, data.objects.countries).features});
     // });
 
-    if (!Object.hasOwn(this.props.globalData.settings, "geoMapData")){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: this.props.context, criteria: { props: ["geoMapData"] }});
+    if (!this.props.globalData.settings){
+      setGlobalDataSettings(db, eventBus);
     }
     else{
       this.setChartCountries();
@@ -100,7 +102,7 @@ export default class ProfileGeoMapChart extends React.Component{
       return;
     }
 
-    if (!Object.hasOwn(this.props.globalData.settings, "geoMapData")){
+    if (!this.props.globalData.settings){
       return;
     }
 
