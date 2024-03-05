@@ -10,6 +10,8 @@ import {
   appParams, 
   deactivateTodayReminders,
   getTodayReminders,
+  dbData,
+  groupVisitsByProfile,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -55,30 +57,26 @@ export default class HomeView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData.allVisits != this.props.globalData.allVisits){
+    if (prevProps.globalData.homeAllVisitsList != this.props.globalData.homeAllVisitsList){
 
-      if (this.props.globalData.allVisits.scope == "search"){
+      if (this.props.globalData.homeAllVisitsList.scope == "search"){
         this.setState({allVisitLeft: false});
       }
       else{
 
         this.setState({loadingAllVisits: false, allVisitLeft: true});
 
-        if (prevProps.globalData.allVisits){
+        if (prevProps.globalData.homeAllVisitsList){
           // check if the end of the all visits list has been hit
-          if (prevProps.globalData.allVisits.scope == "all"
-              && this.props.globalData.allVisits.visitCount == prevProps.globalData.allVisits.visitCount){
+          if (prevProps.globalData.homeAllVisitsList.scope == "all"
+              && this.props.globalData.homeAllVisitsList.visitCount == prevProps.globalData.homeAllVisitsList.visitCount){
             this.setState({allVisitLeft: false});
           }
 
         }
         else{
 
-          if (this.props.globalData.allVisits.scope == "all" 
-              && this.props.globalData.allVisits.visitCount == this.props.globalData.homeTodayVisitsList.length){
-            // console.log("************ 1 : ", this.props.globalData.allVisits, this.props.globalData.allVisits.visitCount, this.props.globalData.homeTodayVisitsList.length);
-            this.getVisitList("all");  
-          }
+          this.getVisitList("all"); 
 
         }
 
@@ -149,8 +147,31 @@ export default class HomeView extends React.Component{
 
     if (scope == "all"){
       if (this.state.allVisitLeft){
-        this.setState({loadingAllVisits: true});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.VISITS, {context: [appParams.COMPONENT_CONTEXT_NAMES.HOME, scope].join("-"), criteria: { offset: this.props.globalData.allVisits ? this.props.globalData.allVisits.visitCount : 0 }});
+        this.setState({loadingAllVisits: true}, () => {
+
+          (async () => {
+            var visits = await db
+                                   .visits
+                                   .offset(this.props.globalData.homeAllVisitsList.list.length).limit(5)
+                                   .toArray();
+
+            await Promise.all (visits.map (async visit => {
+              [visit.profile] = await Promise.all([
+                db.profiles.where('url').equals(visit.url).first()
+              ]);
+            }));
+
+            visits = groupVisitsByProfile(visits);
+
+            var homeAllVisitsList = this.props.globalData.homeAllVisitsList;
+            homeAllVisitsList.list = this.props.globalData.homeAllVisitsList.list.concat(visits); 
+            homeAllVisitsList.visitCount += visits.visitCount;
+
+            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: homeAllVisitsList, scope: "all"}});
+            
+          })();
+
+        });
       }
     }
     else{ // today      
@@ -192,20 +213,36 @@ export default class HomeView extends React.Component{
               Today {(this.props.globalData.homeTodayVisitsList && this.props.globalData.homeTodayVisitsList.length != 0) ? "("+this.props.globalData.homeTodayVisitsList.length+")" : null}
             </button>
             <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
-              All {(this.props.globalData.allVisits && this.props.globalData.allVisits.visitCount != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.allVisits.visitCount+")" : null}
+              All {(this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.visitCount != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.homeAllVisitsList.visitCount+")" : null}
             </button>
           </div>
         </div>
 
         {/* Today visits List Tab */}
         { this.state.currentTabIndex == 0 && <div class="mt-4">
-                                              <VisitListView objects={this.props.globalData.homeTodayVisitsList} seeMore={() => {}} loading={false} visitLeft={false} />
+
+                                              <VisitListView 
+                                                objects={this.props.globalData.homeTodayVisitsList} 
+                                                seeMore={() => {}} 
+                                                loading={false} 
+                                                visitLeft={false} />
+
                                               </div>}
 
         {/* All visits List Tab */}
         { this.state.currentTabIndex == 1 && <div>
-                                              <SearchInputView objectStoreName={dbData.objectStoreNames.PROFILES} context={appParams.COMPONENT_CONTEXT_NAMES.HOME} />
-                                              <AggregatedVisitListView objects={this.props.globalData.allVisits ? this.props.globalData.allVisits.list : null} seeMore={() => {this.getVisitList("all")}} loading={this.state.loadingAllVisits} visitLeft={this.state.allVisitLeft} context={this.props.globalData.allVisits ? this.props.globalData.allVisits.scope : "all"}/>
+
+                                              <SearchInputView 
+                                                objectStoreName={dbData.objectStoreNames.PROFILES} 
+                                                globalData={this.props.globalData} />
+
+                                              <AggregatedVisitListView 
+                                                objects={this.props.globalData.homeAllVisitsList ? this.props.globalData.homeAllVisitsList.list : null} 
+                                                seeMore={() => {this.getVisitList("all")}} 
+                                                loading={this.state.loadingAllVisits} 
+                                                visitLeft={this.state.allVisitLeft} 
+                                                context={this.props.globalData.homeAllVisitsList ? this.props.globalData.homeAllVisitsList.scope : "all"}/>
+                                            
                                             </div>}
 
         <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
@@ -213,7 +250,9 @@ export default class HomeView extends React.Component{
             <Offcanvas.Title>Reminders</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
-            { this.props.globalData.todayReminderList && <ReminderListView objects={this.props.globalData.todayReminderList} />}
+            { this.props.globalData.todayReminderList 
+              && <ReminderListView 
+                  objects={this.props.globalData.todayReminderList} />}
           </Offcanvas.Body>
         </Offcanvas>
 

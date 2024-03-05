@@ -15,6 +15,7 @@ import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRel
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import RelationshipsChart from "./widgets/charts/RelationshipsChart";
 import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
+import { db } from "../db";
 
 export default class ChartExpansionView extends React.Component{
 
@@ -27,58 +28,34 @@ export default class ChartExpansionView extends React.Component{
       relChartDisplayCrit: "suggestions",
     };
 
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
   }
 
   componentDidMount() {
-
-    // Starting the listener
-    this.listenToMessages();
 
     var carrouselActiveItemIndex = /*localStorage*/sessionStorage.getItem('carrouselActiveItemIndex'),
         carrouselChartView = /*localStorage*/sessionStorage.getItem('carrouselChartView'),
         relChartDisplayCrit = /*localStorage*/sessionStorage.getItem('relChartDisplayCrit');
 
-    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, carrouselChartView, {moment: moment});
+    (async () => {
+
+      var visits = await getPeriodVisits(carrouselChartView, {moment: moment}, db),
+          profiles = [];
+
+      for (var visit of visits){
+        if (profiles.map(e => e.url).indexOf(visit.url) == -1){
+          profiles.push(visit.profile);
+        }
+      }
+
+      this.setState({ periodVisits: visits, periodProfiles: profiles });
+
+    }).bind(this)();
 
     this.setState({
       carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
       carrouselChartView: parseInt(carrouselChartView),
       relChartDisplayCrit: relChartDisplayCrit,
     });
-
-  }
-
-  listenToMessages(){
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
-        callback: this.onVisitsDataReceived
-      },
-    ]);
-  }
-
-  onVisitsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var context = message.data.objectData.context; 
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.STATISTICS){
-      return;
-    }
-
-    var visits = message.data.objectData.list, 
-        profiles = [];
-
-    for (var visit of visits){
-      if (profiles.map(e => e.url).indexOf(visit.url) == -1){
-        profiles.push(visit.profile);
-      }
-    }
-
-    this.setState({ periodVisits: visits, periodProfiles: profiles });
 
   }
 

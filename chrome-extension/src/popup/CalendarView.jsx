@@ -308,7 +308,7 @@ export default class CalendarView extends React.Component{
 
   				<div class="offset-1 col-10 mt-4 row">
             <div class="col-4">
-              { this.props.globalData.settings.lastDataResetDate && <Cal onClickDay={this.onClickDay} 
+              { this.props.globalData.settings && <Cal onClickDay={this.onClickDay} 
                             tileDisabled={this.tileDisabled} 
                             onActiveStartDateChange={this.onActiveStartDateChange} 
                             value={new Date()} 

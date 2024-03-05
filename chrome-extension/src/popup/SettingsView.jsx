@@ -75,7 +75,7 @@ export default class SettingsView extends React.Component{
       }).bind(this)();
     }
 
-    if (this.props.globalData.reminderList && this.props.globalData.reminderList.scope == "all"){
+    if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "all"){
       this.setState({reminderCount: this.props.globalData.reminderList.list.length});
     }
     else{
@@ -83,7 +83,7 @@ export default class SettingsView extends React.Component{
       (async () => {
 
         const count = await db.reminders.count();
-        this.setState({keywordCount: count});
+        this.setState({reminderCount: count});
 
       }).bind(this)();
     }

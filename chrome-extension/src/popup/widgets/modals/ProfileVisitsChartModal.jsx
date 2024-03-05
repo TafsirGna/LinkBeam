@@ -36,7 +36,7 @@ export default class ProfileVisitsChartModal extends React.Component{
 
     (async () => {
 
-      var periodVisits = getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, db, this.props.profile);
+      var periodVisits = await getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.PROFILE, this.state.view, {moment: moment}, db, this.props.profile);
       this.setState({periodVisits: periodVisits});
 
     }).bind(this)();

@@ -3,7 +3,13 @@ import React from 'react';
 import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { Offcanvas } from "react-bootstrap";
-import { getChartColors, appParams, saveCanvas } from "../../Local_library";
+import { 
+  getChartColors, 
+  appParams, 
+  saveCanvas, 
+  setGlobalDataKeywords 
+} from "../../Local_library";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,6 +23,7 @@ import {
 } from 'chart.js';
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
+import { db } from "../../../db";
 import { saveAs } from 'file-saver';
 import { AlertCircleIcon } from "../SVGs";
 import ProfileListItemView from "../ProfileListItemView";
@@ -84,7 +91,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
       this.setChartData();
     }
     else{
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.STATISTICS});
+      setGlobalDataKeywords(db, eventBus);
     }
 
 	}

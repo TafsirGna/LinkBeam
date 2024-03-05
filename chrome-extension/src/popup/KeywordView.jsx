@@ -4,22 +4,11 @@ import PageTitleView from "./widgets/PageTitleView";
 import KeywordListView from "./widgets/KeywordListView";
 import { 
   saveCurrentPageTitle, 
-  appParams
+  appParams,
+  setGlobalDataKeywords,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
-
-async function setGlobalDataKeywords(){
-
-  (async () => {
-
-    const keywords = await db.keywords.toArray();
-
-    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
-    
-  })();
-
-}
 
 export default class KeywordView extends React.Component{
 
@@ -43,7 +32,7 @@ export default class KeywordView extends React.Component{
 
     if (!this.props.globalData.keywordList){
 
-      setGlobalDataKeywords();
+      setGlobalDataKeywords(db, eventBus);
 
     }
 
@@ -86,7 +75,7 @@ export default class KeywordView extends React.Component{
 
         });
 
-        setGlobalDataKeywords();
+        setGlobalDataKeywords(db, eventBus);
 
       }).bind(this)();
 

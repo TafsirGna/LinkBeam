@@ -47,7 +47,7 @@ export default class App extends React.Component{
         bookmarkList: null,
         reminderList: null,
         todayReminderList: null,
-        allVisits: null,
+        homeAllVisitsList: null,
         homeTodayVisitsList: null,
         settings: null,
         currentTabWebPageData: null,
@@ -104,53 +104,25 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_VISIT, (data) => {
-        // Resetting the today reminder list here too
-        if (this.state.globalData.allVisits.scope == "search"){
-
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.allVisits = this.state.tmps.visitList;
-            return { globalData };
-          }, () => {
-            this.setState(prevState => {
-              let tmps = Object.assign({}, prevState.tmps);
-              tmps.visitList = null;
-              return { tmps };
-            });
-          });
-
-        }
-      }
-    );
-
-    eventBus.on(eventBus.EMPTY_SEARCH_TEXT_REMINDER, (data) => {
-        
-        if (this.state.globalData.reminderList.scope == "search"){
-
-          this.setState(prevState => {
-            let globalData = Object.assign({}, prevState.globalData);
-            globalData.reminderList = this.state.tmps.reminderList;
-            return { globalData };
-          }, () => {
-            this.setState(prevState => {
-              let tmps = Object.assign({}, prevState.tmps);
-              tmps.reminderList = null;
-              return { tmps };
-            });
-          });
-
-        }
-      }
-    );
-
     eventBus.on(eventBus.ALL_VISITS_TAB_CLICKED, (data) => {
-        
-        if (this.state.globalData.homeTodayVisitsList.length != 0){
-          this.setVisitList(this.state.globalData.homeTodayVisitsList, "all");
-        }
-        else{
-          eventBus.dispatch(eventBus.GET_ALL_VISITS, null);
+
+        if (!this.state.globalData.homeAllVisitsList || (this.state.globalData.homeAllVisitsList && this.state.globalData.homeAllVisitsList.scope == "all")){
+
+          if (!this.state.globalData.homeAllVisitsList){
+          
+            var homeAllVisitsList = groupVisitsByProfile(this.state.globalData.homeTodayVisitsList);
+            homeAllVisitsList.scope = "all";
+            this.setState(prevState => {
+              let globalData = Object.assign({}, prevState.globalData);
+              globalData.homeAllVisitsList = homeAllVisitsList;
+              return { globalData };
+            });
+
+          }
+          else{
+            eventBus.dispatch(eventBus.GET_ALL_VISITS, null);
+          }
+
         }
 
       }
@@ -169,158 +141,9 @@ export default class App extends React.Component{
   componentWillUnmount() {
 
     eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
-    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_VISIT);
-    eventBus.remove(eventBus.EMPTY_SEARCH_TEXT_REMINDER);
     eventBus.remove(eventBus.ALL_VISITS_TAB_CLICKED);
     eventBus.remove(eventBus.SWITCH_TO_VIEW);
     eventBus.remove(eventBus.SET_APP_GLOBAL_DATA);
-
-  }
-
-  // onProfilesDataReceived(message, sendResponse){
-
-  //   var context = message.data.objectData.context; 
-  //   if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
-  //     return;
-  //   }
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   // setting the new value
-  //   var listData = message.data.objectData.list,
-  //       scope = context.split("-")[1];
-
-  //   this.setVisitList(listData, scope);
-
-  // }
-
-  // onKeywordsDataReceived(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var keywordList = null;
-  //   if (Object.hasOwn(message.data.objectData, "list")){
-  //     keywordList = message.data.objectData.list;
-  //   }
-  //   else if (Object.hasOwn(message.data.objectData, "object")){
-  //     keywordList = this.state.globalData.keywordList;
-  //     var keywordObject = message.data.objectData.object;
-  //     keywordList.push(keywordObject);
-  //   }
-
-  //   // Setting the visit list here too
-  //   this.setState(prevState => {
-  //     let globalData = Object.assign({}, prevState.globalData);
-  //     globalData.keywordList = keywordList;
-  //     return { globalData };
-  //   });
-
-  // }
-
-  // onRemindersDataReceived(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   var context = message.data.objectData.context,
-  //       reminderList = {
-  //         list: message.data.objectData.list,
-  //       };
-
-  //   if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS) != -1 ){
-
-  //     if (context.indexOf("search") != -1){
-  //       reminderList.scope = "search";
-  //     }
-  //     else{
-  //       reminderList.scope = "all";
-  //     }
-
-  //     var tmp = { ...this.state.globalData.reminderList };
-
-  //     this.setState(prevState => {
-  //       let globalData = Object.assign({}, prevState.globalData);
-  //       globalData.reminderList = reminderList;
-  //       return { globalData };
-  //     }, () => {
-  //       if (!this.state.tmps.reminderList || (this.state.tmps.reminderList && tmp.scope == "all")){
-  //         this.setState(prevState => {
-  //           let tmps = Object.assign({}, prevState.tmps);
-  //           tmps.reminderList = tmp;
-  //           return { tmps };
-  //         });
-  //       }
-  //     });
-
-  //   }
-  //   else if (context == "App"){
-
-  //     // Setting the reminder list here too
-  //     this.setState(prevState => {
-  //       let globalData = Object.assign({}, prevState.globalData);
-  //       globalData.todayReminderList = reminderList.list;
-  //       return { globalData };
-  //     }); 
-
-  //   }
-
-  // }
-
-  setVisitList(listData, scope){
-
-    if (scope == "all"){
-
-      listData = groupVisitsByProfile(listData);
-
-      if (this.state.globalData.allVisits){
-        listData = {
-          list: this.state.globalData.allVisits.list.concat(listData.list),
-          visitCount: this.state.globalData.allVisits.visitCount + listData.visitCount,
-        };
-      }
-
-      listData.scope = scope;
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.allVisits = listData;
-        return { globalData };
-      });
-
-    }
-    else if (scope == "today"){ // today
-
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.homeTodayVisitsList = listData;
-        return { globalData };
-      }/*, () => {
-        this.setVisitList(listData, "all");
-      }*/);
-
-    }
-    else if (scope == "search"){
-
-      listData = groupVisitsByProfile(listData);
-
-      // var tmp = (this.state.globalData.allVisits.scope == "all") ? this.state.globalData.allVisits : null;
-      var tmp = { ...this.state.globalData.allVisits };
-      this.setState(prevState => {
-        let globalData = Object.assign({}, prevState.globalData);
-        globalData.allVisits = listData;
-        globalData.allVisits.scope = "search";
-        return { globalData };
-      }, () => {
-        if (!this.state.tmps.visitList || (this.state.tmps.visitList && tmp.scope == "all")){
-          this.setState(prevState => {
-            let tmps = Object.assign({}, prevState.tmps);
-            tmps.visitList = tmp;
-            return { tmps };
-          });
-        }
-      });
-    }
 
   }
 

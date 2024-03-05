@@ -10,15 +10,17 @@ import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import RelationshipsChart from "./widgets/charts/RelationshipsChart";
-import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot"; ConnectedScatterplot
+import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
+import { db } from "../db";
 
 import { 
   saveCurrentPageTitle, 
   appParams,
   getPeriodVisits,
+  setGlobalDataSettings,
 } from "./Local_library";
 
 export default class StatisticsView extends React.Component{
@@ -34,60 +36,24 @@ export default class StatisticsView extends React.Component{
       relChartDisplayCrit: "suggestions",
     };
 
-    this.listenToMessages = this.listenToMessages.bind(this);
     this.onViewChange = this.onViewChange.bind(this);
-    this.onVisitsDataReceived = this.onVisitsDataReceived.bind(this);
     this.handleCarrouselSelect = this.handleCarrouselSelect.bind(this);
     this.downloadChart = this.downloadChart.bind(this);
     this.onChartExpansion = this.onChartExpansion.bind(this);
     this.setRelChartDisplayCrit = this.setRelChartDisplayCrit.bind(this);
+    this.setObjects = this.setObjects.bind(this);
   }
 
   componentDidMount() {
 
-    // Starting the listener
-    this.listenToMessages();
-
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS);
 
-    getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, this.state.view, {moment: moment});
+    this.setObjects(); 
     
     // Requesting the last reset date
-    if (!Object.hasOwn(this.props.globalData.settings, "lastDataResetDate")){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, criteria: { props: ["lastDataResetDate"] }});
+    if (!this.props.globalData.settings){
+      setGlobalDataSettings(db, eventBus);
     }
-
-  }
-
-  listenToMessages(){
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.VISITS].join(messageParams.separator), 
-        callback: this.onVisitsDataReceived
-      },
-    ]);
-  }
-
-  onVisitsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var context = message.data.objectData.context; 
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.STATISTICS){
-      return;
-    }
-
-    var visits = message.data.objectData.list, 
-        profiles = [];
-
-    for (var visit of visits){
-      if (profiles.map(e => e.url).indexOf(visit.url) == -1){
-        profiles.push(visit.profile);
-      }
-    }
-
-    this.setState({ periodVisits: visits, periodProfiles: profiles });
 
   }
 
@@ -98,8 +64,27 @@ export default class StatisticsView extends React.Component{
       periodVisits: null,
       periodProfiles: null,
     }, () => {
-      getPeriodVisits(appParams.COMPONENT_CONTEXT_NAMES.STATISTICS, index, {moment: moment});
+      this.setObjects();
     });
+
+  }
+
+  setObjects(){
+
+    (async () => {
+
+      var visits = await getPeriodVisits(this.state.view, {moment: moment}, db);
+      
+      var profiles = [];
+      for (var visit of visits){
+        if (profiles.map(e => e.url).indexOf(visit.url) == -1){
+          profiles.push(visit.profile);
+        }
+      }
+
+      this.setState({ periodVisits: visits, periodProfiles: profiles });
+
+    }).bind(this)()
 
   }
 
@@ -241,7 +226,7 @@ export default class StatisticsView extends React.Component{
 
           <div class="clearfix">
             <span class="text-muted small float-end fst-italic mt-2 badge">
-              Data recorded since {Object.hasOwn(this.props.globalData.settings, "lastDataResetDate") ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}
+              Data recorded since {this.props.globalData.settings ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}
             </span>
           </div>
         </div>

@@ -5,9 +5,8 @@ export const appParams = {
   appDbName: "LinkBeamDB",
   appDbVersion: 1,
   keywordCountLimit: 5, 
-  searchPageLimit: 3, 
   bookmarkCountLimit: 5,
-  PARSE_HOST_URL: 'https://parseapi.back4app.com/',
+  // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
   appAuthor: "Stoic Beaver",
 
@@ -50,7 +49,6 @@ export const dbData = {
     REMINDERS: "reminders",
     KEYWORDS: "keywords",
     PROFILES: "profiles",
-    NOTIFICATIONS: "notifications",
     PROFILE_ACTIVITY: "profile_activity",
     TRACKED_POSTS: "tracked_posts",
   }
@@ -320,8 +318,6 @@ export const performProfileSubPartComparison = function(theProfile, entityName, 
 
     for (var object of profile[category]){
 
-      // console.log("%%%%%%%%%%% : ", profile, object);
-
       if (!object.entity.name){
         continue;
       }
@@ -469,33 +465,33 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
 }
 
-export const logInParseUser = async function(Parse, usernameValue, passwordValue, callback, errCallback = null) {
+// export const logInParseUser = async function(Parse, usernameValue, passwordValue, callback, errCallback = null) {
 
-  try {
-    const loggedInUser = await Parse.User.logIn(usernameValue, passwordValue);
-    // logIn returns the corresponding ParseUser object
-    console.log(
-      `Success! User ${loggedInUser.get(
-        'username'
-      )} has successfully signed in!`
-    );
+//   try {
+//     const loggedInUser = await Parse.User.logIn(usernameValue, passwordValue);
+//     // logIn returns the corresponding ParseUser object
+//     console.log(
+//       `Success! User ${loggedInUser.get(
+//         'username'
+//       )} has successfully signed in!`
+//     );
 
-    var currentParseUser = await Parse.User.current();
-    callback(currentParseUser);
-    return true;
+//     var currentParseUser = await Parse.User.current();
+//     callback(currentParseUser);
+//     return true;
 
-  } catch (error) {
-    // Error can be caused by wrong parameters or lack of Internet connection
-    console.log(`Error! ${error.message}`);
+//   } catch (error) {
+//     // Error can be caused by wrong parameters or lack of Internet connection
+//     console.log(`Error! ${error.message}`);
 
-    if (errCallback){
-      errCallback();
-    }
+//     if (errCallback){
+//       errCallback();
+//     }
 
-    return false;
-  }
+//     return false;
+//   }
 
-};
+// };
 
 export const groupObjectsByDate = (objectList) => {
 
@@ -546,7 +542,20 @@ export async function setGlobalDataSettings(db, eventBus){
 
 }
 
-export async function getPeriodVisits(context, index, func, db, profile = null){
+export async function setGlobalDataKeywords(db, eventBus){
+
+  (async () => {
+
+    const keywords = await db.keywords.toArray();
+
+    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
+    
+  })();
+
+}
+
+
+export async function getPeriodVisits(index, func, db, profile = null){
 
   var startDate = null;
   switch(index){
@@ -567,13 +576,19 @@ export async function getPeriodVisits(context, index, func, db, profile = null){
   }
 
   var collection = db.visits
-                      .filter(visit => (startDate < new Date(visit.date) && new Date(visit.date) <= new Date()));
+                      .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date()));
 
   if (profile){
     collection.where("url").equals(profile.url);
   }
 
-  var visits = await query.toArray();
+  var visits = await collection.toArray();
+
+  await Promise.all (visits.map (async visit => {
+    [visit.profile] = await Promise.all([
+      db.profiles.where('url').equals(visit.url).first()
+    ]);
+  }));
 
   return visits;
 
@@ -624,7 +639,6 @@ export const saveCanvas = (uuid, fileName, saveAs) => {
 
   }
 
-  console.log("''''''''''''' : ", "chartTag_" + uuid, canvasSave);
   canvasSave.toBlob(function (blob) {
     saveAs(blob, fileName);
   });
@@ -638,30 +652,30 @@ export const deactivateTodayReminders = (reminderList) => {
 
 }
 
-export const registerParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
+// export const registerParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
 
-  try {
-    // Since the signUp method returns a Promise, we need to call it using await
-    const createdUser = await Parse.User.signUp(usernameValue, passwordValue);
-    console.log(
-      `Success! User ${createdUser.getUsername()} was successfully created!`
-    );
+//   try {
+//     // Since the signUp method returns a Promise, we need to call it using await
+//     const createdUser = await Parse.User.signUp(usernameValue, passwordValue);
+//     console.log(
+//       `Success! User ${createdUser.getUsername()} was successfully created!`
+//     );
 
-    callback(createdUser);
+//     callback(createdUser);
 
-    return true;
-  } catch (error) {
-    // signUp can fail if any parameter is blank or failed an uniqueness check on the server
-    console.log(`Error! ${error}`);
+//     return true;
+//   } catch (error) {
+//     // signUp can fail if any parameter is blank or failed an uniqueness check on the server
+//     console.log(`Error! ${error}`);
 
-    if (errCallback){
-      errCallback();
-    }
+//     if (errCallback){
+//       errCallback();
+//     }
 
-    return false;
-  }
+//     return false;
+//   }
 
-};
+// };
 
 export const testTabBaseUrl = (url) => {
 
@@ -669,23 +683,23 @@ export const testTabBaseUrl = (url) => {
 
 }
 
-export const checkWebPage = (callback) => {
+// export const checkWebPage = (callback) => {
 
-  // Making sure all the necessary tags are fully loaded first
-  var sectionContainerClassName = (/github.com/.test((window.location.href.split("?"))[0]) ? appParams.GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME : appParams.LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME);
+//   // Making sure all the necessary tags are fully loaded first
+//   var sectionContainerClassName = (/github.com/.test((window.location.href.split("?"))[0]) ? appParams.GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME : appParams.LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME);
 
-  var selectedTags = document.getElementsByClassName(sectionContainerClassName);
+//   var selectedTags = document.getElementsByClassName(sectionContainerClassName);
 
-  if (selectedTags.length == 0){
-    setTimeout(() => {
-      checkWebPage(callback);
-    }, appParams.TIMER_VALUE);
-  }
-  else{
-    // setUpAppWithinWebPage();
-    callback();
-  }
-};
+//   if (selectedTags.length == 0){
+//     setTimeout(() => {
+//       checkWebPage(callback);
+//     }, appParams.TIMER_VALUE);
+//   }
+//   else{
+//     // setUpAppWithinWebPage();
+//     callback();
+//   }
+// };
 
 export const groupVisitsByProfile = (visits) => {
 
@@ -789,13 +803,13 @@ export function getChartColors(length){
 
 }
 
-export function expandToTab(){
+// export function expandToTab(){
 
-    // Send message to the background
-    chrome.runtime.sendMessage({header: messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION, data: null}, (response) => {
-      // Got an asynchronous response with the data from the service worker
-      console.log("Expand Modal Request sent !");
-    });
+//     // Send message to the background
+//     chrome.runtime.sendMessage({header: messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION, data: null}, (response) => {
+//       // Got an asynchronous response with the data from the service worker
+//       console.log("Expand Modal Request sent !");
+//     });
 
-}
+// }
 
