@@ -232,31 +232,31 @@ export const dbDataSanitizer = {
 
 };
 
-export const getUserIcon = (userIconLabel) => {
+export const getUserIcon = (userIconLabel, iconsSet) => {
 
   var userIcon = null;
 
   switch(userIconLabel){
     case "default":
-      userIcon = default_user_icon;
+      userIcon = iconsSet.default_user_icon;
       break;
     case "man":
-      userIcon = man_user_icon;
+      userIcon = iconsSet.man_user_icon;
       break;
     case "boy":
-      userIcon = boy_user_icon;
+      userIcon = iconsSet.boy_user_icon;
       break;
     case "lady":
-      userIcon = lady_user_icon;
+      userIcon = iconsSet.lady_user_icon;
       break;
     case "woman":
-      userIcon = woman_user_icon;
+      userIcon = iconsSet.woman_user_icon;
       break;
     case "gamer":
-      userIcon = gamer_user_icon;
+      userIcon = iconsSet.gamer_user_icon;
       break;
     case "mom":
-      userIcon = mom_user_icon;
+      userIcon = iconsSet.mom_user_icon;
       break;
   }
 
@@ -532,6 +532,17 @@ export const groupObjectsByMonth = (objectList) => {
   }
 
   return results;
+
+}
+
+export async function setGlobalDataSettings(db, eventBus){
+
+  const settings = await db.settings
+                               .where("id")
+                               .equals(1)
+                               .first();
+
+  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
 
 }
 

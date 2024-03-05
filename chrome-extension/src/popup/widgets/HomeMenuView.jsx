@@ -54,7 +54,7 @@ export default class HomeMenu extends React.Component{
             <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "Bookmarks")}}>Bookmarks</a></li>
             <li>
               <a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "ProfileActivity")}}>
-                All Profiles' Activity
+                Profiles' Activity
               </a>
             </li>
             <li><a class="dropdown-item small" href="#" onClick={() => {switchToView(eventBus, "Settings")}}>Settings</a></li>

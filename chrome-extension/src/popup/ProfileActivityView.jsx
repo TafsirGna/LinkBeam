@@ -11,6 +11,7 @@ import share_icon from '../assets/share_icon.png';
 import newspaper_icon from '../assets/newspaper_icon.png';
 import default_user_icon from '../assets/user_icons/default.png';
 import moment from 'moment';
+import { db } from "../db";
 
 export default class ProfileActivityView extends React.Component{
 
@@ -22,17 +23,20 @@ export default class ProfileActivityView extends React.Component{
     	profiles: null,
     };
 
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
   }
 
   componentDidMount() {
 
-  	this.listenToMessages();
-
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY.replace(" ", ""));
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY });
+    // TODO : Add a scrolling button "see more" instead of this
+
+    (async () => {
+
+      var profiles = await db.profiles.toArray();
+      this.setState({profiles: profiles});
+
+    }).bind(this)();
 
   }
 
@@ -41,7 +45,7 @@ export default class ProfileActivityView extends React.Component{
   		offCanvasShow: false, 
   		selectedPost: null,
   	});
-  };
+  }
 
   handleOffCanvasShow = (post) => {
       this.setState({
@@ -49,35 +53,7 @@ export default class ProfileActivityView extends React.Component{
       	offCanvasShow: true,
       }
     )
-  };
-
-  onProfilesDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var context = message.data.objectData.context;
-    if (context != appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY){
-    	return;
-    }
-
-    var profileList = message.data.objectData.list;
-
-    // Setting the search list here too
-    this.setState({profiles: profileList});
-
   }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_LIST, dbData.objectStoreNames.PROFILES].join(messageParams.separator), 
-        callback: this.onProfilesDataReceived
-      },
-    ]);
-  }
-
 
   render(){
     return (

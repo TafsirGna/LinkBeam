@@ -41,10 +41,10 @@ export default class KeywordListView extends React.Component{
   // Function for initiating the deletion of a keyword
   initKeywordDeletion(keyword){
 
-    const response = confirm("Do you confirm the deletion of the keyword ("+keyword.name+") ?");
+    const response = confirm(`Do you confirm the deletion of the keyword ${keyword.name} ?`);
     if (response){
 
-      this.props.onPreDeletion(keyword);
+      this.props.deleteKeyword(keyword);
 
     }
   }

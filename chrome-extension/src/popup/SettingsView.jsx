@@ -13,6 +13,7 @@ import {
   appParams,
   procExtractedData,
   switchToView,
+  setGlobalDataSettings,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -57,18 +58,7 @@ export default class SettingsView extends React.Component{
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
     if (!this.props.globalData.settings){
-
-      (async () => {
-
-        const settings = await db.settings
-                               .where("id")
-                               .equals(1)
-                               .first();
-
-        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
-
-      })();
-
+      setGlobalDataSettings(db, eventBus);
     }
 
     // setting the local variable with the global data

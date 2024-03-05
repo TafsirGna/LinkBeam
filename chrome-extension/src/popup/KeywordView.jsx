@@ -7,6 +7,19 @@ import {
   appParams
 } from "./Local_library";
 import eventBus from "./EventBus";
+import { db } from "../db";
+
+async function setGlobalDataKeywords(){
+
+  (async () => {
+
+    const keywords = await db.keywords.toArray();
+
+    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
+    
+  })();
+
+}
 
 export default class KeywordView extends React.Component{
 
@@ -14,79 +27,26 @@ export default class KeywordView extends React.Component{
     super(props);
     this.state = {
       keyword: "",
-      processingState:{
-        status: "NO",
-        info: ""
-      },
+      processing: false,
       alertBadgeContent: "",
     };
 
     this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
     this.addKeyword = this.addKeyword.bind(this);
-    this.onPreDeletion = this.onPreDeletion.bind(this);
+    this.deleteKeyword = this.deleteKeyword.bind(this);
     this.checkInputKeyword = this.checkInputKeyword.bind(this);
-    this.listenToMessages = this.listenToMessages.bind(this);
-    this.onKeywordsDataReceived = this.onKeywordsDataReceived.bind(this);
   }
 
   componentDidMount() {
 
-    this.listenToMessages();
-
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS);
 
-    this.getKeywordList();
+    if (!this.props.globalData.keywordList){
 
-  }
+      setGlobalDataKeywords();
 
-  getKeywordList(){
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS });
-  }
-
-  onKeywordsDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    // ack(sendResponse);
-
-    // Displaying the alertBadge
-    if (this.state.processingState.status == "YES"){
-      this.getKeywordList();
-      switch(this.state.processingState.info){
-        case "ADDING":{
-          this.setState({alertBadgeContent: "Added !"});
-          break
-        }
-        case "DELETING":{
-          this.setState({alertBadgeContent: "Deleted !"});
-          break
-        }
-      }
     }
 
-    // Setting a timeout for the alertBadge to disappear
-    setTimeout(() => {
-      this.setState({alertBadgeContent: ""});
-    }
-    , appParams.TIMER_VALUE);
-
-    // vanishing the spinner
-    this.setState({processingState: {status: "NO", info: ""}});
-
-  }
-
-  listenToMessages(){
-
-    startMessageListener([
-      {
-        param: [messageParams.responseHeaders.OBJECT_ADDED, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
-        callback: this.onKeywordsDataReceived
-      },
-      {
-        param: [messageParams.responseHeaders.OBJECT_DELETED, dbData.objectStoreNames.KEYWORDS].join(messageParams.separator), 
-        callback: this.onKeywordsDataReceived
-      }
-    ]);
-    
   }
 
   // Function for initiating the insertion of a keyword
@@ -107,9 +67,29 @@ export default class KeywordView extends React.Component{
     }
 
     // Displaying the spinner and cleaning the keyword input
-    this.setState({processingState: {status: "YES", info: "ADDING"}}, () => {
-      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: this.state.keyword } } });
-      this.setState({keyword: ""});
+    this.setState({processing: true}, () => {
+      
+      (async () => {
+
+        await db.keywords.add({
+                                name: this.state.keyword,
+                                createdOn: (new Date()).toISOString(),
+                              });
+
+        this.setState({processing: false, keyword: "", alertBadgeContent: "Added !"}, () => {
+
+          // Setting a timeout for the alertBadge to disappear
+          setTimeout(() => {
+            this.setState({alertBadgeContent: ""});
+          }
+          , appParams.TIMER_VALUE);
+
+        });
+
+        setGlobalDataKeywords();
+
+      }).bind(this)();
+
     });
 
   }
@@ -141,11 +121,31 @@ export default class KeywordView extends React.Component{
     return true;
   }
 
-  onPreDeletion(keyword){
+  deleteKeyword(keyword){
 
-    // Displaying the spinner
-    this.setState({processingState: {status: "YES", info: "DELETING"}}, () => {
-      eventBus.dispatch("deleteKeyword", {payload: keyword});
+    this.setState({processing: true}, () => {
+
+      (async () => {
+
+        await db.keywords.delete(keyword.id);
+
+        this.setState({processing: false, keyword: "", alertBadgeContent: "Deleted !"}, () => {
+
+          // Setting a timeout for the alertBadge to disappear
+          setTimeout(() => {
+            this.setState({alertBadgeContent: ""});
+          }
+          , appParams.TIMER_VALUE);
+
+        });
+
+        var index = this.props.globalData.keywordList.map(e => e.id).indexOf(keyword.id);
+        var keywords = this.props.globalData.keywordList;
+        keywords.splice(index, 1);
+        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords});
+
+      }).bind(this)();
+
     });
 
   }
@@ -164,7 +164,7 @@ export default class KeywordView extends React.Component{
           <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS}/>
 
           <div class="clearfix">
-            <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processingState.status == "YES" ? "" : "d-none")} role="status">
+            <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processing ? "" : "d-none")} role="status">
               <span class="visually-hidden">Loading...</span>
             </div>
             <div class={"float-end " + (this.state.alertBadgeContent == "" ? "d-none" : "")}>
@@ -184,7 +184,9 @@ export default class KeywordView extends React.Component{
             
             {/* Keyword list view */}
 
-            <KeywordListView objects={this.props.globalData.keywordList} onPreDeletion={this.onPreDeletion} />
+            <KeywordListView 
+              objects={this.props.globalData.keywordList} 
+              deleteKeyword={this.deleteKeyword} />
 
           </div>
         </div>

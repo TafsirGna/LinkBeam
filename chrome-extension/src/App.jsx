@@ -177,36 +177,6 @@ export default class App extends React.Component{
 
   }
 
-  // onProcessingErrorReport(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-    
-  //   var response = confirm("Something went wrong when performing this operation!. Try again later. You can also help improve this app by reporting this error. Report ?" );
-  //   if (response){
-
-  //   }
-
-  // }
-
-  // onVisitsDataReceived(message, sendResponse){
-
-  //   var context = message.data.objectData.context; 
-  //   if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.HOME) == -1){
-  //     return;
-  //   }
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   // setting the new value
-  //   var listData = message.data.objectData.list,
-  //       scope = context.split("-")[1];
-
-  //   this.setVisitList(listData, scope);
-
-  // }
-
   // onProfilesDataReceived(message, sendResponse){
 
   //   var context = message.data.objectData.context; 
@@ -295,44 +265,6 @@ export default class App extends React.Component{
   //     }); 
 
   //   }
-
-  // }
-
-  // onDbDataDeleted(message, sendResponse){
-
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   if (message.data.objectData.payload){
-  //     this.setState(prevState => {
-  //       let globalData = Object.assign({}, prevState.globalData);
-  //       globalData.settings.lastDataResetDate = message.data.objectData.payload;
-  //       return { globalData };
-  //     });
-  //   }
-
-  // }
-
-  // onSwResponseReceived(message, sendResponse){
-    
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   if (message.data.objectStoreName == messageParams.contentMetaData.SW_DB_NOT_CREATED_YET){
-  //     var alertMessage = "Database not created yet!";
-  //     console.log(alertMessage);
-  //     // alert(alertMessage);
-  //     this.setState({swDbStatus: messageParams.contentMetaData.SW_DB_NOT_CREATED_YET});
-  //     return;
-  //   }
-
-  //   // setting the new value
-  //   let currentTabWebPageData = message.data.objectData;
-  //   this.setState(prevState => {
-  //     let globalData = Object.assign({}, prevState.globalData);
-  //     globalData.currentTabWebPageData = currentTabWebPageData;
-  //     return { globalData };
-  //   });
 
   // }
 

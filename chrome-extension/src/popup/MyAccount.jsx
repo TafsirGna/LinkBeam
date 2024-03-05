@@ -14,10 +14,22 @@ import {
 	saveCurrentPageTitle, 
   appParams,
   getUserIcon,
+  setGlobalDataSettings,
 } from "./Local_library";
-// import Offcanvas from 'react-bootstrap/Offcanvas';
+import { db } from "../db";
+import eventBus from "./EventBus";
 
 const productIdOverlayText = "Your unique identifier";
+
+var iconsSet = {
+  woman_user_icon: woman_user_icon,
+  lady_user_icon: lady_user_icon,
+  mom_user_icon: mom_user_icon,
+  man_user_icon: man_user_icon,
+  gamer_user_icon: gamer_user_icon,
+  boy_user_icon: boy_user_icon,
+  default_user_icon: default_user_icon,
+}
 
 export default class MyAccount extends React.Component{
 
@@ -37,34 +49,24 @@ export default class MyAccount extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT);
 
-  	// Setting the local data with the global ones
-    (["productID", "installedOn", "userIcon"]).forEach(property => {
-
-      if (!Object.hasOwn(this.props.globalData.settings, property)){
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: [property] } });
-      }
-
-    });
-
+  	if (!this.props.globalData.settings){
+      setGlobalDataSettings(db, eventBus);
+    }
+    
   }
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData != this.props.globalData){
-      if (prevProps.globalData.settings != this.props.globalData.settings){
-        if (prevProps.globalData.settings.userIcon != undefined){
-          if (prevProps.globalData.settings.userIcon != this.props.globalData.settings.userIcon){
-            this.handleOffCanvasClose();
-          }
-        }
-      }
-    }
-
   }
 
-  changeUserIcon(icon_title){
+  async changeUserIcon(icon_title){
 
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.SETTINGS, { context: appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT, criteria: { props: {userIcon: icon_title} } });
+    var settings = this.props.globalData.settings;
+    settings.userIcon = icon_title;
+    await db.settings.update(1, settings);
+
+    // closing the offcanvas
+    this.handleOffCanvasClose();
 
   }
 
@@ -74,7 +76,7 @@ export default class MyAccount extends React.Component{
 
   copyToClipboard(){
 
-    if (this.props.globalData.settings.productID == undefined){
+    if (!this.props.globalData.settings){
       return;
     }
 
@@ -106,7 +108,7 @@ export default class MyAccount extends React.Component{
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
           <div class="">
             <div class="text-center">
-            	<img src={getUserIcon(this.props.globalData.settings.userIcon)} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
+            	<img src={this.props.globalData.settings ? getUserIcon(this.props.globalData.settings.userIcon, iconsSet) : null} onClick={() => {this.handleOffCanvasShow()}} alt="twbs" width="60" height="60" class="handy-cursor shadow rounded-circle flex-shrink-0" title="Click to change"/>
             </div>
             <div class="mx-auto w-75 mt-4">
             	<OverlayTrigger
@@ -115,11 +117,11 @@ export default class MyAccount extends React.Component{
               >
                 <div class="input-group mb-3 shadow input-group-sm" onClick={() => {this.copyToClipboard();}}>
 								  <span class="input-group-text handy-cursor" id="basic-addon1">ID</span>
-								  { this.props.globalData.settings.productID != undefined && <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.props.globalData.settings.productID} /> }
+								  { this.props.globalData.settings && <input disabled type="text" class="form-control" placeholder="Product ID" aria-label="Username" aria-describedby="basic-addon1" value={this.props.globalData.settings.productID} /> }
 								</div>
               </OverlayTrigger>
             	<hr/>
-            	{ this.props.globalData.settings.installedOn != undefined && <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.props.globalData.settings.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p> }
+            	{ this.props.globalData.settings && <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.props.globalData.settings.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p> }
 
               {/*<div class="text-center">
                 <button type="button" class="btn btn-primary badge mt-3" onClick={() => {this.verifyAccount()}} >

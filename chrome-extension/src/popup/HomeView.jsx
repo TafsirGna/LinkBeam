@@ -171,6 +171,7 @@ export default class HomeView extends React.Component{
         visits.sort((a,b) => new Date(b.date) - new Date(a.date));
 
         eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeTodayVisitsList", value: visits});
+        
       })();
     }
 
