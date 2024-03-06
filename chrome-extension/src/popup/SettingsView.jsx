@@ -8,6 +8,7 @@ import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';
 import JSZip from "jszip";
+import { useLiveQuery } from "dexie-react-hooks";
 import { 
   saveCurrentPageTitle,
   appParams,
@@ -18,6 +19,15 @@ import {
 import eventBus from "./EventBus";
 import { db } from "../db";
 // import Button from 'react-bootstrap/Button';
+
+const datePropertyNames = {
+            bookmarks: "createdOn",
+            keywords: "createdOn",
+            reminders: "createdOn",
+            visits: "date",
+            feedPosts: "date",
+            profiles: "date",
+          };
 
 export default class SettingsView extends React.Component{
   
@@ -38,17 +48,16 @@ export default class SettingsView extends React.Component{
       offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
       offCanvasFormSelectValue: "1",
       usageQuota: null,
-      action: null,
     };
 
     this.deleteData = this.deleteData.bind(this);
     this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
-    this.onDbDataDeleted = this.onDbDataDeleted.bind(this);
-    this.onExportDataReceived = this.onExportDataReceived.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
+    this.setReminderCount = this.setReminderCount.bind(this);
+    this.setKeywordCount = this.setKeywordCount.bind(this);
     this.initDataExport = this.initDataExport.bind(this);
 
   }
@@ -67,12 +76,7 @@ export default class SettingsView extends React.Component{
     }
     else{
       // Getting the keyword count
-      (async () => {
-
-        const count = await db.keywords.count();
-        this.setState({keywordCount: count});
-
-      }).bind(this)();
+      this.setKeywordCount();
     }
 
     if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "all"){
@@ -80,15 +84,24 @@ export default class SettingsView extends React.Component{
     }
     else{
       // Getting the reminder count
-      (async () => {
-
-        const count = await db.reminders.count();
-        this.setState({reminderCount: count});
-
-      }).bind(this)();
+      this.setReminderCount()
     }
 
     this.checkStorageUsage();
+
+  }
+
+  async setReminderCount(){
+
+    const count = await db.reminders.count();
+    this.setState({reminderCount: count});
+
+  }
+
+  async setKeywordCount(){
+
+    const count = await db.keywords.count();
+    this.setState({keywordCount: count});
 
   }
 
@@ -116,74 +129,83 @@ export default class SettingsView extends React.Component{
 
   }
 
-  onExportDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    try {
-      
-      const jsonData = JSON.stringify(message.data.objectData.list),
-            jsonDataBlob = new Blob([jsonData]);
-
-      var fileName = "LinkBeam_Data_" + this.state.action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
-
-      procExtractedData(jsonDataBlob, fileName, this.state.action, new JSZip());
-
-    } catch (error) {
-      console.error('Error while downloading the received data: ', error);
-    }
-
-    this.setState({action: null});
-
-  }
-
-  onDbDataDeleted(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    // setting the new value
-    this.setState({
-      processingState: {status: "NO", info: "ERASING"},
-    }, () => {
-
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
-
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_COUNT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.SETTINGS });
-      
-    });
-
-    this.checkStorageUsage();
-
-    // Setting a timer to reset all of this
-    setTimeout(() => {
-      this.setState({processingState: {status: "NO", info: ""}});
-    }, appParams.TIMER_VALUE);
-
-  }
-
   deleteData(){
     const response = confirm("Do you confirm the erase of your data as specified ?");
     if (response){
+
       this.handleOffCanvasClose();
       // Displaying the spinner
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-      var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_deletion" } : { context: "data_deletion", criteria: { props: {date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]}}});
-      sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, "all", requestParams);
+
+      (async () => {
+
+        for (var table of db.tables){
+          if (table.name == "settings"){
+            continue;
+          }
+          await table.filter(entry => (new Date(this.state.offCanvasFormStartDate) <= new Date(entry[datePropertyNames[table.name]]) && new Date(entry[datePropertyNames[table.name]]) <= new Date(this.state.offCanvasFormEndDate)))
+                     .delete();
+        }
+
+        this.setState({
+          processingState: {status: "NO", info: "ERASING"},
+        });
+
+        this.setKeywordCount();
+        this.setReminderCount();
+
+        this.checkStorageUsage();
+
+        // Setting a timer to reset all of this
+        setTimeout(() => {
+          this.setState({processingState: {status: "NO", info: ""}});
+        }, appParams.TIMER_VALUE);
+
+      }).bind(this)();
+
     }
   }
 
   initDataExport(action){
-    const response = confirm("Do you confirm the "+ action +" of your data as specified ?");
+    const response = confirm(`Do you confirm the ${action} of your data as specified ?`);
 
     if (response){
-      this.setState({action: action}, () => {
-        var requestParams = (this.state.offCanvasFormSelectValue == "1" ? { context: "data_export" } : { context: "data_export", criteria: { props: { date: [this.state.offCanvasFormStartDate, "to", this.state.offCanvasFormEndDate]} }});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, "all", requestParams);
-      });
+
+      var dbData = {
+        dbVersion: appParams.appDbVersion,
+        objectStores: {},
+      };
+
+      (async () => {
+
+        for (var table of db.tables){
+
+          var tableData = null;
+          if (table.name == "settings"){
+            tableData = table.toArray();
+          }
+          else{
+            tableData = await table.filter(entry => (new Date(this.state.offCanvasFormStartDate) <= new Date(entry[datePropertyNames[table.name]]) && new Date(entry[datePropertyNames[table.name]]) <= new Date(this.state.offCanvasFormEndDate)))
+                                     .toArray();
+          }
+          dbData.objectStores[table.name] = tableData;
+        }
+
+        try {
+      
+          const jsonData = JSON.stringify(dbData),
+                jsonDataBlob = new Blob([jsonData]);
+          var fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
+          procExtractedData(jsonDataBlob, fileName, this.state.action, new JSZip());
+
+        } catch (error) {
+          console.error('Error while downloading the received data: ', error);
+        }
+
+      }).bind(this)();
+  
     }
 
   }

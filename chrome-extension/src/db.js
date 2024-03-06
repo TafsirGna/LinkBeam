@@ -4,7 +4,7 @@ import Dexie from 'dexie';
 
 export const db = new Dexie(appParams.appDbName);
 
-db.version(1).stores({
+db.version(appParams.appDbVersion).stores({
   visits: '++id, url, date, tabId',
   profiles: '++id, url, fullName, title',
   keywords: '++id, name, createdOn',

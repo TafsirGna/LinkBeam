@@ -575,17 +575,9 @@ export async function getPeriodVisits(index, func, db, profile = null){
     }
   }
 
-  var collection = null;
-
-  if (profile){
-    collection = db.visits
+  var collection = collection = db.visits
                     .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date())
-                                      && visit.url == profile.url);
-  }
-  else{
-    collection = db.visits
-                    .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date()));
-  }
+                                      && (profile ? visit.url == profile.url : true));
 
   // var visits = func.useLiveQuery(() => collection.toArray());
   var visits = await collection.toArray();

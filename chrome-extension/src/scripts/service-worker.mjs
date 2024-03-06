@@ -186,7 +186,7 @@ async function recordFeedVisit(tabData){
         await db.visits.add({
             date: dateTime,
             url: tabData.tabUrl,
-            timeCount: 0, 
+            timeCount: 1, 
             tabId: tabData.tabId,
             itemsMetrics: tabData.extractedData.metrics,
         });
@@ -272,7 +272,7 @@ async function recordProfileVisit(tabData){
             await db.visits.add({
                 date: new Date().toISOString(),
                 url: tabData.tabUrl,
-                timeCount: 0, 
+                timeCount: 1, 
                 tabId: tabData.tabId,
             });
 
@@ -295,7 +295,7 @@ async function recordProfileVisit(tabData){
         var visit = {
             date: new Date().toISOString(),
             url: tabData.tabUrl,
-            timeCount: 0, 
+            timeCount: 1, 
             tabId: tabData.tabId,
         };
 
