@@ -6,16 +6,27 @@ import Button from 'react-bootstrap/Button';
 import { 
   appParams,
 } from "../../Local_library";
+import { v4 as uuidv4 } from 'uuid';
+import { db } from "../../../db";
+import eventBus from "../../EventBus";
+
+function freshReminder(){
+
+  return {
+        createdOn: (new Date()).toISOString().split('T')[0],
+        text: "",
+        url: null,
+      };
+
+}
 
 export default class ProfileViewReminderModal extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      reminder: {
-        date: (new Date()).toISOString().split('T')[0],
-        text: "",
-      },
+      formTagId: uuidv4(),
+      reminder: freshReminder(),
       validated: false,
     };
 
@@ -26,21 +37,32 @@ export default class ProfileViewReminderModal extends React.Component{
 
   saveReminder(){
 
-    const form = document.getElementById("profile_reminder_form") // this.refs.form;
-    if (!form.checkValidity()) {
-      this.setState({validated: true});
-      return;
+    // this.refs.form;
+    var callback = null;
+    if (document.getElementById(this.state.formTagId).checkValidity()) {
+
+      callback = async () => {
+
+                    await db.reminders.add(this.state.reminder);
+
+                    const reminder = db.reminders.where("url").equals(this.props.profile.url);
+
+                    eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
+
+                  };
+
     }
-    this.setState({validated: true}, () => {
-
-      var reminder = {url: this.props.profile.url, text: this.state.reminder.text, date: this.state.reminder.date};
-      sendDatabaseActionMessage(messageParams.requestHeaders.ADD_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: reminder } });
-
-    });
+    this.setState({validated: true}, callback);
 
   }
 
   componentDidMount() {
+
+    this.setState(prevState => {
+      let reminder = Object.assign({}, prevState.reminder);
+      reminder.url = this.props.profile.url;
+      return { reminder };
+    });
 
   }
 
@@ -48,18 +70,10 @@ export default class ProfileViewReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        if (!Object.hasOwn(this.props.profile, "reminder")){
-          this.getProfileReminderObject();
-        }
-        this.setState({validated: false});
+        var reminder = this.props.profile.reminder ? this.props.profile.reminder : freshReminder();
+        this.setState({reminder: reminder, validated: false});
       }
     }
-
-  }
-
-  getProfileReminderObject(){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props:{ url: this.props.profile.url } }});
 
   }
 
@@ -77,7 +91,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
     this.setState(prevState => {
       let reminder = Object.assign({}, prevState.reminder);
-      reminder.date = event.target.value;
+      reminder.createdOn = event.target.value;
       return { reminder };
     }); 
 
@@ -92,18 +106,18 @@ export default class ProfileViewReminderModal extends React.Component{
             <Modal.Title>Reminder</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form noValidate validated={this.state.validated} id="profile_reminder_form">
+            <Form noValidate validated={this.state.validated} id={this.state.formTagId}>
               <Form.Group className="mb-3" controlId="reminderForm.scheduledForControlInput">
                 <Form.Label>Remind at</Form.Label>
                 <Form.Control
                   type="date"
                   autoFocus
                   // max={new Date().toISOString().slice(0, 10)}
-                  value={(Object.hasOwn(this.props.profile, "reminder") ? this.props.profile.reminder.date : this.state.reminder.date)}
+                  value={this.state.reminder.createdOn}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
                   // readOnly={this.state.display ? true : false}
-                  disabled={Object.hasOwn(this.props.profile, "reminder") ? true : false}
+                  disabled={this.props.profile.reminder ? true : false}
                   required
                 />
                 <Form.Control.Feedback type="invalid">
@@ -115,7 +129,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control required disabled={Object.hasOwn(this.props.profile, "reminder") ? true : false} as="textarea" rows={3} value={(Object.hasOwn(this.props.profile, "reminder") ? this.props.profile.reminder.text : this.state.reminder.text)} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
+                <Form.Control required disabled={this.props.profile.reminder ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
                 <Form.Control.Feedback type="invalid">
                   Please enter a content.
                 </Form.Control.Feedback>
@@ -126,7 +140,7 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
-            { !Object.hasOwn(this.props.profile, "reminder") && <Button variant="primary" size="sm" onClick={this.saveReminder} /*onClick={() => {this.refs.form.submit()}}*/ className="shadow">
+            { !this.props.profile.reminder && <Button variant="primary" size="sm" onClick={this.saveReminder} /*onClick={() => {this.refs.form.submit()}}*/ className="shadow">
                           Save 
                         </Button>}
           </Modal.Footer>

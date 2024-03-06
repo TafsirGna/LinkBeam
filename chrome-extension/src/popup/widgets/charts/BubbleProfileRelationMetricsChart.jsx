@@ -26,7 +26,17 @@ const options = {
   scales: {
     y: {
       beginAtZero: true,
+      title: {
+        display: true,
+        text: 'followers'
+      }
     },
+    x: {
+    	title: {
+        display: true,
+        text: 'connections'
+      }
+    }
   },
   plugins: {
   	tooltip: {

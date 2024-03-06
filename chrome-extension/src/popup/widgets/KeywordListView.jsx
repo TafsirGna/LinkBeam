@@ -18,13 +18,6 @@ export default class KeywordListView extends React.Component{
 
   componentDidMount() {
 
-    eventBus.on("deleteKeyword", (data) =>
-      {
-        var keyword = data.payload;
-        this.deleteKeyword(keyword);
-      }
-    );
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -34,8 +27,6 @@ export default class KeywordListView extends React.Component{
 
   componentWillUnmount() {
 
-    eventBus.remove("deleteKeyword");
-
   }
 
   // Function for initiating the deletion of a keyword
@@ -43,16 +34,8 @@ export default class KeywordListView extends React.Component{
 
     const response = confirm(`Do you confirm the deletion of the keyword ${keyword.name} ?`);
     if (response){
-
       this.props.deleteKeyword(keyword);
-
     }
-  }
-
-  deleteKeyword(keyword){
-
-    sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.KEYWORDS, { context: appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS, criteria: { props: { name: keyword.name } } });
-
   }
 
   render(){

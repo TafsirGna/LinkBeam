@@ -587,6 +587,7 @@ export async function getPeriodVisits(index, func, db, profile = null){
                     .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date()));
   }
 
+  // var visits = func.useLiveQuery(() => collection.toArray());
   var visits = await collection.toArray();
 
   await Promise.all (visits.map (async visit => {

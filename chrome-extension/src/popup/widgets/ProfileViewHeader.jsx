@@ -198,7 +198,7 @@ export default class ProfileViewHeader extends React.Component{
                                 </span>                                
                               </OverlayTrigger>
                             </span>}
-              { Object.hasOwn(this.props.profile, "bookmark") && <span>
+              { this.props.profile.bookmark && <span>
                   ·
                   <OverlayTrigger
                     placement="bottom"

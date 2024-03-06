@@ -7,6 +7,7 @@ import ProfileViewReminderModal from "./modals/ProfileReminderModal";
 import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
+import { db } from "../../db";
 
 export default class ProfileView extends React.Component{
 
@@ -23,11 +24,6 @@ export default class ProfileView extends React.Component{
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
     this.onReminderMenuActionClick = this.onReminderMenuActionClick.bind(this);
-    this.onReminderAdditionDataReceived = this.onReminderAdditionDataReceived.bind(this);
-    this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
-    this.onBookmarkAdditionDataReceived = this.onBookmarkAdditionDataReceived.bind(this);
-    this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
-    this.onProfilesDataReceived = this.onProfilesDataReceived.bind(this);
 
   }
 
@@ -39,55 +35,21 @@ export default class ProfileView extends React.Component{
       }
     );
 
+    eventBus.on(eventBus.SET_PROFILE_DATA, (data) =>
+      {
+        if (data.property == "reminder" && data.value){
+          this.handleReminderModalClose();
+          this.toggleToastShow("Reminder added !");
+        }
+      }
+    );
+
   }
 
   componentWillUnmount() {
 
     eventBus.remove(eventBus.PROFILE_SHOW_REMINDER_OBJECT);
-    // eventBus.remove(eventBus.PROFILE_SHOW_DOUGHNUT_MODAL);
-
-  }
-
-  onBookmarkAdditionDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    this.toggleToastShow("Profile bookmarked !");
-
-  }
-
-  onReminderAdditionDataReceived(message, sendResponse){
-
-    this.handleReminderModalClose();
-    this.toggleToastShow("Reminder added !");
-
-  }
-
-  onBookmarkDeletionDataReceived(message, sendResponse){
-
-    this.toggleToastShow("Profile unbookmarked !");
-
-  }
-
-  onReminderDeletionDataReceived(message, sendResponse){
-
-    this.toggleToastShow("Reminder deleted !");
-
-  }
-
-  onProfilesDataReceived(message, sendResponse){
-
-    var context = message.data.objectData.context; 
-    if (context.indexOf(appParams.COMPONENT_CONTEXT_NAMES.PROFILE) == -1){
-      return;
-    }
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var profiles = message.data.objectData.list;
-    this.setState({allProfiles: profiles});
+    eventBus.remove(eventBus.SET_PROFILE_DATA);
 
   }
 
@@ -105,7 +67,17 @@ export default class ProfileView extends React.Component{
     if (this.props.profile.reminder){
       var response = confirm("Do you confirm the deletion of the reminder ?");
       if (response){
-        sendDatabaseActionMessage(messageParams.requestHeaders.DEL_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, criteria: { props: {url: this.props.profile.url} } } );
+
+        (async () => {
+
+          await db.reminders.delete(this.props.profile.reminder.id);
+
+          eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: null});
+
+          this.toggleToastShow("Reminder deleted !");
+
+        }).bind(this)();
+
       }
     } 
     else{
@@ -113,19 +85,31 @@ export default class ProfileView extends React.Component{
     }
   }
 
-  toggleBookmarkStatus(){
+  async toggleBookmarkStatus(){
 
-    let action = null;
     if (this.props.profile.bookmark){
-      //
-      action = messageParams.requestHeaders.DEL_OBJECT;
+      
+      await db.bookmarks.delete(this.props.profile.bookmark.id);
+
+      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: null});
+
+      this.toggleToastShow("Profile unbookmarked !");
+
     }
     else{
-      //
-      action = messageParams.requestHeaders.ADD_OBJECT;
-    }
+      
+      await db.bookmarks.add({
+        url: this.props.profile.url,
+        createdOn: (new Date()).toISOString(),
+      });
 
-    sendDatabaseActionMessage(action, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILES, criteria: { props: { url: this.props.profile.url } } });
+      const bookmark = await db.bookmarks.where("url").equals(this.props.profile.url).first();
+
+      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: bookmark});
+
+      this.toggleToastShow("Profile bookmarked !");
+
+    }
 
   }
 
@@ -139,7 +123,7 @@ export default class ProfileView extends React.Component{
               <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
             </div>
             <ul class="dropdown-menu shadow-lg">
-              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ Object.hasOwn(this.props.profile, "bookmark") ? "Unbookmark this" : "Bookmark this" }</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }</a></li>
               <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
               <li><a class="dropdown-item small" href="#" onClick={this.handleVisitsChartModalShow}>Chart visits</a></li>
             </ul>

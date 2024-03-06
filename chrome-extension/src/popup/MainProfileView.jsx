@@ -3,6 +3,7 @@ import React from 'react';
 import ProfileView from "./widgets/ProfileView";
 import { appParams } from "./Local_library";
 import { db } from "../db";
+import eventBus from "./EventBus";
 
 export default class MainProfileView extends React.Component{
 
@@ -12,14 +13,19 @@ export default class MainProfileView extends React.Component{
       profile: null, 
     };
 
-    this.onProfileDataReceived = this.onProfileDataReceived.bind(this);
-    this.onReminderDataReceived = this.onReminderDataReceived.bind(this);
-    this.onReminderDeletionDataReceived = this.onReminderDeletionDataReceived.bind(this);
-    this.onBookmarkDataReceived = this.onBookmarkDataReceived.bind(this);
-    this.onBookmarkDeletionDataReceived = this.onBookmarkDeletionDataReceived.bind(this);
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.SET_PROFILE_DATA, (data) =>
+      {
+        this.setState(prevState => {
+          let profile = Object.assign({}, prevState.profile);
+          profile[data.property] = data.value;
+          return { profile };
+        });
+      }
+    );
 
     // Getting the window url params
     const urlParams = new URLSearchParams(window.location.search);
@@ -32,111 +38,27 @@ export default class MainProfileView extends React.Component{
                               .equals(encodeURI(profileUrl))
                               .first();
 
+      await Promise.all ([profile].map (async profile => {
+        [profile.bookmark] = await Promise.all([
+          db.bookmarks.where('url').equals(profile.url).first()
+        ]);
+      }));
+
+      await Promise.all ([profile].map (async profile => {
+        [profile.reminder] = await Promise.all([
+          db.reminders.where('url').equals(profile.url).first()
+        ]);
+      }));
+
       this.setState({profile: profile});
 
       }).bind(this)();
 
   }
 
-  onProfileDataReceived(message, sendResponse){
+  componentWillUnmount(){
 
-    // acknowledge receipt
-    ack(sendResponse);
-
-    let profile = message.data.objectData.object;
-
-    // Setting the retrieved profile as a local variable
-    if (!this.state.profile){
-      this.setState({profile: profile}, () => {
-
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.BOOKMARKS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: this.state.profile.url } }});
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_OBJECT, dbData.objectStoreNames.REMINDERS, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE, criteria: { props: { url: this.state.profile.url } }});
-
-      });
-    }
-
-  }
-
-  onBookmarkDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var bookmark = message.data.objectData.object;
-
-    if (bookmark == undefined){ // No bookmark for this user
-      return;
-    }
-
-    if (bookmark.url != this.state.profile.url){
-      return;
-    }
-
-    var bookmark = message.data.objectData;
-    this.setState(prevState => {
-      let profile = Object.assign({}, prevState.profile);
-      profile.bookmark = bookmark;
-      return { profile };
-    });
-
-  }
-
-  onReminderDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var reminder = message.data.objectData.object;
-
-    if (reminder == undefined){ // No reminder for this user
-      return;
-    }
-    
-    if (reminder.url != this.state.profile.url){
-      return;
-    }
-
-    this.setState(prevState => {
-      let profile = Object.assign({}, prevState.profile);
-      profile.reminder = reminder;
-      return { profile };
-    });
-
-  }
-
-  onBookmarkDeletionDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var props = message.data.objectData.criteria.props;
-    if (props.url != this.state.profile.url){
-      return;
-    }
-
-    this.setState(prevState => {
-      let profile = Object.assign({}, prevState.profile);
-      delete profile.bookmark;
-      return { profile };
-    });
-
-  }
-
-  onReminderDeletionDataReceived(message, sendResponse){
-
-    // acknowledge receipt
-    ack(sendResponse);
-
-    var props = message.data.objectData.criteria.props;
-    if (props.url != this.state.profile.url){
-      return;
-    }
-
-    this.setState(prevState => {
-      let profile = Object.assign({}, prevState.profile);
-      delete profile.reminder;
-      return { profile };
-    });
+    eventBus.remove(eventBus.SET_PROFILE_DATA);
 
   }
 
