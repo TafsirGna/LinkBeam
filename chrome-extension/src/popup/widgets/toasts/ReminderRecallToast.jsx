@@ -2,6 +2,7 @@
 import React from 'react';
 import Toast from 'react-bootstrap/Toast';
 import { appParams, deactivateTodayReminders } from "../../Local_library";
+import { db } from "../../../db";
 import bell_icon from '../../../assets/bell_icon.png';
 import ReminderListView from "../ReminderListView";
 import Modal from 'react-bootstrap/Modal';
@@ -34,7 +35,7 @@ export default class ReminderRecallToast extends React.Component{
   onListModalHide(){
 
     this.setState({listModalShow: false}, () => {
-      deactivateTodayReminders(this.props.globalData.todayReminderList);
+      deactivateTodayReminders(db);
     });
 
   }

@@ -25,7 +25,7 @@ import Dexie from 'dexie';
 import { db } from "./db";
 import { 
   appParams,
-  // groupVisitsByProfile,
+  getTodayReminders,
 } from "./popup/Local_library";
 // import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
@@ -64,20 +64,24 @@ export default class App extends React.Component{
       if (!exists) {
           // on install, open a web page for information
           this.setState({missingDatabase: true});
+          return;
       }
-      else{
 
-        // Getting the window url params
-        const urlParams = new URLSearchParams(window.location.search);
-        var currentPageTitle = urlParams.get("view");
+      getTodayReminders(db, (reminders) => {
+        console.log("fffffffffffffffff : ", reminders);
+        this.setState({todayReminderList: reminders});
+      });
 
-        if (!currentPageTitle){
-          currentPageTitle = localStorage.getItem('currentPageTitle');
-        }
+      // Getting the window url params
+      const urlParams = new URLSearchParams(window.location.search);
+      var currentPageTitle = urlParams.get("view");
 
-        this.setState({currentPageTitle: currentPageTitle});
-        
+      if (!currentPageTitle){
+        currentPageTitle = localStorage.getItem('currentPageTitle');
       }
+
+      this.setState({currentPageTitle: currentPageTitle});
+
     }).bind(this));
 
   }

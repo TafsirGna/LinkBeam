@@ -1,6 +1,7 @@
 /*import './WebUiRequestToast.css'*/
 import React from 'react';
 import { appParams, dbDataSanitizer, deactivateTodayReminders } from "../../popup/Local_library";
+import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 
@@ -32,7 +33,7 @@ export default class InjectedReminderToastView extends React.Component{
 
     handleRemindersModalClose = () => {
        this.setState({remindersModalShow: false}, () => {
-            deactivateTodayReminders(this.props.objects);
+            deactivateTodayReminders(db);
        }); 
     }
   

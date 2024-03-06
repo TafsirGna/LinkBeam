@@ -10,12 +10,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from "../../../db";
 import eventBus from "../../EventBus";
 
-function freshReminder(){
+function freshReminder(url = null){
 
   return {
-        createdOn: (new Date()).toISOString().split('T')[0],
+        createdOn: (new Date()).toISOString(),
+        date: (new Date()).toISOString().split('T')[0],
         text: "",
-        url: null,
+        url: url,
+        activated: true,
       };
 
 }
@@ -58,19 +60,13 @@ export default class ProfileViewReminderModal extends React.Component{
 
   componentDidMount() {
 
-    this.setState(prevState => {
-      let reminder = Object.assign({}, prevState.reminder);
-      reminder.url = this.props.profile.url;
-      return { reminder };
-    });
-
   }
 
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        var reminder = this.props.profile.reminder ? this.props.profile.reminder : freshReminder();
+        var reminder = this.props.profile.reminder ? this.props.profile.reminder : freshReminder(this.props.profile.url);
         this.setState({reminder: reminder, validated: false});
       }
     }
@@ -91,7 +87,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
     this.setState(prevState => {
       let reminder = Object.assign({}, prevState.reminder);
-      reminder.createdOn = event.target.value;
+      reminder.date = event.target.value;
       return { reminder };
     }); 
 
@@ -113,7 +109,7 @@ export default class ProfileViewReminderModal extends React.Component{
                   type="date"
                   autoFocus
                   // max={new Date().toISOString().slice(0, 10)}
-                  value={this.state.reminder.createdOn}
+                  value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
                   // readOnly={this.state.display ? true : false}

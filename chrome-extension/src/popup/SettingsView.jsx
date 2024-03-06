@@ -8,7 +8,7 @@ import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';
 import JSZip from "jszip";
-import { useLiveQuery } from "dexie-react-hooks";
+import { liveQuery } from "dexie"; 
 import { 
   saveCurrentPageTitle,
   appParams,
@@ -28,6 +28,10 @@ const datePropertyNames = {
             feedPosts: "date",
             profiles: "date",
           };
+
+const reminderCountObservable = liveQuery(() => db.reminders.count());
+
+const keywordCountObservable = liveQuery(() => db.keywords.count());
 
 export default class SettingsView extends React.Component{
   
@@ -56,8 +60,6 @@ export default class SettingsView extends React.Component{
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
-    this.setReminderCount = this.setReminderCount.bind(this);
-    this.setKeywordCount = this.setKeywordCount.bind(this);
     this.initDataExport = this.initDataExport.bind(this);
 
   }
@@ -70,38 +72,17 @@ export default class SettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus);
     }
 
-    // setting the local variable with the global data
-    if (this.props.globalData.keywordList){
-      this.setState({keywordCount: this.props.globalData.keywordList.length});
-    }
-    else{
-      // Getting the keyword count
-      this.setKeywordCount();
-    }
+    this.reminderSubscription = reminderCountObservable.subscribe(
+      result => this.setState({reminderCount: result}),
+      error => this.setState({error})
+    );
 
-    if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "all"){
-      this.setState({reminderCount: this.props.globalData.reminderList.list.length});
-    }
-    else{
-      // Getting the reminder count
-      this.setReminderCount()
-    }
+    this.keywordSubscription = keywordCountObservable.subscribe(
+      result => this.setState({keywordCount: result}),
+      error => this.setState({error})
+    );
 
     this.checkStorageUsage();
-
-  }
-
-  async setReminderCount(){
-
-    const count = await db.reminders.count();
-    this.setState({reminderCount: count});
-
-  }
-
-  async setKeywordCount(){
-
-    const count = await db.keywords.count();
-    this.setState({keywordCount: count});
 
   }
 
@@ -129,6 +110,20 @@ export default class SettingsView extends React.Component{
 
   }
 
+  componentWillUnmount(){
+
+    if (this.keywordSubscription) {
+      this.keywordSubscription.unsubscribe();
+      this.keywordSubscription = null;
+    }
+
+    if (this.reminderSubscription) {
+      this.reminderSubscription.unsubscribe();
+      this.reminderSubscription = null;
+    }
+
+  }
+
   deleteData(){
     const response = confirm("Do you confirm the erase of your data as specified ?");
     if (response){
@@ -152,9 +147,6 @@ export default class SettingsView extends React.Component{
         this.setState({
           processingState: {status: "NO", info: "ERASING"},
         });
-
-        this.setKeywordCount();
-        this.setReminderCount();
 
         this.checkStorageUsage();
 
@@ -184,7 +176,7 @@ export default class SettingsView extends React.Component{
 
           var tableData = null;
           if (table.name == "settings"){
-            tableData = table.toArray();
+            tableData = await table.toArray();
           }
           else{
             tableData = await table.filter(entry => (new Date(this.state.offCanvasFormStartDate) <= new Date(entry[datePropertyNames[table.name]]) && new Date(entry[datePropertyNames[table.name]]) <= new Date(this.state.offCanvasFormEndDate)))
@@ -198,7 +190,7 @@ export default class SettingsView extends React.Component{
           const jsonData = JSON.stringify(dbData),
                 jsonDataBlob = new Blob([jsonData]);
           var fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
-          procExtractedData(jsonDataBlob, fileName, this.state.action, new JSZip());
+          procExtractedData(jsonDataBlob, fileName, action, new JSZip());
 
         } catch (error) {
           console.error('Error while downloading the received data: ', error);

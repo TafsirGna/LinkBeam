@@ -9,7 +9,6 @@ import {
   saveCurrentPageTitle, 
   appParams, 
   deactivateTodayReminders,
-  getTodayReminders,
   dbData,
   groupVisitsByProfile,
 } from "./Local_library";
@@ -44,10 +43,6 @@ export default class HomeView extends React.Component{
     );
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.HOME);
-
-    getTodayReminders(db, (reminders) => {
-      
-    });
 
     if (!this.props.globalData.homeTodayVisitsList){
       this.getVisitList("today");
@@ -94,7 +89,7 @@ export default class HomeView extends React.Component{
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
-        deactivateTodayReminders(this.props.globalData.todayReminderList);
+        deactivateTodayReminders(db);
         eventBus.dispatch(eventBus.RESET_TODAY_REMINDER_LIST, null);
       }
     )

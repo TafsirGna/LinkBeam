@@ -642,11 +642,12 @@ export const saveCanvas = (uuid, fileName, saveAs) => {
   });
 }
 
-export const deactivateTodayReminders = (reminderList) => {
+export async function deactivateTodayReminders(db){
 
-  reminderList.forEach((reminder) => {
-    sendDatabaseActionMessage(messageParams.requestHeaders.UPDATE_OBJECT, dbData.objectStoreNames.REMINDERS, { context: "App", criteria: { props: { object: reminder, activated: false} }});
-  });
+  await db
+          .reminders
+          .where({date: (new Date()).toISOString().split('T')[0], activated: true})
+          .modify({activated: false});
 
 }
 
@@ -748,7 +749,7 @@ export async function getTodayReminders(db, callback){
 
   const reminders = await db
                             .reminders
-                            .where({createdOn: (new Date()).toISOString(), activated: true})
+                            .where({date: (new Date()).toISOString().split('T')[0], activated: true})
                             .toArray();
 
   callback(reminders);  
