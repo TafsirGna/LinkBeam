@@ -73,7 +73,7 @@ export default class StatisticsView extends React.Component{
 
     (async () => {
 
-      var visits = await getPeriodVisits(this.state.view, {moment: moment}, db);
+      var visits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles");
       
       var profiles = [];
       for (var visit of visits){
@@ -205,16 +205,16 @@ export default class StatisticsView extends React.Component{
                                 profiles={this.state.periodProfiles}
                                 carrouselIndex={6} />
 
-                              <div class="dropdown my-2 offset-5">
-                                <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                                  <span class="rounded shadow badge border text-primary border-link">{this.state.relChartDisplayCrit}</span>
-                                </div>
-                                <ul class="dropdown-menu shadow-lg border border-secondary">
-                                  {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
-                                        <li><a class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</a></li>  
-                                    ))}
-                                </ul>
-                              </div>
+                              { this.state.periodProfiles && this.state.periodProfiles.length != 0 && <div class="dropdown my-2 offset-5">
+                                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                                <span class="rounded shadow badge border text-primary border-link">{this.state.relChartDisplayCrit}</span>
+                                                              </div>
+                                                              <ul class="dropdown-menu shadow-lg border border-secondary">
+                                                                {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
+                                                                      <li><a class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</a></li>  
+                                                                  ))}
+                                                              </ul>
+                                                            </div>}
                             </div>}
             </Carousel.Item>
             <Carousel.Item> 

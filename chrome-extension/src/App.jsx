@@ -68,8 +68,13 @@ export default class App extends React.Component{
       }
 
       getTodayReminders(db, (reminders) => {
-        console.log("fffffffffffffffff : ", reminders);
-        this.setState({todayReminderList: reminders});
+
+        this.setState(prevState => {
+          let globalData = Object.assign({}, prevState.globalData);
+          globalData.todayReminderList = reminders;
+          return { globalData };
+        });
+        
       });
 
       // Getting the window url params

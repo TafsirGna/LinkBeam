@@ -555,7 +555,7 @@ export async function setGlobalDataKeywords(db, eventBus){
 }
 
 
-export async function getPeriodVisits(index, func, db, profile = null){
+export async function getPeriodVisits(index, func, db, category, profile = null){
 
   var startDate = null;
   switch(index){
@@ -577,7 +577,8 @@ export async function getPeriodVisits(index, func, db, profile = null){
 
   var collection = collection = db.visits
                     .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date())
-                                      && (profile ? visit.url == profile.url : true));
+                                      && (profile ? visit.url == profile.url : true)
+                                      && ((category == "profiles") ? visit.url.indexOf("/feed") == -1 : visit.url.indexOf("/feed") != -1) );
 
   // var visits = func.useLiveQuery(() => collection.toArray());
   var visits = await collection.toArray();
@@ -646,8 +647,9 @@ export async function deactivateTodayReminders(db){
 
   await db
           .reminders
-          .where({date: (new Date()).toISOString().split('T')[0], activated: true})
-          .modify({activated: false});
+          // .where({date: (new Date()).toISOString().split('T')[0], active: true})
+          .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
+          .modify({active: false});
 
 }
 
@@ -749,8 +751,15 @@ export async function getTodayReminders(db, callback){
 
   const reminders = await db
                             .reminders
-                            .where({date: (new Date()).toISOString().split('T')[0], activated: true})
+                            // .where({date: (new Date()).toISOString().split('T')[0], active: true})
+                            .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
                             .toArray();
+
+  await Promise.all (reminders.map (async reminder => {
+    [reminder.profile] = await Promise.all([
+      db.profiles.where('url').equals(reminder.url).first()
+    ]);
+  }));
 
   callback(reminders);  
 

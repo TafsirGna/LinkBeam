@@ -8,7 +8,7 @@ db.version(appParams.appDbVersion).stores({
   visits: '++id, url, date, tabId',
   profiles: '++id, url, fullName, title',
   keywords: '++id, name, createdOn',
-  reminders: '++id, url, createdOn, activated, date',
+  reminders: '++id, url, createdOn, active, date',
   settings: '++id',
   bookmarks: '++id, url, createdOn',
   feedPosts: '++id',

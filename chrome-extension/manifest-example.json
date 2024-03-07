@@ -19,7 +19,8 @@
      "matches": ["*://*/*"],
      "resources": [
                     "/assets/web_ui.js",
-                    "/assets/gaming-lock.mp3"
+                    "/assets/gaming-lock.mp3",
+                    "/assets/elevator-tone.mp3"
       ]
   }],
   "host_permissions": ["*://*/*"]

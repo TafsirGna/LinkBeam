@@ -110,16 +110,6 @@ export default class HomeView extends React.Component{
 
   // }
 
-  // onExtensionWebUiVisible(message, sendResponse){
-    
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
-  //   // hiding the popup
-  //   window.close();
-
-  // }
-
   // Function for switching between tabs
   switchCurrentTab(index){
 
@@ -226,9 +216,11 @@ export default class HomeView extends React.Component{
         {/* All visits List Tab */}
         { this.state.currentTabIndex == 1 && <div>
 
-                                              <SearchInputView 
-                                                objectStoreName={dbData.objectStoreNames.PROFILES} 
-                                                globalData={this.props.globalData} />
+                                              { this.props.globalData.homeAllVisitsList 
+                                                && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.list.scope == "search"))
+                                                && <SearchInputView 
+                                                      objectStoreName={dbData.objectStoreNames.PROFILES} 
+                                                      globalData={this.props.globalData} />}
 
                                               <AggregatedVisitListView 
                                                 objects={this.props.globalData.homeAllVisitsList ? groupVisitsByProfile(this.props.globalData.homeAllVisitsList.list) : null} 

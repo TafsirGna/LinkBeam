@@ -62,12 +62,18 @@ export default class About extends React.Component{
             return;
           }
 
-          // Sending the content for initializing the db
-          // Send message to the background
-          // chrome.runtime.sendMessage({header: messageParams.requestHeaders.SW_CREATE_DB, data: content}, (response) => {
-          //   // Got an asynchronous response with the data from the service worker
-          //   console.log("Create db Request sent !");
-          // });
+          (async () => {
+
+            // initialize the db with the received data
+            for (var objectStoreName of Object.keys(content.objectStores)){
+              await db[objectStoreName].bulkAdd(content.objectStores[objectStoreName]);
+            }
+
+            localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
+
+            this.setState({opDone: true, processing: false});
+
+          }).bind(this)();
 
         }
 

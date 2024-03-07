@@ -767,7 +767,7 @@ export default class RelationshipsChart extends React.Component{
                 </div> }
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-4">
-                      <AlertCircleIcon size="100" className=""/>
+                      <AlertCircleIcon size="100" className="text-muted"/>
                       <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
                     </div> }
 

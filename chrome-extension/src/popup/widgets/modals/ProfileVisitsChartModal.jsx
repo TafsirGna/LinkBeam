@@ -10,8 +10,6 @@ import {
 } from "../../Local_library";
 import moment from 'moment';
 import { db } from "../../../db";
-import { useLiveQuery } from "dexie-react-hooks";
-import { useEffect } from 'react';
 
 export default class ProfileVisitsChartModal extends React.Component{
 
@@ -44,7 +42,7 @@ export default class ProfileVisitsChartModal extends React.Component{
 
   async setPeriodVisits(){
 
-    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment, useLiveQuery: useLiveQuery}, db, this.props.profile);
+    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles", this.props.profile);
     this.setState({periodVisits: periodVisits});
 
   }

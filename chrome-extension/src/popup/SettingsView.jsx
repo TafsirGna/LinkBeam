@@ -29,6 +29,10 @@ const datePropertyNames = {
             profiles: "date",
           };
 
+const betweenRange = (lower, upper, date) => {
+  return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
+}
+
 const reminderCountObservable = liveQuery(() => db.reminders.count());
 
 const keywordCountObservable = liveQuery(() => db.keywords.count());
@@ -89,7 +93,9 @@ export default class SettingsView extends React.Component{
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.globalData != this.props.globalData){
-      this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+      if (prevProps.globalData.settings != this.props.globalData.settings){
+        this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+      }
     }
 
   }
@@ -137,11 +143,47 @@ export default class SettingsView extends React.Component{
       (async () => {
 
         for (var table of db.tables){
-          if (table.name == "settings"){
+
+          if (["settings", "profiles"].indexOf(table.name) != -1){
             continue;
           }
-          await table.filter(entry => (new Date(this.state.offCanvasFormStartDate) <= new Date(entry[datePropertyNames[table.name]]) && new Date(entry[datePropertyNames[table.name]]) <= new Date(this.state.offCanvasFormEndDate)))
+
+          // the following code should allow me to delete all visits in the specified range without deleting any of the corresponding profile if this profile has been visited outside of this very range
+          if (table.name == "visits"){
+
+            const visits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                    .toArray();
+            var urls = [], doneUrls = [];
+
+            await Promise.all (visits.map (async visit => {
+
+              if (doneUrls.indexOf(visit.url) == -1){
+
+                var subVisits = null;
+                [subVisits] = await Promise.all([
+                  db.visits
+                    .filter(entry => entry.url == visit.url 
+                                      && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                    .toArray()
+                ]);
+
+                if (!subVisits.length){
+                  urls.push(visit.url);
+                }
+
+                doneUrls.push(visit.url);
+
+              }
+
+            }));
+
+            await db.profiles.where("url").anyOf(urls).delete();
+
+          }
+
+          await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                      .delete();
+
         }
 
         this.setState({
@@ -172,17 +214,36 @@ export default class SettingsView extends React.Component{
 
       (async () => {
 
+        var tableData = null;
         for (var table of db.tables){
 
-          var tableData = null;
           if (table.name == "settings"){
             tableData = await table.toArray();
           }
+          else if (table.name == "profiles"){
+            continue;
+          }
           else{
-            tableData = await table.filter(entry => (new Date(this.state.offCanvasFormStartDate) <= new Date(entry[datePropertyNames[table.name]]) && new Date(entry[datePropertyNames[table.name]]) <= new Date(this.state.offCanvasFormEndDate)))
+            tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                                      .toArray();
           }
           dbData.objectStores[table.name] = tableData;
+
+          if (table.name == "visits"){
+
+            // Retrieving all the profiles linked to the visits 
+            var profiles = [];
+            await Promise.all (tableData.map (async visit => {
+              var profile = null;
+              [profile] = await Promise.all([
+                db.profiles.where('url').equals(visit.url).first()
+              ]);
+              profiles.push(profile);
+            }));
+
+            dbData.objectStores["profiles"] = profiles;
+
+          }
         }
 
         try {

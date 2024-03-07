@@ -38,7 +38,7 @@ export default class ChartExpansionView extends React.Component{
 
     (async () => {
 
-      var visits = await getPeriodVisits(carrouselChartView, {moment: moment}, db),
+      var visits = await getPeriodVisits(carrouselChartView, {moment: moment}, db, "profiles"),
           profiles = [];
 
       for (var visit of visits){

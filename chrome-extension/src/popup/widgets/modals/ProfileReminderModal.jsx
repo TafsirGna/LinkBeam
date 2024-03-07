@@ -17,7 +17,7 @@ function freshReminder(url = null){
         date: (new Date()).toISOString().split('T')[0],
         text: "",
         url: url,
-        activated: true,
+        active: true,
       };
 
 }

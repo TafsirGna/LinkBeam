@@ -4,6 +4,8 @@ import { appParams, dbDataSanitizer, deactivateTodayReminders } from "../../popu
 import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
+import elevator_tone_audio from '../../assets/audio/elevator-tone.mp3';
+
 
 export default class InjectedReminderToastView extends React.Component{
 
@@ -39,6 +41,9 @@ export default class InjectedReminderToastView extends React.Component{
   
 
   componentDidMount() {
+
+    var audioElement = new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"));
+    audioElement.play();
 
   }
 
