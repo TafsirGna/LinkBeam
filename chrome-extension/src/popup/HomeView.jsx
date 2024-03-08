@@ -150,7 +150,7 @@ export default class HomeView extends React.Component{
         { this.state.currentTabIndex == 1 && <div>
 
                                               { this.props.globalData.homeAllVisitsList 
-                                                && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.list.action == "search"))
+                                                && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.action == "search"))
                                                 && <SearchInputView 
                                                       objectStoreName={dbData.objectStoreNames.PROFILES} 
                                                       globalData={this.props.globalData} />}

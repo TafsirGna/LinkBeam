@@ -94,12 +94,13 @@ export default class App extends React.Component{
   listenToBusEvents(){
 
     eventBus.on(eventBus.SET_APP_GLOBAL_DATA, (data) => {
-        // Resetting the today reminder list here too
+
         this.setState(prevState => {
           let globalData = Object.assign({}, prevState.globalData);
           globalData[data.property] = data.value;
           return { globalData };
         });
+        
       }
     );
 

@@ -30,11 +30,16 @@ export default class AggregatedVisitListView extends React.Component{
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.object != this.props.object){
-      if (this.props.object.action == "display_all"){
-        this.setState({showLoadingSpinner: false});
-        if (prevProps.object.list.length == this.props.object.list.length){
-          this.setState({seeMore: false});
+      if (this.props.object && this.props.object.action == "display_all"){
+        var seeMore = true;
+        if (prevProps.object){
+          if (prevProps.object.action == "display_all"){
+            if (prevProps.object.list.length == this.props.object.list.length){
+              seeMore = false;
+            }
+          }
         }
+        this.setState({showLoadingSpinner: false, seeMore: seeMore});
       }
     }
 
@@ -63,46 +68,50 @@ export default class AggregatedVisitListView extends React.Component{
                 </div>
               </div> }
 
-        { this.props.object && this.props.object.list.length == 0 && <div class="text-center m-5 mt-2">
-                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No data to show</span></p>
-                    {/*<p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>*/}
-                  </div> }
+        { this.props.object && <>
 
-        { this.props.object && this.props.object.list.length != 0 &&
-                <div class="list-group m-1 shadow-sm small">
-                  {
-                    groupVisitsByProfile(this.props.object.list).map((visit) => (<>
-                        { visit.url.indexOf("/feed") != -1 
-                          && <FeedVisitListItemView 
-                            object={visit} 
-                            parentList="aggregated" />}
-                        { visit.url.indexOf("/feed") == -1 
-                          && <ProfileVisitListItemView 
-                            object={visit} 
-                            parentList="aggregated"/> }
-                      </>))
-                  }
-              </div> }
+                              { this.props.object.list.length == 0 
+                                  && <div class="text-center m-5 mt-2">
+                                      <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                      <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No data to show</span></p>
+                                      {/*<p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>*/}
+                                    </div> }
 
-        <div class="text-center my-2 ">
+                              {this.props.object.list.length != 0 
+                                && <div class="list-group m-1 shadow-sm small">
+                                      {
+                                        groupVisitsByProfile(this.props.object.list).map((visit) => (<>
+                                            { visit.url.indexOf("/feed") != -1 
+                                              && <FeedVisitListItemView 
+                                                object={visit} 
+                                                parentList="aggregated" />}
+                                            { visit.url.indexOf("/feed") == -1 
+                                              && <ProfileVisitListItemView 
+                                                object={visit} 
+                                                parentList="aggregated"/> }
+                                          </>))
+                                      }
+                                  </div>}
 
-          { (this.props.object
-                && this.props.object.action == "display_all" 
-                && !this.state.showLoadingSpinner 
-                && this.state.seeMore) 
-              && <VisibilitySensor
-                  onChange={this.onSeeMoreButtonVisibilityChange}
-                >
-                  <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
-                    See more
-                  </button>
-                </VisibilitySensor>}
-          { this.state.showLoadingSpinner 
-            && <div class="spinner-border spinner-border-sm text-secondary " role="status">
-                                <span class="visually-hidden">Loading...</span>
-                                </div>}
-        </div>
+                              <div class="text-center my-2 ">
+        
+                                { (this.props.object.action == "display_all" 
+                                      && !this.state.showLoadingSpinner 
+                                      && this.state.seeMore) 
+                                    && <VisibilitySensor
+                                        onChange={this.onSeeMoreButtonVisibilityChange}
+                                      >
+                                        <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
+                                          See more
+                                        </button>
+                                      </VisibilitySensor>}
+                                { this.state.showLoadingSpinner 
+                                  && <div class="spinner-border spinner-border-sm text-secondary " role="status">
+                                                      <span class="visually-hidden">Loading...</span>
+                                                      </div>}
+                              </div>
+
+                              </> }
 
       </>
     );

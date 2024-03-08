@@ -566,9 +566,22 @@ export async function setGlobalDataReminders(db, eventBus){
 
 export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 
+  var offset = null;
+  if (globalData.homeAllVisitsList){
+    if (globalData.homeAllVisitsList.action == "search"){
+      offset = 0;
+    }
+    else{
+      offset = globalData.homeAllVisitsList.list.length;
+    }
+  }
+  else{
+    offset = 0;
+  }
+
   var visits = await db
                          .visits
-                         .offset(globalData.homeAllVisitsList.list.length).limit(5)
+                         .offset(offset).limit(5)
                          .sortBy("date");
 
   await Promise.all (visits.map (async visit => {
@@ -577,12 +590,31 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
     ]);
   }));
 
-  var homeAllVisitsList = globalData.homeAllVisitsList;
-  homeAllVisitsList = {
-    list: globalData.homeAllVisitsList.list.concat(visits),
-    action: "display_all",
-    inc: (globalData.homeAllVisitsList.action == "search") ? 0 : (globalData.homeAllVisitsList.inc + 1),
-  };
+  var homeAllVisitsList = null;
+
+  if (globalData.homeAllVisitsList){
+    if (globalData.homeAllVisitsList.action == "display_all"){
+      homeAllVisitsList = {
+        list: globalData.homeAllVisitsList.list.concat(visits),
+        action: "display_all",
+        inc: (globalData.homeAllVisitsList.action == "search") ? 0 : (globalData.homeAllVisitsList.inc + 1),
+      };
+    }
+    else{
+      homeAllVisitsList = {
+        list: visits,
+        action: "display_all",
+        inc: 0,
+      };
+    }
+  }
+  else{
+    homeAllVisitsList = {
+      list: visits,
+      action: "display_all",
+      inc: 0,
+    };
+  }
 
   eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
 
