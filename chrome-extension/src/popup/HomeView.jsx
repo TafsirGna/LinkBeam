@@ -10,6 +10,7 @@ import {
   appParams, 
   deactivateTodayReminders,
   dbData,
+  setGlobalDataHomeAllVisitsList,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -92,28 +93,7 @@ export default class HomeView extends React.Component{
 
     if (action == "display_all"){
 
-        (async () => {
-          var visits = await db
-                                 .visits
-                                 .offset(this.props.globalData.homeAllVisitsList.list.length).limit(5)
-                                 .toArray();
-
-          await Promise.all (visits.map (async visit => {
-            [visit.profile] = await Promise.all([
-              db.profiles.where('url').equals(visit.url).first()
-            ]);
-          }));
-
-          var homeAllVisitsList = this.props.globalData.homeAllVisitsList;
-          homeAllVisitsList.list = this.props.globalData.homeAllVisitsList.list.concat(visits); 
-          homeAllVisitsList.action = action;
-          homeAllVisitsList.inc = (this.props.globalData.homeAllVisitsList.action == "search") ? 0 : (this.props.globalData.homeAllVisitsList + 1);
-
-          // console.log("eeeeeeeeeeeeeeeeeeeeeeee: ", homeAllVisitsList);
-
-          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
-          
-        })();
+      setGlobalDataHomeAllVisitsList(db, eventBus, this.props.globalData);
 
     }
     else{ // today      

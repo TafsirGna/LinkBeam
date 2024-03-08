@@ -31,11 +31,10 @@ export default class AggregatedVisitListView extends React.Component{
 
     if (prevProps.object != this.props.object){
       if (this.props.object.action == "display_all"){
-        var seeMore = this.setState.seeMore;
+        this.setState({showLoadingSpinner: false});
         if (prevProps.object.list.length == this.props.object.list.length){
-          seeMore = false;
+          this.setState({seeMore: false});
         }
-        this.setState({showLoadingSpinner: false, seeMore: seeMore});
       }
     }
 

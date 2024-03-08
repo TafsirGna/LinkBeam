@@ -544,13 +544,47 @@ export async function setGlobalDataSettings(db, eventBus){
 
 export async function setGlobalDataKeywords(db, eventBus){
 
-  (async () => {
+  const keywords = await db.keywords.toArray();
 
-    const keywords = await db.keywords.toArray();
+  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
 
-    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
-    
-  })();
+}
+
+export async function setGlobalDataReminders(db, eventBus){
+
+  const reminders = await db.reminders.toArray();
+
+  await Promise.all (reminders.map (async reminder => {
+    [reminder.profile] = await Promise.all([
+      db.profiles.where('url').equals(reminder.url).first()
+    ]);
+  }));
+
+  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
+
+}
+
+export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
+
+  var visits = await db
+                         .visits
+                         .offset(globalData.homeAllVisitsList.list.length).limit(5)
+                         .sortBy("date");
+
+  await Promise.all (visits.map (async visit => {
+    [visit.profile] = await Promise.all([
+      db.profiles.where('url').equals(visit.url).first()
+    ]);
+  }));
+
+  var homeAllVisitsList = globalData.homeAllVisitsList;
+  homeAllVisitsList = {
+    list: globalData.homeAllVisitsList.list.concat(visits),
+    action: "display_all",
+    inc: (globalData.homeAllVisitsList.action == "search") ? 0 : (globalData.homeAllVisitsList.inc + 1),
+  };
+
+  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
 
 }
 

@@ -43,8 +43,17 @@ export default class VisitListView extends React.Component{
                 <div class="list-group m-1 shadow-sm small">
                   {
                     this.props.objects.map((visit) => (<>
-                        { visit.url.indexOf("/feed") != -1 && <FeedVisitListItemView object={visit} parentList="ordinary" /> }
-                        { visit.url.indexOf("/feed") == -1 && <ProfileVisitListItemView object={visit} parentList="ordinary" /> }
+
+                        { visit.url.indexOf("/feed") != -1 
+                          && <FeedVisitListItemView 
+                              object={visit} 
+                              parentList="ordinary" /> }
+
+                        { visit.url.indexOf("/feed") == -1 
+                          && <ProfileVisitListItemView 
+                              object={visit} 
+                              parentList="ordinary" /> }
+
                       </>))
                   }
                 </div>}

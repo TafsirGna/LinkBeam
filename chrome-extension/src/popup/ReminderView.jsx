@@ -6,6 +6,7 @@ import {
   saveCurrentPageTitle, 
   appParams,
   dbData,
+  setGlobalDataReminders,
 } from "./Local_library";
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
@@ -28,19 +29,7 @@ export default class ReminderView extends React.Component{
 
     if (!this.props.globalData.reminderList){
 
-      (async () => {
-
-        const reminders = await db.reminders.toArray();
-
-        await Promise.all (reminders.map (async reminder => {
-          [reminder.profile] = await Promise.all([
-            db.profiles.where('url').equals(reminder.url).first()
-          ]);
-        }));
-
-        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "all" }});
-
-      })();
+      setGlobalDataReminders(db, eventBus);
 
     }
 

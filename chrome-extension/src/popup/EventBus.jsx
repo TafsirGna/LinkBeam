@@ -4,7 +4,6 @@ const eventBus = {
   SHOW_ED_EXP_TIME_CHART_MODAL: "showEdExpTimeChartModal",
 
   DOWNLOAD_CHART_IMAGE: "downloadChartImage",
-  GET_ALL_VISITS: "getAllVisits",
   SWITCH_TO_VIEW: "switchToView",
   SET_APP_GLOBAL_DATA: "SET_APP_GLOBAL_DATA",
   SET_PROFILE_DATA: "SET_PROFILE_DATA", 

@@ -8,6 +8,8 @@ import eventBus from "../EventBus";
 import { 
   appParams,
   dbData,
+  setGlobalDataReminders,
+  setGlobalDataHomeAllVisitsList,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -49,27 +51,17 @@ export default class SearchInputView extends React.Component{
       switch(this.props.objectStoreName){
         case dbData.objectStoreNames.PROFILES:{
 
+          if (this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.action == "search"){
+            setGlobalDataHomeAllVisitsList(db, eventBus, this.props.globalData);
+          }
+
           break;
         }
 
         case dbData.objectStoreNames.REMINDERS:{
 
           if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "search"){
-
-            (async () => {
-
-              const reminders = await db.reminders.toArray();
-
-              await Promise.all (reminders.map (async reminder => {
-                [reminder.profile] = await Promise.all([
-                  db.profiles.where('url').equals(reminder.url).first()
-                ]);
-              }));
-
-              eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "all" }});
-
-            })();
-
+            setGlobalDataReminders(db, eventBus);
           }
 
           break;
@@ -84,6 +76,43 @@ export default class SearchInputView extends React.Component{
 
     switch(this.props.objectStoreName){
       case dbData.objectStoreNames.PROFILES:{
+
+        const highlightSearchText = (profile) => {
+
+          const index = profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase());
+          var fullName = profile.fullName.slice(0, index)
+          fullName += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${profile.fullName.slice(index, (index + this.state.text.length))}</span>`;
+          fullName += profile.fullName.slice((index + this.state.text.length));
+          profile.fullName = fullName;
+
+        }
+
+        (async () => {
+
+          var urls = [];
+          await db.profiles
+                  .filter(profile => (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                  .each(profile => {
+                    urls.push(profile.url);
+                  });
+
+          const visits = await db.visits
+                                 .where("url")
+                                 .anyOf(urls)
+                                 .toArray();
+
+          await Promise.all (visits.map (async visit => {
+            [visit.profile] = await Promise.all([
+              db.profiles.where('url').equals(visit.url).first()
+            ]);
+            // highlighting the search text in the profile fullName property
+            highlightSearchText(visit.profile);
+          }));
+
+          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
+
+        })();
+
         break;
       }
 
@@ -92,7 +121,8 @@ export default class SearchInputView extends React.Component{
         (async () => {
 
           const reminders = await db.reminders
-                                    .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1));
+                                    .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                                    toArray();
 
           eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
 
@@ -139,7 +169,11 @@ export default class SearchInputView extends React.Component{
             onKeyDown={this.handleKeyDown} 
             // value={this.props.text ? this.props.text : null}
             />
-			    <span class="input-group-text handy-cursor text-muted" id="basic-addon2" onClick={() => {this.searchText()}} title="search">
+			    <span 
+            class="input-group-text handy-cursor text-muted" 
+            id="basic-addon2" 
+            onClick={() => {this.searchText()}} 
+            title="search">
 			      <SearchIcon size="20" />
 			    </span>
 			  </div>
