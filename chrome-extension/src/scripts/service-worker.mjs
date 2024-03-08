@@ -27,6 +27,10 @@ chrome.runtime.onInstalled.addListener(details => {
         // Setting the process when uninstalling the extension
         chrome.runtime.setUninstallURL(null, () => {
             
+            // Removing local storage data
+            localStorage.removeItem("currentPageTitle");
+
+            // deleting the whole database
             db.delete().then(() => {
                 console.log("Database successfully deleted");
             }).catch((err) => {

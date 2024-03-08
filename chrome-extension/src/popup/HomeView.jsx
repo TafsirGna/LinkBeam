@@ -10,7 +10,6 @@ import {
   appParams, 
   deactivateTodayReminders,
   dbData,
-  groupVisitsByProfile,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -20,9 +19,7 @@ export default class HomeView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      allVisitLeft: true,
       currentTabIndex: 0,
-      loadingAllVisits: false,
       offCanvasShow: false,
     };
 
@@ -34,14 +31,6 @@ export default class HomeView extends React.Component{
 
   componentDidMount() {
 
-    // Listening to every event dictating the retrieving of all visits
-    eventBus.on(eventBus.GET_ALL_VISITS, (data) => {
-        
-        this.getVisitList("all");
-
-      }
-    );
-
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
     if (!this.props.globalData.homeTodayVisitsList){
@@ -52,45 +41,16 @@ export default class HomeView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData.homeAllVisitsList != this.props.globalData.homeAllVisitsList){
-
-      if (this.props.globalData.homeAllVisitsList.scope == "search"){
-        this.setState({allVisitLeft: false});
-      }
-      else{
-
-        this.setState({loadingAllVisits: false, allVisitLeft: true});
-
-        if (prevProps.globalData.homeAllVisitsList){
-          // check if the end of the all visits list has been hit
-          if (prevProps.globalData.homeAllVisitsList.scope == "all"
-              && this.props.globalData.homeAllVisitsList.list.length == prevProps.globalData.homeAllVisitsList.list.length){
-            this.setState({allVisitLeft: false});
-          }
-
-        }
-        else{
-
-          this.getVisitList("all"); 
-
-        }
-
-      }
-
-    }
-
   }
 
   componentWillUnmount() {
-
-    eventBus.remove(eventBus.GET_ALL_VISITS);
 
   }
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
         deactivateTodayReminders(db);
-        eventBus.dispatch(eventBus.RESET_TODAY_REMINDER_LIST, null);
+        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
       }
     )
   };
@@ -100,15 +60,8 @@ export default class HomeView extends React.Component{
     )
   };
 
-  // onExtensionCodeInjected(message, sendResponse){
-    
-  //   // acknowledge receipt
-  //   ack(sendResponse);
-
   //   // hiding the popup
   //   // window.close();
-
-  // }
 
   // Function for switching between tabs
   switchCurrentTab(index){
@@ -120,7 +73,14 @@ export default class HomeView extends React.Component{
         break;
       }
       case 1: {
-        eventBus.dispatch(eventBus.ALL_VISITS_TAB_CLICKED, null);
+        
+        if (!this.props.globalData.homeAllVisitsList){
+          
+          var homeAllVisitsList = {list: this.props.globalData.homeTodayVisitsList, action: "display_all", inc: 0};
+          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
+
+        }
+
         break;
       }
     }
@@ -128,35 +88,33 @@ export default class HomeView extends React.Component{
   }
 
   // Function requesting the list of all visits made
-  getVisitList(scope){
+  getVisitList(action){
 
-    if (scope == "all"){
-      if (this.state.allVisitLeft){
-        this.setState({loadingAllVisits: true}, () => {
+    if (action == "display_all"){
 
-          (async () => {
-            var visits = await db
-                                   .visits
-                                   .offset(this.props.globalData.homeAllVisitsList.list.length).limit(5)
-                                   .toArray();
+        (async () => {
+          var visits = await db
+                                 .visits
+                                 .offset(this.props.globalData.homeAllVisitsList.list.length).limit(5)
+                                 .toArray();
 
-            await Promise.all (visits.map (async visit => {
-              [visit.profile] = await Promise.all([
-                db.profiles.where('url').equals(visit.url).first()
-              ]);
-            }));
+          await Promise.all (visits.map (async visit => {
+            [visit.profile] = await Promise.all([
+              db.profiles.where('url').equals(visit.url).first()
+            ]);
+          }));
 
-            var homeAllVisitsList = this.props.globalData.homeAllVisitsList;
-            homeAllVisitsList.list = this.props.globalData.homeAllVisitsList.list.concat(visits); 
+          var homeAllVisitsList = this.props.globalData.homeAllVisitsList;
+          homeAllVisitsList.list = this.props.globalData.homeAllVisitsList.list.concat(visits); 
+          homeAllVisitsList.action = action;
+          homeAllVisitsList.inc = (this.props.globalData.homeAllVisitsList.action == "search") ? 0 : (this.props.globalData.homeAllVisitsList + 1);
 
-            console.log("eeeeeeeeeeeeeeeeeeeeeeee: ", homeAllVisitsList);
+          // console.log("eeeeeeeeeeeeeeeeeeeeeeee: ", homeAllVisitsList);
 
-            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
-            
-          })();
+          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: homeAllVisitsList});
+          
+        })();
 
-        });
-      }
     }
     else{ // today      
 
@@ -194,40 +152,32 @@ export default class HomeView extends React.Component{
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
             <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's visits" onClick={() => {this.switchCurrentTab(0)}} >
-              Today {(this.props.globalData.homeTodayVisitsList && this.props.globalData.homeTodayVisitsList.length != 0) ? "("+this.props.globalData.homeTodayVisitsList.length+")" : null}
+              Today {(this.props.globalData.homeTodayVisitsList && this.props.globalData.homeTodayVisitsList.length) ? `(${this.props.globalData.homeTodayVisitsList.length})` : null}
             </button>
             <button type="button" class={"btn btn-secondary badge" + (this.state.currentTabIndex == 1 ? " active " : "")} title="All visits" onClick={() => {this.switchCurrentTab(1)}}>
-              All {(this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.list.length != this.props.globalData.homeTodayVisitsList.length) ? "("+this.props.globalData.homeAllVisitsList.list.length+")" : null}
+              All {(this.props.globalData.homeAllVisitsList) ? `(${this.props.globalData.homeAllVisitsList.list.length})` : null}
             </button>
           </div>
         </div>
 
         {/* Today visits List Tab */}
         { this.state.currentTabIndex == 0 && <div class="mt-4">
-
-                                              <VisitListView 
-                                                objects={this.props.globalData.homeTodayVisitsList} 
-                                                seeMore={() => {}} 
-                                                loading={false} 
-                                                visitLeft={false} />
-
+                                                <VisitListView 
+                                                  objects={this.props.globalData.homeTodayVisitsList}/>
                                               </div>}
 
         {/* All visits List Tab */}
         { this.state.currentTabIndex == 1 && <div>
 
                                               { this.props.globalData.homeAllVisitsList 
-                                                && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.list.scope == "search"))
+                                                && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.list.action == "search"))
                                                 && <SearchInputView 
                                                       objectStoreName={dbData.objectStoreNames.PROFILES} 
                                                       globalData={this.props.globalData} />}
 
                                               <AggregatedVisitListView 
-                                                objects={this.props.globalData.homeAllVisitsList ? groupVisitsByProfile(this.props.globalData.homeAllVisitsList.list) : null} 
-                                                seeMore={() => {this.getVisitList("all")}} 
-                                                loading={this.state.loadingAllVisits} 
-                                                visitLeft={this.state.allVisitLeft} 
-                                                context={this.props.globalData.homeAllVisitsList ? this.props.globalData.homeAllVisitsList.scope : "all"}/>
+                                                object={this.props.globalData.homeAllVisitsList} 
+                                                seeMore={() => {this.getVisitList("display_all")}} />
                                             
                                             </div>}
 

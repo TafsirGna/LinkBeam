@@ -103,38 +103,6 @@ export default class App extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.RESET_TODAY_REMINDER_LIST, (data) => {
-        // Resetting the today reminder list here too
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.todayReminderList = null;
-          return { globalData };
-        });
-      }
-    );
-
-    eventBus.on(eventBus.ALL_VISITS_TAB_CLICKED, (data) => {
-
-        if (!this.state.globalData.homeAllVisitsList || (this.state.globalData.homeAllVisitsList && this.state.globalData.homeAllVisitsList.scope == "all")){
-
-          if (!this.state.globalData.homeAllVisitsList){
-          
-            this.setState(prevState => {
-              let globalData = Object.assign({}, prevState.globalData);
-              globalData.homeAllVisitsList = {list: this.state.globalData.homeTodayVisitsList, scope: "all"};
-              return { globalData };
-            });
-
-          }
-          else{
-            eventBus.dispatch(eventBus.GET_ALL_VISITS, null);
-          }
-
-        }
-
-      }
-    );
-
     eventBus.on(eventBus.SWITCH_TO_VIEW, (data) => {
         
         this.setState({currentPageTitle: data.pageTitle});
@@ -146,9 +114,7 @@ export default class App extends React.Component{
   }
 
   componentWillUnmount() {
-
-    eventBus.remove(eventBus.RESET_TODAY_REMINDER_LIST);
-    eventBus.remove(eventBus.ALL_VISITS_TAB_CLICKED);
+    
     eventBus.remove(eventBus.SWITCH_TO_VIEW);
     eventBus.remove(eventBus.SET_APP_GLOBAL_DATA);
 
