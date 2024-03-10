@@ -1,4 +1,4 @@
-/*import './ProfileGeoMapChart.css'*/
+/*import './ProfilesGeoMapChart.css'*/
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Chart, getElementAtEvent } from "react-chartjs-2";
@@ -15,7 +15,6 @@ import {
   saveCanvas,
   dbDataSanitizer,
   appParams,
-  setGlobalDataSettings,
 } from "../../Local_library";
 
 import { v4 as uuidv4 } from 'uuid';
@@ -35,7 +34,7 @@ ChartJS.register(
   ChartGeo.GeoFeature
 );
 
-export default class ProfileGeoMapChart extends React.Component{
+export default class ProfilesGeoMapChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -68,12 +67,7 @@ export default class ProfileGeoMapChart extends React.Component{
     //   this.setState({chartCountries: ChartGeo.topojson.feature(data, data.objects.countries).features});
     // });
 
-    if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
-    }
-    else{
-      this.setChartCountries();
-    }
+    this.setChartCountries();
 
   }
 
@@ -89,10 +83,6 @@ export default class ProfileGeoMapChart extends React.Component{
       this.setChartCountries();
     }
 
-    if (prevProps.globalData != this.props.globalData){
-      this.setChartCountries();
-    }
-
   }
 
   setChartCountries(){
@@ -102,11 +92,7 @@ export default class ProfileGeoMapChart extends React.Component{
       return;
     }
 
-    if (!this.props.globalData.settings){
-      return;
-    }
-
-    var data = this.props.globalData.settings.geoMapData;
+    var data = appParams.GEO_MAP_DATA;
     var chartCountries = ChartGeo.topojson.feature(data, data.objects.countries).features;
 
     // initializing locationData

@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './Calendar.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -285,7 +306,7 @@ export default class CalendarView extends React.Component{
               </div>
               <div class="small shadow-sm mb-3 mt-2 p-1 fst-italic border-start border-info ps-2 border-4 bg-info-subtle text-muted">
                 Explore 
-                <a href={`/index.html?view=FeedDash&data=${moment(this.state.selectedDate).toISOString()}`} target="_blank" class="mx-1">feed</a> 
+                <a href={`/index.html?view=FeedDash&data=${JSON.stringify({from: moment(this.state.selectedDate).toISOString(), to: moment(this.state.selectedDate).toISOString()})}`} target="_blank" class="mx-1">feed</a> 
                 data as well for that {moment(this.state.selectedDate).format('dddd, MMMM Do YYYY').split(",")[0].toLowerCase()}
               </div>
               <Card className="shadow">

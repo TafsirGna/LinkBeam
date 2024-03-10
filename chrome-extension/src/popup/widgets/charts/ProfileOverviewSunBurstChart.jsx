@@ -1,4 +1,4 @@
-/*import './SunBurstOverviewChart.css'*/
+/*import './ProfileOverviewSunBurstChart.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 
-export default class SunBurstOverviewChart extends React.Component{
+export default class ProfileOverviewSunBurstChart extends React.Component{
 
   constructor(props){
     super(props);

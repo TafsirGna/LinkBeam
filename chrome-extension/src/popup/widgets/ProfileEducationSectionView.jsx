@@ -3,7 +3,7 @@ import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
-import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
+import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
@@ -101,7 +101,7 @@ export default class ProfileEducationSectionView extends React.Component{
                                                           <div class="container-fluid horizontal-scrollable">
                                                             <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
                                                               { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                                <ItemPercentageDoughnutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
+                                                                                                                                <ProfileSingleItemDonutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
                                                                                                                               </div>) }
                                                             </div>
                                                           </div>

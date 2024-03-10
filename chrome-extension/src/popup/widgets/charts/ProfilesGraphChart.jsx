@@ -1,4 +1,4 @@
-/*import './RelationshipsChart.css'*/
+/*import './ProfilesGraphChart.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -16,7 +16,7 @@ import { AlertCircleIcon, LocationIcon } from "../SVGs";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import default_user_icon from '../../../assets/user_icons/default.png';
 
-export default class RelationshipsChart extends React.Component{
+export default class ProfilesGraphChart extends React.Component{
 
   constructor(props){
     super(props);

@@ -1,4 +1,4 @@
-/*import './ProfileGeoMapChart.css'*/
+/*import './ProfileSingleItemDonutChart.css'*/
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Doughnut } from 'react-chartjs-2';
@@ -12,7 +12,7 @@ const options = {
   cutout: 60,
 };
 
-export default class ItemPercentageDoughnutChart extends React.Component{
+export default class ProfileSingleItemDonutChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -61,7 +61,7 @@ export default class ItemPercentageDoughnutChart extends React.Component{
 
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
 
   }
 

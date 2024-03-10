@@ -1,4 +1,4 @@
-/*import './RadarOverviewChart.css'*/
+/*import './ProfileOverviewRadarChart.css'*/
 import React from 'react';
 import { Radar } from 'react-chartjs-2';
 // import { 
@@ -26,7 +26,7 @@ ChartJS.register(
   Legend
 );
 
-export default class RadarOverviewChart extends React.Component{
+export default class ProfileOverviewRadarChart extends React.Component{
 
 	constructor(props){
 		super(props);

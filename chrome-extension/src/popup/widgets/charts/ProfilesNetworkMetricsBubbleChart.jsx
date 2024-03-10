@@ -1,4 +1,4 @@
-/*import './BubbleProfileRelationMetricsChart.css'*/
+/*import './ProfilesNetworkMetricsBubbleChart.css'*/
 import React from 'react';
 import { Bubble } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
@@ -51,7 +51,7 @@ const options = {
   }
 };
 
-export default class BubbleProfileRelationMetricsChart extends React.Component{
+export default class ProfilesNetworkMetricsBubbleChart extends React.Component{
 
 	constructor(props){
 		super(props);

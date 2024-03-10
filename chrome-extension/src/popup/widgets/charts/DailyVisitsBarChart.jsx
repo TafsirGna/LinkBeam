@@ -1,4 +1,4 @@
-/*import './ProfileGeoMapChart.css'*/
+/*import './DailyVisitsBarChart.css'*/
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';

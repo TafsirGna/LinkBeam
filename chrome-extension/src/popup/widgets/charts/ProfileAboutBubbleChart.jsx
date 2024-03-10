@@ -1,4 +1,4 @@
-/*import './HomeMenu.css'*/
+/*import './ProfileAboutBubbleChart.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -6,7 +6,7 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
 
-export default class ProfileAboutSectionBubbleChart extends React.Component{
+export default class ProfileAboutBubbleChart extends React.Component{
 
   constructor(props){
     super(props);

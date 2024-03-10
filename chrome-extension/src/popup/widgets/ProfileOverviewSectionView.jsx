@@ -3,9 +3,9 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import LanguageListModal from "./modals/LanguageListModal";
-import SunBurstOverviewChart from "./charts/SunBurstOverviewChart";
-import RadarOverviewChart from "./charts/RadarOverviewChart";
-import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
+import ProfileOverviewSunBurstChart from "./charts/ProfileOverviewSunBurstChart";
+import ProfileOverviewRadarChart from "./charts/ProfileOverviewRadarChart";
+import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import moment from 'moment';
@@ -226,7 +226,7 @@ export default class ProfileOverviewSectionView extends React.Component{
         </div>
 
         <div class="mt-4">
-          <SunBurstOverviewChart profile={this.props.profile} />
+          <ProfileOverviewSunBurstChart profile={this.props.profile} />
         </div>
 
         <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose} globalData={this.props.globalData}/>
@@ -243,7 +243,7 @@ export default class ProfileOverviewSectionView extends React.Component{
           <Modal.Body>
             
             <div class="text-center">
-              <RadarOverviewChart profile={this.props.profile} computedData={this.props.computedData}/>
+              <ProfileOverviewRadarChart profile={this.props.profile} computedData={this.props.computedData}/>
             </div>
 
           </Modal.Body>
@@ -274,7 +274,7 @@ export default class ProfileOverviewSectionView extends React.Component{
             
             { this.state.donutChartModalItemData && <div>
                                                       <div class="text-center col-6 offset-3">
-                                                        <ItemPercentageDoughnutChart data={this.state.donutChartModalItemData}/>
+                                                        <ProfileSingleItemDonutChart data={this.state.donutChartModalItemData}/>
                                                       </div>
                                                     <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                                                       {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s "+this.state.donutChartModalTitle+" is longer than "}

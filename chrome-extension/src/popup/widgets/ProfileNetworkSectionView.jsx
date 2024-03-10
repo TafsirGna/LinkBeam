@@ -1,7 +1,7 @@
 // import '../assets/css/ProfileActivitySectionView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import RelationshipsChart from "./charts/RelationshipsChart";
+import ProfilesGraphChart from "./charts/ProfilesGraphChart";
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   appParams, 
@@ -75,7 +75,7 @@ export default class ProfileNetworkSectionView extends React.Component{
 
                   </div>
                   <div class="shadow rounded border mx-3">
-                    <RelationshipsChart 
+                    <ProfilesGraphChart 
                       objects={[this.props.profile]} 
                       displayCriteria={this.state.formSelectInputVal} 
                       profiles={this.props.globalData.profiles}

@@ -2,14 +2,14 @@
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import Collapse from 'react-bootstrap/Collapse';
-import ProfileAboutSectionBubbleChart from './charts/ProfileAboutSectionBubbleChart';
+import ProfileAboutBubbleChart from './charts/ProfileAboutBubbleChart';
 import { 
 	dbDataSanitizer,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
+import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 
 
 export default class ProfileAboutSectionView extends React.Component{
@@ -226,7 +226,8 @@ export default class ProfileAboutSectionView extends React.Component{
 																			</div>
 
 																			{this.state.uniqueWordsCount && <div class="border border-1 mb-3 mt-2 shadow rounded">
-																																							<ProfileAboutSectionBubbleChart objectData={this.state.uniqueWordsCount} />
+																																							<ProfileAboutBubbleChart 
+																																								objectData={this.state.uniqueWordsCount} />
 																																						</div>}
 
 																			<div>
@@ -275,7 +276,7 @@ export default class ProfileAboutSectionView extends React.Component{
 						
 						{ this.state.donutChartModalItemData && <div>
 																											<div class="text-center col-6 offset-3">
-																												<ItemPercentageDoughnutChart data={this.state.donutChartModalItemData}/>
+																												<ProfileSingleItemDonutChart data={this.state.donutChartModalItemData}/>
 																											</div>
 																										<p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
 																											{dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s intro is longer than "}

@@ -10,6 +10,7 @@ import newspaper_icon from '../../assets/newspaper_icon.png';
 import { PictureIcon, AlertCircleIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
+import { db } from "../../db";
 
 
 export default class ProfileActivityListView extends React.Component{
@@ -53,7 +54,7 @@ export default class ProfileActivityListView extends React.Component{
     this.setState({selectedPost: post, offCanvasShow: true});
   };
 
-  setPosts(){
+  async setPosts(){
 
     if (!this.props.objects){
       return;
@@ -65,8 +66,27 @@ export default class ProfileActivityListView extends React.Component{
       if (!profile.activity) { continue; }
 
       for (var post of profile.activity){
-        post["date"] = profile.date;
-        post["profile"] = {
+
+        if (profile.date){
+          post.date = profile.date;
+        }
+        else{
+          post.date = null;
+          await db.visits
+                  .where("url")
+                  .equals(profile.url)
+                  .each(visit => {
+                    if (!post.date){
+                      post.date = visit.date;
+                    }
+                    else if (new Date(visit.date) > new Date(post.date)){
+                      post.date = visit.date;
+                    }
+                  });
+          profile.date = post.date;
+        }
+
+        post.profile = {
           fullName: profile.fullName,
           avatar: profile.avatar,
         }

@@ -4,13 +4,13 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ProfileGeoMapChart from "./charts/ProfileGeoMapChart";
+import ProfilesGeoMapChart from "./charts/ProfilesGeoMapChart";
 import eventBus from "../EventBus";
 import { 
   appParams, 
   dbDataSanitizer,
 } from "../Local_library";
-import ItemPercentageDoughnutChart from "./charts/ItemPercentageDoughnutChart";
+import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import { 
   AlertCircleIcon, 
   LocationIcon, 
@@ -260,7 +260,7 @@ export default class ProfileViewHeader extends React.Component{
           </Modal.Header>
           <Modal.Body>
             
-            <ProfileGeoMapChart 
+            <ProfilesGeoMapChart 
               globalData={this.props.globalData}
               context={appParams.COMPONENT_CONTEXT_NAMES.PROFILE}
               objects={[this.props.profile]} />
@@ -286,7 +286,7 @@ export default class ProfileViewHeader extends React.Component{
             <div class={this.state.connectionsCompData && this.state.followersCompData ? "row" : ""}>
               {this.state.connectionsCompData && <div class="col">
                               <div class="text-center col-6 offset-3">
-                                <ItemPercentageDoughnutChart data={this.state.connectionsCompData}/>
+                                <ProfileSingleItemDonutChart data={this.state.connectionsCompData}/>
                               </div>
                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                               {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s connections pool is larger than "}
@@ -297,7 +297,7 @@ export default class ProfileViewHeader extends React.Component{
 
               {this.state.followersCompData && <div class="col">
                               <div class="text-center col-6 offset-3">
-                                <ItemPercentageDoughnutChart data={this.state.followersCompData}/>
+                                <ProfileSingleItemDonutChart data={this.state.followersCompData}/>
                               </div>
                             <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                               {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s followers pool is larger than "}

@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './About.css'*/
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
@@ -10,11 +31,11 @@ import {
 import { Link } from 'react-router-dom';
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
-import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
-import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
+import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
+import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
-import RelationshipsChart from "./widgets/charts/RelationshipsChart";
-import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
+import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
+import VisitsConnectedScatterPlot from "./widgets/charts/VisitsConnectedScatterPlot";
 import { db } from "../db";
 
 export default class ChartExpansionView extends React.Component{
@@ -89,15 +110,14 @@ export default class ChartExpansionView extends React.Component{
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 3 && 
-                      <BubbleProfileRelationMetricsChart 
+                      <ProfilesNetworkMetricsBubbleChart 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 4 && 
-                      <ProfileGeoMapChart 
+                      <ProfilesGeoMapChart 
                         context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
-                        globalData={this.props.globalData} 
                         objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
@@ -109,7 +129,7 @@ export default class ChartExpansionView extends React.Component{
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 6 && 
-                      <RelationshipsChart 
+                      <ProfilesGraphChart 
                         objects={this.state.periodProfiles} 
                         displayCriteria={this.state.relChartDisplayCrit} 
                         profiles={this.state.periodProfiles}
@@ -117,7 +137,7 @@ export default class ChartExpansionView extends React.Component{
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 7 && 
-                      <ConnectedScatterplot 
+                      <VisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}

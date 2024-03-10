@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './StatisticsView.css'*/
 import React from 'react'
 import moment from 'moment';
@@ -5,12 +26,12 @@ import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
-import ProfileGeoMapChart from "./widgets/charts/ProfileGeoMapChart";
+import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
-import BubbleProfileRelationMetricsChart from "./widgets/charts/BubbleProfileRelationMetricsChart";
+import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
-import RelationshipsChart from "./widgets/charts/RelationshipsChart";
-import ConnectedScatterplot from "./widgets/charts/ConnectedScatterplot";
+import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
+import VisitsConnectedScatterPlot from "./widgets/charts/VisitsConnectedScatterPlot";
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
@@ -84,7 +105,7 @@ export default class StatisticsView extends React.Component{
 
       this.setState({ periodVisits: visits, periodProfiles: profiles });
 
-    }).bind(this)()
+    }).bind(this)();
 
   }
 
@@ -180,14 +201,13 @@ export default class StatisticsView extends React.Component{
                               carrouselIndex={2}/>}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 3 && <BubbleProfileRelationMetricsChart 
+              { this.state.carrouselActiveItemIndex == 3 && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
                               carrouselIndex={3} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 4 && <ProfileGeoMapChart 
+              { this.state.carrouselActiveItemIndex == 4 && <ProfilesGeoMapChart 
                               context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
-                              globalData={this.props.globalData} 
                               objects={this.state.periodProfiles} 
                               carrouselIndex={4} />}
             </Carousel.Item>
@@ -199,7 +219,7 @@ export default class StatisticsView extends React.Component{
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 6 && 
                             <div>
-                              <RelationshipsChart 
+                              <ProfilesGraphChart 
                                 objects={this.state.periodProfiles} 
                                 displayCriteria={ this.state.relChartDisplayCrit } 
                                 profiles={this.state.periodProfiles}
@@ -218,7 +238,7 @@ export default class StatisticsView extends React.Component{
                             </div>}
             </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 7 && <ConnectedScatterplot 
+              { this.state.carrouselActiveItemIndex == 7 && <VisitsConnectedScatterPlot 
                               objects={this.state.periodVisits} 
                               carrouselIndex={7} />}
             </Carousel.Item>

@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 import React from 'react';
 import './App.css';
 // import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -12,7 +33,6 @@ import ReminderView from "./popup/ReminderView";
 import BookmarkView from "./popup/BookmarkView";
 import ProfileActivityView from "./popup/ProfileActivityView";
 import CalendarView from "./popup/CalendarView";
-import FeedbackView from "./popup/FeedbackView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
@@ -20,7 +40,6 @@ import FeedDashView from "./popup/FeedDashView";
 import moment from 'moment';
 import 'moment/dist/locale/fr';
 import 'moment/dist/locale/en-gb';
-// import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
 import { db } from "./db";
 import { 
@@ -29,13 +48,13 @@ import {
 } from "./popup/Local_library";
 // import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
+import { liveQuery } from "dexie"; 
 
 export default class App extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      // uuid: uuidv4(),
       missingDatabase: null,
       currentPageTitle: null,
       tmps: {
@@ -161,9 +180,6 @@ export default class App extends React.Component{
 
         {/*Bookmarks Page*/}
         { this.state.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
-
-        {/*Feedback Page*/}
-        { this.state.currentPageTitle == "Feedback" && <FeedbackView globalData={this.state.globalData} />}
 
         {/*Calendar Page*/}
         { this.state.currentPageTitle == "Calendar" && <CalendarView globalData={this.state.globalData} />}
