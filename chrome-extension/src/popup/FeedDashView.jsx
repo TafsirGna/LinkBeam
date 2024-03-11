@@ -26,7 +26,9 @@ import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   appParams,
-  setGlobalDataSettings
+  setGlobalDataSettings,
+  getVisitPostsCount,
+  getChartColors,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -103,7 +105,7 @@ export default class FeedDashView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
    
-    if (prevState.selectedDate != this.state.selectedDate){
+    if ((prevState.startDate != this.state.startDate) || (prevState.endDate != this.state.endDate)){
 
       this.setVisits();
 
@@ -163,9 +165,7 @@ export default class FeedDashView extends React.Component{
 
     var postCount = 0;
     this.state.visits.forEach(visit => {
-      Object.keys(visit.itemsMetrics).forEach(metric => {
-        postCount += visit.itemsMetrics[metric];
-      });
+      postCount += getVisitPostsCount(visit);
     });
 
     return postCount;
@@ -184,24 +184,8 @@ export default class FeedDashView extends React.Component{
 
   			<div class="offset-2 col-8 mt-4">
 
-          <div class="clearfix my-3 me-3 small">
-            <div class="float-end">
-              <span>
-                From
-              </span>
-              <Form.Control
-                type="date"
-                autoFocus
-                min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate : new Date().toISOString().split("T")[0]}
-                max={this.state.endDate}
-                value={this.state.startDate}
-                onChange={this.handleStartDateInputChange}
-                className="shadow-sm w-25 mx-1"
-                size="sm"
-              />
-              <span>
-              to
-              </span>
+          <div class="clearfix m-3 small">
+            <div class="d-flex flex-row-reverse align-items-center ">
               <Form.Control
                 type="date"
                 autoFocus
@@ -209,9 +193,21 @@ export default class FeedDashView extends React.Component{
                 max={new Date().toISOString().slice(0, 10)}
                 value={this.state.endDate}
                 onChange={this.handleEndDateInputChange}
-                className="shadow-sm w-25 ms-1"
+                className="shadow-sm w-25 mx-2 d-inline"
                 size="sm"
               />
+              to
+              <Form.Control
+                type="date"
+                autoFocus
+                min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : new Date().toISOString().split("T")[0]}
+                max={this.state.endDate}
+                value={this.state.startDate}
+                onChange={this.handleStartDateInputChange}
+                className="shadow-sm w-25 mx-2 d-inline"
+                size="sm"
+              />
+              From              
             </div>
           </div>
 
@@ -246,7 +242,7 @@ export default class FeedDashView extends React.Component{
             </div>
           </div>
 
-          <div class="row mt-4 mx-3 py-4 gap-2 d-flex">
+          <div class="row mt-1 mx-3 py-4 gap-2 d-flex">
             <div class="col">
               <div class="border rounded shadow">
                 <FeedScatterPlot
@@ -302,7 +298,8 @@ export default class FeedDashView extends React.Component{
       {/*Modals*/}
 
       <AllPostsModal 
-        date={this.state.selectedDate}
+        startDdate={this.state.startDate}
+        endDate={this.state.endDate}
         show={this.state.allPostsModalShow}
         onHide={this.handleAllPostsModalClose}/>
 

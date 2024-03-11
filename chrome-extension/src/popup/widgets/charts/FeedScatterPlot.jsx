@@ -14,6 +14,7 @@ import { AlertCircleIcon } from "../SVGs";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { 
   getChartColors, 
+  getVisitPostsCount,
 } from "../../Local_library";
 import { faker } from '@faker-js/faker';
 
@@ -25,19 +26,6 @@ export const options = {
       beginAtZero: true,
     },
   },
-};
-
-export const data = {
-  datasets: [
-    {
-      label: 'A dataset',
-      data: Array.from({ length: 100 }, () => ({
-        x: faker.datatype.number({ min: -100, max: 100 }),
-        y: faker.datatype.number({ min: -100, max: 100 }),
-      })),
-      backgroundColor: 'rgba(255, 99, 132, 1)',
-    },
-  ],
 };
 
 export default class FeedScatterPlot extends React.Component{
@@ -71,39 +59,19 @@ export default class FeedScatterPlot extends React.Component{
       return;
     }
 
-    // var labels = [], 
-    //     data = [],
-    //     colors = []; 
-
-    // if (this.props.objects.length){
-
-    //   labels = Object.keys(this.props.objects[0].itemsMetrics);
-    //   data = labels.map(label => 0);
-    //   colors = getChartColors(labels.length).borders;
-
-    //   // setting the labels
-    //   for (var visit of this.props.objects){
-    //     for (var metric of Object.keys(visit.itemsMetrics)){
-    //       const index = labels.indexOf(metric);
-    //       data[index] += visit.itemsMetrics[metric];
-    //     }
-    //   }
-
-    // }
-
-    // this.setState({data: {
-    //     labels: labels,
-    //     datasets: [
-    //       {
-    //         label: 'Percentage %',
-    //         data: data,
-    //         backgroundColor: colors,
-    //         borderColor: colors,
-    //         borderWidth: 1,
-    //       },
-    //     ],
-    //   },
-    // });
+    this.setState({data: {
+        datasets: [
+          {
+            label: '# of posts/Time spent(mins)',
+            data: this.props.objects.map(visit => ({
+                          x: getVisitPostsCount(visit),
+                          y: (visit.timeCount / 60),
+                        })),
+            backgroundColor: getChartColors(1).borders[0],
+          },
+        ],
+      },
+    });
 
   }
 
@@ -118,7 +86,7 @@ export default class FeedScatterPlot extends React.Component{
                 </div>}
 
         { this.props.objects && <div>
-                 { /*this.state.data &&*/ <Scatter data={data} options={options} /> }
+                 { this.state.data && <Scatter data={this.state.data} options={options} /> }
                 </div>}
       </>
     );

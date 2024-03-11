@@ -645,6 +645,17 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 }
 
 
+export function getVisitPostsCount(visit){
+
+  var postCount = 0;
+  Object.keys(visit.itemsMetrics).forEach(metric => {
+    postCount += visit.itemsMetrics[metric];
+  });
+
+  return postCount;
+
+}
+
 export async function getPeriodVisits(index, func, db, category, profile = null){
 
   var startDate = null;
