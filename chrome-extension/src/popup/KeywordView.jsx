@@ -30,6 +30,7 @@ import {
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
+import { liveQuery } from "dexie";
 
 export default class KeywordView extends React.Component{
 
@@ -53,7 +54,7 @@ export default class KeywordView extends React.Component{
 
     if (!this.props.globalData.keywordList){
 
-      setGlobalDataKeywords(db, eventBus);
+      setGlobalDataKeywords(db, eventBus, liveQuery);
 
     }
 
@@ -95,8 +96,6 @@ export default class KeywordView extends React.Component{
           , appParams.TIMER_VALUE);
 
         });
-
-        setGlobalDataKeywords(db, eventBus);
 
       }).bind(this)();
 
@@ -148,11 +147,6 @@ export default class KeywordView extends React.Component{
           , appParams.TIMER_VALUE);
 
         });
-
-        var index = this.props.globalData.keywordList.map(e => e.id).indexOf(keyword.id);
-        var keywords = this.props.globalData.keywordList;
-        keywords.splice(index, 1);
-        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords});
 
       }).bind(this)();
 

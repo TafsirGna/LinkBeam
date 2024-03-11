@@ -94,7 +94,7 @@ export default class SettingsView extends React.Component{
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.SETTINGS);
 
     if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
+      setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
     this.reminderSubscription = reminderCountObservable.subscribe(
@@ -320,8 +320,6 @@ export default class SettingsView extends React.Component{
 
       await db.settings
               .update(1, settings);
-
-      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
 
     })();
 

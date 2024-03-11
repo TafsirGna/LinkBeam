@@ -130,13 +130,59 @@ export default class App extends React.Component{
       }
     );
 
+    eventBus.on(eventBus.SET_APP_SUBSCRIPTION, (data) => {
+
+      const subscription = data.value;
+
+      switch(data.property){
+
+        case "settings":{
+          this.settingsSubscription = subscription.subscribe(
+            result => this.setState(prevState => {
+                                      let globalData = Object.assign({}, prevState.globalData);
+                                      globalData[data.property] = result;
+                                      return { globalData };
+                                    }),
+            error => this.setState({error})
+          );
+          break;
+        }
+
+        case "keywordList":{
+          this.keywordsSubscription = subscription.subscribe(
+            result => this.setState(prevState => {
+                                      let globalData = Object.assign({}, prevState.globalData);
+                                      globalData[data.property] = result;
+                                      return { globalData };
+                                    }),
+            error => this.setState({error})
+          );
+          break;
+        }
+
+      }
+
+    })
+
 
   }
 
   componentWillUnmount() {
     
+    // removing event listeners
     eventBus.remove(eventBus.SWITCH_TO_VIEW);
     eventBus.remove(eventBus.SET_APP_GLOBAL_DATA);
+
+    //disabling subscriptions
+    if (this.settingsSubscription) {
+      this.settingsSubscription.unsubscribe();
+      this.settingsSubscription = null;
+    }
+
+    if (this.keywordsSubscription) {
+      this.keywordsSubscription.unsubscribe();
+      this.keywordsSubscription = null;
+    }
 
   }
 

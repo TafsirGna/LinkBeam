@@ -39,6 +39,7 @@ import {
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
+import { liveQuery } from "dexie"; 
 
 const productIdOverlayText = "Your unique identifier";
 
@@ -71,7 +72,7 @@ export default class MyAccount extends React.Component{
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT);
 
   	if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
+      setGlobalDataSettings(db, eventBus, liveQuery);
     }
     
   }

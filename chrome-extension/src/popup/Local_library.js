@@ -555,22 +555,22 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
-export async function setGlobalDataSettings(db, eventBus){
+export async function setGlobalDataSettings(db, eventBus, liveQuery){
 
-  const settings = await db.settings
-                               .where("id")
-                               .equals(1)
-                               .first();
+  const observable = liveQuery(() => db.settings
+                                               .where("id")
+                                               .equals(1)
+                                               .first());
 
-  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "settings", value: settings});
+  eventBus.dispatch(eventBus.SET_APP_SUBSCRIPTION, {property: "settings", value: observable});
 
 }
 
-export async function setGlobalDataKeywords(db, eventBus){
+export async function setGlobalDataKeywords(db, eventBus, liveQuery){
 
-  const keywords = await db.keywords.toArray();
+  const observable = liveQuery(() => db.keywords.toArray());
 
-  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "keywordList", value: keywords.reverse()});
+  eventBus.dispatch(eventBus.SET_APP_SUBSCRIPTION, {property: "keywordList", value: observable});
 
 }
 

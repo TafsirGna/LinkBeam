@@ -42,6 +42,7 @@ import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import app_logo from '../assets/app_logo.png';
 import { db } from "../db";
 import eventBus from "./EventBus";
+import { liveQuery } from "dexie"; 
 
 export default class CalendarView extends React.Component{
 
@@ -75,7 +76,7 @@ export default class CalendarView extends React.Component{
     });
 
     if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
+      setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
     // Requesting this month's visits list

@@ -36,13 +36,13 @@ import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
 import { db } from "../db";
-
 import { 
   saveCurrentPageTitle, 
   appParams,
   getPeriodVisits,
   setGlobalDataSettings,
 } from "./Local_library";
+import { liveQuery } from "dexie"; 
 
 export default class StatisticsView extends React.Component{
 
@@ -73,7 +73,7 @@ export default class StatisticsView extends React.Component{
     
     // Requesting the last reset date
     if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
+      setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
   }

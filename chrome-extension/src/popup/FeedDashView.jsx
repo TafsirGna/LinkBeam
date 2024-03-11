@@ -39,6 +39,7 @@ import FeedItemCategoryDonutChart from "./widgets/charts/FeedItemCategoryDonutCh
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { liveQuery } from "dexie"; 
 
 function betweenRange(lower, upper, date){
   return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
@@ -68,7 +69,7 @@ export default class FeedDashView extends React.Component{
   componentDidMount() {
 
     if (!this.props.globalData.settings){
-      setGlobalDataSettings(db, eventBus);
+      setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -78,11 +79,11 @@ export default class FeedDashView extends React.Component{
 
       try {
         date = JSON.parse(date);
+        this.setState({startDate: date.from.split("T")[0], endDate: date.to.split("T")[0]});
       } catch (error) {
         console.error('Error while retrieving date: ', error);
       }
 
-      this.setState({startDate: date.from.split("T")[0], endDate: date.to.split("T")[0]});
     }
     else{
 

@@ -29,6 +29,11 @@ import {
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  setValue,
+  selectBookmarks,
+} from '../slices/bookmarksSlice';
 
 
 export default class BookmarkView extends React.Component{
@@ -44,19 +49,23 @@ export default class BookmarkView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS);
 
-    (async () => {
+    if (!this.props.globalData.bookmarkList){
 
-      const bookmarks = await db.bookmarks.toArray();
+      (async () => {
 
-      await Promise.all (bookmarks.map (async bookmark => {
-        [bookmark.profile] = await Promise.all([
-          db.profiles.where('url').equals(bookmark.url).first()
-        ]);
-      }));
+        const bookmarks = await db.bookmarks.toArray();
 
-      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "bookmarkList", value: bookmarks});
+        await Promise.all (bookmarks.map (async bookmark => {
+          [bookmark.profile] = await Promise.all([
+            db.profiles.where('url').equals(bookmark.url).first()
+          ]);
+        }));
 
-    }).bind(this)();
+        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "bookmarkList", value: bookmarks});
+
+      }).bind(this)();
+
+    }
   }
 
 
