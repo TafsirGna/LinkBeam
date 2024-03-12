@@ -1,4 +1,26 @@
-/*import './HomeMenu.css'*/
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
+
+/*import './ProfileOverviewSectionView.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -8,6 +30,9 @@ import ProfileOverviewRadarChart from "./charts/ProfileOverviewRadarChart";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import ProfileOverviewSectionCertificationWidget from "./ProfileOverviewSectionCertificationWidget";
+import ProfileOverviewSectionProjectWidget from "./ProfileOverviewSectionProjectWidget";
+import ProfileOverviewSectionLanguageWidget from "./ProfileOverviewSectionLanguageWidget";
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import { 
@@ -35,54 +60,14 @@ export default class ProfileOverviewSectionView extends React.Component{
     this.showCertComparisonData = this.showCertComparisonData.bind(this);
   }
 
-  handleLanguageListModalClose = () => this.setState({languageListModalShow: false});
-  handleLanguageListModalShow = () => {
-
-    if (!this.props.profile.languages){ 
-      return;
-    }
-
-    this.setState({languageListModalShow: true})
-  };
-
-  handleProjectsModalClose = () => this.setState({projectsModalShow: false});
-  handleProjectsModalShow = () => {
-
-    if (!this.props.profile.projects){ 
-      return;
-    }
-
-    this.setState({projectsModalShow: true})
-  };
-
-  handleCertificationsModalClose = () => this.setState({certificationsModalShow: false});
-  handleCertificationsModalShow = () => {
-
-    if (!this.props.profile.certifications){ 
-      return;
-    }
-
-    var certificationsList = [];
-    for (var certification of this.props.profile.certifications){
-      certification["linkedProfiles"] = null;
-      certificationsList.push(certification); 
-    }
-
-    this.setState({
-      certificationsList: certificationsList, 
-      certificationsModalShow: true
-    });
-
-  };
-
   componentDidMount() {
 
   }
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.globalData != this.props.globalData){
-      if (prevProps.globalData.profiles != this.props.globalData.profiles){
+    if (prevProps.localDataObject != this.props.localDataObject){
+      if (prevProps.localDataObject.profiles != this.props.localDataObject.profiles){
         if (this.state.donutChartModalShow){
           this.setDonutChartModalItemData();
         }
@@ -94,6 +79,7 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   }
 
+
   showCertComparisonData(certName, index){
 
     if (!certName){
@@ -101,7 +87,7 @@ export default class ProfileOverviewSectionView extends React.Component{
       return;
     }
 
-    if (!this.props.globalData.profiles){
+    if (!this.props.localDataObject.profiles){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
       return;
     }
@@ -111,7 +97,7 @@ export default class ProfileOverviewSectionView extends React.Component{
       return;
     }
 
-    var profiles = performProfileSubPartComparison(this.props.profile, certName, this.props.globalData.profiles, "certifications");
+    var profiles = performProfileSubPartComparison(this.props.profile, certName, this.props.localDataObject.profiles, "certifications");
     var certificationsList = this.state.certificationsList;
     certificationsList[index].linkedProfiles = profiles;
 
@@ -127,29 +113,29 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   setDonutChartModalItemData(){
 
-    if (!this.props.globalData.profiles){
+    if (!this.props.localDataObject.profiles){
       sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
       return ;
     }
 
     var percentage = 0;
-    for (var profile of this.props.globalData.profiles){
+    for (var profile of this.props.localDataObject.profiles){
       if (this.state.donutChartModalTitle == "experience"){
         var timeLength = computePeriodTimeSpan(profile.experience, "experience", {moment: moment});
-        if (profile.url != this.props.profile.url && timeLength <= this.props.computedData.experienceTime){
+        if (profile.url != this.props.profile.url && timeLength <= this.props.localDataObject.profileComputedData.experienceTime){
           percentage += 1;
         }
       }
 
       if (this.state.donutChartModalTitle == "education"){
         var timeLength = computePeriodTimeSpan(profile.education, "education", {moment: moment});
-        if (profile.url != this.props.profile.url &&  timeLength <= this.props.computedData.educationTime){
+        if (profile.url != this.props.profile.url &&  timeLength <= this.props.localDataObject.profileComputedData.educationTime){
           percentage += 1;
         }
       }
     }
 
-    percentage /= this.props.globalData.profiles.length;
+    percentage /= this.props.localDataObject.profiles.length;
     percentage *= 100;
 
     this.setState({donutChartModalItemData : {
@@ -160,7 +146,7 @@ export default class ProfileOverviewSectionView extends React.Component{
 
   getPeriodTimeSpan(periodLabel){
 
-    var periodtime = (periodLabel == "experience" ? this.props.computedData.experienceTime : this.props.computedData.educationTime);
+    var periodtime = (periodLabel == "experience" ? this.props.localDataObject.profileComputedData.experienceTime : this.props.localDataObject.profileComputedData.educationTime);
     periodtime = Math.ceil(periodtime / (1000 * 60 * 60 * 24)) // diff days
 
     var y = Math.floor(periodtime / 365);
@@ -195,41 +181,27 @@ export default class ProfileOverviewSectionView extends React.Component{
         <div class="row mx-2 mt-1">
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow("experience");}}>
             <div class="card-body">
-              <h6 class="card-title text-primary-emphasis">~{(this.props.computedData && this.props.computedData.experienceTime) ? this.getPeriodTimeSpan("experience") : 0}</h6>
+              <h6 class="card-title text-primary-emphasis">~{(this.props.localDataObject.profileComputedData && this.props.localDataObject.profileComputedData.experienceTime) ? this.getPeriodTimeSpan("experience") : 0}</h6>
               <p class="card-text">Experience length</p>
             </div>
           </div>
           <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow("education");}}>
             <div class="card-body">
-              <h6 class="card-title text-warning-emphasis">~{(this.props.computedData && this.props.computedData.educationTime) ? this.getPeriodTimeSpan("education") : 0}</h6>
+              <h6 class="card-title text-warning-emphasis">~{(this.props.localDataObject.profileComputedData && this.props.localDataObject.profileComputedData.educationTime) ? this.getPeriodTimeSpan("education") : 0}</h6>
               <p class="card-text">Education length</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleLanguageListModalShow}>
-            <div class="card-body">
-              <h6 class="card-title text-info-emphasis">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h6>
-              <p class="card-text">Languages</p>
-            </div>
-          </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleProjectsModalShow}>
-            <div class="card-body">
-              <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h6>
-              <p class="card-text">Projects</p>
-            </div>
-          </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleCertificationsModalShow}>
-            <div class="card-body">
-              <h6 class="card-title text-success-emphasis">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
-              <p class="card-text">Certifications</p>
-            </div>
-          </div>
+
+          <ProfileOverviewSectionLanguageWidget/>
+          
+          <ProfileOverviewSectionProjectWidget/>
+
+          <ProfileOverviewSectionCertificationWidget/>
         </div>
 
         <div class="mt-4">
           <ProfileOverviewSunBurstChart profile={this.props.profile} />
         </div>
-
-        <LanguageListModal profile={this.props.profile} show={this.state.languageListModalShow} onHide={this.handleLanguageListModalClose} globalData={this.props.globalData}/>
 
         {/*Radar chart*/}
         <Modal 
@@ -243,7 +215,9 @@ export default class ProfileOverviewSectionView extends React.Component{
           <Modal.Body>
             
             <div class="text-center">
-              <ProfileOverviewRadarChart profile={this.props.profile} computedData={this.props.computedData}/>
+              <ProfileOverviewRadarChart 
+                profile={this.props.profile} 
+                localDataObject={this.props.localDataObject}/>
             </div>
 
           </Modal.Body>
@@ -286,91 +260,6 @@ export default class ProfileOverviewSectionView extends React.Component{
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleDonutChartModalClose} className="shadow">
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
-        {/*Certfication Modal*/}
-        <Modal 
-          show={this.state.certificationsModalShow} 
-          onHide={this.handleCertificationsModalClose}
-          size="lg"
-          >
-          <Modal.Header closeButton>
-            <Modal.Title>Certifications</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            
-            { this.state.certificationsList && <div class="list-group small mt-1 shadow-sm border-0">
-              { this.state.certificationsList.map((certification, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" onClick={() => {this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)}} title="Click to show more data">
-                                            <div class="d-flex gap-2 w-100 justify-content-between">
-                                              <div>
-                                                <p class="mb-1">
-                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
-                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {certification.entity.name ? dbDataSanitizer.preSanitize(certification.entity.name) : "Missing data"}
-                                                  </span>
-                                                </p>
-                                                <p class="text-muted mb-2">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>
-                                                { certification.linkedProfiles != null && <p class="bg-light fw-light mb-0 opacity-75 border border-warning small p-2 rounded shadow-sm fw-bold">
-                                                                                                  {/*<AlertCircleIcon size="14"/>*/}
-                                                                                                  It seems like 
-                                                                                                  <OverlayTrigger
-                                                                                                    placement="top"
-                                                                                                    overlay={<Tooltip id="tooltip1">{(certification.linkedProfiles.length * 100) / this.props.globalData.profiles.length} %</Tooltip>}
-                                                                                                  >
-                                                                                                    <span class="badge text-bg-primary shadow-sm px-1 mx-1"> {(certification.linkedProfiles.length * 100) / this.props.globalData.profiles.length} </span> 
-                                                                                                  </OverlayTrigger>
-                                                                                                  % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
-                                                                                                </p>}
-                                              </div>
-                                              { certification.period && <small class="opacity-50 text-nowrap">{moment(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM YYYY").fromNow()}</small>}
-                                            </div>
-                                          </a>))}
-              </div>}
-
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleCertificationsModalClose} className="shadow">
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
-
-
-
-        {/*Projects Modal*/}
-        <Modal 
-          show={this.state.projectsModalShow} 
-          onHide={this.handleProjectsModalClose}
-          size="lg"
-          >
-          <Modal.Header closeButton>
-            <Modal.Title>Projects</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            
-            { this.props.profile.projects && <div class="list-group small mt-1 shadow-sm border-0">
-              { this.props.profile.projects.map((project, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" >
-                                            <div class="d-flex gap-2 w-100 justify-content-between">
-                                              <div>
-                                                <p class="mb-1">
-                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-secondary-subtle border border-secondary rounded-pill mb-2">
-                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {project.name ? dbDataSanitizer.preSanitize(project.name) : "Missing data"}
-                                                  </span>
-                                                </p>
-                                                <p class="text-muted mb-2 small ms-2 fst-italic">{project.period ? dbDataSanitizer.preSanitize(project.period) : "Missing period data"}</p>
-                                              </div>
-                                              {/*<small class="opacity-50 text-nowrap">{moment(new Date()).fromNow()}</small>*/}
-                                            </div>
-                                          </a>))}
-              </div>}
-
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleProjectsModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

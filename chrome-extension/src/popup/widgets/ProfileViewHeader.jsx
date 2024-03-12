@@ -261,7 +261,6 @@ export default class ProfileViewHeader extends React.Component{
           <Modal.Body>
             
             <ProfilesGeoMapChart 
-              globalData={this.props.globalData}
               context={appParams.COMPONENT_CONTEXT_NAMES.PROFILE}
               objects={[this.props.profile]} />
 
