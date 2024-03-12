@@ -590,23 +590,30 @@ export async function setGlobalDataReminders(db, eventBus){
 
 export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 
-  var offset = null;
+  const visitCount = await db.visits.count();
+
+  var offset = null, limit = appParams.PAGE_ITEMS_LIMIT_NUMBER;
   if (globalData.homeAllVisitsList){
     if (globalData.homeAllVisitsList.action == "search"){
-      offset = 0;
+      offset = visitCount - appParams.PAGE_ITEMS_LIMIT_NUMBER;
     }
     else{
-      offset = globalData.homeAllVisitsList.list.length;
+      offset = visitCount - globalData.homeAllVisitsList.list.length - appParams.PAGE_ITEMS_LIMIT_NUMBER;
     }
   }
   else{
+    offset = visitCount - appParams.PAGE_ITEMS_LIMIT_NUMBER;
+  }
+
+  if (offset < 0){
+    limit = appParams.PAGE_ITEMS_LIMIT_NUMBER + offset;
     offset = 0;
   }
 
-  var visits = await db
-                         .visits
-                         .offset(offset).limit(5)
-                         .sortBy("date");
+  var visits = await db.visits
+                       .offset(offset).limit(limit)
+                       .toArray();
+  visits.reverse();
 
   await Promise.all (visits.map (async visit => {
     [visit.profile] = await Promise.all([
@@ -621,7 +628,7 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
       homeAllVisitsList = {
         list: globalData.homeAllVisitsList.list.concat(visits),
         action: "display_all",
-        inc: (globalData.homeAllVisitsList.action == "search") ? 0 : (globalData.homeAllVisitsList.inc + 1),
+        inc: (globalData.homeAllVisitsList.inc + 1),
       };
     }
     else{
@@ -681,7 +688,6 @@ export async function getPeriodVisits(index, func, db, category, profile = null)
                                       && (profile ? visit.url == profile.url : true)
                                       && ((category == "profiles") ? visit.url.indexOf("/feed") == -1 : visit.url.indexOf("/feed") != -1) );
 
-  // var visits = func.useLiveQuery(() => collection.toArray());
   var visits = await collection.toArray();
 
   await Promise.all (visits.map (async visit => {
@@ -852,7 +858,6 @@ export async function getTodayReminders(db, callback){
 
   const reminders = await db
                             .reminders
-                            // .where({date: (new Date()).toISOString().split('T')[0], active: true})
                             .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
                             .toArray();
 

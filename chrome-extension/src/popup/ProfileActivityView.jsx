@@ -41,7 +41,6 @@ export default class ProfileActivityView extends React.Component{
     this.state = {
     	offCanvasShow: false,
     	selectedPost: null,
-    	profiles: null,
     };
 
   }
@@ -49,15 +48,6 @@ export default class ProfileActivityView extends React.Component{
   componentDidMount() {
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY.replace(" ", ""));
-
-    // TODO : Add a scrolling button "see more" instead of this
-
-    (async () => {
-
-      var profiles = await db.profiles.toArray();
-      this.setState({profiles: profiles});
-
-    }).bind(this)();
 
   }
 
@@ -85,7 +75,9 @@ export default class ProfileActivityView extends React.Component{
 				 		<PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_ACTIVITY}/>
 
 				 		<div class="mt-3">
-							<ProfileActivityListView objects={this.state.profiles} showPost={this.handleOffCanvasShow} variant="list"/> 
+							<ProfileActivityListView 
+                showPost={this.handleOffCanvasShow} 
+                variant="list"/> 
 						</div>
 
 	          <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>

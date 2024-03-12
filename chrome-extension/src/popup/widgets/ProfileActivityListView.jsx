@@ -147,6 +147,7 @@ export default class ProfileActivityListView extends React.Component{
 
     };
 
+    // binding the function
     fetchProfiles = fetchProfiles.bind(this);
 
     if (this.state.storedProfileCount == null){

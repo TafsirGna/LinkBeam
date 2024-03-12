@@ -114,22 +114,6 @@ export default class AggregatedVisitListView extends React.Component{
                                       }
                                   </div>}
 
-                              {/*<div class="text-center my-2 ">
-                                      
-                                                              { () 
-                                                                  && <VisibilitySensor
-                                                                      onChange={this.onSeeMoreButtonVisibilityChange}
-                                                                    >
-                                                                      <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
-                                                                        See more
-                                                                      </button>
-                                                                    </VisibilitySensor>}
-                                                              { this.state.showLoadingSpinner 
-                                                                && <div class="spinner-border spinner-border-sm text-secondary " role="status">
-                                                                                    <span class="visually-hidden">Loading...</span>
-                                                                                    </div>}
-                                                            </div>*/}
-
                                 <SeeMoreButtonView
                                   showSeeMoreButton = {this.props.object.action == "display_all" 
                                                                     && !this.state.showLoadingSpinner 
