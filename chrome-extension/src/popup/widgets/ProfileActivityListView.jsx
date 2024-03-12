@@ -11,6 +11,10 @@ import { PictureIcon, AlertCircleIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { db } from "../../db";
+import SeeMoreButtonView from "./SeeMoreButtonView";
+import { 
+  appParams,
+} from "../Local_library";
 
 
 export default class ProfileActivityListView extends React.Component{
@@ -18,18 +22,32 @@ export default class ProfileActivityListView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      posts: null,
       offCanvasShow: false,
       selectedPost: null,
       imageLoaded: false,
+      showLoadingSpinner: false,
+      seeMore: true,
+      profiles: null,
+      posts: null,
+      storedProfileCount: null,
     };
 
     this.setPosts = this.setPosts.bind(this);
+    this.setProfiles = this.setProfiles.bind(this);
+    this.onSeeMoreButtonVisibilityChange = this.onSeeMoreButtonVisibilityChange.bind(this);
+
   }
 
   componentDidMount() {
 
-    this.setPosts();
+    if (this.props.objects){
+      this.setState({profiles: this.props.objects});
+    }
+    else{
+      this.setState({profiles: []}, () => {
+        this.setProfiles();
+      });
+    }
 
   }
 
@@ -37,11 +55,15 @@ export default class ProfileActivityListView extends React.Component{
 
     // everytime the view choice is changed, the chart is reset
     if (prevProps.objects != this.props.objects){
-      this.setPosts();
+      this.setState({profiles: this.props.objects});
     }
 
     if (prevState.selectedPost != this.state.selectedPost){
       this.setState({imageLoaded: false});
+    }
+
+    if (prevState.profiles != this.state.profiles){
+      this.setPosts();
     }
 
   }
@@ -56,12 +78,8 @@ export default class ProfileActivityListView extends React.Component{
 
   async setPosts(){
 
-    if (!this.props.objects){
-      return;
-    }
-
     var posts = [];
-    for (var profile of this.props.objects){
+    for (var profile of this.state.profiles){
 
       if (!profile.activity) { continue; }
 
@@ -102,6 +120,57 @@ export default class ProfileActivityListView extends React.Component{
 
   }
 
+  async setProfiles(){
+
+    async function fetchProfiles(){
+    
+      var offset = this.state.storedProfileCount - this.state.profiles.length - appParams.PAGE_ITEMS_LIMIT_NUMBER,
+          limit = appParams.PAGE_ITEMS_LIMIT_NUMBER;
+
+      if (offset < 0){
+        limit = limit + offset;
+        offset = 0;
+      }
+
+      var profiles = await db.profiles
+                               .offset(offset)
+                               .limit(limit)
+                               .toArray();
+
+      profiles.reverse();
+      profiles = this.state.profiles.concat(profiles);
+      this.setState({
+        profiles: profiles, 
+        showLoadingSpinner: false,
+        seeMore: offset == 0 ? false : true,
+      });
+
+    };
+
+    fetchProfiles = fetchProfiles.bind(this);
+
+    if (this.state.storedProfileCount == null){
+      const count = await db.profiles.count();
+      this.setState({storedProfileCount: count}, () => {
+        fetchProfiles();
+      });
+    }
+    else{
+      fetchProfiles();
+    }
+
+  }
+
+  onSeeMoreButtonVisibilityChange = (isVisible) => {
+    if (isVisible){
+      if (this.state.seeMore){
+        this.setState({showLoadingSpinner: true}, () => {
+          this.setProfiles();
+        });
+      }
+    }
+  }
+
   render(){
     return (
       <>
@@ -119,7 +188,7 @@ export default class ProfileActivityListView extends React.Component{
                   </div> }
 
         { this.state.posts && this.state.posts.length != 0 && <div>
-                    { this.props.variant == "list" && <div class="list-group small mt-1 shadow-sm">
+                    { this.props.variant == "list" && <div><div class="list-group small mt-1 shadow-sm">
                                           {this.state.posts.map((profileActivityObject) => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" onClick={() => {this.props.showPost(profileActivityObject);}}>
                                             <div class="d-flex gap-2 w-100 justify-content-between">
                                               <div>
@@ -143,6 +212,15 @@ export default class ProfileActivityListView extends React.Component{
                                               <small class="opacity-50 text-nowrap">{moment(profileActivityObject.date, moment.ISO_8601).fromNow()}</small>
                                             </div>
                                           </a>))} 
+                                        </div>
+
+                                        <SeeMoreButtonView
+                                          showSeeMoreButton = {!this.state.showLoadingSpinner 
+                                                                && this.state.seeMore}
+                                          seeMore={this.setPosts}
+                                          showLoadingSpinner={this.state.showLoadingSpinner}
+                                          onSeeMoreButtonVisibilityChange={this.onSeeMoreButtonVisibilityChange}/>
+
                                         </div>}
                      
                     { this.props.variant == "timeline" && <section class="py-4 mx-4 small">

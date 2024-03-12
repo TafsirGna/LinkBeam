@@ -1,3 +1,25 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
+
 /*import './SearchInputView.css'*/
 import React from 'react';
 import moment from 'moment';
@@ -74,18 +96,19 @@ export default class SearchInputView extends React.Component{
 
     // if the given search text is not empty then
 
+    const highlightSearchText = (propValue) => {
+
+      const index = propValue.toLowerCase().indexOf(this.state.text.toLowerCase());
+      var result = propValue.slice(0, index)
+      result += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${propValue.slice(index, (index + this.state.text.length))}</span>`;
+      result += propValue.slice((index + this.state.text.length));
+
+      return result;
+
+    }
+
     switch(this.props.objectStoreName){
       case dbData.objectStoreNames.PROFILES:{
-
-        const highlightSearchText = (profile) => {
-
-          const index = profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase());
-          var fullName = profile.fullName.slice(0, index)
-          fullName += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${profile.fullName.slice(index, (index + this.state.text.length))}</span>`;
-          fullName += profile.fullName.slice((index + this.state.text.length));
-          profile.fullName = fullName;
-
-        }
 
         (async () => {
 
@@ -106,7 +129,7 @@ export default class SearchInputView extends React.Component{
               db.profiles.where('url').equals(visit.url).first()
             ]);
             // highlighting the search text in the profile fullName property
-            highlightSearchText(visit.profile);
+            visit.profile.fullName = highlightSearchText(visit.profile.fullName);
           }));
 
           eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
@@ -120,9 +143,17 @@ export default class SearchInputView extends React.Component{
 
         (async () => {
 
-          const reminders = await db.reminders
+          var reminders = await db.reminders
                                     .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                                    toArray();
+                                    .toArray();
+
+          await Promise.all (reminders.map (async reminder => {
+            [reminder.profile] = await Promise.all([
+              db.profiles.where('url').equals(reminder.url).first()
+            ]);
+
+            reminder.text = highlightSearchText(reminder.text);
+          }));
 
           eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
 

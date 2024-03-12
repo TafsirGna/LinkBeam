@@ -161,24 +161,24 @@ export const publicDataExtractor = {
       nConnections = nConnectionsTagContainer.textContent;
     }
 
-    let company = null, featuredSchool = null, topCardLinksContainer = document.querySelector('.top-card__links-container');
+    let featuredExperienceEntity = null, featuredEducationEntity = null, topCardLinksContainer = document.querySelector('.top-card__links-container');
     if (topCardLinksContainer){
 
-      companyTagContainer = topCardLinksContainer.querySelector('div[data-section="currentPositionsDetails"]');
-      if (companyTagContainer){
-        company = {
-          name: (companyTagContainer.firstElementChild.querySelector(":nth-child(2)") ? companyTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
-          logo: (companyTagContainer.firstElementChild.firstElementChild ? companyTagContainer.firstElementChild.firstElementChild.src : null), 
-          link: (companyTagContainer.firstElementChild ? companyTagContainer.firstElementChild.href : null),
+      featuredExperienceEntityTagContainer = topCardLinksContainer.querySelector('div[data-section="currentPositionsDetails"]');
+      if (featuredExperienceEntityTagContainer){
+        featuredExperienceEntity = {
+          name: (featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
+          logo: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
+          link: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
         };
       }
 
-      featuredSchoolTagContainer = topCardLinksContainer.querySelector('div[data-section="educationsDetails"]');
-      if (featuredSchoolTagContainer){
-        featuredSchool = {
-          name: (featuredSchoolTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredSchoolTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
-          logo: (featuredSchoolTagContainer.firstElementChild.firstElementChild ? featuredSchoolTagContainer.firstElementChild.firstElementChild.src : null),
-          link: (featuredSchoolTagContainer.firstElementChild ? featuredSchoolTagContainer.firstElementChild.href : null),
+      featuredEducationEntityTagContainer = topCardLinksContainer.querySelector('div[data-section="educationsDetails"]');
+      if (featuredEducationEntityTagContainer){
+        featuredEducationEntity = {
+          name: (featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
+          logo: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
+          link: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
         };
       }
 
@@ -192,8 +192,8 @@ export const publicDataExtractor = {
       location: location,
       nFollowers: nFollowers,
       nConnections: nConnections,
-      company: company,
-      featuredSchool: featuredSchool,
+      featuredExperienceEntity: featuredExperienceEntity,
+      featuredEducationEntity: featuredEducationEntity,
     };
 
   },
@@ -286,13 +286,13 @@ export const publicDataExtractor = {
         var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
         if (groupPositions){
 
-          var companyName = (experienceLiTag.querySelector(".experience-group-header__company") ? experienceLiTag.querySelector(".experience-group-header__company").textContent : null);
+          var featuredExperienceEntityName = (experienceLiTag.querySelector(".experience-group-header__company") ? experienceLiTag.querySelector(".experience-group-header__company").textContent : null);
 
           Array.from(groupPositions.querySelectorAll(".profile-section-card")).forEach((positionLiTag) => {
             var experienceItem = {
               title: (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null),
               entity: {
-                name: companyName,
+                name: featuredExperienceEntityName,
                 url: null,
               },
               period: (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null),
@@ -477,32 +477,32 @@ export const authDataExtractor = {
       nConnections = nConnectionsTagContainer.textContent;
     }
 
-    let company = null, featuredSchool = null, topCardLinksContainer = document.querySelector('.pv-text-details__right-panel');
+    let featuredExperienceEntity = null, featuredEducationEntity = null, topCardLinksContainer = document.querySelector('.pv-text-details__right-panel');
     if (topCardLinksContainer){
 
-      var companyTagContainer = null, featuredSchoolTagContainer = null;
+      var featuredExperienceEntityTagContainer = null, featuredEducationEntityTagContainer = null;
 
       for (var tag of topCardLinksContainer.querySelectorAll('button')){ 
         if (tag.getAttribute("aria-label").indexOf("Current company:") != -1){
-          companyTagContainer = tag;
+          featuredExperienceEntityTagContainer = tag;
         }
         if (tag.getAttribute("aria-label").indexOf("Education:") != -1){
-          featuredSchoolTagContainer = tag;
+          featuredEducationEntityTagContainer = tag;
         }
       }
 
-      if (companyTagContainer){
-        company = {
-          name: (companyTagContainer.querySelector("span") ? companyTagContainer.querySelector("span").textContent : null),
-          logo: (companyTagContainer.querySelector("img") ? companyTagContainer.querySelector("img").src : null), 
+      if (featuredExperienceEntityTagContainer){
+        featuredExperienceEntity = {
+          name: (featuredExperienceEntityTagContainer.querySelector("span") ? featuredExperienceEntityTagContainer.querySelector("span").textContent : null),
+          logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
           link: null,
         };
       }
 
-      if (featuredSchoolTagContainer){
-        featuredSchool = {
-          name: (companyTagContainer.querySelector("span") ? companyTagContainer.querySelector("span").textContent : null),
-          logo: (companyTagContainer.querySelector("img") ? companyTagContainer.querySelector("img").src : null), 
+      if (featuredEducationEntityTagContainer){
+        featuredEducationEntity = {
+          name: (featuredExperienceEntityTagContainer.querySelector("span") ? featuredExperienceEntityTagContainer.querySelector("span").textContent : null),
+          logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
           link: null,
         };
       }
@@ -517,8 +517,8 @@ export const authDataExtractor = {
       location: location,
       nFollowers: nFollowers,
       nConnections: nConnections,
-      company: company,
-      featuredSchool: featuredSchool,
+      featuredExperienceEntity: featuredExperienceEntity,
+      featuredEducationEntity: featuredEducationEntity,
     };
 
   },
@@ -597,14 +597,14 @@ export const authDataExtractor = {
         var experienceItem = {};
         if (experienceLiTag.querySelector("ul")){
 
-          var companyName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
+          var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
 
           Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
             positionLiTag = positionLiTag.parentElement;
             var experienceItem = {
               title: (positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
               entity: {
-                name: companyName,
+                name: featuredExperienceEntityName,
                 url: null,
               },
               period: (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),

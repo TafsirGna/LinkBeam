@@ -1,14 +1,35 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './AggregatedVisitListView.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import VisibilitySensor from 'react-visibility-sensor';
 import { 
   dbDataSanitizer, 
   groupVisitsByProfile,
 } from "../Local_library";
 import ProfileVisitListItemView from "./ProfileVisitListItemView";
 import FeedVisitListItemView from "./FeedVisitListItemView";
+import SeeMoreButtonView from "./SeeMoreButtonView";
 
 export default class AggregatedVisitListView extends React.Component{
 
@@ -93,23 +114,29 @@ export default class AggregatedVisitListView extends React.Component{
                                       }
                                   </div>}
 
-                              <div class="text-center my-2 ">
-        
-                                { (this.props.object.action == "display_all" 
-                                      && !this.state.showLoadingSpinner 
-                                      && this.state.seeMore) 
-                                    && <VisibilitySensor
-                                        onChange={this.onSeeMoreButtonVisibilityChange}
-                                      >
-                                        <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
-                                          See more
-                                        </button>
-                                      </VisibilitySensor>}
-                                { this.state.showLoadingSpinner 
-                                  && <div class="spinner-border spinner-border-sm text-secondary " role="status">
-                                                      <span class="visually-hidden">Loading...</span>
-                                                      </div>}
-                              </div>
+                              {/*<div class="text-center my-2 ">
+                                      
+                                                              { () 
+                                                                  && <VisibilitySensor
+                                                                      onChange={this.onSeeMoreButtonVisibilityChange}
+                                                                    >
+                                                                      <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
+                                                                        See more
+                                                                      </button>
+                                                                    </VisibilitySensor>}
+                                                              { this.state.showLoadingSpinner 
+                                                                && <div class="spinner-border spinner-border-sm text-secondary " role="status">
+                                                                                    <span class="visually-hidden">Loading...</span>
+                                                                                    </div>}
+                                                            </div>*/}
+
+                                <SeeMoreButtonView
+                                  showSeeMoreButton = {this.props.object.action == "display_all" 
+                                                                    && !this.state.showLoadingSpinner 
+                                                                    && this.state.seeMore}
+                                  seeMore={this.props.seeMore}
+                                  showLoadingSpinner={this.state.showLoadingSpinner}
+                                  onSeeMoreButtonVisibilityChange={this.onSeeMoreButtonVisibilityChange}/>
 
                               </> }
 

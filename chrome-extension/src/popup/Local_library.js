@@ -42,8 +42,8 @@ export const appParams = {
   
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
   TIME_COUNT_INC_VALUE: 3,
-  INTERVAL_FEEDBACK: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
+  PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
   COMPONENT_CONTEXT_NAMES: {
     ABOUT: "About",
