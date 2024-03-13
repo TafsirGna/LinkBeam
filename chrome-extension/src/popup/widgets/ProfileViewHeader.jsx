@@ -19,6 +19,7 @@ import {
   DuplicateIcon,
   ReminderIcon,
 } from "./SVGs";
+import { db } from "../../db";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
@@ -39,6 +40,7 @@ export default class ProfileViewHeader extends React.Component{
     };
 
     this.setConnectionModalData = this.setConnectionModalData.bind(this);
+    this.handleConnectionModalShow = this.handleConnectionModalShow.bind(this);
   }
 
   componentDidMount() {
@@ -47,8 +49,8 @@ export default class ProfileViewHeader extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.localData != this.props.localData){
-      if (prevProps.localData.profiles != this.props.localData.profiles){
+    if (prevProps.localDataObject != this.props.localDataObject){
+      if (prevProps.localDataObject.profiles != this.props.localDataObject.profiles){
         if (this.state.connectionModalShow){
           this.setConnectionModalData();
         }
@@ -76,7 +78,7 @@ export default class ProfileViewHeader extends React.Component{
 
       var nFollowers = dbDataSanitizer.profileRelationMetrics(this.props.profile.nFollowers);
 
-      for (var profile of this.props.localData.profiles){
+      for (var profile of this.props.localDataObject.profiles){
         if (profile.url == this.props.profile.url){
           continue;
         }
@@ -85,7 +87,7 @@ export default class ProfileViewHeader extends React.Component{
         }
       }
 
-      followersCompData.value /= this.props.localData.profiles.length;
+      followersCompData.value /= this.props.localDataObject.profiles.length;
       followersCompData.value *= 100;
 
     }
@@ -98,7 +100,7 @@ export default class ProfileViewHeader extends React.Component{
 
       var nConnections = dbDataSanitizer.profileRelationMetrics(this.props.profile.nConnections);
 
-      for (var profile of this.props.localData.profiles){
+      for (var profile of this.props.localDataObject.profiles){
         if (profile.url == this.props.profile.url){
           continue;
         }
@@ -107,7 +109,7 @@ export default class ProfileViewHeader extends React.Component{
         }
       }
 
-      connectionsCompData.value /= this.props.localData.profiles.length;
+      connectionsCompData.value /= this.props.localDataObject.profiles.length;
       connectionsCompData.value *= 100;
 
     }
@@ -125,16 +127,42 @@ export default class ProfileViewHeader extends React.Component{
   handleConnectionModalClose = () => {
     this.setState({ connectionModalShow: false });
   };
-  handleConnectionModalShow = () => {
 
-    this.setState({connectionModalShow: true}, () => {
+  handleConnectionModalShow(){
 
-      if (!this.props.localData.profiles){
-        sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-        return;
+    this.setState({connectionModalShow: true}, async () => {
+
+      async function initProfiles(profiles){
+
+        // No need to load all the profiles with all its properties, only the needed properties
+        await db.profiles
+                .each(profile => {
+                  var index = profiles.map(e => e.url).indexOf(profile.url);
+                  if (index == -1){
+                    profiles.push({
+                      url: profile.url,
+                      nFollowers: profile.nFollowers,
+                      nConnections: profile.nConnections,
+                    });
+                  }
+                  else{
+                    if (!profiles[index].nFollowers || !profiles[index].nConnections){
+                      profiles[index].nFollowers = profile.nFollowers;
+                      profiles[index].nConnections = profile.nConnections;
+                    }
+                  }
+                });
+
+      return profiles;
+
       }
 
-      this.setConnectionModalData();
+      var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
+
+      profiles = await initProfiles(profiles);
+      eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+
+      // this.setConnectionModalData();
 
     });
 

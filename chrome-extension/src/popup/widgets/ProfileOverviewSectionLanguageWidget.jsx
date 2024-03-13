@@ -21,13 +21,14 @@
 
 /*import './ProfileOverviewSectionLanguageWidget.css'*/
 import React from 'react';
+import LanguageListModal from "./modals/LanguageListModal";
 
 export default class ProfileOverviewSectionLanguageWidget extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-
+      languageListModalShow: false,
     };
   }
 

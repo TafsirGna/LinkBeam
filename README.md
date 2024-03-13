@@ -1,5 +1,4 @@
-[![Badge License]][License]
-[![Badge Chrome]][Chrome]
+[Badge License]
 
 ***
 
@@ -29,4 +28,3 @@ It doesn't help in any ad marketing use-cases, interact with any linkedin APIs (
 <!----------------------------------[ Badges ]--------------------------------->
 
 [Badge License]: https://img.shields.io/badge/License-GPLv3-blue.svg
-[Badge Chrome]: https://img.shields.io/chrome-web-store/rating/cjpalhdlnbpafiamejdnhcphjbkeiagm?label=Chrome

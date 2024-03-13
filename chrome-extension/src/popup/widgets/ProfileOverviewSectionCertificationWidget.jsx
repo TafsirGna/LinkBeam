@@ -21,14 +21,20 @@
 
 /*import './ProfileOverviewSectionCertificationWidget.css'*/
 import React from 'react';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 export default class ProfileOverviewSectionCertificationWidget extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-
+      certificationsModalShow: false,
+      certificationsList: null,
     };
+
+    this.showCertComparisonData = this.showCertComparisonData.bind(this);
+
   }
 
   componentDidMount() {
@@ -58,6 +64,31 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
     });
 
   };
+
+  showCertComparisonData(certName, index){
+
+    if (!certName){
+      alert("Not enough data to perform a comparison task! ");
+      return;
+    }
+
+    if (!this.props.localDataObject.profiles){
+      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+      return;
+    }
+
+    // To prevent repeat this action multiple times
+    if (this.state.certificationsList[index].linkedProfiles){
+      return;
+    }
+
+    var profiles = performProfileSubPartComparison(this.props.profile, certName, this.props.localDataObject.profiles, "certifications");
+    var certificationsList = this.state.certificationsList;
+    certificationsList[index].linkedProfiles = profiles;
+
+    this.setState({certificationsList: certificationsList});
+
+  }
 
   render(){
     return (

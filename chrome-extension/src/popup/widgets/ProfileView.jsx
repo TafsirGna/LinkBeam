@@ -66,12 +66,21 @@ export default class ProfileView extends React.Component{
       }
     );
 
+    eventBus.on(eventBus.SET_PROFILE_LOCAL_DATA, (data) =>
+      {
+        var stateSlice = {};
+        stateSlice[data.property] = data.value;
+        this.setState(stateSlice);
+      }
+    );
+
   }
 
   componentWillUnmount() {
 
     eventBus.remove(eventBus.PROFILE_SHOW_REMINDER_OBJECT);
     eventBus.remove(eventBus.SET_PROFILE_DATA);
+    eventBus.remove(eventBus.SET_PROFILE_LOCAL_DATA);
 
   }
 

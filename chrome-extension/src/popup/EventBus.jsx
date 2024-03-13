@@ -29,6 +29,7 @@ const eventBus = {
   SET_APP_GLOBAL_DATA: "SET_APP_GLOBAL_DATA",
   SET_PROFILE_DATA: "SET_PROFILE_DATA", 
   SET_APP_SUBSCRIPTION: "SET_APP_SUBSCRIPTION",
+  SET_PROFILE_LOCAL_DATA: "SET_PROFILE_LOCAL_DATA",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

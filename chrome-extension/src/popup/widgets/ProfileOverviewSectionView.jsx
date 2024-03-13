@@ -22,9 +22,7 @@
 
 /*import './ProfileOverviewSectionView.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import LanguageListModal from "./modals/LanguageListModal";
 import ProfileOverviewSunBurstChart from "./charts/ProfileOverviewSunBurstChart";
 import ProfileOverviewRadarChart from "./charts/ProfileOverviewRadarChart";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
@@ -34,7 +32,7 @@ import ProfileOverviewSectionCertificationWidget from "./ProfileOverviewSectionC
 import ProfileOverviewSectionProjectWidget from "./ProfileOverviewSectionProjectWidget";
 import ProfileOverviewSectionLanguageWidget from "./ProfileOverviewSectionLanguageWidget";
 import moment from 'moment';
-import { BarChartIcon, AlertCircleIcon } from "./SVGs";
+import { BarChartIcon } from "./SVGs";
 import { 
   dbDataSanitizer,  
   computePeriodTimeSpan, 
@@ -47,17 +45,12 @@ export default class ProfileOverviewSectionView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      languageListModalShow: false,
       donutChartModalShow: false,
       donutChartModalTitle: null,
       donutChartModalItemData: null,
-      certificationsModalShow: false,
-      projectsModalShow: false,
-      certificationsList: null,
     };
 
     this.getPeriodTimeSpan = this.getPeriodTimeSpan.bind(this);
-    this.showCertComparisonData = this.showCertComparisonData.bind(this);
   }
 
   componentDidMount() {
@@ -76,32 +69,6 @@ export default class ProfileOverviewSectionView extends React.Component{
         // }
       }
     }
-
-  }
-
-
-  showCertComparisonData(certName, index){
-
-    if (!certName){
-      alert("Not enough data to perform a comparison task! ");
-      return;
-    }
-
-    if (!this.props.localDataObject.profiles){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-      return;
-    }
-
-    // To prevent repeat this action multiple times
-    if (this.state.certificationsList[index].linkedProfiles){
-      return;
-    }
-
-    var profiles = performProfileSubPartComparison(this.props.profile, certName, this.props.localDataObject.profiles, "certifications");
-    var certificationsList = this.state.certificationsList;
-    certificationsList[index].linkedProfiles = profiles;
-
-    this.setState({certificationsList: certificationsList});
 
   }
 
@@ -179,28 +146,44 @@ export default class ProfileOverviewSectionView extends React.Component{
         </div>
 
         <div class="row mx-2 mt-1">
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow("experience");}}>
+          <div 
+            class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" 
+            onClick={() => {this.handleDonutChartModalShow("experience");}}>
             <div class="card-body">
-              <h6 class="card-title text-primary-emphasis">~{(this.props.localDataObject.profileComputedData && this.props.localDataObject.profileComputedData.experienceTime) ? this.getPeriodTimeSpan("experience") : 0}</h6>
+              <h6 class="card-title text-primary-emphasis">
+                ~{(this.props.localDataObject.profileComputedData 
+                    && this.props.localDataObject.profileComputedData.experienceTime) 
+                  ? this.getPeriodTimeSpan("experience") : 0}
+              </h6>
               <p class="card-text">Experience length</p>
             </div>
           </div>
-          <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow("education");}}>
+          <div 
+            class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" 
+            onClick={() => {this.handleDonutChartModalShow("education");}}>
             <div class="card-body">
-              <h6 class="card-title text-warning-emphasis">~{(this.props.localDataObject.profileComputedData && this.props.localDataObject.profileComputedData.educationTime) ? this.getPeriodTimeSpan("education") : 0}</h6>
+              <h6 class="card-title text-warning-emphasis">
+                ~{(this.props.localDataObject.profileComputedData 
+                    && this.props.localDataObject.profileComputedData.educationTime) 
+                  ? this.getPeriodTimeSpan("education") : 0}
+              </h6>
               <p class="card-text">Education length</p>
             </div>
           </div>
 
-          <ProfileOverviewSectionLanguageWidget/>
+          <ProfileOverviewSectionLanguageWidget 
+            profile={this.props.profile}/>
           
-          <ProfileOverviewSectionProjectWidget/>
+          <ProfileOverviewSectionProjectWidget
+            profile={this.props.profile}/>
 
-          <ProfileOverviewSectionCertificationWidget/>
+          <ProfileOverviewSectionCertificationWidget
+            profile={this.props.profile}/>
         </div>
 
         <div class="mt-4">
-          <ProfileOverviewSunBurstChart profile={this.props.profile} />
+          <ProfileOverviewSunBurstChart 
+            profile={this.props.profile} />
         </div>
 
         {/*Radar chart*/}
@@ -222,7 +205,11 @@ export default class ProfileOverviewSectionView extends React.Component{
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleRadarChartModalClose} className="shadow">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={this.handleRadarChartModalClose} 
+              className="shadow">
               Close
             </Button>
           </Modal.Footer>
@@ -235,7 +222,9 @@ export default class ProfileOverviewSectionView extends React.Component{
           // size="lg"
           >
           <Modal.Header closeButton>
-            <Modal.Title>Infos {this.state.donutChartModalTitle ? "("+this.state.donutChartModalTitle+")" : ""}</Modal.Title>
+            <Modal.Title>
+              Infos {this.state.donutChartModalTitle ? "("+this.state.donutChartModalTitle+")" : ""}
+            </Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
@@ -248,7 +237,8 @@ export default class ProfileOverviewSectionView extends React.Component{
             
             { this.state.donutChartModalItemData && <div>
                                                       <div class="text-center col-6 offset-3">
-                                                        <ProfileSingleItemDonutChart data={this.state.donutChartModalItemData}/>
+                                                        <ProfileSingleItemDonutChart 
+                                                          data={this.state.donutChartModalItemData}/>
                                                       </div>
                                                     <p class="shadow-sm border mt-4 rounded p-2 text-muted fst-italic small">
                                                       {dbDataSanitizer.preSanitize(this.props.profile.fullName)+"'s "+this.state.donutChartModalTitle+" is longer than "}
@@ -259,7 +249,11 @@ export default class ProfileOverviewSectionView extends React.Component{
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleDonutChartModalClose} className="shadow">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={this.handleDonutChartModalClose} 
+              className="shadow">
               Close
             </Button>
           </Modal.Footer>
