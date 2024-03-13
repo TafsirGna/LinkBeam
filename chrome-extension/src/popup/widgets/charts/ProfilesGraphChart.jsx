@@ -595,10 +595,10 @@ export default class ProfilesGraphChart extends React.Component{
         orderCriteria = ["by name", "by group", "by degree"];
 
     setInterval(
-      () => {
-        increment += 1;
-        update(this.state.data.orders.get(orderCriteria[increment % orderCriteria.length]));
-      }, 
+      (() => {
+              increment += 1;
+              update(this.state.data.orders.get(orderCriteria[increment % orderCriteria.length]));
+            }).bind(this), 
       7000
     );
 

@@ -162,8 +162,6 @@ export default class ProfileViewHeader extends React.Component{
       profiles = await initProfiles(profiles);
       eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
 
-      // this.setConnectionModalData();
-
     });
 
   };

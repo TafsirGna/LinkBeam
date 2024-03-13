@@ -9,6 +9,8 @@ import {
 } from "../Local_library";
 import { AlertCircleIcon, LayersIcon } from "./SVGs";
 import Form from 'react-bootstrap/Form';
+import eventBus from "../EventBus";
+import { db } from "../../db";
 
 
 export default class ProfileNetworkSectionView extends React.Component{
@@ -36,11 +38,43 @@ export default class ProfileNetworkSectionView extends React.Component{
       this.setState({offCanvasShow: true});
   };
 
-  handleFormSelectInputChange(event) {
+  async handleFormSelectInputChange(event) {
 
-    if (!this.props.globalData.profiles){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
+    async function initProfiles(profiles, property){
+
+      if (property == "suggestions"){
+        property = "profileSuggestions";
+      }
+
+      if (profiles && profiles.length && profiles[0][property]){
+        return profiles;
+      }
+
+      // No need to load all the profiles with all its properties, only the needed properties
+      await db.profiles
+              .each(profile => {
+                var index = profiles.map(e => e.url).indexOf(profile.url);
+                if (index == -1){
+                  var object = {url: profile.url};
+                  object[property] = profile[property];
+                  profiles.push(object);
+                }
+                else{
+                  if (!profiles[index][property]){
+                    profiles[index][property] = profile[property];
+                  }
+                }
+              });
+
+      return profiles;
+
     }
+
+    var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
+
+    profiles = await initProfiles(profiles, event.target.value);
+
+    eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
 
     this.setState({formSelectInputVal: event.target.value}); 
 
@@ -78,7 +112,7 @@ export default class ProfileNetworkSectionView extends React.Component{
                     <ProfilesGraphChart 
                       objects={[this.props.profile]} 
                       displayCriteria={this.state.formSelectInputVal} 
-                      profiles={this.props.globalData.profiles}
+                      profiles={this.props.localDataObject.profiles}
                       offCanvasShow={this.state.offCanvasShow}
                       handleOffCanvasClose={this.handleOffCanvasClose}/>
 

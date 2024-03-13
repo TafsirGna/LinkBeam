@@ -23,6 +23,12 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import moment from 'moment';
+import { 
+  dbDataSanitizer,  
+  appParams, 
+  performProfileSubPartComparison,
+} from "../Local_library";
 
 export default class ProfileOverviewSectionCertificationWidget extends React.Component{
 
@@ -93,9 +99,13 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
   render(){
     return (
       <>
-        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleCertificationsModalShow}>
+        <div 
+          class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" 
+          onClick={this.handleCertificationsModalShow}>
           <div class="card-body">
-            <h6 class="card-title text-success-emphasis">{this.props.profile.certifications ? this.props.profile.certifications.length : 0}</h6>
+            <h6 class="card-title text-success-emphasis">
+              {this.props.profile.certifications ? this.props.profile.certifications.length : 0}
+            </h6>
             <p class="card-text">Certifications</p>
           </div>
         </div>
@@ -113,7 +123,12 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
           <Modal.Body>
             
             { this.state.certificationsList && <div class="list-group small mt-1 shadow-sm border-0">
-              { this.state.certificationsList.map((certification, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" onClick={() => {this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)}} title="Click to show more data">
+              { this.state.certificationsList.map((certification, index) => (<a 
+                                                                                href="#" 
+                                                                                class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" 
+                                                                                aria-current="true" 
+                                                                                onClick={() => {/*this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)*/}} 
+                                                                                title="Click to show more data">
                                             <div class="d-flex gap-2 w-100 justify-content-between">
                                               <div>
                                                 <p class="mb-1">

@@ -33,6 +33,8 @@ import ProfileOverviewSectionProjectWidget from "./ProfileOverviewSectionProject
 import ProfileOverviewSectionLanguageWidget from "./ProfileOverviewSectionLanguageWidget";
 import moment from 'moment';
 import { BarChartIcon } from "./SVGs";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { 
   dbDataSanitizer,  
   computePeriodTimeSpan, 
@@ -75,15 +77,43 @@ export default class ProfileOverviewSectionView extends React.Component{
   handleRadarChartModalClose = () => this.setState({radarChartModalShow: false});
   handleRadarChartModalShow = () => this.setState({radarChartModalShow: true});
 
-  handleDonutChartModalClose = () => this.setState({donutChartModalShow: false, donutChartModalTitle: null, donutChartModalItemData: null});
-  handleDonutChartModalShow = (title) => this.setState({donutChartModalShow: true, donutChartModalTitle: title}, () => {this.setDonutChartModalItemData();});
+  handleDonutChartModalClose = () => this.setState({donutChartModalShow: false, donutChartModalTitle: null});
+  handleDonutChartModalShow = (title) => this.setState({donutChartModalShow: true, donutChartModalTitle: title}, async () => {
+      
+    async function initProfiles(profiles){
+
+      // No need to load all the profiles with all its properties, only the needed properties
+      await db.profiles
+              .each(profile => {
+                var index = profiles.map(e => e.url).indexOf(profile.url);
+                if (index == -1){
+                  profiles.push({
+                    url: profile.url,
+                    experience: profile.experience,
+                    education: profile.education,
+                  });
+                }
+                else{
+                  if (!profiles[index].experience || !profiles[index].education){
+                    profiles[index].education = profile.education;
+                    profiles[index].experience = profile.experience;
+                  }
+                }
+              });
+
+      return profiles;
+
+    }
+
+    var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
+
+    profiles = await initProfiles(profiles);
+    eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+
+
+  });
 
   setDonutChartModalItemData(){
-
-    if (!this.props.localDataObject.profiles){
-      sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-      return ;
-    }
 
     var percentage = 0;
     for (var profile of this.props.localDataObject.profiles){

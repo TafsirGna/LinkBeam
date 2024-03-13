@@ -1,9 +1,6 @@
 /*import './ProfileOverviewRadarChart.css'*/
 import React from 'react';
 import { Radar } from 'react-chartjs-2';
-// import { 
-// 	saveCanvas,
-// } from "../../Local_library";
 import {
   Chart as ChartJS,
   RadialLinearScale,
@@ -14,8 +11,6 @@ import {
   Legend,
 } from 'chart.js';
 import { v4 as uuidv4 } from 'uuid';
-// import eventBus from "../../EventBus";
-// import { saveAs } from 'file-saver';
 
 ChartJS.register(
   RadialLinearScale,
@@ -43,20 +38,6 @@ export default class ProfileOverviewRadarChart extends React.Component{
 
 	componentDidMount() {
 
-		// eventBus.on(eventBus.DOWNLOAD_CHART_IMAGE, (data) =>
-    //   {
-    //     if (data.carrouselItemIndex != this.props.carrouselIndex){
-    //       return;
-    //     }
-
-    //     saveCanvas(this.state.uuid, "visits-timeline-chart.png", saveAs);
-    //   }
-    // );
-
-    // if (this.props.computedData.experienceTime){
-    //   this.setExperienceTime();
-    // }
-
 		this.setChartLabels();
 
 	}
@@ -67,13 +48,11 @@ export default class ProfileOverviewRadarChart extends React.Component{
 
 	componentWillUnmount(){
 
-    // eventBus.remove(eventBus.DOWNLOAD_CHART_IMAGE);
-
   }
 
   getExperienceTime(){
 
-    var experienceTime = Math.ceil(this.props.computedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
+    var experienceTime = Math.ceil(this.props.localDataObject.profileComputedData.experienceTime / (1000 * 60 * 60 * 24)) // diff days
     var y = Math.floor(experienceTime / 365);
 
     return y.toFixed(2);
@@ -82,7 +61,7 @@ export default class ProfileOverviewRadarChart extends React.Component{
 
   getEducationTime(){
 
-    var educationTime = Math.ceil(this.props.computedData.educationTime / (1000 * 60 * 60 * 24)) // diff days
+    var educationTime = Math.ceil(this.props.localDataObject.profileComputedData.educationTime / (1000 * 60 * 60 * 24)) // diff days
     var y = Math.floor(educationTime / 365);
 
     return y.toFixed(2);
