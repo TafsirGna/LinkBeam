@@ -45,6 +45,7 @@ export const appParams = {
   WEB_APP_ITEM_LIMIT_NUM: 3,
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
+  TAB_BADGE_TEXT_MAP_LABEL: "tabBadgeTextMap",
   COMPONENT_CONTEXT_NAMES: {
     ABOUT: "About",
     HOME: "Home",

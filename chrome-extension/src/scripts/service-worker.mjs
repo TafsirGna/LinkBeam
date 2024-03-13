@@ -143,13 +143,46 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     // console.log(activeInfo.tabId);
     currentTabId = activeInfo.tabId;
 
+    // check if this tab has already been visited 
+
+    (async () => {
+        const visit = await db.visits
+                        .where("tabId")
+                        .equals(activeInfo.tabId)
+                        .first();
+
+        if (visit){
+            if (visit.url.indexOf("/feed") != -1){
+
+                var badgeText = 0;
+                for (var metric in visit.itemsMetrics){
+                    badgeText += visit.itemsMetrics[metric];
+                }
+
+                if (currentTabId == activeInfo.tabId){
+                    chrome.action.setBadgeText({text: badgeText.toString()});
+                }
+
+            }
+            else{
+                if (currentTabId == activeInfo.tabId){
+                    chrome.action.setBadgeText({text: "1"});
+                }
+            }
+        }
+        else{
+            if (currentTabId == activeInfo.tabId){
+                chrome.action.setBadgeText({text: null});
+            }
+        }
+
+    })();
+
 });
 
 // Script for processing linkedin data
 
 async function processTabData(tabData){
-
-    // chrome.action.setBadgeText({text: "10+"});
     
     // console.log("linkedInData : ", tabData);
     if (currentTabId != tabData.tabId){
@@ -217,6 +250,15 @@ async function recordFeedVisit(tabData){
             tabId: tabData.tabId,
             itemsMetrics: tabData.extractedData.metrics,
         });
+
+        var badgeText = 0;
+        for (var metric in tabData.extractedData.metrics){
+            badgeText += tabData.extractedData.metrics[metric];
+        }
+
+        if (currentTabId == tabData.tabId){
+            chrome.action.setBadgeText({text: badgeText.toString()});
+        }
     }
 
 }
@@ -303,6 +345,10 @@ async function recordProfileVisit(tabData){
                 tabId: tabData.tabId,
             });
 
+            if (currentTabId == tabData.tabId){
+                chrome.action.setBadgeText({text: "1"});
+            }
+
             openNewTab(tabData.extractedData);
         }
     }
@@ -327,6 +373,10 @@ async function recordProfileVisit(tabData){
         };
 
         await db.visits.add(visit);
+
+        if (currentTabId == tabData.tabId){
+            chrome.action.setBadgeText({text: "1"});
+        }
 
         openNewTab(tabData.extractedData);
 

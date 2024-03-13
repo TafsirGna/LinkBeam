@@ -214,7 +214,7 @@ export default class LanguageListModal extends React.Component{
                                         <Pie 
                                           ref={this.state.chartRef}
                                           data={this.state.pieData}
-                                          onClick={this.onChartClick}
+                                          onClick={/*this.onChartClick*/()=>{}}
                                            />
                                       </div>
                                       <div class="col-6">
