@@ -1,4 +1,4 @@
-/*import './About.css'*/
+/*import './VisitsTimelineChart.css'*/
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';

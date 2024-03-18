@@ -23,6 +23,7 @@
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
+import PostListItemView from "./widgets/PostListItemView";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   appParams,
@@ -30,6 +31,7 @@ import {
   getChartColors,
   getVisitsPostCount,
   getVisitsTotalTime,
+  dateBetweenRange,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -44,10 +46,6 @@ import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
-
-function betweenRange(lower, upper, date){
-  return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
-}
 
 export default class FeedDashView extends React.Component{
 
@@ -107,7 +105,8 @@ export default class FeedDashView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
    
-    if ((prevState.startDate != this.state.startDate) || (prevState.endDate != this.state.endDate)){
+    if ((prevState.startDate != this.state.startDate) 
+        || (prevState.endDate != this.state.endDate)){
 
       this.setVisits();
 
@@ -120,7 +119,7 @@ export default class FeedDashView extends React.Component{
   async setVisits(){
 
     const visits = await db.visits
-                           .filter(visit => betweenRange(this.state.startDate, this.state.endDate, visit.date)
+                           .filter(visit => dateBetweenRange(this.state.startDate, this.state.endDate, visit.date)
                                             && visit.url.indexOf("/feed") != -1)
                            .toArray();
 
@@ -130,11 +129,24 @@ export default class FeedDashView extends React.Component{
 
   async setFeedPosts(){
 
+    var uids = [];
+    await db.feedPostViews
+            .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
+            .limit(7)
+            .each(postView => {
+              if (uids.length == 5){
+                return;
+              }
+
+              if (uids.indexOf(postView.uid) == -1){
+                uids.push(postView.uid);
+              }
+            });
+
     const feedPosts = await db.feedPosts
-                              .filter(post => betweenRange(this.state.startDate, this.state.endDate, post.replicas[post.dates.length - 1]))
-                              .offset(0)
-                              .limit(5)
-                              .toArray(); 
+                              .where("uid")
+                              .anyOf(uids)
+                              .toArray();
 
     this.setState({feedPosts: feedPosts});
 
@@ -255,13 +267,7 @@ export default class FeedDashView extends React.Component{
 
                 { this.state.feedPosts.length  != 0
                     && <div>
-                        { this.state.feedPosts.map(((post, index) => <div class="d-flex text-body-secondary pt-3">
-                                                                          <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-                                                                          <p class="pb-3 mb-0 small lh-sm border-bottom">
-                                                                            <strong class="d-block text-gray-dark">@username</strong>
-                                                                            Some representative placeholder content, with some information about this user. Imagine this being some sort of status update, perhaps?
-                                                                          </p>
-                                                                        </div>))}
+                        { this.state.feedPosts.map(((post, index) => <PostListItemView object={post}/>))}
                         <small class="d-block text-end mt-3 fst-italic">
                           <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
                         </small>
@@ -278,7 +284,7 @@ export default class FeedDashView extends React.Component{
       {/*Modals*/}
 
       <AllPostsModal 
-        startDdate={this.state.startDate}
+        startDate={this.state.startDate}
         endDate={this.state.endDate}
         show={this.state.allPostsModalShow}
         onHide={this.handleAllPostsModalClose}/>

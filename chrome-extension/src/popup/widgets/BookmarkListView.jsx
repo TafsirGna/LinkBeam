@@ -2,7 +2,6 @@
 import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
-import { Link } from 'react-router-dom';
 
 export default class BookmarkListView extends React.Component{
 

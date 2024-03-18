@@ -758,6 +758,10 @@ export function getVisitsTotalTime(visits){
 
 }
 
+export function dateBetweenRange(lower, upper, date){
+  return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
+}
+
 export function getVisitsPostCount(visits){
 
   var postCount = 0;

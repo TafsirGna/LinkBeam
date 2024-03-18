@@ -1,6 +1,5 @@
 import '../assets/css/ProfileActivityListView.css';
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';

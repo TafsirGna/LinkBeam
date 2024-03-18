@@ -24,8 +24,10 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AlertCircleIcon } from "../SVGs";
+import PostListItemView from "../PostListItemView";
 import { 
   dbDataSanitizer,
+  dateBetweenRange,
 } from "../../Local_library";
 import { db } from "../../../db";
 
@@ -54,7 +56,20 @@ export default class AllPostsModal extends React.Component{
 
   async setPosts(){
 
-  	const posts = db.feedPosts.toArray();
+    var uids = [];
+  	await db.feedPostViews
+            .filter(postView => dateBetweenRange(this.props.startDate, this.props.endDate, postView.date))
+            .each(postView => {
+              if (uids.indexOf(postView.uid) == -1){
+                uids.push(postView.uid);
+              }
+            });   
+
+    const posts = await db.feedPosts
+                          .where("uid")
+                          .anyOf(uids)
+                          .toArray(); 
+
   	this.setState({posts: posts});
 
   }
@@ -62,13 +77,17 @@ export default class AllPostsModal extends React.Component{
   render(){
     return (
       <>
-        <Modal show={this.props.show} onHide={this.props.onHide}>
+        <Modal 
+          show={this.props.show} 
+          onHide={this.props.onHide}
+          size="lg">
           <Modal.Header closeButton>
             <Modal.Title>Posts</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
-          	{ !this.state.posts && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+          	{ !this.state.posts 
+                && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                       {/*<span class="visually-hidden">Loading...</span>*/}
                     </div>
                     <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
@@ -76,26 +95,20 @@ export default class AllPostsModal extends React.Component{
                 </div>}
 
             { this.state.posts
-        		&& <div>
+        		    && <div>
 
-        				{this.state.posts.length == 0
-		                  && <div class="text-center m-5">
-		                        <AlertCircleIcon size="100" className="text-muted"/>
-		                        <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
-		                      </div>}
+            				{this.state.posts.length == 0
+    		                  && <div class="text-center m-5">
+    		                        <AlertCircleIcon size="100" className="text-muted"/>
+    		                        <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
+    		                      </div>}
 
-        				{ this.state.posts.length != 0
-                    		&& <div>
-			                    { this.state.posts.map(((post, index) => <div class="d-flex text-body-secondary pt-3">
-		                                                                      <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-		                                                                      <p class="pb-3 mb-0 small lh-sm border-bottom">
-		                                                                        <strong class="d-block text-gray-dark">@username</strong>
-		                                                                        Some representative placeholder content, with some information about this user. Imagine this being some sort of status update, perhaps?
-		                                                                      </p>
-		                                                                    </div>))}
-			                  	</div>}
+            				{ this.state.posts.length != 0
+                        		&& <div>
+    			                    { this.state.posts.map(((post, index) => <PostListItemView object={post}/>))}
+    			                  	</div>}
 
-        		   </div>}      
+            		   </div>}      
 
           </Modal.Body>
           <Modal.Footer>
