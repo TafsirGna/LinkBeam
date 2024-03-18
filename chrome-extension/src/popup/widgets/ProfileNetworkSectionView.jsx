@@ -5,7 +5,8 @@ import ProfilesGraphChart from "./charts/ProfilesGraphChart";
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   appParams, 
-  dbDataSanitizer 
+  dbDataSanitizer,
+  setLocalProfiles,
 } from "../Local_library";
 import { AlertCircleIcon, LayersIcon } from "./SVGs";
 import Form from 'react-bootstrap/Form';
@@ -20,6 +21,7 @@ export default class ProfileNetworkSectionView extends React.Component{
     this.state = {
       offCanvasShow: false,
       formSelectInputVal: "suggestions",
+      allProfilesReadiness: false,
     };
 
     this.handleFormSelectInputChange = this.handleFormSelectInputChange.bind(this);
@@ -40,41 +42,7 @@ export default class ProfileNetworkSectionView extends React.Component{
 
   async handleFormSelectInputChange(event) {
 
-    async function initProfiles(profiles, property){
-
-      if (property == "suggestions"){
-        property = "profileSuggestions";
-      }
-
-      if (profiles && profiles.length && profiles[0][property]){
-        return profiles;
-      }
-
-      // No need to load all the profiles with all its properties, only the needed properties
-      await db.profiles
-              .each(profile => {
-                var index = profiles.map(e => e.url).indexOf(profile.url);
-                if (index == -1){
-                  var object = {url: profile.url};
-                  object[property] = profile[property];
-                  profiles.push(object);
-                }
-                else{
-                  if (!profiles[index][property]){
-                    profiles[index][property] = profile[property];
-                  }
-                }
-              });
-
-      return profiles;
-
-    }
-
-    var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
-
-    profiles = await initProfiles(profiles, event.target.value);
-
-    eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+    setLocalProfiles(this, db, eventBus, [event.target.value])
 
     this.setState({formSelectInputVal: event.target.value}); 
 

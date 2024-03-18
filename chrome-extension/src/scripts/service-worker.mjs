@@ -124,7 +124,11 @@ function checkCurrentTab(tab, changeInfo){
         };
 
         // If the user is browsing linkedin's feed
-        var dataExtractorPath = (url.indexOf("/feed") != -1) ? "./assets/feed_data_extractor.js" : "./assets/profile_data_extractor.js";
+        var dataExtractorPath = (url.indexOf("/feed") != -1) 
+                                    ? "./assets/feed_data_extractor.js" 
+                                    : ( url.indexOf("/in/") != -1 
+                                        ? "./assets/profile_data_extractor.js" 
+                                        : null);
         chrome.scripting.executeScript({
                 target: { tabId: tab.id },
                 files: [dataExtractorPath],
@@ -153,16 +157,7 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
         if (visit){
             if (visit.url.indexOf("/feed") != -1){
-
-                var badgeText = 0;
-                for (var metric in visit.itemsMetrics){
-                    badgeText += visit.itemsMetrics[metric];
-                }
-
-                if (currentTabId == activeInfo.tabId){
-                    chrome.action.setBadgeText({text: badgeText.toString()});
-                }
-
+                showBadgeText(visit.itemsMetrics, activeInfo.tabId);
             }
             else{
                 if (currentTabId == activeInfo.tabId){
@@ -221,7 +216,22 @@ async function processTabData(tabData){
 }
 
 
+function showBadgeText(itemsMetrics, tabId){
+
+    var badgeText = 0;
+    for (var metric in itemsMetrics){
+        badgeText += itemsMetrics[metric];
+    }
+
+    if (currentTabId == tabId){
+        chrome.action.setBadgeText({text: badgeText.toString()});
+    }
+
+}
+
 async function recordFeedVisit(tabData){
+
+    showBadgeText(tabData.extractedData.metrics, tabData.tabId);
 
     const dateTime = new Date().toISOString();
 
@@ -231,16 +241,19 @@ async function recordFeedVisit(tabData){
                                     .first();
 
     if (visit){
+
         // Incrementing the time count
         await db
                 .visits
                 .where({url: tabData.tabUrl, tabId: tabData.tabId})
                 .modify(visit => {
                     visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+                    visit.itemsMetrics = tabData.extractedData.metrics;
                 });
 
     }
     else{
+
         const dateTime = new Date().toISOString();
 
         await db.visits.add({
@@ -251,14 +264,50 @@ async function recordFeedVisit(tabData){
             itemsMetrics: tabData.extractedData.metrics,
         });
 
-        var badgeText = 0;
-        for (var metric in tabData.extractedData.metrics){
-            badgeText += tabData.extractedData.metrics[metric];
+    }
+
+    // save all the sent posts
+    for (var post of tabData.extractedData.posts){
+        var dbPost = await db.feedPosts
+                             .where("uid")
+                             .equals(post.id)
+                             .first();
+
+        if (!dbPost){
+
+            // saving the post
+            await db.feedPosts.add({
+                uid: post.id,
+                category: post.category,
+                initiator: post.initiator,
+                content: {
+                    author: post.content.author,
+                    text: post.content.text,
+                },
+            });
+
         }
 
-        if (currentTabId == tabData.tabId){
-            chrome.action.setBadgeText({text: badgeText.toString()});
+        var postView = await db.feedPostViews
+                               .where("uid")
+                               .equals(post.id)
+                               .and(view => view.tabId == tabData.tabId)
+                               .first(); 
+
+        if (!postView){
+
+            // saving the post view
+            await db.feedPostViews.add({
+                uid: post.id,
+                date: new Date().toISOString(),
+                tabId: tabData.tabId, 
+                reactions: post.reactions,
+                commentsCount: post.commentsCount,
+                repostsCount: post.repostsCount,
+            });
+            
         }
+        
     }
 
 }

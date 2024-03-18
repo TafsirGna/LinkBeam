@@ -40,6 +40,7 @@ import {
   computePeriodTimeSpan, 
   appParams, 
   performProfileSubPartComparison,
+  setLocalProfiles,
 } from "../Local_library";
 
 export default class ProfileOverviewSectionView extends React.Component{
@@ -50,6 +51,7 @@ export default class ProfileOverviewSectionView extends React.Component{
       donutChartModalShow: false,
       donutChartModalTitle: null,
       donutChartModalItemData: null,
+      allProfilesReadiness: false,
     };
 
     this.getPeriodTimeSpan = this.getPeriodTimeSpan.bind(this);
@@ -66,9 +68,6 @@ export default class ProfileOverviewSectionView extends React.Component{
         if (this.state.donutChartModalShow){
           this.setDonutChartModalItemData();
         }
-        // if (this.state.certificationsModalShow){
-        //   this.showCertComparisonData()
-        // }
       }
     }
 
@@ -80,36 +79,7 @@ export default class ProfileOverviewSectionView extends React.Component{
   handleDonutChartModalClose = () => this.setState({donutChartModalShow: false, donutChartModalTitle: null});
   handleDonutChartModalShow = (title) => this.setState({donutChartModalShow: true, donutChartModalTitle: title}, async () => {
       
-    async function initProfiles(profiles){
-
-      // No need to load all the profiles with all its properties, only the needed properties
-      await db.profiles
-              .each(profile => {
-                var index = profiles.map(e => e.url).indexOf(profile.url);
-                if (index == -1){
-                  profiles.push({
-                    url: profile.url,
-                    experience: profile.experience,
-                    education: profile.education,
-                  });
-                }
-                else{
-                  if (!profiles[index].experience || !profiles[index].education){
-                    profiles[index].education = profile.education;
-                    profiles[index].experience = profile.experience;
-                  }
-                }
-              });
-
-      return profiles;
-
-    }
-
-    var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
-
-    profiles = await initProfiles(profiles);
-    eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
-
+    setLocalProfiles(this, db, eventBus, ["experience", "education"], "setDonutChartModalItemData");
 
   });
 

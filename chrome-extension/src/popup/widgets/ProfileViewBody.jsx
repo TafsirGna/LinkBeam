@@ -168,13 +168,13 @@ export default class ProfileViewBody extends React.Component{
             { this.state.currentTabIndex == 2 && <div class="">
                                                   { <ProfileExperienceSectionView 
                                                       profile={this.props.profile} 
-                                                      localDataObject={{computedData: this.state.profileComputedData}} />}
+                                                      localDataObject={{profileComputedData: this.state.profileComputedData}} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 3 && <div class="">
                                                   { <ProfileEducationSectionView 
                                                       profile={this.props.profile} 
-                                                      localDataObject={{computedData: this.state.profileComputedData}} />}
+                                                      localDataObject={{profileComputedData: this.state.profileComputedData}} />}
                                                 </div>}
 
             { this.state.currentTabIndex == 4 && <div class="">

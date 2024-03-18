@@ -36,7 +36,7 @@ export default class ProfileExperienceSectionView extends React.Component{
 
       var featuredExperienceEntityName = dbDataSanitizer.preSanitize(experience.entity.name),
           title = dbDataSanitizer.preSanitize(experience.title),
-          expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.computedData.experienceTime) * 100;
+          expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.localDataObject.profileComputedData.experienceTime) * 100;
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(featuredExperienceEntityName.toLowerCase());
       if (index == -1){

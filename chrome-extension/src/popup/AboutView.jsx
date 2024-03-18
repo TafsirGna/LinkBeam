@@ -74,17 +74,33 @@ export default class AboutView extends React.Component{
             </p>
             <p class="mt-2 small">
               Designed by {appParams.appAuthor}
-              <img src={beaver_icon} alt="twbs" width="14" height="14" class="rounded-circle flex-shrink-0"/>
+              <img 
+                src={beaver_icon} 
+                alt="twbs" 
+                width="14" 
+                height="14" 
+                class="rounded-circle flex-shrink-0"/>
               .
             </p>
             <div>
-              <a href="https://github.com/TafsirGna/LinkBeam" target="_blank" title="View on github" class="mx-2">
+              <a 
+                href="https://github.com/TafsirGna/LinkBeam" 
+                target="_blank" 
+                title="View on github" 
+                class="mx-2">
                 <GithubIcon size="24"/>
               </a>
-              <a href=/*"mailto:author@mail.com"*/"https://github.com/TafsirGna/LinkBeam/issues" title="Send feedback" class="mx-2">
+              <a 
+                href=/*"mailto:author@mail.com"*/"https://github.com/TafsirGna/LinkBeam/issues" 
+                title="Send feedback" 
+                class="mx-2">
                 <SendIcon size="24"/>                
               </a>
-              <a href="#" title="See License and Credits" class="mx-2" onClick={() => {switchToView(eventBus, "LicenseCredits")}}>
+              <a 
+                href="#" 
+                title="See License and Credits" 
+                class="mx-2" 
+                onClick={() => {switchToView(eventBus, "LicenseCredits")}}>
                 <TagIcon size="24" />
               </a>
             </div>

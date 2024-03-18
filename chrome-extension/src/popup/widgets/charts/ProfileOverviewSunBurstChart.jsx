@@ -22,6 +22,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     this.getEducationData = this.getEducationData.bind(this);
     this.getExperienceData = this.getExperienceData.bind(this);
     this.getCertificationData = this.getCertificationData.bind(this);
+    this.getProjectData = this.getProjectData.bind(this);
   }
 
   componentDidMount() {
@@ -125,7 +126,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
 
     var certChildren = [];
 
-    // Languages
+    // Certifications
     if (this.props.profile.certifications){
       for (var certification of this.props.profile.certifications){
 
@@ -155,6 +156,40 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
 
   }
 
+  getProjectData(){
+
+    var projChildren = [];
+
+    // Projects
+    if (this.props.profile.projects){
+      for (var project of this.props.profile.projects){
+
+        if (!project.name){
+          continue;
+        }
+
+        var projectName = dbDataSanitizer.preSanitize(project.name),
+            period = dbDataSanitizer.preSanitize(project.period);
+        var itemIndex = projChildren.map(e => e.fullName).indexOf(projectName);
+        if (itemIndex == -1){
+          projChildren.push({
+            fullName: projectName,
+            name: this.cropLabel(projectName),
+            children: [{"name": this.cropLabel(period), "value": 123}],
+          });
+        }
+        else{
+          projChildren[itemIndex].children.push({"name": this.cropLabel(period), "value": 123});
+        }
+
+      }
+
+    }
+
+    return projChildren;
+
+  }
+
   cropLabel(str){
     return str.slice(0, 30) + (str.length >= 30 ? "..." : "")
   }
@@ -164,7 +199,8 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     var expChildren = this.getExperienceData(), 
         edChildren = this.getEducationData(), 
         langChildren = this.getLanguageData(),
-        certChildren = this.getCertificationData();
+        certChildren = this.getCertificationData(),
+        projChildren = this.getProjectData();
 
 
     var data = {"name":"profile",
@@ -173,6 +209,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
                   {"name":"education","children": edChildren}, 
                   {"name":"languages","children": langChildren},
                   {"name":"certifications","children": certChildren},
+                  {"name":"projects","children": projChildren},
                 ]};
     this.setState({data: data}, () => {
       this.drawChart();

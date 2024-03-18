@@ -86,8 +86,10 @@ export default class About extends React.Component{
           (async () => {
 
             // initialize the db with the received data
-            for (var objectStoreName of Object.keys(content.objectStores)){
-              await db[objectStoreName].bulkAdd(content.objectStores[objectStoreName]);
+            for (var objectStoreName in content.objectStores){
+              if (content.objectStores[objectStoreName].length){
+                await db[objectStoreName].bulkAdd(content.objectStores[objectStoreName]);
+              }
             }
 
             localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);

@@ -58,15 +58,22 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
       return;
     }
 
-    var certificationsList = [];
-    for (var certification of this.props.profile.certifications){
-      certification["linkedProfiles"] = null;
-      certificationsList.push(certification); 
-    }
+    this.setState({certificationsModalShow: true}, () => {
 
-    this.setState({
-      certificationsList: certificationsList, 
-      certificationsModalShow: true
+      if (this.state.certificationsList){
+        return;
+      }
+
+      var certificationsList = [];
+      for (var certification of this.props.profile.certifications){
+        certification["linkedProfiles"] = null;
+        certificationsList.push(certification); 
+      }
+
+      this.setState({
+        certificationsList: certificationsList, 
+      });
+
     });
 
   };
@@ -104,7 +111,9 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
           onClick={this.handleCertificationsModalShow}>
           <div class="card-body">
             <h6 class="card-title text-success-emphasis">
-              {this.props.profile.certifications ? this.props.profile.certifications.length : 0}
+              {this.props.profile.certifications 
+                ? this.props.profile.certifications.length 
+                : 0}
             </h6>
             <p class="card-text">Certifications</p>
           </div>
@@ -134,7 +143,9 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
                                                 <p class="mb-1">
                                                   <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
                                                     {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {certification.entity.name ? dbDataSanitizer.preSanitize(certification.entity.name) : "Missing data"}
+                                                    {certification.entity.name 
+                                                      ? dbDataSanitizer.preSanitize(certification.entity.name) 
+                                                      : "Missing data"}
                                                   </span>
                                                 </p>
                                                 <p class="text-muted mb-2">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>

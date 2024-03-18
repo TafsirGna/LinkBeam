@@ -22,9 +22,11 @@
 /*import './MainProfileView.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
+import LoadingProfileView from "./widgets/LoadingProfileView";
 import { appParams } from "./Local_library";
-import { db } from "../db";
+// import { db } from "../db";
 import eventBus from "./EventBus";
+import { AlertCircleIcon } from "./widgets/SVGs";
 
 export default class MainProfileView extends React.Component{
 
@@ -32,7 +34,10 @@ export default class MainProfileView extends React.Component{
     super(props);
     this.state = {
       profile: null, 
+      loadingProfile: true,
     };
+
+    this.loadingProfileDone = this.loadingProfileDone.bind(this);
 
   }
 
@@ -48,33 +53,6 @@ export default class MainProfileView extends React.Component{
       }
     );
 
-    // Getting the window url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const profileUrl = urlParams.get("data");
-
-    // Retrieving the profile for the url given throught the url paremeters 
-    (async () => {
-      const profile = await db.profiles
-                              .where("url")
-                              .equals(encodeURI(profileUrl))
-                              .first();
-
-      await Promise.all ([profile].map (async profile => {
-        [profile.bookmark] = await Promise.all([
-          db.bookmarks.where('url').equals(profile.url).first()
-        ]);
-      }));
-
-      await Promise.all ([profile].map (async profile => {
-        [profile.reminder] = await Promise.all([
-          db.reminders.where('url').equals(profile.url).first()
-        ]);
-      }));
-
-      this.setState({profile: profile});
-
-      }).bind(this)();
-
   }
 
   componentWillUnmount(){
@@ -83,18 +61,38 @@ export default class MainProfileView extends React.Component{
 
   }
 
+  loadingProfileDone(status, payload){
+    this.setState({loadingProfile: false}, () => {
+      if (status == "SUCCESS"){
+        this.setState({profile: payload});
+      }
+    });
+  }
+
   render(){
     return (
       <>
         <div class="col-8 offset-2 pb-5">
 
-          {this.state.profile == null && <div class="text-center"><div class="mt-5 pt-5"><div class="spinner-border text-primary" role="status">
-                    </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                  </div>
-                </div>}
+          {this.state.loadingProfile
+            && <LoadingProfileView 
+                loadingDone = {this.loadingProfileDone} />}
 
-          {this.state.profile && <ProfileView profile={this.state.profile} globalData={this.props.globalData} />}
+          {!this.state.loadingProfile 
+            && <div>
+
+                {this.state.profile 
+                  && <ProfileView 
+                        profile={this.state.profile} 
+                        globalData={this.props.globalData}/>}
+
+                {!this.state.profile 
+                  && <div class="text-center m-5 mt-4">
+                      <AlertCircleIcon size="100" className="text-muted"/>
+                      <p><span class="badge text-bg-primary fst-italic shadow">An error occured when displaying the page</span></p>
+                    </div>}
+
+              </div>}
 
         </div>
       </>

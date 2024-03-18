@@ -45,7 +45,6 @@ export const appParams = {
   WEB_APP_ITEM_LIMIT_NUM: 3,
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
-  TAB_BADGE_TEXT_MAP_LABEL: "tabBadgeTextMap",
   COMPONENT_CONTEXT_NAMES: {
     ABOUT: "About",
     HOME: "Home",
@@ -518,6 +517,90 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
 
 // };
 
+export function notifyException(){
+  
+}
+
+export async function setLocalProfiles(component, db, eventBus, propertyList, callback = null){
+
+    async function initProfiles(profiles){
+
+      if (component.state.allProfilesReadiness){
+        return null;
+      }
+
+      // No need to load all the profiles with all its properties, only the needed properties
+      var allProfilesReadiness = component.state.allProfilesReadiness;
+      await db.profiles
+              .each(profile => {
+
+                if (!allProfilesReadiness){
+
+                  var index = profiles.map(e => e.url).indexOf(profile.url);
+                  if (index == -1){
+                    var object = {url: profile.url};
+
+                    propertyList.forEach(property => {
+                      property = (property == "suggestions") ? "profileSuggestions" : property;
+                      object[property] = profile[property];
+                    })
+
+                    profiles.push(object);
+                  }
+                  else{
+
+                    propertyList.forEach(property => {
+                      if (profiles[index][property]){
+                        allProfilesReadiness = true;
+                      }
+                    });
+
+                    if (!allProfilesReadiness){
+                      propertyList.forEach(property => {
+                        property = (property == "suggestions") ? "profileSuggestions" : property;
+                        profiles[index][property] = profile[property];
+                      });
+                    }
+
+                  }
+
+                }
+  
+              });
+
+      if (allProfilesReadiness){
+        return null;
+      }
+
+      // weird :-)
+      if (profiles == component.props.localDataObject.profiles){
+        return null;
+      }
+
+      component.setState({allProfilesReadiness: true});
+
+      return profiles;
+
+    }
+
+    // binding the initProfiles function
+    initProfiles = initProfiles.bind(component);
+
+    var profiles = !component.props.localDataObject.profiles ? [] : component.props.localDataObject.profiles;
+
+    profiles = await initProfiles(profiles);
+
+    if (profiles){
+      eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+    }
+    else{
+      if (callback){
+        component[callback]();
+      }
+    }
+
+};
+
 export const groupObjectsByDate = (objectList) => {
 
   var results = {};
@@ -653,11 +736,33 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 }
 
 
-export function getVisitPostsCount(visit){
+export function getVisitPostCount(visit){
 
   var postCount = 0;
   Object.keys(visit.itemsMetrics).forEach(metric => {
     postCount += visit.itemsMetrics[metric];
+  });
+
+  return postCount;
+
+}
+
+export function getVisitsTotalTime(visits){
+
+  var totalTime = 0;
+  visits.forEach(visit => {
+    totalTime += visit.timeCount;
+  });
+
+  return (totalTime / 60).toFixed(2);
+
+}
+
+export function getVisitsPostCount(visits){
+
+  var postCount = 0;
+  visits.forEach(visit => {
+    postCount += getVisitPostCount(visit);
   });
 
   return postCount;

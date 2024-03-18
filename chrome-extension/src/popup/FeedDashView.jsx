@@ -27,8 +27,9 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   appParams,
   setGlobalDataSettings,
-  getVisitPostsCount,
   getChartColors,
+  getVisitsPostCount,
+  getVisitsTotalTime,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -38,6 +39,7 @@ import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedItemCategoryDonutChart from "./widgets/charts/FeedItemCategoryDonutChart";
+import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -150,28 +152,6 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  getTotalTime(){
-
-    var totalTime = 0;
-    this.state.visits.forEach(visit => {
-      totalTime += visit.timeCount;
-    });
-
-    return (totalTime / 60).toFixed(2);
-
-  }
-
-  getPostCount(){
-
-    var postCount = 0;
-    this.state.visits.forEach(visit => {
-      postCount += getVisitPostsCount(visit);
-    });
-
-    return postCount;
-
-  }
-
   render(){
     return (
       <>
@@ -184,7 +164,7 @@ export default class FeedDashView extends React.Component{
 
   			<div class="offset-2 col-8 mt-4">
 
-          <div class="clearfix m-3 small">
+          <div class="clearfix m-3 small my-4">
             <div class="d-flex flex-row-reverse align-items-center ">
               <Form.Control
                 type="date"
@@ -214,7 +194,7 @@ export default class FeedDashView extends React.Component{
           <div class="row mx-2 mt-1">
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Total time")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-primary-emphasis">~{`${this.getTotalTime()} mins`}</h6>}
+                {this.state.visits && <h6 class="card-title text-primary-emphasis">~{`${getVisitsTotalTime(this.state.visits)} mins`}</h6>}
                 <p class="card-text mb-1">Total time spent</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
@@ -228,28 +208,28 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Post Count")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-warning-emphasis">~{this.getPostCount()}</h6>}
+                {this.state.visits && <h6 class="card-title text-warning-emphasis">~{getVisitsPostCount(this.state.visits)}</h6>}
                 <p class="card-text mb-1">Posts</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Mean time")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-info-emphasis">~{this.state.visits.length ? `${(this.getTotalTime()/this.state.visits.length).toFixed(2)} mins` : "0 mins"}</h6>}
+                {this.state.visits && <h6 class="card-title text-info-emphasis">~{this.state.visits.length ? `${(getVisitsTotalTime(this.state.visits)/this.state.visits.length).toFixed(2)} mins` : "0 mins"}</h6>}
                 <p class="card-text mb-1">Mean time per visit</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
           </div>
 
-          <div class="row mt-1 mx-3 py-4 gap-2 d-flex">
-            <div class="col">
+          <div class="row mx-3 gap-2 d-flex">
+            <div class="col p-0">
               <div class="border rounded shadow">
                 <FeedScatterPlot
                   objects={this.state.visits}/>
               </div>
             </div>
-            <div class="col border rounded shadow pt-3">
+            <div class="col border rounded shadow py-3">
               <FeedItemCategoryDonutChart 
                 objects={this.state.visits}/>
             </div>
@@ -310,7 +290,10 @@ export default class FeedDashView extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            
+            <FeedMetricsLineChart
+              objects={this.state.visits}
+              metric={this.state.chartModalTitle}/>
+
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleChartModalClose} className="shadow">

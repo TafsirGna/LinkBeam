@@ -1,7 +1,3 @@
-[Badge License]
-
-***
-
 <h1 align="center">
 	<sub>
 		<img src="https://github.com/TafsirGna/LinkBeam/blob/main/chrome-extension/src/assets/app_logo.png" height="38" width="38">
@@ -24,7 +20,3 @@ It basically helps you track your usage of linkedin, provides some stats on the 
 It doesn't help in any ad marketing use-cases, interact with any linkedin APIs (only your browser DOM), send any of your data on a remote server (everything stored locally).
 
 ***
-
-<!----------------------------------[ Badges ]--------------------------------->
-
-[Badge License]: https://img.shields.io/badge/License-GPLv3-blue.svg

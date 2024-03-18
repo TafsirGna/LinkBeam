@@ -5,12 +5,14 @@ import Collapse from 'react-bootstrap/Collapse';
 import ProfileAboutBubbleChart from './charts/ProfileAboutBubbleChart';
 import { 
 	dbDataSanitizer,
+	setLocalProfiles
 } from "../Local_library";
 import eventBus from "../EventBus";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import { AlertCircleIcon } from "./SVGs";
+import { db } from "../../db";
 
 
 export default class ProfileAboutSectionView extends React.Component{
@@ -24,10 +26,11 @@ export default class ProfileAboutSectionView extends React.Component{
 			profileAbout: "",
 			donutChartModalShow: false,
 			donutChartModalItemData: null,
+			allProfilesReadiness: false,
 		};
 
 		this.setOneUseWordCount = this.setOneUseWordCount.bind(this);
-		// this.getChartData = this.getChartData.bind(this);
+		this.setDonutChartData = this.setDonutChartData.bind(this);
 	}
 
 	componentDidMount() {
@@ -51,11 +54,11 @@ export default class ProfileAboutSectionView extends React.Component{
 
 	componentDidUpdate(prevProps, prevState){
 
-		if (prevProps.globalData != this.props.globalData){
-			if (prevProps.globalData.profiles != this.props.globalData.profiles){
-				// if (this.state.donutChartModalShow){
-					this.handleDonutChartModalShow();
-				// }
+		if (prevProps.localDataObject != this.props.localDataObject){
+			if (prevProps.localDataObject.profiles != this.props.localDataObject.profiles){
+				if (this.state.donutChartModalShow){
+					this.setDonutChartData();
+				}
 			}
 		}
 
@@ -145,10 +148,15 @@ export default class ProfileAboutSectionView extends React.Component{
 			return;
 		}
 
-		if (!this.props.globalData.profiles){
-			sendDatabaseActionMessage(messageParams.requestHeaders.GET_LIST, dbData.objectStoreNames.PROFILES, { context: appParams.COMPONENT_CONTEXT_NAMES.PROFILE });
-			return;
-		}
+		this.setState({donutChartModalShow: true}, async () => {
+
+			setLocalProfiles(this, db, eventBus, ["info"], "setDonutChartData");
+
+		});
+
+	};
+
+	setDonutChartData(){
 
 		if (!this.state.donutChartModalItemData){
 
@@ -158,7 +166,7 @@ export default class ProfileAboutSectionView extends React.Component{
 			}
 
 			var refLength = dbDataSanitizer.preSanitize(this.props.profile.info).length;
-			for (var profile of this.props.globalData.profiles){
+			for (var profile of this.props.localDataObject.profiles){
 
 				if (profile.url == this.props.profile.url){
 					continue;
@@ -171,17 +179,14 @@ export default class ProfileAboutSectionView extends React.Component{
 
 			}
 
-			donutChartModalItemData.value /= this.props.globalData.profiles.length;
+			donutChartModalItemData.value /= this.props.localDataObject.profiles.length;
 			donutChartModalItemData.value *= 100;
 
 			this.setState({donutChartModalItemData: donutChartModalItemData});
 
 		}
 
-
-
-		this.setState({donutChartModalShow: true});
-	};
+	}
 
 	render(){
 		return (

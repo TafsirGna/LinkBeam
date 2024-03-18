@@ -152,24 +152,38 @@ export default class StatisticsView extends React.Component{
           {/*View dropdown*/}
           <div class="clearfix">
             { this.state.controlsVisibility && <span class="border shadow-sm rounded p-1 text-muted">
-                          <span title="Expand chart" onClick={this.onChartExpansion} class="handy-cursor mx-1 text-primary">
+                          <span 
+                            title="Expand chart" 
+                            onClick={this.onChartExpansion} 
+                            class="handy-cursor mx-1 text-primary">
                             <MaximizeIcon size="16" className=""/>
                           </span>
-                          <span onClick={this.downloadChart} title="Download chart" class="handy-cursor mx-1">
+                          <span 
+                            onClick={this.downloadChart} 
+                            title="Download chart" 
+                            class="handy-cursor mx-1">
                             <DownloadIcon size="16" className=""/>
                           </span>
                         </span> }
 
             <div class="btn-group float-end">
-              <button class="btn btn-primary btn-sm dropdown-toggle fst-italic badge" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <button 
+                class="btn btn-primary btn-sm dropdown-toggle fst-italic badge" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
                 View
               </button>
               <ul class="dropdown-menu shadow">
 
                 { ["days", "month", "year"].map((item, index) => (<li>
-                                                                    <a class={"dropdown-item small " + (this.state.view == index ? "active" : "")} href="#" onClick={() => {this.onViewChange(index)}}>
+                                                                    <a 
+                                                                      class={"dropdown-item small " + (this.state.view == index ? "active" : "")} 
+                                                                      href="#" 
+                                                                      onClick={() => {this.onViewChange(index)}}>
                                                                       Last {item}
-                                                                      { this.state.view == index && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                                      { this.state.view == index 
+                                                                          && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                                                                     </a>
                                                                   </li>)) }
 
@@ -225,28 +239,46 @@ export default class StatisticsView extends React.Component{
                                 profiles={this.state.periodProfiles}
                                 carrouselIndex={6} />
 
-                              { this.state.periodProfiles && this.state.periodProfiles.length != 0 && <div class="dropdown my-2 offset-5">
-                                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                                                                <span class="rounded shadow badge border text-primary border-link">{this.state.relChartDisplayCrit}</span>
-                                                              </div>
-                                                              <ul class="dropdown-menu shadow-lg border border-secondary">
-                                                                {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
-                                                                      <li><a class="dropdown-item small" onClick={() => {this.setRelChartDisplayCrit(value)}}>{value}</a></li>  
-                                                                  ))}
-                                                              </ul>
-                                                            </div>}
+                              { this.state.periodProfiles 
+                                  && this.state.periodProfiles.length != 0 
+                                  && <div class="dropdown my-2 offset-5">
+                                        <div 
+                                          data-bs-toggle="dropdown" 
+                                          aria-expanded="false" 
+                                          class="float-start py-0 handy-cursor">
+                                          <span 
+                                            class="rounded shadow badge border text-primary border-link">
+                                            {this.state.relChartDisplayCrit}
+                                          </span>
+                                        </div>
+                                        <ul class="dropdown-menu shadow-lg border border-secondary">
+                                          {["suggestions", "experience", "education", "languages", "certifications"].map((value) => (
+                                                <li>
+                                                  <a 
+                                                    class="dropdown-item small" 
+                                                    onClick={() => {this.setRelChartDisplayCrit(value)}}>
+                                                    {value}
+                                                  </a>
+                                                </li>  
+                                            ))}
+                                        </ul>
+                                      </div>}
                             </div>}
             </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 7 && <VisitsConnectedScatterPlot 
-                              objects={this.state.periodVisits} 
-                              carrouselIndex={7} />}
+              { this.state.carrouselActiveItemIndex == 7 
+                  && <VisitsConnectedScatterPlot 
+                        objects={this.state.periodVisits} 
+                        carrouselIndex={7} />}
             </Carousel.Item>
           </Carousel>
 
           <div class="clearfix">
             <span class="text-muted small float-end fst-italic mt-2 badge">
-              Data recorded since {this.props.globalData.settings ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') : ""}
+              Data recorded since 
+              {this.props.globalData.settings 
+                ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') 
+                : ""}
             </span>
           </div>
         </div>

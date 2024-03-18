@@ -61,3 +61,7 @@ export const DownloadIcon = (props) => {
 export const BarChartIcon = (props) => {
   return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={"css-i6dzq1 " + props.className}><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>;
 };
+
+export const DeletionIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={"css-i6dzq1 " + props.className}><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+}

@@ -36,7 +36,7 @@ export default class ProfileEducationSectionView extends React.Component{
       var edTime = 0;
 
       if (education.period){
-        edTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.computedData.educationTime) * 100;
+        edTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;
       }
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(entityName.toLowerCase());

@@ -31,6 +31,7 @@ import {
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
+import { CheckIcon } from  "./widgets/SVGs";
 
 export default class KeywordView extends React.Component{
 
@@ -173,7 +174,7 @@ export default class KeywordView extends React.Component{
             </div>
             <div class={"float-end " + (this.state.alertBadgeContent == "" ? "d-none" : "")}>
               <span class="badge text-bg-success fst-italic shadow-sm">
-                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <CheckIcon size="16"/>
                 {this.state.alertBadgeContent}
               </span>
             </div>

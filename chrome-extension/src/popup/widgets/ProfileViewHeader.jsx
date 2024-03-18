@@ -9,6 +9,7 @@ import eventBus from "../EventBus";
 import { 
   appParams, 
   dbDataSanitizer,
+  setLocalProfiles,
 } from "../Local_library";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import { 
@@ -37,6 +38,7 @@ export default class ProfileViewHeader extends React.Component{
       connectionModalShow: false,
       followersCompData: null,
       connectionsCompData: null, 
+      allProfilesReadiness: false,
     };
 
     this.setConnectionModalData = this.setConnectionModalData.bind(this);
@@ -132,35 +134,7 @@ export default class ProfileViewHeader extends React.Component{
 
     this.setState({connectionModalShow: true}, async () => {
 
-      async function initProfiles(profiles){
-
-        // No need to load all the profiles with all its properties, only the needed properties
-        await db.profiles
-                .each(profile => {
-                  var index = profiles.map(e => e.url).indexOf(profile.url);
-                  if (index == -1){
-                    profiles.push({
-                      url: profile.url,
-                      nFollowers: profile.nFollowers,
-                      nConnections: profile.nConnections,
-                    });
-                  }
-                  else{
-                    if (!profiles[index].nFollowers || !profiles[index].nConnections){
-                      profiles[index].nFollowers = profile.nFollowers;
-                      profiles[index].nConnections = profile.nConnections;
-                    }
-                  }
-                });
-
-      return profiles;
-
-      }
-
-      var profiles = !this.props.localDataObject.profiles ? [] : this.props.localDataObject.profiles;
-
-      profiles = await initProfiles(profiles);
-      eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+      setLocalProfiles(this, db, eventBus, ["nFollowers", "nConnections"], "setConnectionModalData");
 
     });
 
