@@ -1,10 +1,6 @@
 
 import { DataExtractorBase } from "./data_extractor_lib";
 
-function extractPosts(){
-	// document.querySelectorAll[]
-}
-
 const categoryVerbMap = {
 	likes: "likes",
 	loves: "loves",
@@ -15,6 +11,8 @@ const categoryVerbMap = {
 	reposts: "reposted",
 	suggestions: "suggested",
 }
+
+const beaconClassName = "linkbeam-beacon-symbol";
 
 class FeedDataExtractor extends DataExtractorBase {
 
@@ -46,6 +44,32 @@ class FeedDataExtractor extends DataExtractorBase {
 
 		}
 
+		var reactionsTagContent = postTagContainer.querySelector(".social-details-social-counts") 
+									? postTagContainer.querySelector(".social-details-social-counts").textContent
+									: null ;
+
+		const getPostReactionsValues = metric => {
+
+			var value = null;
+
+			if (reactionsTagContent){
+
+				if (reactionsTagContent.indexOf(metric) != -1){
+					for (var arrayItem of reactionsTagContent.split("\n")){
+						var index = arrayItem.indexOf(metric);
+						if (index != -1){
+							value = Number(arrayItem.slice(0, index));
+							break;
+						}
+					}
+				}
+
+			}
+			
+
+			return value;
+		};
+
 		post.content = {
 			author:{
 				name: postTagContainer.querySelector(".update-components-actor__name .visually-hidden")
@@ -54,19 +78,16 @@ class FeedDataExtractor extends DataExtractorBase {
 				url: postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link")
 						? postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
 						: null,
+				picture: postTagContainer.querySelector(".update-components-actor__container .update-components-actor__image img")
+							? postTagContainer.querySelector(".update-components-actor__container .update-components-actor__image img").src
+							: null,
 			},
 			text: postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper")
 					? postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper").textContent
 					: null,
-			reactions: postTagContainer.querySelector(".social-details-social-counts__social-proof-container")
-						? postTagContainer.querySelector(".social-details-social-counts__social-proof-container").textContent
-						: null,
-			commentsCount: postTagContainer.querySelector(".social-details-social-counts__comments")
-							? postTagContainer.querySelector(".social-details-social-counts__comments").textContent
-							: null,               
-			repostsCount: postTagContainer.querySelector(".social-details-social-counts__reactions")
-							? postTagContainer.querySelector(".social-details-social-counts__reactions").textContent
-							: null,
+			reactions: null,
+			commentsCount: getPostReactionsValues("comment"),               
+			repostsCount: getPostReactionsValues("repost"),
 		}
 
 		return post;
@@ -81,12 +102,26 @@ class FeedDataExtractor extends DataExtractorBase {
 			metrics[category] = 0;
 		}
 
-		const postTagContainers = document.querySelectorAll(".scaffold-finite-scroll__content div.relative[data-id]");
+		var beaconTag = document.querySelector(`.${beaconClassName}`);
+		beaconTag = beaconTag ? beaconTag.nextElementSibling : document.querySelector(".scaffold-finite-scroll__content").firstChild;
 
-		Array.from(postTagContainers).forEach((postTagContainer) => {
+		while (beaconTag){
+
+			var postTagContainer = beaconTag;
+			beaconTag = beaconTag.nextElementSibling;
+
+			if (!beaconTag){
+				postTagContainer.classList.add(beaconClassName);
+			}
+
+			if (postTagContainer.tagName != "DIV" || !postTagContainer.querySelector("div.relative[data-id]")){
+				continue;
+			}
+
+			postTagContainer = postTagContainer.querySelector("div.relative[data-id]");
 
 			if (postTagContainer.getAttribute("data-id").indexOf("urn:li:aggregate") != -1){
-				return;
+				continue;
 			}
 
 			const postTagContainerHeader = postTagContainer.querySelector(".update-components-header");
@@ -108,7 +143,7 @@ class FeedDataExtractor extends DataExtractorBase {
 			var post = this.extractPostDataFrom(postTagContainer, postCategory);
 			this.posts.push(post);
 
-		});
+		}
 
 		return metrics;
 

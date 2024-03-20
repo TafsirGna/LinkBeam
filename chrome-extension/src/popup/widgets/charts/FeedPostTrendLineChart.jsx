@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import { 
 	getChartColors,
+	getFeedLineChartsData
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -83,48 +84,87 @@ export default class FeedPostTrendLineChart extends React.Component{
 			return;
 		}
 
-		// var titles = ["reactions", "comments", "reposts"];
-		// var colors = getChartColors(titles.length);
+		const titles = ["reactions", "comments", "reposts"];
+		const colors = getChartColors(titles.length);
 
-		// var datasets = titles.map((title, index) => 
-		// 		{
-		// 	    label: `# of ${title}`,
-		// 	    fill: true,
-		// 	    data: [],
-		// 	    borderColor: [colors.borders[index]],
-		// 	    backgroundColor: [colors.borders[index]],
-		// 	  },
-		// 	);
+		const rangeDates = {
+			start: this.props.globalData.settings.lastDataResetDate,
+			end: new Date().toISOString(),
+		}
 
-		// for (var postView of this. props.objects){
-		// 	if (postView.reactions){
+		const data = getFeedLineChartsData(this.props.objects, rangeDates, this.getMetricValue, titles, moment);
 
-		// 	}
-		// }
+		const datasets = titles.map((title, index) => 
+			({
+						    label: `# of ${title}`,
+						    fill: true,
+						    data: data.values[title],
+						    borderColor: [colors.borders[index]],
+						    backgroundColor: [colors.borders[index]],
+						  })
+		);
 
-		// this.setState({
-		// 	lineData: {
-		// 		labels: results.titles,
-		// 		datasets: datasets,
-		// 	}
-		// });
+		this.setState({
+			lineData: {
+				labels: data.labels,
+				datasets: datasets,
+			}
+		});
+
+	}
+
+	getMetricValue(postViews, metric){
+
+		var value = 0;
+		
+		switch (metric){
+			case "reactions": {
+				for (var postView of postViews){
+					if (postView.reactions){
+
+					}
+				}
+				break;
+			}
+
+			case "comments": {
+				for (var postView of postViews){
+					if (postView.commentsCount){
+
+					}
+				}
+				break;
+			}
+
+			case "reposts": {
+				for (var postView of postViews){
+					if (postView.repostsCount){
+
+					}
+				}
+				break;
+			}
+		}
+
+		return value;
+
 	}
 
 	render(){
 		return (
 			<>
-				{/*<div class="text-center">
+				<div class="text-center">
 				
 									{ !this.state.lineData && <div class="spinner-border spinner-border-sm" role="status">
 					                                          <span class="visually-hidden">Loading...</span>
 					                                        </div> }
 				
 									{ this.state.lineData && <div>
-																						<Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} />
-																						{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits over a period of time</p> }
+																						<Line options={lineOptions} data={this.state.lineData} />
+																						{/*<p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits over a period of time</p>*/}
 																					</div>}
 				
-								</div>*/}
+								</div>
 			</>
 		);
 	}

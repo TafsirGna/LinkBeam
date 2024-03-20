@@ -67,8 +67,10 @@ export default class PostListItemView extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-              {/*<FeedPostTrendLineChart
-                objects={this.state.postViews}/>*/}
+              { this.state.postModalShow 
+                  && <FeedPostTrendLineChart
+                      objects={this.state.postViews}
+                      globalData={this.props.globalData}/> }
 
           </Modal.Body>
           <Modal.Footer>

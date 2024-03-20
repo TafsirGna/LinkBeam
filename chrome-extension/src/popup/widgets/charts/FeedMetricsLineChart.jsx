@@ -6,6 +6,7 @@ import {
 	getChartColors,
 	getVisitsTotalTime,
 	getVisitsPostCount,
+	getFeedLineChartsData
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -79,7 +80,7 @@ export default class FeedMetricsLineChart extends React.Component{
 
 	componentWillUnmount(){
 
-  	}
+  }
 
 	setChartLabels(){
 
@@ -88,55 +89,17 @@ export default class FeedMetricsLineChart extends React.Component{
 			return;
 		}
 
-		var data = {};
-
-		for (var visit of this.props.objects){
-			const dateString = visit.date.split("T")[0],
-				  hourString = visit.date.slice(11, 13);
-			if (dateString in data){
-				if (hourString in data[dateString]){
-					data[dateString][hourString].push(visit);
-				}
-				else{
-					data[dateString][hourString] = [visit];
-				}
-			}
-			else{
-				data[dateString] = {};
-				data[dateString][hourString] = [visit];
-			}
-		}
-
-		var labels = [],
-			resData = [];
-		if (Object.keys(data).length == 1){
-			const dateString = Object.keys(data)[0];
-			for (var hourString of Object.keys(data[dateString]).toSorted()){
-				labels.push(hourString);
-				resData.push(this.getMetricValue(data[dateString][hourString]));
-			}
-		}
-		else{
-			for (var dateString of Object.keys(data).toSorted()){
-				labels.push(dateString);
-
-				var visits = [];
-				Object.keys(data[dateString]).forEach(hourString => {
-					visits = visits.concat(data[dateString][hourString]);
-				});
-				resData.push(this.getMetricValue(visits));
-			}
-		}
+		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, [this.props.metric], moment)
 
 		const colors = getChartColors(1);
 		this.setState({
 			lineData: {
-				labels: labels,
+				labels: data.labels,
 				datasets: [
 				  {
 				    label: this.props.metric,
 				    fill: true,
-				    data: resData,
+				    data: data.values[this.props.metric],
 				    borderColor: colors.borders,
 				    backgroundColor: colors.borders,
 				  },
@@ -145,10 +108,10 @@ export default class FeedMetricsLineChart extends React.Component{
 		});
 	}
 
-	getMetricValue(visits){
+	getMetricValue(visits, metric){
 
 		var value = null;
-		switch(this.props.metric){
+		switch(metric){
 			case "Total time": {
 				value = getVisitsTotalTime(visits); 
 				break;

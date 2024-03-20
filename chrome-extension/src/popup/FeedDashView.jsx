@@ -40,7 +40,7 @@ import { db } from "../db";
 import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
-import FeedItemCategoryDonutChart from "./widgets/charts/FeedItemCategoryDonutChart";
+import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
 import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
@@ -52,8 +52,8 @@ export default class FeedDashView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      startDate: (new Date()).toISOString().split('T')[0],
-      endDate: (new Date()).toISOString().split('T')[0],
+      startDate: null,
+      endDate: null,
       visits: null,
       feedPosts: null,
       allPostsModalShow: false,
@@ -88,11 +88,8 @@ export default class FeedDashView extends React.Component{
 
     }
     else{
-
-      this.setVisits();
-
-      this.setFeedPosts();
-
+        const d = new Date().toISOString().split("T")[0]
+        this.setState({startDate: d, endDate: d});
     }
 
   }
@@ -122,6 +119,8 @@ export default class FeedDashView extends React.Component{
                            .filter(visit => dateBetweenRange(this.state.startDate, this.state.endDate, visit.date)
                                             && visit.url.indexOf("/feed") != -1)
                            .toArray();
+
+    console.log("$$$$$$$$$$$ : ", this.state.startDate, this.state.endDate, visits);
 
     this.setState({ visits: visits });
 
@@ -242,7 +241,7 @@ export default class FeedDashView extends React.Component{
               </div>
             </div>
             <div class="col border rounded shadow py-3">
-              <FeedItemCategoryDonutChart 
+              <FeedPostCategoryDonutChart 
                 objects={this.state.visits}/>
             </div>
           </div>
@@ -267,7 +266,11 @@ export default class FeedDashView extends React.Component{
 
                 { this.state.feedPosts.length  != 0
                     && <div>
-                        { this.state.feedPosts.map(((post, index) => <PostListItemView object={post}/>))}
+                        { this.state.feedPosts.map(((post, index) => <PostListItemView  
+                                                                        startDate={this.state.startDate}
+                                                                        endDate={this.state.endDate}
+                                                                        object={post}
+                                                                        globalData={this.props.globalData}/>))}
                         <small class="d-block text-end mt-3 fst-italic">
                           <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
                         </small>
@@ -287,7 +290,8 @@ export default class FeedDashView extends React.Component{
         startDate={this.state.startDate}
         endDate={this.state.endDate}
         show={this.state.allPostsModalShow}
-        onHide={this.handleAllPostsModalClose}/>
+        onHide={this.handleAllPostsModalClose}
+        globalData={this.props.globalData}/>
 
 
       <Modal show={this.state.chartModalShow} onHide={this.handleChartModalClose}>
@@ -296,9 +300,14 @@ export default class FeedDashView extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            <FeedMetricsLineChart
-              objects={this.state.visits}
-              metric={this.state.chartModalTitle}/>
+            { this.state.chartModalShow 
+                && <FeedMetricsLineChart
+                      rangeDates={{
+                        start: this.state.startDate,
+                        end: this.state.endDate,
+                      }}
+                      objects={this.state.visits}
+                      metric={this.state.chartModalTitle}/>}
 
           </Modal.Body>
           <Modal.Footer>

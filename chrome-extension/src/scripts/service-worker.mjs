@@ -231,7 +231,17 @@ function showBadgeText(itemsMetrics, tabId){
 
 async function recordFeedVisit(tabData){
 
-    showBadgeText(tabData.extractedData.metrics, tabData.tabId);
+    const mergeMetrics = (metricsA, metricsB) => {
+        var count = 0;
+        for (var metric in metricsA){
+            metricsA[metric] += metricsB[metric];
+            count += metricsA[metric];
+        }
+
+        chrome.action.setBadgeText({text: count.toString()});
+
+        return metricsA;
+    };
 
     const dateTime = new Date().toISOString();
 
@@ -248,7 +258,7 @@ async function recordFeedVisit(tabData){
                 .where({url: tabData.tabUrl, tabId: tabData.tabId})
                 .modify(visit => {
                     visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                    visit.itemsMetrics = tabData.extractedData.metrics;
+                    visit.itemsMetrics = mergeMetrics(visit.itemsMetrics, tabData.extractedData.metrics);
                 });
 
     }
@@ -263,6 +273,8 @@ async function recordFeedVisit(tabData){
             tabId: tabData.tabId,
             itemsMetrics: tabData.extractedData.metrics,
         });
+
+        showBadgeText(tabData.extractedData.metrics, tabData.tabId)
 
     }
 
@@ -301,9 +313,9 @@ async function recordFeedVisit(tabData){
                 uid: post.id,
                 date: new Date().toISOString(),
                 tabId: tabData.tabId, 
-                reactions: post.reactions,
-                commentsCount: post.commentsCount,
-                repostsCount: post.repostsCount,
+                reactions: post.content.reactions,
+                commentsCount: post.content.commentsCount,
+                repostsCount: post.content.repostsCount,
             });
             
         }

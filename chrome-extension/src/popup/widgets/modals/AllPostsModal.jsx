@@ -105,7 +105,11 @@ export default class AllPostsModal extends React.Component{
 
             				{ this.state.posts.length != 0
                         		&& <div>
-    			                    { this.state.posts.map(((post, index) => <PostListItemView object={post}/>))}
+    			                    { this.state.posts.map(((post, index) => <PostListItemView 
+                                                                          startDate={this.props.startDate}
+                                                                          endDate={this.props.endDate}
+                                                                          object={post}
+                                                                          globalData={this.props.globalData}/>))}
     			                  	</div>}
 
             		   </div>}      

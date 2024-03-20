@@ -758,8 +758,95 @@ export function getVisitsTotalTime(visits){
 
 }
 
+export function getFeedLineChartsData(objects, rangeDates, func, metrics, moment){
+
+  const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+
+  var data = {};
+
+  for (var visit of objects){
+    const dateString = visit.date.split("T")[0],
+          hourString = visit.date.slice(11, 13);
+    if (dateString in data){
+      if (hourString in data[dateString]){
+        data[dateString][hourString].push(visit);
+      }
+      else{
+        data[dateString][hourString] = [visit];
+      }
+    }
+    else{
+      data[dateString] = {};
+      data[dateString][hourString] = [visit];
+    }
+  }
+
+  var labels = null,
+      resData = {};
+
+  metrics.forEach(metric => {
+
+    resData[metric] = [];
+
+    if (rangeDates.start == rangeDates.end){
+      const dateString = Object.keys(data)[0];
+
+      // initializing the labels
+      const limit = new Date().toISOString().split("T")[0] == dateString 
+                      ? Number(new Date().toISOString().slice(11, 13))
+                      : 23;
+
+      if (!labels){
+        labels = range(1, limit, 1).map(label => `${label}h`);
+      }
+
+      resData[metric] = labels.map(label => Number(label.slice(0, label.length - 1)) in data[dateString] 
+                                      ? func(data[dateString][Number(label.slice(0, label.length - 1))], metric)
+                                      : 0);
+
+    }
+    else{
+
+      var labelsOk = false;
+      if (!labels){
+        labels = [];
+      }
+      else{
+        labelsOk = true;
+      }
+
+      for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = moment(date).add(1, 'd').toDate()){
+        var label = date.toISOString().split("T")[0];
+
+        if (!labelsOk){
+          labels.push(label);
+        }
+
+        if (label in data){
+
+          var visits = [];
+          Object.keys(data[label]).forEach(hourString => {
+            visits = visits.concat(data[label][hourString]);
+          });
+          resData[metric].push(func(visits, metric));
+
+        }
+        else{
+          resData[metric].push(0);
+        }
+
+      }
+
+    }
+
+  });
+
+  return {labels: labels, values: resData};
+
+}
+
 export function dateBetweenRange(lower, upper, date){
-  return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
+  return (new Date(lower) <= new Date(date) && new Date(date.split("T")[0]) <= new Date(upper));
 }
 
 export function getVisitsPostCount(visits){
@@ -901,29 +988,12 @@ export const testTabBaseUrl = (url) => {
 
 }
 
-// export const checkWebPage = (callback) => {
-
-//   // Making sure all the necessary tags are fully loaded first
-//   var sectionContainerClassName = (/github.com/.test((window.location.href.split("?"))[0]) ? appParams.GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME : appParams.LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME);
-
-//   var selectedTags = document.getElementsByClassName(sectionContainerClassName);
-
-//   if (selectedTags.length == 0){
-//     setTimeout(() => {
-//       checkWebPage(callback);
-//     }, appParams.TIMER_VALUE);
-//   }
-//   else{
-//     // setUpAppWithinWebPage();
-//     callback();
-//   }
-// };
-
 export const groupVisitsByProfile = (visits) => {
 
   var results = [];
   for (var visit of visits){
-    var index = results.map(e => e.url).indexOf(visit.url);
+    // var index = results.map(e => e.url).indexOf(visit.url);
+    var index = results.findIndex(e => e.url == visit.url && e.date.split("T")[0] == visit.date.split("T")[0]);
     if (index == -1){
       visit.count = 1;
       results.push(visit);
