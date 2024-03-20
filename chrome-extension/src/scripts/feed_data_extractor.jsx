@@ -1,16 +1,7 @@
 
 import { DataExtractorBase } from "./data_extractor_lib";
-
-const categoryVerbMap = {
-	likes: "likes",
-	loves: "loves",
-	contributions: "contributed",
-	supports: "supports",
-	celebrations: "celebrates",
-	comments: "commented",
-	reposts: "reposted",
-	suggestions: "suggested",
-}
+import { categoryVerbMap } from "../popup/Local_library";
+import { db } from "../db";
 
 const beaconClassName = "linkbeam-beacon-symbol";
 
@@ -21,7 +12,7 @@ class FeedDataExtractor extends DataExtractorBase {
 		this.posts = [];
 	}
 
-	extractPostDataFrom(postTagContainer, category){
+	extractPostDataFrom(postTagContainer, category, authorName){
 
 		var post = {
 			id: postTagContainer.getAttribute("data-id"),
@@ -40,6 +31,7 @@ class FeedDataExtractor extends DataExtractorBase {
 				url: postTagContainerHeader.querySelector("a.app-aware-link ") 
 						? postTagContainerHeader.querySelector("a.app-aware-link ").href.split("?")[0]
 						: null,
+				picture: null,
 			};
 
 		}
@@ -52,7 +44,11 @@ class FeedDataExtractor extends DataExtractorBase {
 
 			var value = null;
 
-			if (reactionsTagContent){
+			if (!reactionsTagContent){
+				return value;
+			}
+
+			if (["comment", "repost"].indexOf(metric) != -1){
 
 				if (reactionsTagContent.indexOf(metric) != -1){
 					for (var arrayItem of reactionsTagContent.split("\n")){
@@ -65,16 +61,25 @@ class FeedDataExtractor extends DataExtractorBase {
 				}
 
 			}
-			
 
+			if (metric == "reaction"){
+
+				var otherTermIndex = reactionsTagContent.indexOf("other");
+				if (otherTermIndex != -1){
+					value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex));
+				}
+				else{
+
+				}
+
+			}
+			
 			return value;
 		};
 
 		post.content = {
 			author:{
-				name: postTagContainer.querySelector(".update-components-actor__name .visually-hidden")
-						? postTagContainer.querySelector(".update-components-actor__name .visually-hidden").textContent
-						: null,
+				name: authorName,
 				url: postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link")
 						? postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
 						: null,
@@ -85,7 +90,7 @@ class FeedDataExtractor extends DataExtractorBase {
 			text: postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper")
 					? postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper").textContent
 					: null,
-			reactions: null,
+			reactions: getPostReactionsValues("reaction"),
 			commentsCount: getPostReactionsValues("comment"),               
 			repostsCount: getPostReactionsValues("repost"),
 		}
@@ -97,6 +102,7 @@ class FeedDataExtractor extends DataExtractorBase {
 	extractItemsCountByCategory(){
 
 		var metrics = {publications: 0};
+
 		// initializing the metrics variable
 		for (var category in categoryVerbMap){
 			metrics[category] = 0;
@@ -105,12 +111,15 @@ class FeedDataExtractor extends DataExtractorBase {
 		var beaconTag = document.querySelector(`.${beaconClassName}`);
 		beaconTag = beaconTag ? beaconTag.nextElementSibling : document.querySelector(".scaffold-finite-scroll__content").firstChild;
 
+		this.posts = [];
+		
 		while (beaconTag){
 
 			var postTagContainer = beaconTag;
 			beaconTag = beaconTag.nextElementSibling;
 
 			if (!beaconTag){
+				document.querySelector(`.${beaconClassName}`).classList.remove(beaconClassName);
 				postTagContainer.classList.add(beaconClassName);
 			}
 
@@ -124,11 +133,15 @@ class FeedDataExtractor extends DataExtractorBase {
 				continue;
 			}
 
-			const postTagContainerHeader = postTagContainer.querySelector(".update-components-header");
+			const postTagContainerHeader = postTagContainer.querySelector(".update-components-header"),
+				  authorName = postTagContainer.querySelector(".update-components-actor__name .visually-hidden")
+								? postTagContainer.querySelector(".update-components-actor__name .visually-hidden").textContent
+								: null;
+
 			var postCategory = null;
 			if (postTagContainerHeader){
 				for (var category in categoryVerbMap){
-					if (postTagContainerHeader.textContent.indexOf(categoryVerbMap[category]) != -1){
+					if (postTagContainerHeader.textContent.toLowerCase().indexOf(categoryVerbMap[category].toLowerCase()) != -1){
 						metrics[category] += 1;
 						postCategory = category;
 						break;
@@ -136,12 +149,15 @@ class FeedDataExtractor extends DataExtractorBase {
 				}
 			}
 
-			if (!postCategory){
+			if (!postCategory && authorName){
 				metrics.publications += 1;
 			}
 
-			var post = this.extractPostDataFrom(postTagContainer, postCategory);
-			this.posts.push(post);
+			if (["suggestions"].indexOf(postCategory) == -1
+					&& authorName){
+				var post = this.extractPostDataFrom(postTagContainer, postCategory, authorName);
+				this.posts.push(post);
+			}
 
 		}
 

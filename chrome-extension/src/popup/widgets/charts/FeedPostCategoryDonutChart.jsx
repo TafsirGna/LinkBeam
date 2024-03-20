@@ -7,6 +7,7 @@ import { AlertCircleIcon } from "../SVGs";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { 
   getChartColors, 
+  categoryVerbMap,
 } from "../../Local_library";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -54,15 +55,15 @@ export default class FeedPostCategoryDonutChart extends React.Component{
         data = [],
         colors = []; 
 
-      labels = Object.keys(this.props.objects[0].itemsMetrics);
+      labels = Object.keys(categoryVerbMap);
       data = labels.map(label => 0);
       colors = getChartColors(labels.length).borders;
 
       // setting the labels
       for (var visit of this.props.objects){
-        for (var metric of Object.keys(visit.itemsMetrics)){
+        for (var metric in categoryVerbMap){
           const index = labels.indexOf(metric);
-          data[index] += visit.itemsMetrics[metric];
+          data[index] += visit.itemsMetrics[metric] ? visit.itemsMetrics[metric] : 0;
         }
       }
 

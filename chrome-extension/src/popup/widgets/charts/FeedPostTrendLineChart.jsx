@@ -120,27 +120,21 @@ export default class FeedPostTrendLineChart extends React.Component{
 		switch (metric){
 			case "reactions": {
 				for (var postView of postViews){
-					if (postView.reactions){
-
-					}
+					value += postView.reactions ? postView.reactions : 0;
 				}
 				break;
 			}
 
 			case "comments": {
 				for (var postView of postViews){
-					if (postView.commentsCount){
-
-					}
+					value += postView.commentsCount ? postView.commentsCount : 0;
 				}
 				break;
 			}
 
 			case "reposts": {
 				for (var postView of postViews){
-					if (postView.repostsCount){
-
-					}
+					value += postView.repostsCount ? postView.repostsCount : 0;
 				}
 				break;
 			}

@@ -65,6 +65,18 @@ export const appParams = {
   
 }
 
+export const categoryVerbMap = {
+  likes: "likes",
+  loves: "loves",
+  contributions: "contributed",
+  supports: "supports",
+  celebrations: "celebrates",
+  comments: "commented",
+  reposts: "reposted",
+  suggestions: "suggested",
+  insights: "finds this insightful",
+}
+
 export const dbData = {
   objectStoreNames: {
     VISITS: "visits",
