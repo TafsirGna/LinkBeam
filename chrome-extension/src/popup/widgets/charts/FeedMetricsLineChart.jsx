@@ -42,7 +42,7 @@ const lineOptions = {
 		},
 		title: {
 			display: false,
-			text: 'Visits Chart',
+			text: "Feed visits' metrics",
 		},
 	},
 };

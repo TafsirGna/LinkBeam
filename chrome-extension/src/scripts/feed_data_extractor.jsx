@@ -1,43 +1,62 @@
 
-import { DataExtractorBase } from "./data_extractor_lib";
+import { 
+	DataExtractorBase,
+} from "./data_extractor_lib";
 import { categoryVerbMap } from "../popup/Local_library";
 import { db } from "../db";
-
-const beaconClassName = "linkbeam-beacon-symbol";
+import ReactDOM from 'react-dom/client';
+import styles from "../contentScriptUi/styles.min.css";
+import PostInfoView from "../contentScriptUi/widgets/PostInfoView";
 
 class FeedDataExtractor extends DataExtractorBase {
 
 	constructor(){
 		super();
 		this.posts = [];
+		this.viewedPosts = {};
 	}
 
-	extractPostDataFrom(postTagContainer, category, authorName){
+	extractPostDataFrom(postContainerElement, postCategory, authorName){
+
+		const uid = postContainerElement.getAttribute("data-id");
+		
+		if (!(uid in this.viewedPosts)){
+			this.viewedPosts[uid] = {
+				html: postContainerElement.innerHTML,
+			}
+		}
+		else{
+			if (this.viewedPosts[uid].html == postContainerElement.html){
+				return null;
+			}
+		}
 
 		var post = {
-			id: postTagContainer.getAttribute("data-id"),
-			category: category, 
-			content: {}
+			id: uid,
+			category: postCategory,
+			content: {},
 		};
 
-		if (category){
+		if (post.category){
 
-			const postTagContainerHeader = postTagContainer.querySelector(".update-components-header");
+			const postContainerHeaderElement = postContainerElement.querySelector(".update-components-header");
 
 			post.initiator = {
-				name: postTagContainerHeader.querySelector("a.update-components-text-view__mention") 
-						? postTagContainerHeader.querySelector("a.update-components-text-view__mention").textContent 
+				name: postContainerHeaderElement.querySelector("a.update-components-text-view__mention") 
+						? postContainerHeaderElement.querySelector("a.update-components-text-view__mention").textContent 
 						: null,
-				url: postTagContainerHeader.querySelector("a.app-aware-link ") 
-						? postTagContainerHeader.querySelector("a.app-aware-link ").href.split("?")[0]
+				url: postContainerHeaderElement.querySelector("a.app-aware-link ") 
+						? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
 						: null,
-				picture: null,
+				picture: postContainerHeaderElement.querySelector("img")
+							? postContainerHeaderElement.querySelector("img").src 
+							: null,
 			};
 
 		}
 
-		var reactionsTagContent = postTagContainer.querySelector(".social-details-social-counts") 
-									? postTagContainer.querySelector(".social-details-social-counts").textContent
+		var reactionsTagContent = postContainerElement.querySelector(".social-details-social-counts") 
+									? postContainerElement.querySelector(".social-details-social-counts").textContent
 									: null ;
 
 		const getPostReactionsValues = metric => {
@@ -80,20 +99,45 @@ class FeedDataExtractor extends DataExtractorBase {
 		post.content = {
 			author:{
 				name: authorName,
-				url: postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link")
-						? postTagContainer.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
+				url: postContainerElement.querySelector(".update-components-actor__meta a.app-aware-link")
+						? postContainerElement.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
 						: null,
-				picture: postTagContainer.querySelector(".update-components-actor__container .update-components-actor__image img")
-							? postTagContainer.querySelector(".update-components-actor__container .update-components-actor__image img").src
+				picture: postContainerElement.querySelector(".update-components-actor__container .update-components-actor__image img")
+							? postContainerElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
 							: null,
 			},
-			text: postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper")
-					? postTagContainer.querySelector(".feed-shared-update-v2__description-wrapper").textContent
+			text: postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper")
+					? postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
 					: null,
 			reactions: getPostReactionsValues("reaction"),
 			commentsCount: getPostReactionsValues("comment"),               
 			repostsCount: getPostReactionsValues("repost"),
-		}
+		};
+
+
+		// displaying the info widget
+
+		// (async (post) => {
+
+		// 	const dbPost = await db.feedPosts
+		// 						   .where('uid')
+		// 						   .equals(post.id)
+		// 						   .first();
+
+		// 	var newDivTag = document.createElement('div');
+	    //     document.querySelector(`div[data-id=${post.id}]`).prepend(newDivTag);
+	    //     newDivTag.attachShadow({ mode: 'open' });
+
+		// 	ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	    //         <React.StrictMode>
+	    //           <style type="text/css">{styles}</style>
+	    //           <PostInfoView 
+	    //           	object={dbPost}/>
+	    //         </React.StrictMode>
+	    //     );
+
+		// })(post);
+
 
 		return post;
 
@@ -101,74 +145,68 @@ class FeedDataExtractor extends DataExtractorBase {
 
 	extractItemsCountByCategory(){
 
-		var metrics = {publications: 0};
+		var metricLabels = Object.keys(categoryVerbMap);
+		metricLabels.push("publications"); 
 
 		// initializing the metrics variable
-		for (var category in categoryVerbMap){
-			metrics[category] = 0;
-		}
-
-		var beaconTag = document.querySelector(`.${beaconClassName}`);
-		beaconTag = beaconTag ? beaconTag.nextElementSibling : document.querySelector(".scaffold-finite-scroll__content").firstChild;
+		var metricValues = metricLabels.map(metricLabel => 0);
 
 		this.posts = [];
-		
-		while (beaconTag){
 
-			var postTagContainer = beaconTag;
-			beaconTag = beaconTag.nextElementSibling;
+		var postContainerElements = document.querySelector(".scaffold-finite-scroll__content")
+											.querySelectorAll("div[data-id]");
 
-			if (!beaconTag){
-				document.querySelector(`.${beaconClassName}`).classList.remove(beaconClassName);
-				postTagContainer.classList.add(beaconClassName);
-			}
+		Array.from(postContainerElements).forEach(postContainerElement => {
 
-			if (postTagContainer.tagName != "DIV" || !postTagContainer.querySelector("div.relative[data-id]")){
-				continue;
-			}
-
-			postTagContainer = postTagContainer.querySelector("div.relative[data-id]");
-
-			if (postTagContainer.getAttribute("data-id").indexOf("urn:li:aggregate") != -1){
-				continue;
-			}
-
-			const postTagContainerHeader = postTagContainer.querySelector(".update-components-header"),
-				  authorName = postTagContainer.querySelector(".update-components-actor__name .visually-hidden")
-								? postTagContainer.querySelector(".update-components-actor__name .visually-hidden").textContent
+			const postContainerHeaderElement = postContainerElement.querySelector(".update-components-header"),
+				  authorName = postContainerElement.querySelector(".update-components-actor__name .visually-hidden")
+								? postContainerElement.querySelector(".update-components-actor__name .visually-hidden").textContent
 								: null;
-
 			var postCategory = null;
-			if (postTagContainerHeader){
-				for (var category in categoryVerbMap){
-					if (postTagContainerHeader.textContent.toLowerCase().indexOf(categoryVerbMap[category].toLowerCase()) != -1){
-						metrics[category] += 1;
-						postCategory = category;
-						break;
+
+			if (postContainerHeaderElement){
+
+				const headerText = postContainerHeaderElement.textContent.toLowerCase();
+				metricValues = metricLabels.map((metricLabel, index) => {
+
+					var value = metricValues[index];
+					if (headerText.indexOf(categoryVerbMap[metricLabel]) != -1){
+						value++;
+						postCategory = metricLabel;
 					}
-				}
+
+					return value;
+				});
+
 			}
 
 			if (!postCategory && authorName){
-				metrics.publications += 1;
+				metricValues[metricValues.length - 1]++;
 			}
 
 			if (["suggestions"].indexOf(postCategory) == -1
 					&& authorName){
-				var post = this.extractPostDataFrom(postTagContainer, postCategory, authorName);
-				this.posts.push(post);
+				var post = this.extractPostDataFrom(postContainerElement, postCategory, authorName);
+				if (post){
+					this.posts.push(post);
+				}
 			}
 
-		}
+		});
 
-		return metrics;
+		var results = {};
+		metricLabels.forEach((metricLabel, index) => {
+			results[metricLabel] = metricValues[index];
+		});
+
+		return results;
 
 	}
 
 	extractData(){
 
 		let pageData = { 
-			metrics: this.extractItemsCountByCategory(), 
+			metrics: this.extractItemsCountByCategory()
 		};
 
 		pageData.posts = this.posts;

@@ -231,18 +231,6 @@ function showBadgeText(itemsMetrics, tabId){
 
 async function recordFeedVisit(tabData){
 
-    const mergeMetrics = (metricsA, metricsB) => {
-        var count = 0;
-        for (var metric in metricsA){
-            metricsA[metric] += metricsB[metric];
-            count += metricsA[metric];
-        }
-
-        chrome.action.setBadgeText({text: count.toString()});
-
-        return metricsA;
-    };
-
     const dateTime = new Date().toISOString();
 
     const visit = await db
@@ -258,7 +246,7 @@ async function recordFeedVisit(tabData){
                 .where({url: tabData.tabUrl, tabId: tabData.tabId})
                 .modify(visit => {
                     visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                    visit.itemsMetrics = mergeMetrics(visit.itemsMetrics, tabData.extractedData.metrics);
+                    visit.itemsMetrics = tabData.extractedData.metrics;
                 });
 
     }
@@ -274,21 +262,19 @@ async function recordFeedVisit(tabData){
             itemsMetrics: tabData.extractedData.metrics,
         });
 
-        showBadgeText(tabData.extractedData.metrics, tabData.tabId)
-
     }
+
+    showBadgeText(tabData.extractedData.metrics, tabData.tabId);
 
     // save all the sent posts
     for (var post of tabData.extractedData.posts){
+
         var dbPost = await db.feedPosts
                              .where("uid")
                              .equals(post.id)
-                             .first();
+                             .first(),
 
-        if (!dbPost){
-
-            // saving the post
-            await db.feedPosts.add({
+            newPost = {
                 uid: post.id,
                 category: post.category,
                 initiator: post.initiator,
@@ -296,7 +282,18 @@ async function recordFeedVisit(tabData){
                     author: post.content.author,
                     text: post.content.text,
                 },
-            });
+            };
+
+        if (!dbPost){
+
+            // saving the post
+            await db.feedPosts.add(newPost);
+
+        }
+        else{
+
+            await db.feedPosts
+                    .update(dbPost.id, newPost);
 
         }
 

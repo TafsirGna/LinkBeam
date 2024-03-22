@@ -55,31 +55,34 @@ export default class FeedPostCategoryDonutChart extends React.Component{
         data = [],
         colors = []; 
 
-      labels = Object.keys(categoryVerbMap);
-      data = labels.map(label => 0);
-      colors = getChartColors(labels.length).borders;
 
-      // setting the labels
-      for (var visit of this.props.objects){
-        for (var metric in categoryVerbMap){
-          const index = labels.indexOf(metric);
-          data[index] += visit.itemsMetrics[metric] ? visit.itemsMetrics[metric] : 0;
-        }
+    labels = Object.keys(categoryVerbMap);
+    labels.push("publications");
+    
+    data = labels.map(label => 0);
+    colors = getChartColors(labels.length).borders;
+
+    // setting the labels
+    for (var visit of this.props.objects){
+      for (var metric in categoryVerbMap){
+        const index = labels.indexOf(metric);
+        data[index] += visit.itemsMetrics[metric] ? visit.itemsMetrics[metric] : 0;
       }
+    }
 
-      this.setState({data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Post Count',
-              data: data,
-              backgroundColor: colors,
-              borderColor: colors,
-              borderWidth: 1,
-            },
-          ],
-        },
-      });
+    this.setState({data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Post Count',
+            data: data,
+            backgroundColor: colors,
+            borderColor: colors,
+            borderWidth: 1,
+          },
+        ],
+      },
+    });
 
   }
 

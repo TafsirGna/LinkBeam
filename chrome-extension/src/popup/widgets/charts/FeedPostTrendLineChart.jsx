@@ -41,7 +41,7 @@ const lineOptions = {
 		},
 		title: {
 			display: true,
-			text: 'Visits Chart',
+			text: 'Post metrics',
 		},
 	},
 };

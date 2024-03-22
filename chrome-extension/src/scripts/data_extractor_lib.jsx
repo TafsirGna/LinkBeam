@@ -22,6 +22,11 @@ export class DataExtractorBase {
 	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: (window.location.href.split("?"))[0] }}, (response) => {
 	    console.log('linkedin-data response sent', response, data);
 	    this.webPageData = data;
+
+      setTimeout(() => {
+        this.extractSendTabData();
+      }, 3000);
+
 	  });
 
 	}
@@ -39,32 +44,20 @@ export class DataExtractorBase {
 
 	  this.tabId = messageData.tabId;
 
-	  setInterval(
-	    () => {
-
-			// if (this.webPageData == {}){
-			//   sendTabData({}, tabId);
-			//   return;
-			// }
-
-			// var data = extractData();
-			// if (data == this.webPageData){
-			//   data = {};
-			// }
-			// sendTabData(data, tabId);
-			// this.webPageData = data;
-
-	    	var webPageData = this.extractData();
-	    	if (webPageData == this.webPageData){
-	    		webPageData = null;
-	    	}
-	    	this.sendTabData(webPageData);
-
-	    }, 
-	    3000
-	  );
+    this.extractSendTabData();
 
 	}
+
+  extractSendTabData(){
+
+    var webPageData = this.extractData();
+    if (webPageData == this.webPageData){
+      webPageData = null;
+    }
+
+    this.sendTabData(webPageData);    
+
+  }
 
 	showToast(messageData, property, sendResponse){
 
