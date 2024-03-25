@@ -16,7 +16,8 @@ import {
   getChartColors, 
   getVisitPostCount,
 } from "../../Local_library";
-import { faker } from '@faker-js/faker';
+// import { faker } from '@faker-js/faker';
+import moment from 'moment';
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -36,6 +37,16 @@ export const options = {
       }
     }
   },
+  plugins: {
+    tooltip: {
+      callbacks: {
+        label: ((tooltipItem, data) => {
+          // console.log(tooltipItem);
+          return `${moment(tooltipItem.raw.dateString).format('LLLL')}`;
+        })
+      }
+    }
+  }
 };
 
 export default class FeedScatterPlot extends React.Component{
@@ -76,6 +87,7 @@ export default class FeedScatterPlot extends React.Component{
             data: this.props.objects.map(visit => ({
                           x: getVisitPostCount(visit),
                           y: (visit.timeCount / 60),
+                          dateString: visit.date,
                         })),
             backgroundColor: getChartColors(1).borders[0],
           },

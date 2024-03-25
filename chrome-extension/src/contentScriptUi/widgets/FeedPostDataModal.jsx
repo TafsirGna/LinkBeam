@@ -26,6 +26,7 @@ import {
   getChartColors,
   messageMeta,
   getFeedLineChartsData,
+  getPostMetricValue,
 } from "../../popup/Local_library";
 import { BarChartIcon } from "../../popup/widgets/SVGs";
 import eventBus from "../../popup/EventBus";
@@ -33,7 +34,7 @@ import { Spinner } from "flowbite-react";
 // import { Button, Modal } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
 
-import { faker } from '@faker-js/faker';
+// import { faker } from '@faker-js/faker';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,

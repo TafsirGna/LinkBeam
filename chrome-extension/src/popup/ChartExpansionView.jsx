@@ -35,7 +35,7 @@ import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
-import VisitsConnectedScatterPlot from "./widgets/charts/VisitsConnectedScatterPlot";
+import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
 import { db } from "../db";
 
 export default class ChartExpansionView extends React.Component{
@@ -137,7 +137,7 @@ export default class ChartExpansionView extends React.Component{
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 7 && 
-                      <VisitsConnectedScatterPlot 
+                      <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}

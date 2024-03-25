@@ -70,7 +70,7 @@ export default class AllPostsModal extends React.Component{
                           .anyOf(uids)
                           .toArray(); 
 
-    // posts.sort((a,b) => new Date(b.date) - new Date(a.date));
+    posts.reverse();
 
   	this.setState({posts: posts});
 

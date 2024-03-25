@@ -1,5 +1,5 @@
 /*import './PostListItemView.css'*/
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChartIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -22,17 +22,33 @@ import suggestion_icon from '../../assets/suggestion_icon.png';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
-const popover = (
-  <Popover id="popover-basic">
-    <Popover.Body>
+// const popover = (
+//   <Popover id="popover-basic">
+//     <Popover.Body>
       
-      <Spinner 
-        animation="border" 
-        size="sm"
-        variant="secondary" />
+//       <Spinner 
+//         animation="border" 
+//         size="sm"
+//         variant="secondary" />
 
-    </Popover.Body>
-  </Popover>
+//     </Popover.Body>
+//   </Popover>
+// );
+
+
+const UpdatingPopover = React.forwardRef(
+  ({ popper, children, show: _, ...props }, ref) => {
+    useEffect(() => {
+      console.log('updating!');
+      popper.scheduleUpdate();
+    }, [children, popper]);
+
+    return (
+      <Popover ref={ref} body {...props}>
+        {children}
+      </Popover>
+    );
+  },
 );
 
 const categoryIconMap = {
@@ -54,7 +70,14 @@ export default class PostListItemView extends React.Component{
     this.state = {
       postViews: null,
       postModalShow: false,
+      userTooltipContent: <Spinner 
+                            animation="border" 
+                            size="sm"
+                            variant="secondary" />,
     };
+
+    this.onEnteringUserTooltip = this.onEnteringUserTooltip.bind(this);
+    this.onExitingUserTooltip = this.onExitingUserTooltip.bind(this);
   }
 
   componentDidMount() {
@@ -80,6 +103,33 @@ export default class PostListItemView extends React.Component{
 
   });
 
+  onEnteringUserTooltip = async () => {
+
+    const url = this.props.object.category 
+                        ? this.props.object.initiator.url
+                        : this.props.object.content.author.url,
+          category = this.props.object.category ? this.props.object.category : "publications";
+
+    const count = await db.feedPosts 
+                        .filter(post => post.category == this.props.object.category
+                                          && ((post.category && post.initiator.url == url)
+                                                || !post.category && post.content.author.url == url))
+                        .count();
+
+    this.setState({userTooltipContent: <span class="fw-light">{`${count} ${category}`} so far</span>});
+
+  }
+
+  onExitingUserTooltip = async () => {
+
+    this.setState({userTooltipContent: <Spinner 
+                            animation="border" 
+                            size="sm"
+                            variant="secondary" />});
+
+  }
+
+
   render(){
     return (
       <>
@@ -100,7 +150,12 @@ export default class PostListItemView extends React.Component{
                 href={this.props.object.category 
                         ? this.props.object.initiator.url
                         : this.props.object.content.author.url}>
-                <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
+                <OverlayTrigger 
+                  trigger="hover" 
+                  placement="top" 
+                  onEntering={this.onEnteringUserTooltip}
+                  onExiting={this.onExitingUserTooltip}
+                  overlay={<UpdatingPopover id="popover-contained">{this.state.userTooltipContent}</UpdatingPopover>}>
                   <span>
                     { this.props.object.category 
                         ? this.props.object.initiator.name

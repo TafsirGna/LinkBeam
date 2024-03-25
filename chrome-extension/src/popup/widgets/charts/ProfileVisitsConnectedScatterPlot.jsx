@@ -1,4 +1,4 @@
-/*import './VisitsConnectedScatterPlot.css'*/
+/*import './ProfileVisitsConnectedScatterPlot.css'*/
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -17,7 +17,7 @@ import { AlertCircleIcon } from "../SVGs";
 
 const length = (path) => d3.create("svg:path").attr("d", path).node().getTotalLength();
 
-export default class VisitsConnectedScatterPlot extends React.Component{
+export default class ProfileVisitsConnectedScatterPlot extends React.Component{
 
   constructor(props){
     super(props);

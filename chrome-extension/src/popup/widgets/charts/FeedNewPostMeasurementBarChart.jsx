@@ -140,7 +140,7 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
         labels: Object.keys(results),
         datasets: [
           {
-            label: 'Dataset',
+            label: 'Count Percentage (%)',
             data: Object.keys(results).map((label) => results[label]),
             // data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
             backgroundColor: colors.borders,

@@ -31,7 +31,7 @@ import StatIndicatorsView from "./widgets/StatIndicatorsView";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
-import VisitsConnectedScatterPlot from "./widgets/charts/VisitsConnectedScatterPlot";
+import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
@@ -267,7 +267,7 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 7 
-                  && <VisitsConnectedScatterPlot 
+                  && <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         carrouselIndex={7} />}
             </Carousel.Item>
