@@ -89,7 +89,7 @@ export default class FeedMetricsLineChart extends React.Component{
 			return;
 		}
 
-		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, [this.props.metric], moment)
+		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, [this.props.metric], {moment: moment})
 
 		const colors = getChartColors(1);
 		this.setState({

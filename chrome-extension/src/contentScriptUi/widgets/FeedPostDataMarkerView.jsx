@@ -1,17 +1,27 @@
-/*import './WebUiRequestToast.css'*/
+/*import './FeedPostDataMarkerView.css'*/
 import React from 'react';
 import { appParams } from "../../popup/Local_library";
 import { BarChartIcon } from "../../popup/widgets/SVGs";
+import eventBus from "../../popup/EventBus";
 
-export default class PostInfoView extends React.Component{
+export default class FeedPostDataMarkerView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
     };
+
+    this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
+    
   }
 
   componentDidMount() {
+
+  }
+
+  showFeedPostDataModal(){
+
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, {object: this.props.object});
 
   }
 
@@ -35,7 +45,7 @@ export default class PostInfoView extends React.Component{
                 
                 {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
               </button>*/}
-              <button onClick={() => {}} type="button" class="text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800" data-dismiss-target="#alert-additional-content-1" aria-label="Close">
+              <button onClick={this.showFeedPostDataModal} type="button" class="text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800" data-dismiss-target="#alert-additional-content-1" aria-label="Close">
                 <BarChartIcon 
                     size="12"
                     className=""/>

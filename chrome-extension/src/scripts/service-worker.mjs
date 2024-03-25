@@ -479,5 +479,37 @@ function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case messageMeta.header.REQUEST_POST_VIEWS_DATA:{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            // Saving the new notification setting state
+            const postUid = message.data.postUid,
+                  tabId = message.data.tabId;
+            fetchPostViews(tabId, postUid);
+            break;
+        }
+
     }
+}
+
+
+async function fetchPostViews(tabId, postUid){
+
+    const feedPostViews = await db.feedPostViews
+                                  .where("uid")
+                                  .equals(postUid)
+                                  .toArray();
+
+    const settings = await db.settings
+                             .where("id")
+                             .equals(1)
+                             .first();
+
+    chrome.tabs.sendMessage(tabId, {header: messageMeta.header.RESPONSE_POST_VIEWS_DATA, data: {lastDataResetDate: settings.lastDataResetDate, objects: feedPostViews}}, (response) => {
+        console.log('post views data response sent', response);
+    }); 
+
 }

@@ -6,10 +6,10 @@ import React from 'react';
 
 export class DataExtractorBase {
 
-	tabId = null;
-	webPageData = null;
-
 	constructor(){
+
+    this.tabId = null;
+    this.webPageData = null;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -43,6 +43,8 @@ export class DataExtractorBase {
 	  });
 
 	  this.tabId = messageData.tabId;
+
+    this.setUpExtensionWidgets();
 
     this.extractSendTabData();
 
@@ -111,7 +113,7 @@ export class DataExtractorBase {
 
 	}
 
-}
+};
 
 
 
@@ -428,7 +430,7 @@ export const publicDataExtractor = {
 
   }
 
-}
+};
 
 
 export const authDataExtractor = {

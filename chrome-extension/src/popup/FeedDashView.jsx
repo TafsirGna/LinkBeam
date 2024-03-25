@@ -41,6 +41,7 @@ import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
+import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
 import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
@@ -238,6 +239,14 @@ export default class FeedDashView extends React.Component{
               <div class="border rounded shadow">
                 <FeedScatterPlot
                   objects={this.state.visits}/>
+              </div>
+              <div class="border rounded shadow mt-3">
+                <FeedNewPostMeasurementBarChart
+                  objects={this.state.visits}
+                  rangeDates={{
+                    start: this.state.startDate,
+                    end: this.state.endDate,
+                  }}/>
               </div>
             </div>
             <div class="col border rounded shadow py-3">

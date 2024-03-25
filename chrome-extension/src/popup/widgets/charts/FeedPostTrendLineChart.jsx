@@ -92,7 +92,7 @@ export default class FeedPostTrendLineChart extends React.Component{
 			end: new Date().toISOString(),
 		}
 
-		const data = getFeedLineChartsData(this.props.objects, rangeDates, this.getMetricValue, titles, moment);
+		const data = getFeedLineChartsData(this.props.objects, rangeDates, this.getMetricValue, titles, {moment: moment});
 
 		const datasets = titles.map((title, index) => 
 			({

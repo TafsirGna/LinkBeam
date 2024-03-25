@@ -18,6 +18,10 @@ class ProfileDataExtractor extends DataExtractorBase {
     super();
   }
 
+  setUpExtensionWidgets(){
+    
+  }
+
   extractData(){
 
     let pageData = null;

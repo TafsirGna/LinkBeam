@@ -2,11 +2,13 @@
 import { 
 	DataExtractorBase,
 } from "./data_extractor_lib";
-import { categoryVerbMap } from "../popup/Local_library";
+import React from 'react';
+import { categoryVerbMap, appParams } from "../popup/Local_library";
 import { db } from "../db";
 import ReactDOM from 'react-dom/client';
 import styles from "../contentScriptUi/styles.min.css";
-import PostInfoView from "../contentScriptUi/widgets/PostInfoView";
+import FeedPostDataMarkerView from "../contentScriptUi/widgets/FeedPostDataMarkerView";
+import FeedPostDataModal from "../contentScriptUi/widgets/FeedPostDataModal";
 
 class FeedDataExtractor extends DataExtractorBase {
 
@@ -14,6 +16,24 @@ class FeedDataExtractor extends DataExtractorBase {
 		super();
 		this.posts = [];
 		this.viewedPosts = {};
+
+	}
+
+	setUpExtensionWidgets(){
+
+		// adding the post stats modal
+		var newDivTag = document.createElement('div');
+        document.querySelector(".scaffold-finite-scroll__content")
+        		.prepend(newDivTag);
+        newDivTag.attachShadow({ mode: 'open' });
+
+		ReactDOM.createRoot(newDivTag.shadowRoot).render(
+            <React.StrictMode>
+              <style type="text/css">{styles}</style>
+              <FeedPostDataModal tabId={this.tabId}/>
+            </React.StrictMode>
+        );
+		
 	}
 
 	extractPostDataFrom(postContainerElement, postCategory, authorName){
@@ -106,9 +126,9 @@ class FeedDataExtractor extends DataExtractorBase {
 							? postContainerElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
 							: null,
 			},
-			text: postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper")
-					? postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
-					: null,
+			// text: postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper")
+			// 		? postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
+			// 		: null,
 			reactions: getPostReactionsValues("reaction"),
 			commentsCount: getPostReactionsValues("comment"),               
 			repostsCount: getPostReactionsValues("repost"),
@@ -116,28 +136,22 @@ class FeedDataExtractor extends DataExtractorBase {
 
 
 		// displaying the info widget
+		if (!postContainerElement.querySelector(`.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
-		// (async (post) => {
+			var newDivTag = document.createElement('div');
+			newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
+	        postContainerElement.prepend(newDivTag);
+	        newDivTag.attachShadow({ mode: 'open' });
 
-		// 	const dbPost = await db.feedPosts
-		// 						   .where('uid')
-		// 						   .equals(post.id)
-		// 						   .first();
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <FeedPostDataMarkerView 
+	              	object={post}/>
+	            </React.StrictMode>
+	        );
 
-		// 	var newDivTag = document.createElement('div');
-	    //     document.querySelector(`div[data-id=${post.id}]`).prepend(newDivTag);
-	    //     newDivTag.attachShadow({ mode: 'open' });
-
-		// 	ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	    //         <React.StrictMode>
-	    //           <style type="text/css">{styles}</style>
-	    //           <PostInfoView 
-	    //           	object={dbPost}/>
-	    //         </React.StrictMode>
-	    //     );
-
-		// })(post);
-
+		}
 
 		return post;
 

@@ -65,10 +65,12 @@ export default class AllPostsModal extends React.Component{
               }
             });   
 
-    const posts = await db.feedPosts
+    var posts = await db.feedPosts
                           .where("uid")
                           .anyOf(uids)
                           .toArray(); 
+
+    // posts.sort((a,b) => new Date(b.date) - new Date(a.date));
 
   	this.setState({posts: posts});
 

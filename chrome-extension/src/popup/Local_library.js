@@ -39,6 +39,7 @@ export const appParams = {
   GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
   LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "core-section-container",
   // LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
+  FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
   
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
   TIME_COUNT_INC_VALUE: 3,
@@ -116,6 +117,8 @@ export const messageMeta = {
   header: {
     CS_SETUP_DATA: "CS_SETUP_DATA",
     EXTRACTED_DATA: "EXTRACTED_DATA",
+    REQUEST_POST_VIEWS_DATA: "REQUEST_POST_VIEWS_DATA", 
+    RESPONSE_POST_VIEWS_DATA: "RESPONSE_POST_VIEWS_DATA", 
   }
 }
 
@@ -770,9 +773,20 @@ export function getVisitsTotalTime(visits){
 
 }
 
-export function getFeedLineChartsData(objects, rangeDates, func, metrics, moment){
+export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, func){
 
   const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+
+  const incDate = (date) => {
+
+    if (func.moment){
+      return func.moment(date).add(1, 'd').toDate();
+    }
+    else if (func.luxon){
+      return func.luxon.fromJSDate(date).plus({ days: 1 }).toJSDate();
+    }
+
+  }
 
   var data = {};
 
@@ -813,7 +827,7 @@ export function getFeedLineChartsData(objects, rangeDates, func, metrics, moment
       }
 
       resData[metric] = labels.map(label => Number(label.slice(0, label.length - 1)) in data[dateString] 
-                                      ? func(data[dateString][Number(label.slice(0, label.length - 1))], metric)
+                                      ? getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric)
                                       : 0);
 
     }
@@ -827,7 +841,7 @@ export function getFeedLineChartsData(objects, rangeDates, func, metrics, moment
         labelsOk = true;
       }
 
-      for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = moment(date).add(1, 'd').toDate()){
+      for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = incDate(date)){
         var label = date.toISOString().split("T")[0];
 
         if (!labelsOk){
@@ -840,7 +854,7 @@ export function getFeedLineChartsData(objects, rangeDates, func, metrics, moment
           Object.keys(data[label]).forEach(hourString => {
             visits = visits.concat(data[label][hourString]);
           });
-          resData[metric].push(func(visits, metric));
+          resData[metric].push(getMetricValue(visits, metric));
 
         }
         else{

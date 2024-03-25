@@ -1,6 +1,5 @@
 /*import './PostListItemView.css'*/
 import React from 'react';
-import moment from 'moment';
 import { BarChartIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -21,12 +20,17 @@ import insightful_icon from '../../assets/insightful_icon.png';
 import repost_icon from '../../assets/repost_icon.png';
 import suggestion_icon from '../../assets/suggestion_icon.png';
 import { Tooltip } from "react-bootstrap";
+import Spinner from 'react-bootstrap/Spinner';
 
 const popover = (
   <Popover id="popover-basic">
     <Popover.Body>
-      And here's some <strong>amazing</strong> content. It's very engaging.
-      right?
+      
+      <Spinner 
+        animation="border" 
+        size="sm"
+        variant="secondary" />
+
     </Popover.Body>
   </Popover>
 );
@@ -89,18 +93,21 @@ export default class PostListItemView extends React.Component{
             height="40" 
             class="shadow rounded-circle flex-shrink-0 me-2"/>
           {/*<svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>*/}
-          <p class="pb-3 mb-0 small lh-sm">
-            <OverlayTrigger trigger="hover" placement="left" overlay={popover}>
+          <p class="pb-3 mb-0 small lh-sm w-100">
+            
               <a 
                 class="d-block text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
                 href={this.props.object.category 
                         ? this.props.object.initiator.url
                         : this.props.object.content.author.url}>
-                { this.props.object.category 
-                    ? this.props.object.initiator.name
-                    : this.props.object.content.author.name } 
+                <OverlayTrigger trigger="hover" placement="top" overlay={popover}>
+                  <span>
+                    { this.props.object.category 
+                        ? this.props.object.initiator.name
+                        : this.props.object.content.author.name } 
+                  </span>
+                </OverlayTrigger>
               </a>
-            </OverlayTrigger>
             <div class="w-100 p-1 py-3 rounded shadow-sm border">
               <OverlayTrigger
                 placement="top"
