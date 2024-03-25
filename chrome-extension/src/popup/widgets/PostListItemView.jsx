@@ -22,19 +22,6 @@ import suggestion_icon from '../../assets/suggestion_icon.png';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
-// const popover = (
-//   <Popover id="popover-basic">
-//     <Popover.Body>
-      
-//       <Spinner 
-//         animation="border" 
-//         size="sm"
-//         variant="secondary" />
-
-//     </Popover.Body>
-//   </Popover>
-// );
-
 
 const UpdatingPopover = React.forwardRef(
   ({ popper, children, show: _, ...props }, ref) => {

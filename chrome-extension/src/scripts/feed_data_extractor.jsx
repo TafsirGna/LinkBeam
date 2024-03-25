@@ -127,8 +127,27 @@ class FeedDataExtractor extends DataExtractorBase {
 				var otherTermIndex = reactionsTagContent.indexOf("other");
 				if (otherTermIndex != -1){
 					value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex));
+					value ++;
 				}
 				else{
+					var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
+					arrayItems.forEach((arrayItem, index) => {
+						index1 = arrayItem.indexOf("comment") != -1 ? index : index1;
+						index2 = arrayItem.indexOf("repost") != -1 ? index : index2;
+					});
+
+					if (index1 != -1){
+						arrayItems.slice(index1, 1);
+					}
+
+					if (index2 != -1){
+						arrayItems.slice(index2 - 1, 1);
+					}
+
+					const val = Number(arrayItems.join("")); 
+					if (!isNaN(val)){
+						value = val;
+					}
 
 				}
 
@@ -157,7 +176,7 @@ class FeedDataExtractor extends DataExtractorBase {
 
 
 		// displaying the info widget
-		if (!postContainerElement.querySelector(`.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+		if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
 			var newDivTag = document.createElement('div');
 			newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
@@ -193,6 +212,10 @@ class FeedDataExtractor extends DataExtractorBase {
 
 		Array.from(postContainerElements).forEach(postContainerElement => {
 
+			if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
+				return;
+			}
+
 			const postContainerHeaderElement = postContainerElement.querySelector(".update-components-header"),
 				  authorName = postContainerElement.querySelector(".update-components-actor__name .visually-hidden")
 								? postContainerElement.querySelector(".update-components-actor__name .visually-hidden").textContent
@@ -224,6 +247,12 @@ class FeedDataExtractor extends DataExtractorBase {
 				var post = this.extractPostDataFrom(postContainerElement, postCategory, authorName);
 				if (post){
 					this.posts.push(post);
+				}
+			}
+			else{
+				var extentionPostElement = postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`);
+				if (extentionPostElement){
+					extentionPostElement.remove();
 				}
 			}
 
