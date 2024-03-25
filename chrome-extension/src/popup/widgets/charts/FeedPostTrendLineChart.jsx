@@ -4,7 +4,8 @@ import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import { 
 	getChartColors,
-	getFeedLineChartsData
+	getFeedLineChartsData,
+	getPostMetricValue,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -92,7 +93,7 @@ export default class FeedPostTrendLineChart extends React.Component{
 			end: new Date().toISOString(),
 		}
 
-		const data = getFeedLineChartsData(this.props.objects, rangeDates, this.getMetricValue, titles, {moment: moment});
+		const data = getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, {moment: moment});
 
 		const datasets = titles.map((title, index) => 
 			({
@@ -110,37 +111,6 @@ export default class FeedPostTrendLineChart extends React.Component{
 				datasets: datasets,
 			}
 		});
-
-	}
-
-	getMetricValue(postViews, metric){
-
-		var value = 0;
-		
-		switch (metric){
-			case "reactions": {
-				for (var postView of postViews){
-					value += postView.reactions ? postView.reactions : 0;
-				}
-				break;
-			}
-
-			case "comments": {
-				for (var postView of postViews){
-					value += postView.commentsCount ? postView.commentsCount : 0;
-				}
-				break;
-			}
-
-			case "reposts": {
-				for (var postView of postViews){
-					value += postView.repostsCount ? postView.repostsCount : 0;
-				}
-				break;
-			}
-		}
-
-		return value;
 
 	}
 

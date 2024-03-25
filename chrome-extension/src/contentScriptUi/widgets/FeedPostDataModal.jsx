@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './FeedPostDataModal.css'*/
 import React from 'react';
 import { 
@@ -131,7 +152,7 @@ export default class FeedPostDataModal extends React.Component{
       end: new Date().toISOString(),
     }
 
-    const data = getFeedLineChartsData(objects, rangeDates, this.getMetricValue, titles, {luxon: LuxonDateTime});
+    const data = getFeedLineChartsData(objects, rangeDates, getPostMetricValue, titles, {luxon: LuxonDateTime});
 
     const datasets = titles.map((title, index) => 
       ({
@@ -149,37 +170,6 @@ export default class FeedPostDataModal extends React.Component{
         datasets: datasets,
       }
     });
-
-  }
-
-  getMetricValue(postViews, metric){
-
-    var value = 0;
-    
-    switch (metric){
-      case "reactions": {
-        for (var postView of postViews){
-          value += postView.reactions ? postView.reactions : 0;
-        }
-        break;
-      }
-
-      case "comments": {
-        for (var postView of postViews){
-          value += postView.commentsCount ? postView.commentsCount : 0;
-        }
-        break;
-      }
-
-      case "reposts": {
-        for (var postView of postViews){
-          value += postView.repostsCount ? postView.repostsCount : 0;
-        }
-        break;
-      }
-    }
-
-    return value;
 
   }
 

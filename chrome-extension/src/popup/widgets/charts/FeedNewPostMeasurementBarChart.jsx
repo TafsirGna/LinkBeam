@@ -1,7 +1,29 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './FeedNewPostMeasurementBarChart.css'*/
 import React from 'react';
 import { Bar } from 'react-chartjs-2';
-import { faker } from '@faker-js/faker';
+// import { faker } from '@faker-js/faker';
+import { db } from "../../../db";
 import { 
   getChartColors, 
   dateBetweenRange,
@@ -71,24 +93,55 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
   async setChartData(){
 
-    var uids = [];
+    var periodPostUids = [];
     await db.feedPostViews
-            .filter(postView => dateBetweenRange(this.props.startDate, this.props.endDate, postView.date))
+            .filter(postView => dateBetweenRange(this.props.rangeDates.start, this.props.rangeDates.end, postView.date))
             .each(postView => {
-              if (uids.indexOf(postView.uid) == -1){
-                uids.push(postView.uid);
+              if (periodPostUids.indexOf(postView.uid) == -1){
+                periodPostUids.push(postView.uid);
               }
-            });   
+            });  
+
+    var results = {
+      Old: 0,
+      New: 0, 
+    }; 
+
+    if (periodPostUids.length){
+
+      // among those posts, how many of them are not only of this period
+      var olderPostCount = 0;
+
+      for (var uid of periodPostUids){
+
+        const postView = await db.feedPostViews
+                                  .where("uid")
+                                  .equals(uid)
+                                  .filter(postView => new Date(postView.date.split("T")[0]) < new Date(this.props.rangeDates.start))
+                                  .first();
+
+        if (postView){
+          olderPostCount++;
+        }
+
+      }
+
+      results = {
+        Old: ((olderPostCount * 100) / periodPostUids.length).toFixed(1),
+        New:(((periodPostUids.length - olderPostCount) * 100) / periodPostUids.length).toFixed(1), 
+      };
+
+    }
 
     var colors = getChartColors(1);
 
     // setting the bar data
     this.setState({barData: {
-        labels: results.map((object) => object.label),
+        labels: Object.keys(results),
         datasets: [
           {
-            label: 'Time spent (minutes)',
-            data: results.map((object) => object.count),
+            label: 'Dataset',
+            data: Object.keys(results).map((label) => results[label]),
             // data: labels.map(() => faker.number.int({ min: 0, max: 1000 })),
             backgroundColor: colors.borders,
             borderColor: colors.borders,
@@ -101,25 +154,34 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
+    if (prevProps.rangeDates != this.props.rangeDates){
+
+      this.setChartData();
+
+    }
+
   }
 
   render(){
     return (
       <>
 
-        { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                          </div> }
+        { !this.state.barData 
+            && <div class="text-center">
+                  <div class="spinner-border spinner-border-sm" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div> }
 
-        { this.state.barData && 
-                    <div>
-                      <Bar options={barOptions} data={this.state.barData} />
-                      { this.props.displayLegend 
-                          && this.props.displayLegend == true 
-                          && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
-                              Chart of visits of the days with the spent time
-                            </p> }
-                    </div> }
+        { this.state.barData 
+            &&  <div class="p-3">
+                  <Bar options={barOptions} data={this.state.barData} />
+                  { this.props.displayLegend 
+                      && this.props.displayLegend == true 
+                      && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                          Chart of visits of the days with the spent time
+                        </p> }
+                </div> }
 
       </>
     );

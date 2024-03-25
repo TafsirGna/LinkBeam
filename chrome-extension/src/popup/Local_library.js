@@ -773,6 +773,38 @@ export function getVisitsTotalTime(visits){
 
 }
 
+
+export function getPostMetricValue(postViews, metric){
+
+    var value = 0;
+    
+    switch (metric){
+      case "reactions": {
+        for (var postView of postViews){
+          value += postView.reactions ? postView.reactions : 0;
+        }
+        break;
+      }
+
+      case "comments": {
+        for (var postView of postViews){
+          value += postView.commentsCount ? postView.commentsCount : 0;
+        }
+        break;
+      }
+
+      case "reposts": {
+        for (var postView of postViews){
+          value += postView.repostsCount ? postView.repostsCount : 0;
+        }
+        break;
+      }
+    }
+
+    return value;
+
+  }
+
 export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, func){
 
   const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);

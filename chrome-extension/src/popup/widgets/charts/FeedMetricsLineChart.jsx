@@ -6,7 +6,8 @@ import {
 	getChartColors,
 	getVisitsTotalTime,
 	getVisitsPostCount,
-	getFeedLineChartsData
+	getFeedLineChartsData,
+	getPostMetricValue,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -89,7 +90,7 @@ export default class FeedMetricsLineChart extends React.Component{
 			return;
 		}
 
-		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, [this.props.metric], {moment: moment})
+		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, getPostMetricValue, [this.props.metric], {moment: moment})
 
 		const colors = getChartColors(1);
 		this.setState({
@@ -106,34 +107,6 @@ export default class FeedMetricsLineChart extends React.Component{
 				],
 			}
 		});
-	}
-
-	getMetricValue(visits, metric){
-
-		var value = null;
-		switch(metric){
-			case "Total time": {
-				value = getVisitsTotalTime(visits); 
-				break;
-			}
-
-			case "Post Count": {
-				value = getVisitsPostCount(visits); 
-				break;
-			}
-
-			case "Visit Count": {
-				value = visits.length; 
-				break;
-			}
-
-			case "Mean time": {
-				value = (getVisitsTotalTime(visits) / visits.length).toFixed(2); 
-				break;
-			}
-		}
-
-		return value;
 	}
 
 	render(){
