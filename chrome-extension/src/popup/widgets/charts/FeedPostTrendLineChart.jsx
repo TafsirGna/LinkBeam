@@ -89,8 +89,8 @@ export default class FeedPostTrendLineChart extends React.Component{
 		const colors = getChartColors(titles.length);
 
 		const rangeDates = {
-			start: this.props.globalData.settings.lastDataResetDate,
-			end: new Date().toISOString(),
+			start: this.props.globalData.settings.lastDataResetDate.split("T")[0],
+			end: new Date().toISOString().split("T")[0],
 		}
 
 		const data = getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, {moment: moment});

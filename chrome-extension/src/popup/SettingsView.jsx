@@ -47,6 +47,7 @@ const datePropertyNames = {
             reminders: "createdOn",
             visits: "date",
             feedPosts: "date",
+            feedPostViews: "date",
             profiles: "date",
           };
 
@@ -241,30 +242,54 @@ export default class SettingsView extends React.Component{
           if (table.name == "settings"){
             tableData = await table.toArray();
           }
-          else if (table.name == "profiles"){
+          else if (["profiles", "feedPostViews"].indexOf(table.name)){
             continue;
           }
           else{
             tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                                      .toArray();
           }
+
           dbData.objectStores[table.name] = tableData;
 
-          if (table.name == "visits"){
+          switch(table.name){
+            case "visits":{
 
-            // Retrieving all the profiles linked to the visits 
-            var profiles = [];
-            await Promise.all (tableData.map (async visit => {
-              var profile = null;
-              [profile] = await Promise.all([
-                db.profiles.where('url').equals(visit.url).first()
-              ]);
-              profiles.push(profile);
-            }));
+              // Retrieving all the profiles linked to the visits 
+              var profiles = [];
+              await Promise.all (tableData.map (async visit => {
+                var profile = null;
+                [profile] = await Promise.all([
+                  db.profiles.where('url').equals(visit.url).first()
+                ]);
+                profiles.push(profile);
+              }));
 
-            dbData.objectStores["profiles"] = profiles;
+              dbData.objectStores["profiles"] = profiles;
 
+              break;
+
+            }
+
+            case "feedPostViews":{
+
+              // Retrieving all the profiles linked to the visits 
+              var feedPosts = [];
+              await Promise.all (tableData.map (async feedPostView => {
+                var feedPost = null;
+                [feedPost] = await Promise.all([
+                  db.feedPosts.where('uid').equals(feedPostView.uid).first()
+                ]);
+                feedPosts.push(feedPost);
+              }));
+
+              dbData.objectStores["feedPosts"] = feedPosts;
+
+              break;
+              
+            }
           }
+
         }
 
         try {

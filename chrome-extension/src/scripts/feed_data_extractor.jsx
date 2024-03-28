@@ -114,7 +114,7 @@ class FeedDataExtractor extends DataExtractorBase {
 					for (var arrayItem of reactionsTagContent.split("\n")){
 						var index = arrayItem.indexOf(metric);
 						if (index != -1){
-							value = Number(arrayItem.slice(0, index));
+							value = Number(arrayItem.slice(0, index).replaceAll(",", "."));
 							break;
 						}
 					}
@@ -137,14 +137,14 @@ class FeedDataExtractor extends DataExtractorBase {
 					});
 
 					if (index1 != -1){
-						arrayItems.slice(index1, 1);
+						arrayItems.splice(index1, 1);
 					}
 
 					if (index2 != -1){
-						arrayItems.slice(index2 - 1, 1);
+						arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
 					}
 
-					const val = Number(arrayItems.join("")); 
+					const val = Number(arrayItems.join("").replaceAll(",", ".")); 
 					if (!isNaN(val)){
 						value = val;
 					}
@@ -212,7 +212,12 @@ class FeedDataExtractor extends DataExtractorBase {
 
 		Array.from(postContainerElements).forEach(postContainerElement => {
 
-			if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
+			if (postContainerElement.querySelector(".feed-shared-update-v2")){
+				if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
+					return;
+				}
+			}
+			else{
 				return;
 			}
 

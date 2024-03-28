@@ -75,11 +75,18 @@ chrome.runtime.onInstalled.addListener(details => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
     // check first if the app has been correctly set up before proceeding
-    Dexie.exists(appParams.appDbName).then(function (exists) {
-        if (exists) {
-            processTabEvent(tabId, changeInfo, tab);
-        }
-    });
+    // Dexie.exists(appParams.appDbName).then(function (exists) {
+    //     if (exists) {
+    
+    try{
+        processTabEvent(tabId, changeInfo, tab);
+    }
+    catch(error){
+        console.log("Error : ", error)
+    }
+
+    //     }
+    // });
 
   }
 );
@@ -146,32 +153,47 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
     // console.log(activeInfo.tabId);
     currentTabId = activeInfo.tabId;
+    // windowId = info.windowId
 
-    // check if this tab has already been visited 
+    console.log("Changing current tab : ", currentTabId);
 
-    (async () => {
-        const visit = await db.visits
-                        .where("tabId")
-                        .equals(activeInfo.tabId)
-                        .first();
+    try{
 
-        if (visit){
-            if (visit.url.indexOf("/feed") != -1){
-                showBadgeText(visit.itemsMetrics, activeInfo.tabId);
-            }
-            else{
-                if (currentTabId == activeInfo.tabId){
-                    chrome.action.setBadgeText({text: "1"});
+        // check if this tab has already been visited 
+        (async () => {
+
+            const visit = await db.visits
+                            .where("tabId")
+                            .equals(activeInfo.tabId)
+                            .first();
+
+            if (visit){
+                if (visit.url.indexOf("/feed") != -1){
+                    showBadgeText(visit.itemsMetrics, activeInfo.tabId);
+                }
+                else{
+                    if (currentTabId == activeInfo.tabId){
+                        chrome.action.setBadgeText({text: "1"});
+                    }
                 }
             }
-        }
-        else{
-            if (currentTabId == activeInfo.tabId){
-                chrome.action.setBadgeText({text: null});
-            }
-        }
+            else{
 
-    })();
+                if (currentTabId == activeInfo.tabId){
+                    chrome.action.setBadgeText({text: null});
+                }
+
+                chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+                    // console.log(tabs[0].url);
+                    processTabEvent(activeInfo.tabId, activeInfo, {id: activeInfo.tabId, url: tabs[0].url});
+                });
+            }
+
+        })();
+
+    }catch (error) {
+        console.log("Error : ", error);
+    }
 
 });
 

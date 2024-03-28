@@ -874,6 +874,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
       }
 
       for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = incDate(date)){
+        
         var label = date.toISOString().split("T")[0];
 
         if (!labelsOk){
