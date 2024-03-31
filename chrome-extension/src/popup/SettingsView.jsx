@@ -36,6 +36,7 @@ import {
   procExtractedData,
   switchToView,
   setGlobalDataSettings,
+  removeObjectsId,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -46,9 +47,7 @@ const datePropertyNames = {
             keywords: "createdOn",
             reminders: "createdOn",
             visits: "date",
-            feedPosts: "date",
             feedPostViews: "date",
-            profiles: "date",
           };
 
 const betweenRange = (lower, upper, date) => {
@@ -166,45 +165,68 @@ export default class SettingsView extends React.Component{
 
         for (var table of db.tables){
 
-          if (["settings", "profiles"].indexOf(table.name) != -1){
+          if (["settings", "feedPosts"].indexOf(table.name) != -1){
             continue;
           }
 
           // the following code should allow me to delete all visits in the specified range without deleting any of the corresponding profile if this profile has been visited outside of this very range
-          if (table.name == "visits"){
+          switch(table.name){
 
-            const visits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                    .toArray();
-            var urls = [], doneUrls = [];
+            case "feedPostViews": {
 
-            await Promise.all (visits.map (async visit => {
+              if (this.state.offCanvasFormSelectValue == "1"){
+                await db.feedPosts.clear();
+              }
+              else{
 
-              if (doneUrls.indexOf(visit.url) == -1){
+                const feedPostViews = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                      .toArray();
+                var uids = [], doneUids = [];
 
-                var subVisits = null;
-                [subVisits] = await Promise.all([
-                  db.visits
-                    .filter(entry => entry.url == visit.url 
-                                      && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                    .toArray()
-                ]);
+                await Promise.all(feedPostViews.map(async feedPostView => {
 
-                if (!subVisits.length){
-                  urls.push(visit.url);
-                }
+                  if (doneUids.indexOf(feedPostView.uid) == -1){
 
-                doneUrls.push(visit.url);
+                    var subFeedPostViews = null;
+                    [subFeedPostViews] = await Promise.all([
+                      db.feedPostViews
+                        .filter(entry => entry.uid == feedPostView.uid 
+                                          && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                        .toArray()
+                    ]);
+
+                    if (!subFeedPostViews.length){
+                      uids.push(feedPostView.uid);
+                    }
+
+                    doneUids.push(feedPostView.uid);
+
+                  }
+
+                }));
+
+                await db.feedPosts.where("uid").anyOf(uids).delete();
 
               }
 
-            }));
+              break;
 
-            await db.profiles.where("url").anyOf(urls).delete();
+            }
+
 
           }
 
-          await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                     .delete();
+          if (this.state.offCanvasFormSelectValue == "1"){
+
+            await table.clear();
+
+          }
+          else{
+
+            await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                       .delete();
+
+          }
 
         }
 
@@ -242,46 +264,40 @@ export default class SettingsView extends React.Component{
           if (table.name == "settings"){
             tableData = await table.toArray();
           }
-          else if (["profiles", "feedPostViews"].indexOf(table.name)){
+          else if (["feedPosts"].indexOf(table.name) != -1){
             continue;
           }
           else{
+
             tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                                      .toArray();
+
+            tableData = tableData.map(object => {
+              delete object.id;
+              return object;
+            });
+
           }
 
           dbData.objectStores[table.name] = tableData;
 
           switch(table.name){
-            case "visits":{
-
-              // Retrieving all the profiles linked to the visits 
-              var profiles = [];
-              await Promise.all (tableData.map (async visit => {
-                var profile = null;
-                [profile] = await Promise.all([
-                  db.profiles.where('url').equals(visit.url).first()
-                ]);
-                profiles.push(profile);
-              }));
-
-              dbData.objectStores["profiles"] = profiles;
-
-              break;
-
-            }
 
             case "feedPostViews":{
 
-              // Retrieving all the profiles linked to the visits 
+              // Retrieving all the feedPosts linked to the visits 
               var feedPosts = [];
               await Promise.all (tableData.map (async feedPostView => {
                 var feedPost = null;
                 [feedPost] = await Promise.all([
                   db.feedPosts.where('uid').equals(feedPostView.uid).first()
                 ]);
-                feedPosts.push(feedPost);
+                if (feedPost){
+                  feedPosts.push(feedPost);
+                }
               }));
+
+              feedPosts = removeObjectsId(feedPosts);
 
               dbData.objectStores["feedPosts"] = feedPosts;
 

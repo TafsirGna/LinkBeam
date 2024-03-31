@@ -32,8 +32,8 @@ export default class ProfileListItemView extends React.Component{
   getPostCount(){
 
     var count = 0;
-    Object.keys(this.props.object.itemsMetrics).forEach(item => {
-      count += this.props.object.itemsMetrics[item];
+    Object.keys(this.props.object.feedItemsMetrics).forEach(item => {
+      count += this.props.object.feedItemsMetrics[item];
     });
 
     return count;

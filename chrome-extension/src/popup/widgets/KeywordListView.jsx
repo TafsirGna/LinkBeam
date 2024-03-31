@@ -1,6 +1,5 @@
 /*import './KeywordListView.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
 import eventBus from "../EventBus";
 import { 
   appParams,

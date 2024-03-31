@@ -25,49 +25,56 @@ import {
 } from "./data_extractor_lib";
 import React from 'react';
 import { categoryVerbMap, appParams } from "../popup/Local_library";
-import { db } from "../db";
 import ReactDOM from 'react-dom/client';
 import styles from "../contentScriptUi/styles.min.css";
 import FeedPostDataMarkerView from "../contentScriptUi/widgets/FeedPostDataMarkerView";
 import FeedPostDataModal from "../contentScriptUi/widgets/FeedPostDataModal";
 
-class FeedDataExtractor extends DataExtractorBase {
+const feedPostDataModalClassName = "linkbeamFeedPostDataModalClassName";
+
+export default class FeedDataExtractor extends DataExtractorBase {
+
+	static posts = [];
+	static viewedPosts = {};
 
 	constructor(){
 		super();
-		this.posts = [];
-		this.viewedPosts = {};
-
 	}
 
-	setUpExtensionWidgets(){
+	static setUpExtensionWidgets(tabId){
+
+		const feedContainerElement = document.querySelector(".scaffold-finite-scroll__content");
+
+		if (feedContainerElement.querySelector(`.${feedPostDataModalClassName}`)){
+			return;
+		}
 
 		// adding the post stats modal
 		var newDivTag = document.createElement('div');
-        document.querySelector(".scaffold-finite-scroll__content")
-        		.prepend(newDivTag);
+		newDivTag.classList.add(feedPostDataModalClassName);
+        feedContainerElement.prepend(newDivTag);
         newDivTag.attachShadow({ mode: 'open' });
 
 		ReactDOM.createRoot(newDivTag.shadowRoot).render(
             <React.StrictMode>
               <style type="text/css">{styles}</style>
-              <FeedPostDataModal tabId={this.tabId}/>
+              <FeedPostDataModal tabId={tabId}/>
             </React.StrictMode>
         );
 		
 	}
 
-	extractPostDataFrom(postContainerElement, postCategory, authorName){
+	static extractPostDataFrom(postContainerElement, postCategory, authorName){
 
 		const uid = postContainerElement.getAttribute("data-id");
 		
 		if (!(uid in this.viewedPosts)){
 			this.viewedPosts[uid] = {
-				html: postContainerElement.innerHTML,
+				html: postContainerElement.querySelector(".feed-shared-update-v2").innerHTML,
 			}
 		}
 		else{
-			if (this.viewedPosts[uid].html == postContainerElement.html){
+			if (this.viewedPosts[uid].html == postContainerElement.querySelector(".feed-shared-update-v2").html){
 				return null;
 			}
 		}
@@ -193,11 +200,13 @@ class FeedDataExtractor extends DataExtractorBase {
 
 		}
 
+		this.viewedPosts[uid].html = postContainerElement.querySelector(".feed-shared-update-v2").innerHTML;
+
 		return post;
 
 	}
 
-	extractItemsCountByCategory(){
+	static extractItemsCountByCategory(){
 
 		var metricLabels = Object.keys(categoryVerbMap);
 		metricLabels.push("publications"); 
@@ -207,8 +216,19 @@ class FeedDataExtractor extends DataExtractorBase {
 
 		this.posts = [];
 
-		var postContainerElements = document.querySelector(".scaffold-finite-scroll__content")
-											.querySelectorAll("div[data-id]");
+		const feedContainerElement = document.querySelector(".scaffold-finite-scroll__content");
+		if (!feedContainerElement){
+
+			var results = {};
+			metricLabels.forEach((metricLabel, index) => {
+				results[metricLabel] = metricValues[index];
+			});
+
+			return results;
+			
+		}
+
+		const postContainerElements = feedContainerElement.querySelectorAll("div[data-id]");
 
 		Array.from(postContainerElements).forEach(postContainerElement => {
 
@@ -272,7 +292,7 @@ class FeedDataExtractor extends DataExtractorBase {
 
 	}
 
-	extractData(){
+	static extractData(){
 
 		let pageData = { 
 			metrics: this.extractItemsCountByCategory()
@@ -286,4 +306,6 @@ class FeedDataExtractor extends DataExtractorBase {
 
 }
 
-var feedDataExtractor = new FeedDataExtractor();
+// var feedDataExtractor = new FeedDataExtractor();
+
+

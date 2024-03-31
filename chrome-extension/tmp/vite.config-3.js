@@ -10,7 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
 
-        feed_data_extractor: resolve(__dirname, 'src/scripts/feed_data_extractor.jsx'),
+        mixed_data_extractor: resolve(__dirname, 'src/scripts/mixed_data_extractor.jsx'),
 
       },
       output: {

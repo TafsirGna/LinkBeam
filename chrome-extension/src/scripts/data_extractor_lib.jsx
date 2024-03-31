@@ -31,6 +31,7 @@ export class DataExtractorBase {
 
     this.tabId = null;
     this.webPageData = null;
+    this.pageUrl = window.location.href;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -40,7 +41,7 @@ export class DataExtractorBase {
 	// Function for sending the page data
 	sendTabData(data){
 
-	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: (window.location.href.split("?"))[0] }}, (response) => {
+	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: this.pageUrl }}, (response) => {
 	    console.log('linkedin-data response sent', response, data);
 	    this.webPageData = data;
 
@@ -74,6 +75,11 @@ export class DataExtractorBase {
   extractSendTabData(){
 
     var webPageData = this.extractData();
+
+    if (!webPageData){
+      return;
+    }
+
     if (webPageData == this.webPageData){
       webPageData = null;
     }
@@ -105,7 +111,6 @@ export class DataExtractorBase {
 	      <style type="text/css">{styles}</style>
 	      { property == "reminders" && <InjectedReminderToastView objects={objects} />}
 	      { property == "detectedKeywords" && <InjectedKeywordToastView objects={objects} />}
-
 	    </React.StrictMode>
 	  );
 
@@ -118,15 +123,15 @@ export class DataExtractorBase {
 
 		  if (message.header == "CS_SETUP_DATA") {
 		      
-		      if (Object.hasOwn(message.data, "tabId")){
-		        this.getTabId(message.data, sendResponse);
-		      }
-		      else if (Object.hasOwn(message.data, "reminders")){
-		        this.showToast(message.data, "reminders", sendResponse);
-		      }
-		      else if (Object.hasOwn(message.data, "detectedKeywords")){
-		        this.showToast(message.data, "detectedKeywords", sendResponse);
-		      }
+	      if (Object.hasOwn(message.data, "tabId")){
+	        this.getTabId(message.data, sendResponse);
+	      }
+	      else if (Object.hasOwn(message.data, "reminders")){
+	        this.showToast(message.data, "reminders", sendResponse);
+	      }
+	      else if (Object.hasOwn(message.data, "detectedKeywords")){
+	        this.showToast(message.data, "detectedKeywords", sendResponse);
+	      }
 
 		  }
 

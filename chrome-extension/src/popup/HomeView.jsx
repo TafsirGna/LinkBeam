@@ -126,12 +126,6 @@ export default class HomeView extends React.Component{
                                .startsWith((new Date()).toISOString().split("T")[0])
                                .toArray();
 
-        await Promise.all (visits.map (async visit => {
-          [visit.profile] = await Promise.all([
-            db.profiles.where('url').equals(visit.url).first()
-          ]);
-        }));
-
         visits.sort((a,b) => new Date(b.date) - new Date(a.date));
 
         eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeTodayVisitsList", value: visits});
@@ -173,7 +167,7 @@ export default class HomeView extends React.Component{
                                               { this.props.globalData.homeAllVisitsList 
                                                 && (this.props.globalData.homeAllVisitsList.list.length != 0 || (this.props.globalData.homeAllVisitsList.list.length == 0 && this.props.globalData.homeAllVisitsList.action == "search"))
                                                 && <SearchInputView 
-                                                      objectStoreName={dbData.objectStoreNames.PROFILES} 
+                                                      objectStoreName={dbData.objectStoreNames.VISITS} 
                                                       globalData={this.props.globalData} />}
 
                                               <AggregatedVisitListView 

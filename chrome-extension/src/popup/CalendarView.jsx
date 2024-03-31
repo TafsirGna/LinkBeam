@@ -122,14 +122,8 @@ export default class CalendarView extends React.Component{
       case dbData.objectStoreNames.REMINDERS: {
 
         var monthReminderList = await db.reminders
-                             .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
-                             .toArray();
-
-        await Promise.all (monthReminderList.map (async reminder => {
-          [reminder.profile] = await Promise.all([
-            db.profiles.where('url').equals(reminder.url).first()
-          ]);
-        }));
+                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
+                                         .toArray();
 
         // Grouping the reminders by date
         var results = groupObjectsByDate(monthReminderList);
@@ -142,14 +136,9 @@ export default class CalendarView extends React.Component{
       case dbData.objectStoreNames.VISITS: {
 
         var monthVisitsList = await db.visits
-                             .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
+                             .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth)
+                                                && Object.hasOwn(visit, "profileData"))
                              .toArray();
-
-        await Promise.all (monthVisitsList.map (async visit => {
-          [visit.profile] = await Promise.all([
-            db.profiles.where('url').equals(visit.url).first()
-          ]);
-        }));
 
         // Grouping the visits by date
         var results = groupObjectsByDate(monthVisitsList);

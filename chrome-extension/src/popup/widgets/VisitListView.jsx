@@ -44,12 +44,12 @@ export default class VisitListView extends React.Component{
                   {
                     this.props.objects.map((visit) => (<>
 
-                        { visit.url.indexOf("/feed") != -1 
+                        { Object.hasOwn(visit, "feedItemsMetrics") 
                           && <FeedVisitListItemView 
                               object={visit} 
                               parentList="ordinary" /> }
 
-                        { visit.url.indexOf("/feed") == -1 
+                        { Object.hasOwn(visit, "profileData")
                           && <ProfileVisitListItemView 
                               object={visit} 
                               parentList="ordinary" /> }

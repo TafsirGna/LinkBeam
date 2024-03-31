@@ -30,6 +30,7 @@ import { db } from "../db";
 import { v4 as uuidv4 } from 'uuid';
 import { 
   appParams, 
+  removeObjectsId,
 } from "./Local_library";
 
 export default class About extends React.Component{
@@ -43,6 +44,9 @@ export default class About extends React.Component{
       opDone: false,
       processing: false,
     };
+
+    this.resetDb = this.resetDb.bind(this);
+
   }
 
   componentDidMount() {
@@ -53,56 +57,97 @@ export default class About extends React.Component{
     
       this.setState({processing: true}, () => {
 
-        var file = e.target.files[0]; 
+        const file = e.target.files[0]; 
 
-        // setting up the reader
-        var reader = new FileReader();
-        reader.readAsText(file,'UTF-8');
+        try{
 
-        // here we tell the reader what to do when it's done reading...
-        reader.onload = readerEvent => {
-          var content = readerEvent.target.result; // this is the content!
+          // setting up the reader
+          var reader = new FileReader();
+          reader.readAsText(file,'UTF-8');
 
-          try {
-            content = JSON.parse(content);
-          } catch (error) {
+          // here we tell the reader what to do when it's done reading...
+          reader.onload = readerEvent => {
+            var content = readerEvent.target.result; // this is the content!
 
-            this.setState({processing: false}, () => {
+            try {
+              content = JSON.parse(content);
+            } catch (error) {
 
-              var message = "Something wrong happent with the uploaded file. Check the file and try again! ";
-              console.error(message+': ', error);
-              
-              this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
-                  setTimeout(() => {
-                    this.setState({alertMessage: "", alertTagShow: false});
-                  }, appParams.TIMER_VALUE);
+              this.setState({processing: false}, () => {
+
+                const message = "Something wrong happent with the uploaded file. Check the file and try again! ";
+                console.error(`${message} : `, error);
+                
+                this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
+                    setTimeout(() => {
+                      this.setState({alertMessage: "", alertTagShow: false});
+                    }, appParams.TIMER_VALUE);
+                });
+
               });
 
-            });
-
-            return;
-          }
-
-          (async () => {
-
-            // initialize the db with the received data
-            for (var objectStoreName in content.objectStores){
-              if (content.objectStores[objectStoreName].length){
-                await db[objectStoreName].bulkAdd(content.objectStores[objectStoreName]);
-              }
+              return;
             }
 
-            localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
+            
 
-            this.setState({opDone: true, processing: false});
+            (async () => {
 
-          }).bind(this)();
+              try{
 
+                // initialize the db with the received data
+                for (var objectStoreName in content.objectStores){
+                  if (content.objectStores[objectStoreName].length){
+                    var objects = content.objectStores[objectStoreName];
+                    objects = removeObjectsId(objects);
+                    await db[objectStoreName].bulkAdd(objects);
+                  }
+                }
+
+                localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
+
+                this.setState({opDone: true, processing: false});
+
+              }
+              catch(error){
+                console.error("Error : ", error);
+
+                const message = "An error occured when setting up the extension! ";
+                this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
+
+                this.resetDb();
+              }
+
+            }).bind(this)();
+
+          }
+
+        }
+        catch(error){
+          console.error("Error : ", error);
+
+          const message = "An error occured when setting up the extension! ";
+          this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
+          
+          this.setState({opDone: false, processing: false});
         }
 
       });
 
     }).bind(this);
+
+  }
+
+  async resetDb(){
+
+    db.delete().then(() => {
+        console.log("Database successfully deleted");
+    }).catch((err) => {
+        console.error("Could not delete database");
+    }).finally(() => {
+        // Do what should be done next...
+        this.setState({opDone: false, processing: false});
+    });
 
   }
 

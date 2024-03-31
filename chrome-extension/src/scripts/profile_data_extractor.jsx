@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import { 
   messageMeta,
   appParams,
@@ -10,19 +31,18 @@ import {
 } from "./data_extractor_lib";
 
 // Content script designed to make sure the active tab is a linkedin page
-     
 
-class ProfileDataExtractor extends DataExtractorBase {
+export default class ProfileDataExtractor extends DataExtractorBase {
 
   constructor(){
     super();
   }
 
-  setUpExtensionWidgets(){
+  static setUpExtensionWidgets(tabId){
     
   }
 
-  extractData(){
+  static extractData(){
 
     let pageData = null;
     
@@ -39,7 +59,7 @@ class ProfileDataExtractor extends DataExtractorBase {
       
       pageData = {
 
-        url: (window.location.href.split("?"))[0],
+        // url: (window.location.href.split("?"))[0],
         fullName: publicHeaderData.fullName,
         title: publicHeaderData.title,
         info: publicDataExtractor.about(),
@@ -77,7 +97,7 @@ class ProfileDataExtractor extends DataExtractorBase {
 
         pageData = {
 
-          url: (window.location.href.split("?"))[0],
+          // url: (window.location.href.split("?"))[0],
           fullName: authHeaderData.fullName,
           title: authHeaderData.title,
           info: authDataExtractor.about(),
@@ -109,5 +129,5 @@ class ProfileDataExtractor extends DataExtractorBase {
 }
 
 // Building the object 
-var profileDataExtractor = new ProfileDataExtractor();
+// var profileDataExtractor = new ProfileDataExtractor();
 

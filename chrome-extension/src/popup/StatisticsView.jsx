@@ -90,22 +90,18 @@ export default class StatisticsView extends React.Component{
 
   }
 
-  setObjects(){
+  async setObjects(){
 
-    (async () => {
-
-      var visits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles");
-      
-      var profiles = [];
-      for (var visit of visits){
-        if (profiles.map(e => e.url).indexOf(visit.url) == -1){
-          profiles.push(visit.profile);
-        }
+    var visits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles");
+    
+    var profiles = [];
+    for (var visit of visits){
+      if (profiles.map(e => e.url).indexOf(visit.url) == -1){
+        profiles.push(visit.profile);
       }
+    }
 
-      this.setState({ periodVisits: visits, periodProfiles: profiles });
-
-    }).bind(this)();
+    this.setState({ periodVisits: visits, periodProfiles: profiles });
 
   }
 

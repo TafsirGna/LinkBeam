@@ -139,18 +139,11 @@ export default class FeedPostDataModal extends React.Component{
 
   checkPostFreshness(objects){
 
-    var fresh = true;
+    var fresh = false;
     const today = new Date().toISOString().split("T")[0];
-    if (objects[0].date.split("T")[0] == today){
-      for (var object of objects){
-        if (object.date.split("T")[0] != today){
-          fresh = false;
-          break;
-        }
-      }
-    }
-    else{
-      fresh = false;
+    if (objects.length == 1 
+          && objects[0].date.split("T")[0] == today){
+      fresh = true; 
     }
 
     this.setState({freshPost: fresh});

@@ -26,44 +26,50 @@ import {
     messageMeta,
     getTodayReminders,
     testTabBaseUrl,
+    getProfileDataFrom,
 } from "../popup/Local_library";
 import Dexie from 'dexie';
 
 let currentTabId = null;
 
 // Extension installation script
-
 chrome.runtime.onInstalled.addListener(details => {
 
-    if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    switch(details.reason){
 
-        // checking if a previous instance already exists before showing the setup page
-        Dexie.exists(appParams.appDbName).then(function (exists) {
-            if (!exists) {
-                // on install, open a web page for information
-                chrome.tabs.create({ url: "install.html" });
-            }
-        });
+        case chrome.runtime.OnInstalledReason.INSTALL: {
 
-        // Setting the process when uninstalling the extension
-        chrome.runtime.setUninstallURL(null, () => {
-            
-            // Removing local storage data
-            localStorage.removeItem("currentPageTitle");
-
-            // deleting the whole database
-            db.delete().then(() => {
-                console.log("Database successfully deleted");
-            }).catch((err) => {
-                console.error("Could not delete database");
-            }).finally(() => {
-                // Do what should be done next...
+            // checking if a previous instance already exists before showing the setup page
+            Dexie.exists(appParams.appDbName).then(function (exists) {
+                if (!exists) {
+                    // on install, open a web page for information
+                    chrome.tabs.create({ url: "install.html" });
+                }
             });
-            
-        });
-    }
 
-    if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
+            // Setting the process when uninstalling the extension
+            chrome.runtime.setUninstallURL("", () => {
+                
+                // Removing local storage data
+                // localStorage.removeItem("currentPageTitle");
+
+                // deleting the whole database
+                db.delete().then(() => {
+                    console.log("Database successfully deleted");
+                }).catch((err) => {
+                    console.error("Could not delete database");
+                }).finally(() => {
+                    // Do what should be done next...
+                });
+                
+            });
+
+            break;
+        }
+
+        case chrome.runtime.OnInstalledReason.UPDATE: {
+            break;
+        }
 
     }
 
@@ -75,79 +81,71 @@ chrome.runtime.onInstalled.addListener(details => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
     // check first if the app has been correctly set up before proceeding
-    // Dexie.exists(appParams.appDbName).then(function (exists) {
-    //     if (exists) {
-    
-    try{
-        processTabEvent(tabId, changeInfo, tab);
-    }
-    catch(error){
-        console.log("Error : ", error)
-    }
+    if (changeInfo.url){
+        const url = changeInfo.url;
+        if (url && testTabBaseUrl(url)){
+            Dexie.exists(appParams.appDbName).then(function (exists) {
+                if (exists) {
 
-    //     }
-    // });
+                    if (currentTabId == tabId){
+                        chrome.action.setBadgeText({text: null});
+                    }
+                    processTabEvent(tabId, url);
+                    
+                }
+            });
+        }
+    }
 
   }
 );
 
 // Script for processing tab event
 
-function processTabEvent(tabId, changeInfo, tab){
+function processTabEvent(tabId, url){
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
-    checkCurrentTab(tab, changeInfo);
+    
+    async function injectDataExtractorParams(tabId){
 
-};
+        // Inject tab id
+        chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: tabId}}, (response) => {
+            console.log('tabId sent', response);
+        }); 
 
-function checkCurrentTab(tab, changeInfo){
+        const settings = await db
+                               .settings
+                               .where('id')
+                               .equals(1)
+                               .first();
 
-    var url = (changeInfo ? changeInfo.url : tab.url);
-    if (url && testTabBaseUrl(url)){
+        if (settings.notifications){
+            getTodayReminders(db, (reminders) => {
+                if (reminders.length){
+                    chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {reminders: reminders}}, (response) => {
+                        console.log('Reminders sent', response);
+                    }); 
+                }
+            })
+        }     
 
-        async function injectDataExtractorParams(tabId){
+    };
 
-            // Inject tab id
-            chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: tabId}}, (response) => {
-                console.log('tabId sent', response);
-            }); 
+    // If the user is browsing linkedin's feed
+    const dataExtractorPath = "./assets/mixed_data_extractor.js";
 
-            var settings = await db
-                                   .settings
-                                   .where('id')
-                                   .equals(1)
-                                   .first();
-
-            if (settings.notifications){
-                getTodayReminders(db, (reminders) => {
-                    if (reminders.length){
-                        chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {reminders: reminders}}, (response) => {
-                            console.log('Reminders sent', response);
-                        }); 
-                    }
-                })
-            }     
-
-        };
-
-        // If the user is browsing linkedin's feed
-        var dataExtractorPath = (url.indexOf("/feed") != -1) 
-                                    ? "./assets/feed_data_extractor.js" 
-                                    : ( url.indexOf("/in/") != -1 
-                                        ? "./assets/profile_data_extractor.js" 
-                                        : null);
+    if (dataExtractorPath){
         chrome.scripting.executeScript({
-                target: { tabId: tab.id },
+                target: { tabId: tabId },
                 files: [dataExtractorPath],
             }, 
             () => {
-                injectDataExtractorParams(tab.id);
+                injectDataExtractorParams(tabId);
             }
         );
-
     }
 
-}
+};
 
 chrome.tabs.onActivated.addListener(function(activeInfo) {
 
@@ -155,45 +153,86 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     currentTabId = activeInfo.tabId;
     // windowId = info.windowId
 
-    console.log("Changing current tab : ", currentTabId);
+    chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+        const url = tabs[0].url;
+        if (url && testTabBaseUrl(url)){
 
-    try{
-
-        // check if this tab has already been visited 
-        (async () => {
-
-            const visit = await db.visits
-                            .where("tabId")
-                            .equals(activeInfo.tabId)
-                            .first();
-
-            if (visit){
-                if (visit.url.indexOf("/feed") != -1){
-                    showBadgeText(visit.itemsMetrics, activeInfo.tabId);
-                }
-                else{
-                    if (currentTabId == activeInfo.tabId){
-                        chrome.action.setBadgeText({text: "1"});
-                    }
-                }
-            }
-            else{
-
-                if (currentTabId == activeInfo.tabId){
-                    chrome.action.setBadgeText({text: null});
-                }
-
-                chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
-                    // console.log(tabs[0].url);
-                    processTabEvent(activeInfo.tabId, activeInfo, {id: activeInfo.tabId, url: tabs[0].url});
-                });
+            if (url.indexOf("/feed") == -1
+                    && url.indexOf("/in/") == -1){
+                chrome.action.setBadgeText({text: null});
+                return;
             }
 
-        })();
+            Dexie.exists(appParams.appDbName).then(function (exists) {
+                if (exists) {
 
-    }catch (error) {
-        console.log("Error : ", error);
-    }
+                    // check if this tab has already been visited 
+                    (async () => {
+
+                        try{
+
+                            var visit = null;
+
+                            if (url.indexOf("/in/") != -1){
+
+                                visit = await db.visits
+                                            .where({tabId: activeInfo.tabId, url: url.split("?")[0]})
+                                            .first();
+
+                                if (visit){
+                                    if (currentTabId == activeInfo.tabId){
+                                        chrome.action.setBadgeText({text: "1"});
+                                    }
+                                }
+                                else{
+
+                                    if (currentTabId == activeInfo.tabId){
+                                        chrome.action.setBadgeText({text: null});
+                                    }
+
+                                    processTabEvent(activeInfo.tabId, url);
+
+                                }
+
+                            }
+                            else if (url.indexOf("/feed") != -1){
+
+                                visit = await db.visits
+                                            .where("tabId")
+                                            .equals(activeInfo.tabId)
+                                            .filter(visit => Object.hasOwn(visit, "feedItemsMetrics"))
+                                            .first();
+
+                                if (visit){
+                                    showBadgeText(visit.feedItemsMetrics, activeInfo.tabId);
+                                }
+                                else{
+
+                                    if (currentTabId == activeInfo.tabId){
+                                        chrome.action.setBadgeText({text: null});
+                                    }
+
+                                    processTabEvent(activeInfo.tabId, url);
+
+                                }
+
+                            }
+
+                        }
+                        catch (error) {
+                            console.log("Error : ", error);
+                        }
+
+                    })();
+
+                }
+            });
+
+        }
+        else{
+            chrome.action.setBadgeText({text: null});
+        }
+    });
 
 });
 
@@ -208,41 +247,47 @@ async function processTabData(tabData){
 
     if (!tabData.extractedData){
 
-        await db
-                .visits
-                .where({url: tabData.tabUrl, tabId: tabData.tabId})
-                .modify(visit => {
-                    visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                });
+        if (tabData.tabUrl.indexOf("/feed") != -1){
+
+            await db
+                    .visits
+                    .where("tabId")
+                    .equals(tabData.tabId)
+                    .filter(visit => Object.hasOwn(visit, "feedItemsMetrics"))
+                    .modify(visit => {
+                        visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+                    });
+
+        }
+        else if (tabData.tabUrl.indexOf("/in/") != -1){
+
+            await db
+                    .visits
+                    .where({url: tabData.tabUrl.split("?")[0], tabId: tabData.tabId})
+                    .modify(visit => {
+                        visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+                    });
+
+        }
 
     }
     else{
         if (tabData.tabUrl.indexOf("/feed") != -1){ // feed data
-            recordFeedVisit(tabData);
+            await recordFeedVisit(tabData);
         }
-        else{ // profile data
-            recordProfileVisit(tabData);
+        else if (tabData.tabUrl.indexOf("/in/") != -1){ // profile data
+            await recordProfileVisit(tabData);
         }
     }
 
-    // checking that the setting allows the injection
-    // getSettingsData(["notifications", "productID"], (results) => {
-    //     var notificationSetting = results[0];
-
-    //     if (notificationSetting){
-
-    //         injectWebApp(results[1]);
-
-    //     }
-    // });
 }
 
 
-function showBadgeText(itemsMetrics, tabId){
+function showBadgeText(feedItemsMetrics, tabId){
 
     var badgeText = 0;
-    for (var metric in itemsMetrics){
-        badgeText += itemsMetrics[metric];
+    for (var metric in feedItemsMetrics){
+        badgeText += feedItemsMetrics[metric];
     }
 
     if (currentTabId == tabId){
@@ -253,12 +298,22 @@ function showBadgeText(itemsMetrics, tabId){
 
 async function recordFeedVisit(tabData){
 
+    // checking first that the object has some consistent data
+    var postCount = 0;
+    for (var metric in tabData.extractedData.metrics){
+        postCount += tabData.extractedData.metrics[metric];
+    }
+
+    if (!postCount){
+        return;
+    }
+
     const dateTime = new Date().toISOString();
 
     const visit = await db
-                                    .visits
-                                    .where({url: tabData.tabUrl, tabId: tabData.tabId})
-                                    .first();
+                            .visits
+                            .where({url: tabData.tabUrl, tabId: tabData.tabId})
+                            .first();
 
     if (visit){
 
@@ -268,7 +323,7 @@ async function recordFeedVisit(tabData){
                 .where({url: tabData.tabUrl, tabId: tabData.tabId})
                 .modify(visit => {
                     visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                    visit.itemsMetrics = tabData.extractedData.metrics;
+                    visit.feedItemsMetrics = tabData.extractedData.metrics;
                 });
 
     }
@@ -281,12 +336,15 @@ async function recordFeedVisit(tabData){
             url: tabData.tabUrl,
             timeCount: 1, 
             tabId: tabData.tabId,
-            itemsMetrics: tabData.extractedData.metrics,
+            feedItemsMetrics: tabData.extractedData.metrics,
         });
 
     }
 
-    showBadgeText(tabData.extractedData.metrics, tabData.tabId);
+    // display the updated badge text
+    if (currentTabId == tabData.tabId){
+        chrome.action.setBadgeText({text: postCount.toString()});
+    }
 
     // save all the sent posts
     for (var post of tabData.extractedData.posts){
@@ -308,8 +366,14 @@ async function recordFeedVisit(tabData){
 
         if (!dbPost){
 
-            // saving the post
-            await db.feedPosts.add(newPost);
+            db.transaction('rw', db.feedPosts, function() {
+                // saving the post
+                db.feedPosts.add(newPost);
+            }).then(function() {
+                console.log("Transaction committed");
+            }).catch(function(err) {
+                console.error(err);
+            });
 
         }
         else{
@@ -320,9 +384,7 @@ async function recordFeedVisit(tabData){
         }
 
         var postView = await db.feedPostViews
-                               .where("uid")
-                               .equals(post.id)
-                               .and(view => view.tabId == tabData.tabId)
+                               .where({uid: post.id, tabId: tabData.tabId})
                                .first(); 
 
         if (!postView){
@@ -345,21 +407,19 @@ async function recordFeedVisit(tabData){
 
 async function recordProfileVisit(tabData){
 
-
-
-    const openNewTab = (profile) => {
+    const openNewTab = (url) => {
         // open new tab
         if (settings.autoTabOpening){
 
             chrome.tabs.create({
               active: true,
-              url:  `/index.html?view=Profile&data=${profile.url}`,
+              url:  `/index.html?view=Profile&data=${url}`,
             }, null);
 
         }
     }
 
-    async function checkKeywordOccurence(profile, tabId){
+    async function checkKeywordOccurence(profile, tabId, settings){
 
         if (settings.notifications){
             var keywords = await db
@@ -383,54 +443,59 @@ async function recordProfileVisit(tabData){
 
     }
 
-    const profile = await db
-                        .profiles
-                        .where('url')
-                        .equals(tabData.tabUrl)
-                        .first();
-
-    if (profile){
-        await db.profiles.update(profile.id, tabData.extractedData);
-
-        const visit = await db
+    const profileVisits = await db
                             .visits
-                            .where({url:tabData.tabUrl, tabId:tabData.tabId})
-                            .first();
+                            .where('url')
+                            .equals(tabData.tabUrl.split("?")[0])
+                            .sortBy("date");
 
-       if (visit){
+    if (profileVisits.length){
+
+        const visit = profileVisits.filter(profileVisit => profileVisit.tabId == tabData.tabId);
+        visit = visit.length ? visit[0] : null;
+
+        const wholeProfileData = getProfileDataFrom(profileVisits);
+        const newProfileData = getNewProfileData(wholeProfileData, tabData.extractedData);
+
+        if (visit){
+
             // Incrementing the time count
             await db
                     .visits
-                    .where({url: tabData.tabUrl, tabId: tabData.tabId})
+                    .where({id: visit.id})
                     .modify(visit => {
                         visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+                        profileData = newProfileData;
                     });
 
         }
         else{
 
             var settings = await db
-                               .settings
-                               .where('id')
-                               .equals(1)
-                               .first();
+                                   .settings
+                                   .where('id')
+                                   .equals(1)
+                                   .first();
 
             // checking the occurence of any predefined keyword in the profile
-            checkKeywordOccurence(tabData.extractedData, tabData.tabId);
+            checkKeywordOccurence(tabData.extractedData, tabData.tabId, settings);
 
             await db.visits.add({
                 date: new Date().toISOString(),
                 url: tabData.tabUrl,
                 timeCount: 1, 
                 tabId: tabData.tabId,
+                profileData: newProfileData,
             });
 
             if (currentTabId == tabData.tabId){
                 chrome.action.setBadgeText({text: "1"});
             }
 
-            openNewTab(tabData.extractedData);
+            openNewTab(tabData.tabUrl.split("?")[0]);
+
         }
+
     }
     else{
 
@@ -440,16 +505,15 @@ async function recordProfileVisit(tabData){
                                .equals(1)
                                .first();
 
-        await db.profiles.add(tabData.extractedData);
-
         // checking the occurence of any predefined keyword in the profile
-        checkKeywordOccurence(tabData.extractedData, tabData.tabId);
+        checkKeywordOccurence(tabData.extractedData, tabData.tabId, settings);
 
         var visit = {
             date: new Date().toISOString(),
-            url: tabData.tabUrl,
+            url: tabData.tabUrl.split("?")[0],
             timeCount: 1, 
             tabId: tabData.tabId,
+            profileData: tabData.extractedData,
         };
 
         await db.visits.add(visit);
@@ -458,7 +522,7 @@ async function recordProfileVisit(tabData){
             chrome.action.setBadgeText({text: "1"});
         }
 
-        openNewTab(tabData.extractedData);
+        openNewTab(tabData.tabUrl.split("?")[0]);
 
     }
 
@@ -466,21 +530,21 @@ async function recordProfileVisit(tabData){
 
 // Script for listening to all events related to the content scripts
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     // acknowledge receipt
     sendResponse({
         status: "ACK"
     });
 
-    processMessageEvent(message, sender, sendResponse);
+    await processMessageEvent(message, sender, sendResponse);
 
 });
 
 
 // Script handling the message execution
 
-function processMessageEvent(message, sender, sendResponse){
+async function processMessageEvent(message, sender, sendResponse){
 
     console.log("Message received : ", message);
 
@@ -497,7 +561,7 @@ function processMessageEvent(message, sender, sendResponse){
             
             // Saving the new notification setting state
             var tabData = message.data;
-            processTabData(tabData);
+            await processTabData(tabData);
             break;
         }
 

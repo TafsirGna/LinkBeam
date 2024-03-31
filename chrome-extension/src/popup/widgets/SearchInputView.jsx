@@ -71,7 +71,7 @@ export default class SearchInputView extends React.Component{
     if (!this.state.text.length){
 
       switch(this.props.objectStoreName){
-        case dbData.objectStoreNames.PROFILES:{
+        case dbData.objectStoreNames.VISITS:{
 
           if (this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.action == "search"){
             setGlobalDataHomeAllVisitsList(db, eventBus, this.props.globalData);
@@ -108,15 +108,17 @@ export default class SearchInputView extends React.Component{
     }
 
     switch(this.props.objectStoreName){
-      case dbData.objectStoreNames.PROFILES:{
+      case dbData.objectStoreNames.VISITS:{
 
         (async () => {
 
           var urls = [];
-          await db.profiles
-                  .filter(profile => (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                  .each(profile => {
-                    urls.push(profile.url);
+          await db.visits
+                  .filter(visit =>  Object.hasOwn(visit, "profileData") 
+                                      && visit.profileData.fullName
+                                      && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                  .each(visit => {
+                    urls.push(visit.url);
                   });
 
           const visits = await db.visits
@@ -124,13 +126,8 @@ export default class SearchInputView extends React.Component{
                                  .anyOf(urls)
                                  .toArray();
 
-          await Promise.all (visits.map (async visit => {
-            [visit.profile] = await Promise.all([
-              db.profiles.where('url').equals(visit.url).first()
-            ]);
-            // highlighting the search text in the profile fullName property
-            visit.profile.fullName = highlightSearchText(visit.profile.fullName);
-          }));
+          // highlighting the search text in the profile fullName property
+          visit.profile.fullName = highlightSearchText(visit.profile.fullName);
 
           eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
 
@@ -170,7 +167,7 @@ export default class SearchInputView extends React.Component{
     var label = null;
 
     switch(this.props.objectStoreName){
-      case dbData.objectStoreNames.PROFILES:{
+      case dbData.objectStoreNames.VISITS:{
         label = "profile";
         break;
       }
@@ -203,7 +200,7 @@ export default class SearchInputView extends React.Component{
 			    <span 
             class="input-group-text handy-cursor text-muted" 
             id="basic-addon2" 
-            onClick={() => {this.searchText()}} 
+            onClick={this.searchText}} 
             title="search">
 			      <SearchIcon size="20" />
 			    </span>

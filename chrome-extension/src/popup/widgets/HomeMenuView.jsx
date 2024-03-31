@@ -1,6 +1,5 @@
 /*import './HomeMenu.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { switchToView } from "../Local_library";
 import bell_icon from '../../assets/bell_icon.png';

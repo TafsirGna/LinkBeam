@@ -32,6 +32,7 @@ import {
   getVisitsPostCount,
   getVisitsTotalTime,
   dateBetweenRange,
+  getPeriodVisits,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -118,10 +119,10 @@ export default class FeedDashView extends React.Component{
 
     const visits = await db.visits
                            .filter(visit => dateBetweenRange(this.state.startDate, this.state.endDate, visit.date)
-                                            && visit.url.indexOf("/feed") != -1)
+                                            && Object.hasOwn(visit, "feedItemsMetrics"))
                            .toArray();
 
-    console.log("$$$$$$$$$$$ : ", this.state.startDate, this.state.endDate, visits);
+          // getPeriodVisits()
 
     this.setState({ visits: visits });
 

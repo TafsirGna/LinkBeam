@@ -85,7 +85,6 @@ export const dbData = {
     SETTINGS: "settings",
     REMINDERS: "reminders",
     KEYWORDS: "keywords",
-    PROFILES: "profiles",
     PROFILE_ACTIVITY: "profile_activity",
     TRACKED_POSTS: "tracked_posts",
   }
@@ -714,12 +713,6 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
                        .toArray();
   visits.reverse();
 
-  await Promise.all (visits.map (async visit => {
-    [visit.profile] = await Promise.all([
-      db.profiles.where('url').equals(visit.url).first()
-    ]);
-  }));
-
   var homeAllVisitsList = null;
 
   if (globalData.homeAllVisitsList){
@@ -754,11 +747,44 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 export function getVisitPostCount(visit){
 
   var postCount = 0;
-  Object.keys(visit.itemsMetrics).forEach(metric => {
-    postCount += visit.itemsMetrics[metric];
+  Object.keys(visit.feedItemsMetrics).forEach(metric => {
+    postCount += visit.feedItemsMetrics[metric];
   });
 
   return postCount;
+
+}
+
+export function getProfileDataFrom(visits){
+
+  var profileVisits = visits.reverse();
+  var profileData = {};
+
+  var nullProperties = [];
+  for (var property in visits[0].profileData){
+    if (visits[0].profileData[property] == null){
+      nullProperties.push(property);
+    }
+    else{
+      profileData[property] = visits[0].profileData[property];
+    }
+  }
+
+  for (var visit of profileVisits){
+    for (var property in visit.profileData){
+      if (visit.profileData[property] != null){
+        if (profileData[property] == null){
+          profileData[property] = visit.profileData[property];
+          nullProperties.splice(nullProperties.indexOf(property), 1);
+        }
+      }
+    }
+    if (!nullProperties.length){
+      break;
+    }
+  }
+
+  return profileData;
 
 }
 
@@ -904,8 +930,15 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
 }
 
+export const removeObjectsId = (objects) => {
+  return objects.map(object => {
+    delete object.id;
+    return object;
+  });
+}
+
 export function dateBetweenRange(lower, upper, date){
-  return (new Date(lower) <= new Date(date) && new Date(date.split("T")[0]) <= new Date(upper));
+  return (new Date(lower) <= new Date(date.split("T")[0]) && new Date(date.split("T")[0]) <= new Date(upper));
 }
 
 export function getVisitsPostCount(visits){
@@ -919,7 +952,7 @@ export function getVisitsPostCount(visits){
 
 }
 
-export async function getPeriodVisits(index, func, db, category, profile = null){
+export async function getPeriodVisits(index, func, db, category, profileUrl = null){
 
   var startDate = null;
   switch(index){
@@ -940,17 +973,11 @@ export async function getPeriodVisits(index, func, db, category, profile = null)
   }
 
   var collection = collection = db.visits
-                    .filter(visit => (startDate <= new Date(visit.date) && new Date(visit.date) <= new Date())
-                                      && (profile ? visit.url == profile.url : true)
-                                      && ((category == "profiles") ? visit.url.indexOf("/feed") == -1 : visit.url.indexOf("/feed") != -1) );
+                    .filter(visit => dateBetweenRange(startDate, new Date(), visit.date)
+                                      && (profileUrl ? visit.url == profilUrl : true)
+                                      && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : Object.hasOwn(visit, "feedItemsMetrics")) );
 
   var visits = await collection.toArray();
-
-  await Promise.all (visits.map (async visit => {
-    [visit.profile] = await Promise.all([
-      db.profiles.where('url').equals(visit.url).first()
-    ]);
-  }));
 
   return visits;
 
