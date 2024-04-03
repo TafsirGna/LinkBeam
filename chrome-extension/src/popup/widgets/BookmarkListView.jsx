@@ -23,21 +23,24 @@ export default class BookmarkListView extends React.Component{
   render(){
     return (
       <>
-        { this.props.objects == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
+        { !this.props.objects && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
                   </div>
                   <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
                 </div>
               </div> }
 
-        { this.props.objects != null && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
-                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p><span class="badge text-bg-primary fst-italic shadow">No bookmarked profiles yet</span></p>
-                  </div> }
+        { this.props.objects
+            && <div>
 
-        { this.props.objects != null && this.props.objects.length != 0 && 
+              {this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
+                                  <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                  <p><span class="badge text-bg-primary fst-italic shadow">No bookmarked profiles yet</span></p>
+                                </div>}
+
+              { this.props.objects.length != 0 && 
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map((bookmark) => (<a href={"/index.html?view=Profile&data=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    this.props.objects.map(bookmark => (<a href={"/index.html?view=Profile&data=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                     <img src={(bookmark.profile.avatar ? bookmark.profile.avatar : default_user_icon)} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                     <div class="d-flex gap-2 w-100 justify-content-between">
                                       <div>
@@ -57,6 +60,10 @@ export default class BookmarkListView extends React.Component{
                                   </a>))
                   }
                 </div> }
+
+            </div> }
+
+  
       </>
     );
   }

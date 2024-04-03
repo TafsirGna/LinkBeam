@@ -57,10 +57,6 @@ export default class App extends React.Component{
     this.state = {
       missingDatabase: null,
       currentPageTitle: null,
-      tmps: {
-        visitsList: null,
-        reminderList: null,
-      },
       globalData: {
         keywordList: null,
         bookmarkList: null,
@@ -69,7 +65,6 @@ export default class App extends React.Component{
         homeAllVisitsList: null,
         homeTodayVisitsList: null,
         settings: null,
-        currentTabWebPageData: null,
       }
     };
 
@@ -86,7 +81,7 @@ export default class App extends React.Component{
           return;
       }
 
-      getTodayReminders(db, (reminders) => {
+      getTodayReminders(db, reminders => {
 
         this.setState(prevState => {
           let globalData = Object.assign({}, prevState.globalData);

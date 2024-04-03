@@ -77,10 +77,6 @@ export default class StatIndicatorsView extends React.Component{
       // ],
     };
 
-    this.setVisitsData = this.setVisitsData.bind(this);
-    this.setProfileData = this.setProfileData.bind(this);
-    this.setTimeSpentData = this.setTimeSpentData.bind(this);
-    this.setProfileActivityData = this.setProfileActivityData.bind(this);
     this.setData = this.setData.bind(this);
 
   }
@@ -103,84 +99,64 @@ export default class StatIndicatorsView extends React.Component{
 
   setData(){
 
-    this.setProfileData();
-
-    this.setVisitsData();
-
-    this.setTimeSpentData();
-
-    this.setProfileActivityData();
-
-  }
-
-  setProfileData(){
-
     if (!this.props.objects){
       return;
     }
 
-    var profiles = [];
+    var profiles = [],
+        time = 0,
+        activityList = [];
     for (var visit of this.props.objects){
+
+      // Incrementing time spent
+      time += visit.timeCount;
+
+      // listing all visited profiles
       var index = profiles.map(e => e.url).indexOf(visit.url);
       if (index == -1){
-        profiles.push(visit.profile);
+        profiles.push(visit.profileData);
       }
+
+      // listing all visited profiles' activities
+      if (visit.profileData.activity){
+        for (var activity of visit.profileData.activity){
+          index = activityList.map(e => e.link).indexOf(activity.link);
+          if (index == -1 || (index != -1 && activityList[index].action != activity.action)){
+            activityList.push(activity);
+          }
+        }
+      }
+
     }
 
+    // Setting profile data
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
       indicatorData.profileData.value = profiles.length;
       return { indicatorData };
     });
-  }
 
-  setVisitsData(){
-
-    if (!this.props.objects){
-      return;
-    }
-
+    // Setting visit data
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
       indicatorData.visitData.value = this.props.objects.length;
       return { indicatorData };
     });
-  }
 
-  setTimeSpentData(){
+    // Setting activity data
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.profileActivityData.value = activityList.length;
+      return { indicatorData };
+    });
 
-    if (!this.props.objects){
-      return;
-    }
-
-    var time = 0;
-    for (var visit of this.props.objects){
-      time += visit.timeCount;
-    }
-
+    // Setting time spent data
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
       indicatorData.timeSpentData.value = secondsToHms(time);
       return { indicatorData };
     });
-  }
 
-  setProfileActivityData(){
-
-    if (!this.props.objects){
-      return;
-    }
-
-    var count = 0;
-    for (var visit of this.props.objects){
-      count += (visit.profile.activity ? visit.profile.activity.length : 0);
-    }
-
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.profileActivityData.value = count;
-      return { indicatorData };
-    });
   }
 
   componentWillUnmount(){

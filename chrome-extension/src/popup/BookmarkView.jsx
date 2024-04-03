@@ -25,7 +25,8 @@ import PageTitleView from "./widgets/PageTitleView";
 import BookmarkListView from "./widgets/BookmarkListView";
 import { 
   saveCurrentPageTitle, 
-  appParams
+  appParams,
+  getProfileDataFrom,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -49,19 +50,45 @@ export default class BookmarkView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS);
 
+    console.log("fffffffffffffffff");
+
     if (!this.props.globalData.bookmarkList){
 
       (async () => {
 
-        const bookmarks = await db.bookmarks.toArray();
+        var bookmarks = null;
 
-        await Promise.all (bookmarks.map (async bookmark => {
-          [bookmark.profile] = await Promise.all([
-            db.profiles.where('url').equals(bookmark.url).first()
-          ]);
-        }));
+        try{
 
-        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "bookmarkList", value: bookmarks});
+          bookmarks = await db.bookmarks.toArray();
+
+          for (var bookmark of bookmarks){
+
+            try{
+
+              const visits = await db.visits
+                                     .where("url")
+                                     .equals(bookmark.url)
+                                     .sortBy("date");
+
+              var profile = getProfileDataFrom(visits);
+              bookmark.profile = profile;
+
+            }
+            catch(error){
+              console.log("Error : ", error);
+            }
+
+          }
+
+        }
+        catch(error){
+          console.error("Error : ", error);
+        }
+
+        if (bookmarks){
+          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "bookmarkList", value: bookmarks});
+        }
 
       }).bind(this)();
 

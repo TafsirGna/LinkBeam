@@ -123,28 +123,35 @@ export default class ProfileView extends React.Component{
 
   async toggleBookmarkStatus(){
 
-    if (this.props.profile.bookmark){
+    try{
+
+      if (this.props.profile.bookmark){
       
-      await db.bookmarks.delete(this.props.profile.bookmark.id);
+        await db.bookmarks.delete(this.props.profile.bookmark.id);
 
-      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: null});
+        eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: null});
 
-      this.toggleToastShow("Profile unbookmarked !");
+        this.toggleToastShow("Profile unbookmarked !");
+
+      }
+      else{
+        
+        await db.bookmarks.add({
+          url: this.props.profile.url,
+          createdOn: (new Date()).toISOString(),
+        });
+
+        const bookmark = await db.bookmarks.where("url").equals(this.props.profile.url).first();
+
+        eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: bookmark});
+
+        this.toggleToastShow("Profile bookmarked !");
+
+      }
 
     }
-    else{
-      
-      await db.bookmarks.add({
-        url: this.props.profile.url,
-        createdOn: (new Date()).toISOString(),
-      });
-
-      const bookmark = await db.bookmarks.where("url").equals(this.props.profile.url).first();
-
-      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: bookmark});
-
-      this.toggleToastShow("Profile bookmarked !");
-
+    catch(error){
+      console.error("Error : ", error);
     }
 
   }
