@@ -32,6 +32,7 @@ import {
   dbData,
   setGlobalDataReminders,
   setGlobalDataHomeAllVisitsList,
+  getProfileDataFrom,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -140,19 +141,44 @@ export default class SearchInputView extends React.Component{
 
         (async () => {
 
-          var reminders = await db.reminders
+          var reminders = null;
+
+          try{
+
+            reminders = await db.reminders
                                     .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
                                     .toArray();
 
-          await Promise.all (reminders.map (async reminder => {
-            [reminder.profile] = await Promise.all([
-              db.profiles.where('url').equals(reminder.url).first()
-            ]);
+            reminders.forEach(async (reminder) => {
 
-            reminder.text = highlightSearchText(reminder.text);
-          }));
+                try{
 
-          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
+                  const visits = await db.visits
+                                         .where("url")
+                                         .equals(reminder.url)
+                                         .sortBy("date");
+
+                  const profile = getProfileDataFrom(visits);
+                  reminder.profile = profile;
+
+                  reminder.text = highlightSearchText(reminder.text);
+
+                }
+                catch(error){
+                  console.log("Error : ", error);
+                }
+                
+              }
+            );
+
+          }
+          catch(error){
+            console.error("Error : ", error);
+          }
+
+          if (reminders){
+            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
+          }
 
         })();
 
@@ -200,7 +226,7 @@ export default class SearchInputView extends React.Component{
 			    <span 
             class="input-group-text handy-cursor text-muted" 
             id="basic-addon2" 
-            onClick={this.searchText}} 
+            onClick={this.searchText} 
             title="search">
 			      <SearchIcon size="20" />
 			    </span>

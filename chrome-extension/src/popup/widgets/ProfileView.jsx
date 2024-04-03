@@ -101,7 +101,12 @@ export default class ProfileView extends React.Component{
 
         (async () => {
 
-          await db.reminders.delete(this.props.profile.reminder.id);
+          try{
+            await db.reminders.delete(this.props.profile.reminder.id);
+          }
+          catch(error){
+            console.error("Error : ", error);
+          }
 
           eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: null});
 

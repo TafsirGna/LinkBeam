@@ -25,6 +25,8 @@ import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeyword
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 
+const EXTRACTION_INTERVAL_TIME = 3000;
+
 export class DataExtractorBase {
 
 	constructor(){
@@ -32,6 +34,7 @@ export class DataExtractorBase {
     this.tabId = null;
     this.webPageData = null;
     this.pageUrl = window.location.href;
+    this.isActiveTab = true;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -41,13 +44,20 @@ export class DataExtractorBase {
 	// Function for sending the page data
 	sendTabData(data){
 
-	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: this.pageUrl }}, (response) => {
+    var pageUrl = this.pageUrl.split("?")[0];
+    pageUrl = pageUrl.indexOf("/feed") != -1 
+                ? pageUrl 
+                : ( pageUrl.indexOf("/in/") != -1 
+                    ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
+                    : null);
+
+	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: pageUrl }}, (response) => {
 	    console.log('linkedin-data response sent', response, data);
 	    this.webPageData = data;
 
       setTimeout(() => {
         this.extractSendTabData();
-      }, 3000);
+      }, EXTRACTION_INTERVAL_TIME);
 
 	  });
 
@@ -74,10 +84,22 @@ export class DataExtractorBase {
 
   extractSendTabData(){
 
+    if (!this.isActiveTab){
+
+      setTimeout(() => {
+        this.extractSendTabData();
+      }, EXTRACTION_INTERVAL_TIME);
+
+    }
+
     var webPageData = this.extractData();
 
     if (!webPageData){
-      return;
+      
+      setTimeout(() => {
+        this.extractSendTabData();
+      }, EXTRACTION_INTERVAL_TIME);
+
     }
 
     if (webPageData == this.webPageData){
@@ -124,7 +146,21 @@ export class DataExtractorBase {
 		  if (message.header == "CS_SETUP_DATA") {
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
-	        this.getTabId(message.data, sendResponse);
+          if (!this.tabId){
+	         this.getTabId(message.data, sendResponse);
+          }
+          else{
+            sendResponse({
+                status: "ACK"
+            });
+
+            if (this.tabId != messageData.tabId){
+              this.isActiveTab = false;
+            }
+            else{
+              this.isActiveTab = true;
+            }
+          }
 	      }
 	      else if (Object.hasOwn(message.data, "reminders")){
 	        this.showToast(message.data, "reminders", sendResponse);

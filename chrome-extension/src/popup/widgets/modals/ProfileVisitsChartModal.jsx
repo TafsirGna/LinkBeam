@@ -37,7 +37,6 @@ export default class ProfileVisitsChartModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      // currentTabIndex: 0,
       view: 0,
       periodVisits: null,
     };
@@ -63,7 +62,7 @@ export default class ProfileVisitsChartModal extends React.Component{
 
   async setPeriodVisits(){
 
-    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles", this.props.profile);
+    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles", this.props.profile.url);
     this.setState({periodVisits: periodVisits});
 
   }

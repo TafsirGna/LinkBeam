@@ -66,11 +66,18 @@ export default class ProfileViewReminderModal extends React.Component{
 
       callback = async () => {
 
-                    await db.reminders.add(this.state.reminder);
+                    var reminder = null;
+                    try{
+                      await db.reminders.add(this.state.reminder);
+                      reminder = await db.reminders.where("url").equals(this.props.profile.url);
+                    }
+                    catch(error){
+                      console.error("Error : ", error);
+                    }
 
-                    const reminder = db.reminders.where("url").equals(this.props.profile.url);
-
-                    eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
+                    if (reminder){
+                      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
+                    }
 
                   };
 

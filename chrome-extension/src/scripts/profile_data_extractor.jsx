@@ -59,7 +59,6 @@ export default class ProfileDataExtractor extends DataExtractorBase {
       
       pageData = {
 
-        // url: (window.location.href.split("?"))[0],
         fullName: publicHeaderData.fullName,
         title: publicHeaderData.title,
         info: publicDataExtractor.about(),
@@ -77,8 +76,6 @@ export default class ProfileDataExtractor extends DataExtractorBase {
         languages: publicDataExtractor.language(),
         projects: publicDataExtractor.project(),
         profileSuggestions: publicDataExtractor.suggestions(),
-        //
-        // codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
 
       };
       
@@ -97,7 +94,6 @@ export default class ProfileDataExtractor extends DataExtractorBase {
 
         pageData = {
 
-          // url: (window.location.href.split("?"))[0],
           fullName: authHeaderData.fullName,
           title: authHeaderData.title,
           info: authDataExtractor.about(),
@@ -115,8 +111,6 @@ export default class ProfileDataExtractor extends DataExtractorBase {
           languages: authDataExtractor.language(),
           projects: authDataExtractor.project(),
           profileSuggestions: authDataExtractor.suggestions(),
-          //
-          // codeInjected: (document.getElementById("linkBeamExtensionMainRoot") ? true : false),
 
         };
 

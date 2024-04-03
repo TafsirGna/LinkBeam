@@ -3,6 +3,7 @@ import React from 'react';
 import { db } from "../../db";
 import { 
   appParams,
+  getProfileDataFrom,
 } from "../Local_library";
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Spinner from 'react-bootstrap/Spinner';
@@ -45,10 +46,13 @@ export default class LoadingprofileView extends React.Component{
 
       try {
 
-        const profile = await db.profiles
+        const visits = await db.visits
                                 .where("url")
                                 .equals(encodeURI(profileUrl))
-                                .first();
+                                .sortBy("date");
+
+        var profile = getProfileDataFrom(visits);
+        profile.url = profileUrl;
 
         await Promise.all ([profile].map (async profile => {
           [profile.bookmark] = await Promise.all([
@@ -68,7 +72,7 @@ export default class LoadingprofileView extends React.Component{
 
       } catch (error) {
 
-        // console.error('Error while retrieving date: ', error);
+        console.error('Error while retrieving profile bookmark and reminder object : ', error);
         this.props.loadingDone("FAILURE", null);
 
       }

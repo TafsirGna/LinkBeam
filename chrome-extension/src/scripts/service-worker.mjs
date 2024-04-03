@@ -27,6 +27,7 @@ import {
     getTodayReminders,
     testTabBaseUrl,
     getProfileDataFrom,
+    getNewProfileData,
 } from "../popup/Local_library";
 import Dexie from 'dexie';
 
@@ -153,7 +154,18 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     currentTabId = activeInfo.tabId;
     // windowId = info.windowId
 
-    chrome.tabs.query({currentWindow: true, active: true}, function(tabs){
+    chrome.tabs.query({}, function(tabs){
+
+        // pausing or reactivating linkedin tabs
+        tabs.forEach(tab => {
+            if (tab.url && testTabBaseUrl(tab.url)){
+                chrome.tabs.sendMessage(tab.id, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: currentTabId}}, (response) => {
+                    console.log('activated tab id sent', response);
+                }); 
+            }
+        });
+
+
         const url = tabs[0].url;
         if (url && testTabBaseUrl(url)){
 
@@ -232,6 +244,7 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
         else{
             chrome.action.setBadgeText({text: null});
         }
+
     });
 
 });
@@ -240,7 +253,7 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
 
 async function processTabData(tabData){
     
-    // console.log("linkedInData : ", tabData);
+    console.log("linkedInData : ", tabData);
     if (currentTabId != tabData.tabId){
         return;
     }
@@ -263,7 +276,7 @@ async function processTabData(tabData){
 
             await db
                     .visits
-                    .where({url: tabData.tabUrl.split("?")[0], tabId: tabData.tabId})
+                    .where({url: tabData.tabUrl, tabId: tabData.tabId})
                     .modify(visit => {
                         visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
                     });
@@ -407,7 +420,9 @@ async function recordFeedVisit(tabData){
 
 async function recordProfileVisit(tabData){
 
-    const openNewTab = (url) => {
+    tabData.tabUrl = tabData.tabUrl;
+
+    const openNewTab = (url, settings) => {
         // open new tab
         if (settings.autoTabOpening){
 
@@ -443,10 +458,12 @@ async function recordProfileVisit(tabData){
 
     }
 
+    console.log("xxxxxxxxxxxxxxxxxxxx : ", tabData);
+
     const profileVisits = await db
                             .visits
                             .where('url')
-                            .equals(tabData.tabUrl.split("?")[0])
+                            .equals(tabData.tabUrl)
                             .sortBy("date");
 
     if (profileVisits.length){
@@ -454,8 +471,8 @@ async function recordProfileVisit(tabData){
         const visit = profileVisits.filter(profileVisit => profileVisit.tabId == tabData.tabId);
         visit = visit.length ? visit[0] : null;
 
-        const wholeProfileData = getProfileDataFrom(profileVisits);
-        const newProfileData = getNewProfileData(wholeProfileData, tabData.extractedData);
+        const fullProfileData = getProfileDataFrom(profileVisits);
+        const newProfileData = getNewProfileData(fullProfileData, tabData.extractedData);
 
         if (visit){
 
@@ -465,7 +482,7 @@ async function recordProfileVisit(tabData){
                     .where({id: visit.id})
                     .modify(visit => {
                         visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                        profileData = newProfileData;
+                        visit.profileData = newProfileData;
                     });
 
         }
@@ -492,7 +509,7 @@ async function recordProfileVisit(tabData){
                 chrome.action.setBadgeText({text: "1"});
             }
 
-            openNewTab(tabData.tabUrl.split("?")[0]);
+            openNewTab(tabData.tabUrl, settings);
 
         }
 
@@ -510,7 +527,7 @@ async function recordProfileVisit(tabData){
 
         var visit = {
             date: new Date().toISOString(),
-            url: tabData.tabUrl.split("?")[0],
+            url: tabData.tabUrl,
             timeCount: 1, 
             tabId: tabData.tabId,
             profileData: tabData.extractedData,
@@ -522,7 +539,7 @@ async function recordProfileVisit(tabData){
             chrome.action.setBadgeText({text: "1"});
         }
 
-        openNewTab(tabData.tabUrl.split("?")[0]);
+        openNewTab(tabData.tabUrl, settings);
 
     }
 

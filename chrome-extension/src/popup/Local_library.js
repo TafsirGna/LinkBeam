@@ -674,15 +674,40 @@ export async function setGlobalDataKeywords(db, eventBus, liveQuery){
 
 export async function setGlobalDataReminders(db, eventBus){
 
-  const reminders = await db.reminders.toArray();
+  var reminders = null;
+  
+  try{
 
-  await Promise.all (reminders.map (async reminder => {
-    [reminder.profile] = await Promise.all([
-      db.profiles.where('url').equals(reminder.url).first()
-    ]);
-  }));
+    reminders = await db.reminders.toArray();
 
-  eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
+    reminders.forEach(async (reminder) => {
+
+        try{
+
+          const visits = await db.visits
+                                 .where("url")
+                                 .equals(reminder.url)
+                                 .sortBy("date");
+
+          const profile = getProfileDataFrom(visits);
+          reminder.profile = profile;
+
+        }
+        catch(error){
+          console.log("Error : ", error);
+        }
+        
+      }
+    );
+
+  }
+  catch(error){
+    console.log("Error : ", error);
+  }
+
+  if (reminders){
+    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
+  }
 
 }
 
@@ -785,6 +810,20 @@ export function getProfileDataFrom(visits){
   }
 
   return profileData;
+
+}
+
+export function getNewProfileData(oldProfileData, extractedProfileData){
+
+  var newProfileData = {};
+
+  for (var property in extractedProfileData){
+    newProfileData[property] = (oldProfileData[property] == extractedProfileData[property])  
+                                  ? null
+                                  : extractedProfileData[property];
+  }
+
+  return newProfileData;
 
 }
 
@@ -974,7 +1013,7 @@ export async function getPeriodVisits(index, func, db, category, profileUrl = nu
 
   var collection = collection = db.visits
                     .filter(visit => dateBetweenRange(startDate, new Date(), visit.date)
-                                      && (profileUrl ? visit.url == profilUrl : true)
+                                      && (profileUrl ? visit.url == profileUrl : true)
                                       && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : Object.hasOwn(visit, "feedItemsMetrics")) );
 
   var visits = await collection.toArray();
@@ -1122,18 +1161,41 @@ export function saveCurrentPageTitle(pageTitle){
 
 export async function getTodayReminders(db, callback){
 
-  const reminders = await db
-                            .reminders
-                            .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
-                            .toArray();
+  try{
 
-  await Promise.all (reminders.map (async reminder => {
-    [reminder.profile] = await Promise.all([
-      db.profiles.where('url').equals(reminder.url).first()
-    ]);
-  }));
+    var reminders = null;
+    reminders = await db
+                              .reminders
+                              .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
+                              .toArray();
+                              
+    reminders.forEach(async (reminder) => {
 
-  callback(reminders);  
+      try{
+
+        const visits = await db.visits
+                               .where("url")
+                               .equals(reminder.url)
+                               .sortBy("date");
+
+        const profile = getProfileDataFrom(visits);
+        reminder.profile = profile;
+
+      }
+      catch(error){
+        console.error("Error : ", error);
+      }
+
+    });
+
+  }
+  catch(error){
+    console.error("Error : ", error);
+  }
+
+  if (reminders){
+    callback(reminders);  
+  }
 
 }
 
