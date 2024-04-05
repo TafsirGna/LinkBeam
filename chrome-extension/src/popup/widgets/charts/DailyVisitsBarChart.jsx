@@ -4,7 +4,8 @@ import { Bar } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
   getChartColors, 
-  dbDataSanitizer 
+  dbDataSanitizer,
+  getProfileDataFrom,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -18,6 +19,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Colors } from 'chart.js';
+import { db } from "../../../db";
 
 // Chart.register(Colors);
 
@@ -69,7 +71,7 @@ export default class DailyVisitsBarChart extends React.Component{
 
   }
 
-  setChartData(){
+  async setChartData(){
 
     if (!this.props.objects){
       return;
@@ -78,11 +80,32 @@ export default class DailyVisitsBarChart extends React.Component{
     var results = [];
     for (var visit of this.props.objects){
       var index = results.map(e => e.url).indexOf(visit.url),
-          time = (visit.timeCount / 60)
+          time = (visit.timeCount / 60);
+
       if (index == -1){
-        var object = {
+
+        var profile = null;
+        try{
+
+          const profileVisits = await db.visits
+                                        .where('url')
+                                        .equals(visit.url)
+                                        .sortBy("date");
+
+          profile = getProfileDataFrom(profileVisits);
+
+        }
+        catch(error){
+          console.error("Error : ", error);
+        }
+
+        if (!profile){
+          continue;
+        }
+
+        const object = {
           url: visit.url,
-          label: dbDataSanitizer.preSanitize(visit.profile.fullName),
+          label: dbDataSanitizer.preSanitize(profile.fullName),
           time: time,
         };
         results.push(object);
@@ -96,7 +119,7 @@ export default class DailyVisitsBarChart extends React.Component{
 
     // setting the bar data
     this.setState({barData: {
-        labels: results.map((object) => object.label),
+        labels: results.map(object => object.label),
         datasets: [
           {
             label: 'Time spent (minutes)',
@@ -114,7 +137,6 @@ export default class DailyVisitsBarChart extends React.Component{
   componentDidUpdate(prevProps, prevState){
     
     if (prevProps.objects != this.props.objects){
-      console.log("************************** : ", this.props.objects);
       this.setChartData();
     }
 

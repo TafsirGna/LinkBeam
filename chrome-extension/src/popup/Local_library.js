@@ -733,10 +733,46 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
     offset = 0;
   }
 
-  var visits = await db.visits
-                       .offset(offset).limit(limit)
-                       .toArray();
-  visits.reverse();
+  var visits = null;
+
+  try{
+
+    visits = await db.visits
+                     .offset(offset).limit(limit)
+                     .toArray();
+    visits.reverse();
+
+    var profiles = [];
+    for (var visit of visits){
+
+      const index = profiles.map(p => p.url).indexOf(visit.url);
+      if (index != -1){
+        visit.profileData = profiles[index].payload;
+      }
+      else{
+
+        const profileVisits = await db.visits
+                                      .where('url')
+                                      .equals(visit.url)
+                                      .sortBy("date");
+
+        const profile = getProfileDataFrom(profileVisits);
+
+        visit.profileData = profile;
+        profiles.push({url: visit.url, payload: profile});
+
+      }
+
+    }
+
+  }
+  catch(error){
+    console.error("Error : ", error);
+  }
+
+  if (!visits){
+    return;
+  }
 
   var homeAllVisitsList = null;
 
@@ -1074,11 +1110,18 @@ export const saveCanvas = (uuid, fileName, saveAs) => {
 
 export async function deactivateTodayReminders(db){
 
-  await db
+  try{
+
+    await db
           .reminders
           // .where({date: (new Date()).toISOString().split('T')[0], active: true})
           .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
           .modify({active: false});
+
+  }
+  catch(error){
+    console.log("Error : ", error);
+  }
 
 }
 
@@ -1244,14 +1287,4 @@ export function getChartColors(length){
   return {borders: borders, backgrounds: backgrounds};
 
 }
-
-// export function expandToTab(){
-
-//     // Send message to the background
-//     chrome.runtime.sendMessage({header: messageParams.requestHeaders.CS_EXPAND_MODAL_ACTION, data: null}, (response) => {
-//       // Got an asynchronous response with the data from the service worker
-//       console.log("Expand Modal Request sent !");
-//     });
-
-// }
 

@@ -17,9 +17,11 @@ import { saveAs } from 'file-saver';
 import { 
   dbDataSanitizer,
   saveCanvas,
-  computePeriodTimeSpan
+  computePeriodTimeSpan,
+  getProfileDataFrom,
 } from "../../Local_library";
 import moment from 'moment';
+import { db } from "../../../db";
 
 ChartJS.register(
   CategoryScale,
@@ -92,7 +94,7 @@ export default class ExpEdStackBarChart extends React.Component{
 
   }
 
-  setChartData(){
+  async setChartData(){
 
     if (!this.props.objects){
       this.setState({stackData: null});
@@ -100,16 +102,17 @@ export default class ExpEdStackBarChart extends React.Component{
     }
 
     var labels = [], expTimeData = [], edTimeData = [];
-    for (var visit of this.props.objects){
+    for (var profile of this.props.objects){
 
-      var fullName = dbDataSanitizer.preSanitize(visit.profile.fullName);
-      var index = labels.indexOf(fullName);
+      var index = labels.map(e => e.url).indexOf(profile.url);
       if (index == -1){
-        labels.push(fullName);
 
-        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", visit.profile);
-        var experienceTime = computePeriodTimeSpan(visit.profile.experience, "experience", {moment: moment}),
-            educationTime = computePeriodTimeSpan(visit.profile.education, "education", {moment: moment});
+        const fullName = dbDataSanitizer.preSanitize(profile.fullName);
+        labels.push({url: profile.url, fullName: fullName});
+
+        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", profile);
+        var experienceTime = computePeriodTimeSpan(profile.experience, "experience", {moment: moment}),
+            educationTime = computePeriodTimeSpan(profile.education, "education", {moment: moment});
         
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);
@@ -124,7 +127,7 @@ export default class ExpEdStackBarChart extends React.Component{
     }
 
     this.setState({stackData: {
-        labels,
+        labels: labels.map(label => label.fullName),
         datasets: [
           {
             label: 'Experience Time (years)',

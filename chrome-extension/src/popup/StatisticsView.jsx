@@ -41,6 +41,7 @@ import {
   appParams,
   getPeriodVisits,
   setGlobalDataSettings,
+  getProfileDataFrom,
 } from "./Local_library";
 import { liveQuery } from "dexie"; 
 
@@ -97,7 +98,18 @@ export default class StatisticsView extends React.Component{
     var profiles = [];
     for (var visit of visits){
       if (profiles.map(e => e.url).indexOf(visit.url) == -1){
-        profiles.push(visit.profile);
+
+        const profileVisits = await db.visits
+                                      .where("url")
+                                      .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                                      .sortBy("date");
+
+        var profile = getProfileDataFrom(profileVisits);
+        profile.url = visit.url;
+        profile.date = profileVisits[0].date;
+
+        profiles.push(profile);
+
       }
     }
 
@@ -183,6 +195,15 @@ export default class StatisticsView extends React.Component{
                                                                     </a>
                                                                   </li>)) }
 
+                <li>
+                  <a 
+                    class="dropdown-item small" 
+                    href="/index.html?view=Calendar" 
+                    target="_blank">
+                    Show calendar
+                  </a>
+                </li>
+
               </ul>
             </div>
           </div>
@@ -207,12 +228,13 @@ export default class StatisticsView extends React.Component{
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 2 && <VisitsKeywordsBarChart 
                               globalData={this.props.globalData} 
-                              objects={this.state.periodVisits} 
+                              objects={this.state.periodProfiles} 
                               carrouselIndex={2}/>}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 3 && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
+                              profiles={this.state.periodProfiles}
                               carrouselIndex={3} />}
             </Carousel.Item>
             <Carousel.Item>
@@ -223,7 +245,7 @@ export default class StatisticsView extends React.Component{
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 5 && <ExpEdStackBarChart 
-                              objects={this.state.periodVisits} 
+                              objects={this.state.periodProfiles} 
                               carrouselIndex={5} />}
             </Carousel.Item>
             <Carousel.Item> 
@@ -265,6 +287,7 @@ export default class StatisticsView extends React.Component{
               { this.state.carrouselActiveItemIndex == 7 
                   && <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
+                        profiles={this.state.periodProfiles}
                         carrouselIndex={7} />}
             </Carousel.Item>
           </Carousel>

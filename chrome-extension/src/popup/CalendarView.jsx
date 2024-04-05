@@ -53,18 +53,16 @@ export default class CalendarView extends React.Component{
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Profile Visits", "Reminders", "Activity List", "Time Chart"],
+      tabTitles: ["Profile Visits", "Reminders", "Time Chart"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
-      selectedDateProfiles: null,
     };
 
     this.onClickDay = this.onClickDay.bind(this);
     this.tileDisabled = this.tileDisabled.bind(this);
     this.onActiveStartDateChange = this.onActiveStartDateChange.bind(this);
     this.tileClassName = this.tileClassName.bind(this);
-    this.getDatePostCount = this.getDatePostCount.bind(this);
   }
 
   componentDidMount() {
@@ -143,20 +141,7 @@ export default class CalendarView extends React.Component{
         // Grouping the visits by date
         var results = groupObjectsByDate(monthVisitsList);
 
-        this.setState({monthVisitsList: results}, () => {
-
-          var profileList = [];
-
-          // Setting 'selectedDateProfiles' variable
-          for (var visit of this.getDayObjectList(this.state.monthVisitsList)){
-            if (profileList.map(e => e.url).indexOf(visit.url) == -1){
-              profileList.push(visit.profile);
-            }
-          }
-
-          this.setState({selectedDateProfiles: profileList});
-
-        });
+        this.setState({monthVisitsList: results});
 
         break;
       }
@@ -234,34 +219,7 @@ export default class CalendarView extends React.Component{
     
     var date = new Date(value.toLocaleDateString());
 
-    this.setState({selectedDate: date}, () => {
-
-      var visitList = this.getDayObjectList(this.state.monthVisitsList),
-          profileList = [];
-
-      // Setting 'selectedDateProfiles' variable
-      for (var visit of visitList){
-        if (profileList.map(e => e.url).indexOf(visit.url) == -1){
-          profileList.push(visit.profile);
-        }
-      }
-
-      this.setState({selectedDateProfiles: profileList});
-
-    });
-
-  }
-
-  getDatePostCount(){
-
-    var visits = this.getDayObjectList(this.state.monthVisitsList),
-        count = 0;
-
-    for (var visit of visits){
-      count += (visit.profile.activity ? visit.profile.activity.length : 0);
-    }
-
-    return count;
+    this.setState({selectedDate: date});
 
   }
 
@@ -312,7 +270,6 @@ export default class CalendarView extends React.Component{
                                                           {tabTitle}
                                                           { (index == 0 && this.getDayObjectList(this.state.monthVisitsList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthVisitsList).length}</span>}
                                                           { (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
-                                                          { (index == 2 && this.getDayObjectList(this.state.monthVisitsList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDatePostCount()}</span>}
                                                         </Nav.Link>
                                                       </Nav.Item>
                                                     ))}
@@ -333,11 +290,7 @@ export default class CalendarView extends React.Component{
                   { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView 
                                                                             objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[2] && <ProfileActivityListView 
-                                                                            objects={this.state.selectedDateProfiles} 
-                                                                            variant="timeline"/>}
-
-                  { this.state.tabActiveKey == this.state.tabTitles[3] && <DailyVisitsBarChart 
+                  { this.state.tabActiveKey == this.state.tabTitles[2] && <DailyVisitsBarChart 
                                                                             objects={this.getDayObjectList(this.state.monthVisitsList)}/>}
 
                 </Card.Body>

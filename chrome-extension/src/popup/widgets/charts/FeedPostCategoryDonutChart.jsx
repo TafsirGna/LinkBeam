@@ -97,24 +97,24 @@ export default class FeedPostCategoryDonutChart extends React.Component{
                 </div>}
 
         { this.props.objects 
-          && <div>
-              { this.props.objects.length == 0 
-                && <div class="text-center m-5 mt-2">
-                    <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>
-                  </div>}
-               { this.props.objects.length != 0 
-                  && this.state.data 
-                  && <div>
-                      { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) != 0 /*if the sum of the values isn't zero*/
-                          && <Doughnut data={this.state.data} options={options} />}
-                      { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) == 0 /*if the sum of the values is zero*/
-                          && <div class="text-center m-5 mt-2">
-                              <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                              <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>
-                            </div>}
-                    </div> }
-              </div>}
+            && <div>
+                { this.props.objects.length == 0 
+                  && <div class="text-center m-5">
+                      <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                      <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>
+                    </div>}
+                 { this.props.objects.length != 0 
+                    && this.state.data 
+                    && <div>
+                        { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) != 0 /*if the sum of the values isn't zero*/
+                            && <Doughnut data={this.state.data} options={options} />}
+                        { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) == 0 /*if the sum of the values is zero*/
+                            && <div class="text-center m-5 mt-2">
+                                <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>
+                              </div>}
+                      </div> }
+                </div>}
       </>
     );
   }

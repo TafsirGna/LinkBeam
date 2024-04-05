@@ -154,7 +154,7 @@ export class DataExtractorBase {
                 status: "ACK"
             });
 
-            if (this.tabId != messageData.tabId){
+            if (this.tabId != message.data.tabId){
               this.isActiveTab = false;
             }
             else{

@@ -215,7 +215,7 @@ export default class ProfileViewHeader extends React.Component{
                     placement="bottom"
                     overlay={<ReactTooltip id="tooltip1">Show reminder</ReactTooltip>}
                   >
-                    <span onClick={() => {this.showReminder()}}>
+                    <span onClick={this.showReminder}>
                       <ReminderIcon size="24" className="mx-2 handy-cursor"/>
                     </span>
                   </OverlayTrigger>
@@ -226,7 +226,7 @@ export default class ProfileViewHeader extends React.Component{
                   placement="bottom"
                   overlay={<ReactTooltip id="tooltip1">Visit on Linkedin</ReactTooltip>}
                 >
-                  <a href={this.props.profile.url} target="_blank">
+                  <a href={`https://${this.props.profile.url}`} target="_blank">
                     <DuplicateIcon size="24" className="mx-2" />
                   </a>
                 </OverlayTrigger>

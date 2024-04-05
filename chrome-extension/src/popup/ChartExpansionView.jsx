@@ -105,7 +105,7 @@ export default class ChartExpansionView extends React.Component{
               { this.state.carrouselActiveItemIndex == 2 && 
                       <VisitsKeywordsBarChart 
                         globalData={this.props.globalData} 
-                        objects={this.state.periodVisits} 
+                        objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
@@ -113,6 +113,7 @@ export default class ChartExpansionView extends React.Component{
                       <ProfilesNetworkMetricsBubbleChart 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
+                        profiles={this.state.periodProfiles}
                         displayLegend={true} />}
 
               { this.state.carrouselActiveItemIndex == 4 && 
@@ -124,7 +125,7 @@ export default class ChartExpansionView extends React.Component{
 
               { this.state.carrouselActiveItemIndex == 5 && 
                       <ExpEdStackBarChart 
-                        objects={this.state.periodVisits} 
+                        objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
 
@@ -139,6 +140,7 @@ export default class ChartExpansionView extends React.Component{
               { this.state.carrouselActiveItemIndex == 7 && 
                       <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
+                        profiles={this.state.periodProfiles}
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         displayLegend={true} />}
     

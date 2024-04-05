@@ -29,7 +29,8 @@ import {
   getChartColors, 
   appParams, 
   saveCanvas, 
-  setGlobalDataKeywords 
+  setGlobalDataKeywords,
+  getProfileDataFrom,
 } from "../../Local_library";
 
 import {
@@ -139,7 +140,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
 
   }
 
-	setChartData(){
+	async setChartData(){
 
     if (!this.props.objects){
       this.setState({barData: null});
@@ -149,10 +150,13 @@ export default class VisitsKeywordsBarChart extends React.Component{
     var barData = [];
     for (var keyword of this.props.globalData.keywordList){ 
       var profiles = [];
-      for (var visit of this.props.objects){
-        if (JSON.stringify(visit.profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1 
-            && profiles.map(e => e.url).indexOf(visit.url) == -1){
-          profiles.push(visit.profile);
+      for (var profile of this.props.objects){
+        if (profiles.map(e => e.url).indexOf(profile.url) == -1){
+
+          if (JSON.stringify(profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1){
+            profiles.push(profile);
+          }
+
         }
       }
       barData.push({label: keyword.name, profiles: profiles}); 
@@ -248,7 +252,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
             
             { (this.state.selectedChartElementIndex != null && ((this.state.labelsData[this.state.selectedChartElementIndex]).profiles).length != 0) && 
                 <div class="list-group m-1 shadow-sm small">
-                  { (this.state.labelsData[this.state.selectedChartElementIndex]).profiles.map((profile) => (<ProfileListItemView profile={profile} />)) }
+                  { (this.state.labelsData[this.state.selectedChartElementIndex]).profiles.map(profile => (<ProfileListItemView profile={profile} />)) }
                 </div>}
           </Offcanvas.Body>
         </Offcanvas>

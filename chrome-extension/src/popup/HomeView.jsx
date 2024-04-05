@@ -26,12 +26,14 @@ import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
 import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
+import SearchPostFormView from "./widgets/SearchPostFormView";
 import { 
   saveCurrentPageTitle, 
   appParams, 
   deactivateTodayReminders,
   dbData,
   setGlobalDataHomeAllVisitsList,
+  getProfileDataFrom,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -43,6 +45,7 @@ export default class HomeView extends React.Component{
     this.state = {
       currentTabIndex: 0,
       offCanvasShow: false,
+      offCanvasTitle: null,
     };
 
     // Binding all the needed functions
@@ -69,7 +72,7 @@ export default class HomeView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasTitle: null}, 
       () => {
         deactivateTodayReminders(db);
         eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
@@ -77,9 +80,12 @@ export default class HomeView extends React.Component{
     )
   };
 
-  handleOffCanvasShow = () => {
-      this.setState({offCanvasShow: true}
-    )
+  handleOffCanvasShow = (title) => {
+      this.setState({
+        offCanvasShow: true,
+        offCanvasTitle: title,
+      }
+    );
   };
 
   //   // hiding the popup
@@ -120,16 +126,47 @@ export default class HomeView extends React.Component{
     else{ // today      
 
       (async () => {
-        var visits = await db
-                               .visits
-                               .where("date")
-                               .startsWith((new Date()).toISOString().split("T")[0])
-                               .toArray();
+        
+        var visits = [];
+        try{
+
+          var urls = [];
+          await db
+                 .visits
+                 .where("date")
+                 .startsWith((new Date()).toISOString().split("T")[0])
+                 .each(visit => {
+                    if (urls.indexOf(visit.url) == -1){
+                      urls.push(visit.url);
+                    }
+                 });
+
+          for (var url of urls){
+
+            var profileVisits = await db.visits
+                                          .where('url')
+                                          .equals(url)
+                                          .sortBy("date");
+
+            const profile = getProfileDataFrom(profileVisits);
+
+            profileVisits = profileVisits.map(visit => {
+              visit.profileData = profile;
+              return visit;
+            })
+
+            visits = visits.concat(profileVisits);
+
+          }
+
+        }
+        catch(error){
+          console.error("Error : ", error);
+        }
 
         visits.sort((a,b) => new Date(b.date) - new Date(a.date));
-
         eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeTodayVisitsList", value: visits});
-        
+       
       })();
     }
 
@@ -178,12 +215,18 @@ export default class HomeView extends React.Component{
 
         <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
           <Offcanvas.Header closeButton>
-            <Offcanvas.Title>Reminders</Offcanvas.Title>
+            <Offcanvas.Title>{this.state.offCanvasTitle}</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
-            { this.props.globalData.todayReminderList 
-              && <ReminderListView 
-                  objects={this.props.globalData.todayReminderList} />}
+            
+            { this.state.offCanvasTitle == "Reminders" 
+                && this.props.globalData.todayReminderList 
+                && <ReminderListView 
+                    objects={this.props.globalData.todayReminderList} />}
+
+            { this.state.offCanvasTitle == "Posts"
+                && <SearchPostFormView/>}
+
           </Offcanvas.Body>
         </Offcanvas>
 

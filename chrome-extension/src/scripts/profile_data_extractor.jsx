@@ -76,6 +76,7 @@ export default class ProfileDataExtractor extends DataExtractorBase {
         languages: publicDataExtractor.language(),
         projects: publicDataExtractor.project(),
         profileSuggestions: publicDataExtractor.suggestions(),
+        viewedAuthenticated: true,
 
       };
       
@@ -111,6 +112,7 @@ export default class ProfileDataExtractor extends DataExtractorBase {
           languages: authDataExtractor.language(),
           projects: authDataExtractor.project(),
           profileSuggestions: authDataExtractor.suggestions(),
+          viewAuthenticated: false,
 
         };
 

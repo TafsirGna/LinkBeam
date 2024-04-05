@@ -25,7 +25,6 @@ import React from 'react';
 import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { SearchIcon } from './SVGs';
-import { Link } from 'react-router-dom';
 import eventBus from "../EventBus";
 import { 
   appParams,
@@ -109,28 +108,60 @@ export default class SearchInputView extends React.Component{
     }
 
     switch(this.props.objectStoreName){
+
       case dbData.objectStoreNames.VISITS:{
 
         (async () => {
 
-          var urls = [];
-          await db.visits
-                  .filter(visit =>  Object.hasOwn(visit, "profileData") 
-                                      && visit.profileData.fullName
-                                      && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                  .each(visit => {
-                    urls.push(visit.url);
-                  });
+          var visits = null;
+          try{
 
-          const visits = await db.visits
-                                 .where("url")
-                                 .anyOf(urls)
-                                 .toArray();
+            var urls = [];
+            await db.visits
+                    .filter(visit =>  Object.hasOwn(visit, "profileData") 
+                                        && visit.profileData.fullName
+                                        && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                    .each(visit => {
+                      if (urls.indexOf(visit.url) == -1){
+                        urls.push(visit.url);
+                      }
+                    });
 
-          // highlighting the search text in the profile fullName property
-          visit.profile.fullName = highlightSearchText(visit.profile.fullName);
+            for (var url of urls){
 
-          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
+              var profileVisits = await db.visits
+                                            .where("url")
+                                            .equals(url)
+                                            .sortBy("date");
+
+              const profile = getProfileDataFrom(profileVisits);
+
+              if (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
+
+                profile.fullName = highlightSearchText(profile.fullName);
+                visits = visits ? visits : [];
+
+                profileVisits = profileVisits.map(visit => {
+                  visit.profileData = profile;
+                  return visit;
+                });
+
+                visits = visits.concat(profileVisits);
+              }
+
+            }
+
+          }
+          catch(error){
+            console.error("Error : ", error);
+          }
+
+          if (visits){
+
+            visits.sort((a, b) => new Date(b.date) - new Date(a.date));
+            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
+
+          }
 
         })();
 
@@ -200,6 +231,11 @@ export default class SearchInputView extends React.Component{
 
       case dbData.objectStoreNames.REMINDERS:{
         label = "reminder";
+        break;
+      }
+
+      case "posts":{
+        label = "post";
         break;
       }
     }

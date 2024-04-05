@@ -50,8 +50,6 @@ export default class BookmarkView extends React.Component{
 
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS);
 
-    console.log("fffffffffffffffff");
-
     if (!this.props.globalData.bookmarkList){
 
       (async () => {
@@ -68,15 +66,15 @@ export default class BookmarkView extends React.Component{
 
               const visits = await db.visits
                                      .where("url")
-                                     .equals(bookmark.url)
+                                     .anyOf([bookmark.url, encodeURI(bookmark.url), decodeURI(bookmark.url)])
                                      .sortBy("date");
 
-              var profile = getProfileDataFrom(visits);
+              const profile = getProfileDataFrom(visits);
               bookmark.profile = profile;
 
             }
             catch(error){
-              console.log("Error : ", error);
+              console.error("Error : ", error);
             }
 
           }

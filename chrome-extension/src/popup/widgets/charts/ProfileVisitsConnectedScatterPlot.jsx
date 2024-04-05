@@ -68,16 +68,17 @@ export default class ProfileVisitsConnectedScatterPlot extends React.Component{
   	var sides = ["bottom", "right", "left", "top"];
   	var chartData = [];
 
-  	for (var i = this.props.objects.length - 1; i >= 0; i--){
+  	for (const visit of this.props.objects){
 
-  		var visit = this.props.objects[i];
+  		const profile = this.props.profiles[this.props.profiles.map(e => e.url).indexOf(visit.url)];
+  		
   		var index = chartData.map(e => e.url).indexOf(visit.url);
   		if (index == -1){
   			chartData.push({
   				side: shuffle(sides)[0],
   				url: visit.url,
-  				label: dbDataSanitizer.preSanitize(visit.profile.fullName).split(" ")[0],
-  				experience: computePeriodTimeSpan(visit.profile.experience, "experience", {moment: moment}),
+  				label: dbDataSanitizer.preSanitize(profile.fullName).split(" ")[0],
+  				experience: computePeriodTimeSpan(profile.experience, "experience", {moment: moment}),
   				time: visit.timeCount,
   			});
   		}

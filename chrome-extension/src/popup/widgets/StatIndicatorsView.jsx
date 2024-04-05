@@ -112,9 +112,9 @@ export default class StatIndicatorsView extends React.Component{
       time += visit.timeCount;
 
       // listing all visited profiles
-      var index = profiles.map(e => e.url).indexOf(visit.url);
+      var index = profiles.indexOf(visit.url);
       if (index == -1){
-        profiles.push(visit.profileData);
+        profiles.push(visit.url);
       }
 
       // listing all visited profiles' activities

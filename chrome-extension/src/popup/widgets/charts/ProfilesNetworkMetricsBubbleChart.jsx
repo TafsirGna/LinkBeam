@@ -3,10 +3,10 @@ import React from 'react';
 import { Bubble } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { 
-	getChartColors, 
-	appParams, 
+	getChartColors, 	
 	dbDataSanitizer,
 	saveCanvas,
+	getProfileDataFrom
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -19,6 +19,7 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
+import { db } from "../../../db";
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
 
@@ -44,7 +45,7 @@ const options = {
   			label: ((tooltipItem, data) => {
   				// console.log(tooltipItem);
   				var subjectLabel = dbDataSanitizer.preSanitize(tooltipItem.raw.fullName);
-  				return `${tooltipItem.dataset.label} [${tooltipItem.raw.r}] | ${subjectLabel}`;
+  				return `${tooltipItem.dataset.label} [${tooltipItem.raw.r.toFixed(2)}] | ${subjectLabel}`;
   			})
   		}
   	}
@@ -95,7 +96,7 @@ export default class ProfilesNetworkMetricsBubbleChart extends React.Component{
 
   }
 
-	setChartData(){
+	async setChartData(){
 
 		if (!this.props.objects){
 			this.setState({bubbleData: null});
@@ -120,12 +121,15 @@ export default class ProfilesNetworkMetricsBubbleChart extends React.Component{
     			(datasets[1].data[itemIndex]).r += (visit.timeCount / 60);
     		}
     		else{
-    			var followerCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nFollowers),
-    					connectionCount = dbDataSanitizer.profileRelationMetrics(visit.profile.nConnections);
+
+    			var profile = this.props.profiles[this.props.profiles.map(e => e.url).indexOf(visit.url)];
+
+    			var followerCount = dbDataSanitizer.profileRelationMetrics(profile.nFollowers),
+    					connectionCount = dbDataSanitizer.profileRelationMetrics(profile.nConnections);
 
     			datasets[0].data.push({
     				url: visit.url,
-    				fullName: visit.profile.fullName,
+    				fullName: profile.fullName,
     				r: 1,
     				x: followerCount,
     				y: connectionCount,
@@ -133,7 +137,7 @@ export default class ProfilesNetworkMetricsBubbleChart extends React.Component{
 
     			datasets[1].data.push({
     				url: visit.url,
-    				fullName: visit.profile.fullName,
+    				fullName: profile.fullName,
     				r: (visit.timeCount / 60),
     				x: followerCount,
     				y: connectionCount,

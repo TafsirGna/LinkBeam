@@ -31,7 +31,6 @@ import MainProfileView from "./popup/MainProfileView";
 import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
 import BookmarkView from "./popup/BookmarkView";
-import ProfileActivityView from "./popup/ProfileActivityView";
 import CalendarView from "./popup/CalendarView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
@@ -46,9 +45,7 @@ import {
   appParams,
   getTodayReminders,
 } from "./popup/Local_library";
-// import { genPassword } from "./.private_library";
 import eventBus from "./popup/EventBus";
-import { liveQuery } from "dexie"; 
 
 export default class App extends React.Component{
 
@@ -215,9 +212,6 @@ export default class App extends React.Component{
 
         {/*Reminders Page*/}
         { this.state.currentPageTitle == "Reminders" && <ReminderView globalData={this.state.globalData} />}
-
-        {/*ProfileActivity Page*/}
-        { this.state.currentPageTitle == "ProfileActivity" && <ProfileActivityView globalData={this.state.globalData} />}
 
         {/*Bookmarks Page*/}
         { this.state.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}

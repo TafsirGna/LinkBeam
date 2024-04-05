@@ -173,9 +173,9 @@ export default class FeedDataExtractor extends DataExtractorBase {
 							? postContainerElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
 							: null,
 			},
-			// text: postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper")
-			// 		? postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
-			// 		: null,
+			text: postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper")
+					? postContainerElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
+					: null,
 			reactions: getPostReactionsValues("reaction"),
 			commentsCount: getPostReactionsValues("comment"),               
 			repostsCount: getPostReactionsValues("repost"),
