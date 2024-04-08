@@ -79,7 +79,7 @@ export default class ProfilesGraphChart extends React.Component{
         }, 
         linkedObjects = [];
 
-    for (var profile of this.props.objects){
+    for (const profile of this.props.objects){
 
       var source = dbDataSanitizer.preSanitize(profile.fullName);
       chartData.nodes.push({
@@ -97,12 +97,14 @@ export default class ProfilesGraphChart extends React.Component{
             continue;
           }
 
-          var target = dbDataSanitizer.preSanitize(suggestion.name);
+          const target = dbDataSanitizer.preSanitize(suggestion.name);
 
-          chartData.nodes.push({
-            id: target,
-            group: 2,
-          });
+          if (chartData.nodes.map(n => n.id).indexOf(target) == -1){
+            chartData.nodes.push({
+              id: target,
+              group: 2,
+            });
+          }
 
           chartData.links.push({
             source: source,

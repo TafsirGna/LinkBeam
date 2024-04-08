@@ -25,10 +25,6 @@
 import { 
     DataExtractorBase,
 } from "./data_extractor_lib";
-import React from 'react';
-// import { categoryVerbMap, appParams } from "../popup/Local_library";
-import ReactDOM from 'react-dom/client';
-import styles from "../contentScriptUi/styles.min.css";
 import FeedDataExtractor from "./feed_data_extractor";
 import ProfileDataExtractor from "./profile_data_extractor";
 
@@ -84,4 +80,4 @@ class MixedDataExtractor extends DataExtractorBase {
 
 }
 
-var mixedDataExtractor = new MixedDataExtractor();
+const mixedDataExtractor = new MixedDataExtractor();

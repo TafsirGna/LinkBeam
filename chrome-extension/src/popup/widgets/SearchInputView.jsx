@@ -32,6 +32,7 @@ import {
   setGlobalDataReminders,
   setGlobalDataHomeAllVisitsList,
   getProfileDataFrom,
+  dbDataSanitizer,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -162,7 +163,7 @@ export default class SearchInputView extends React.Component{
 
             const visits = await db.visits
                                    .where("url")
-                                   .equals(reminder.url)
+                                   .anyOf([reminder.url, encodeURI(reminder.url), decodeURI(reminder.url)])
                                    .sortBy("date");
 
             const profile = getProfileDataFrom(visits);
@@ -191,20 +192,44 @@ export default class SearchInputView extends React.Component{
 
   async searchPosts(){
 
-    const getMatchingActivity = (profile, searchText) => {
+    async function getMatchingActivity(visit, searchText, matchingPosts){
 
-      var activityList = [];
-      if (profile.activity){
-        for (var activity of profile.activity){
-          if (activity.title.toLowerCase().indexOf(this.state.text) != -1){
+      if (visit.profileData.activity){
+        for (var activity of visit.profileData.activity){
+
+          if (dbDataSanitizer.preSanitize(activity.title).toLowerCase().indexOf(searchText.toLowerCase()) != -1
+                && matchingPosts.filter(p => p.title.indexOf(dbDataSanitizer.preSanitize(activity.title)) != -1).length == 0){
+
+            var index = matchingPosts.map(p => p.profile.url).indexOf(visit.url),
+                profile = null;
+            if (index != -1){
+              profile = matchingPosts[index].profile;
+            }
+            else{
+              
+              try{
+
+                const profileVisits = await db.visits
+                                            .where("url")
+                                            .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                                            .sortBy("date");
+
+                profile = getProfileDataFrom(profileVisits);
+                profile.url = visit.url;
+
+              }
+              catch(error){
+                console.error("Error : ", error);
+              }
+
+            }
+
             activity.profile = profile;
-            activity.date = profile.date;
-            activityList.push(activity);
+            activity.date = visit.date;
+            matchingPosts.push(activity);
           }
         }
       }
-
-      return activityList;
 
     }
 
@@ -230,8 +255,7 @@ export default class SearchInputView extends React.Component{
       await db.visits
               .filter(visit => Object.hasOwn(visit, "profileData"))
               .each(visit => {
-                visit.profileData.date = visit.date;
-                matchingPosts = matchingPosts.concat(getMatchingActivity(visit.profileData));
+                getMatchingActivity(visit, this.state.text, matchingPosts);
               });
 
       if (matchingPosts){
@@ -256,7 +280,7 @@ export default class SearchInputView extends React.Component{
       await db.visits
               .filter(visit =>  Object.hasOwn(visit, "profileData") 
                                   && visit.profileData.fullName
-                                  && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                                  && (dbDataSanitizer.preSanitize(visit.profileData.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
               .each(visit => {
                 if (urls.indexOf(visit.url) == -1){
                   urls.push(visit.url);
@@ -272,7 +296,7 @@ export default class SearchInputView extends React.Component{
 
         var profile = getProfileDataFrom(profileVisits);
 
-        if (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
+        if (dbDataSanitizer.preSanitize(profile.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
 
           profile.fullName = highlightSearchText(profile.fullName);
           visits = visits ? visits : [];

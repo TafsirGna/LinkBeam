@@ -130,32 +130,37 @@ export default class HomeView extends React.Component{
         var visits = [];
         try{
 
-          var urls = [];
-          await db
-                 .visits
-                 .where("date")
-                 .startsWith((new Date()).toISOString().split("T")[0])
-                 .each(visit => {
-                    if (urls.indexOf(visit.url) == -1){
-                      urls.push(visit.url);
-                    }
-                 });
+          visits = await db
+                         .visits
+                         .where("date")
+                         .startsWith((new Date()).toISOString().split("T")[0])
+                         .toArray();
 
-          for (var url of urls){
+          var profiles = [];
 
-            var profileVisits = await db.visits
+          for (var visit of visits){
+
+            if (Object.hasOwn(visit, "profileData")){
+
+              const index = profiles.map(p => p.url).indexOf(visit.url);
+              if (index == -1){
+
+                const profileVisits = await db.visits
                                           .where('url')
                                           .equals(url)
                                           .sortBy("date");
 
-            const profile = getProfileDataFrom(profileVisits);
 
-            profileVisits = profileVisits.map(visit => {
-              visit.profileData = profile;
-              return visit;
-            })
+                visit.profileData = getProfileDataFrom(profileVisits);
+                visit.profileData.url = visit.url;
+                profiles.push(visit.profileData);
 
-            visits = visits.concat(profileVisits);
+              }
+              else{
+                visit.profileData = profiles[index];
+              }
+              
+            }
 
           }
 

@@ -43,6 +43,7 @@ export class DataExtractorBase {
 
 	// Function for sending the page data
 	sendTabData(data){
+    console.log("!!!!!!!!!!!!!!! : ");
 
     var pageUrl = this.pageUrl.split("?")[0];
     pageUrl = pageUrl.indexOf("/feed") != -1 
@@ -52,7 +53,8 @@ export class DataExtractorBase {
                     : null);
 
 	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: pageUrl }}, (response) => {
-	    console.log('linkedin-data response sent', response, data);
+	    
+      console.log('linkedin-data response sent', response, data);
 	    this.webPageData = data;
 
       setTimeout(() => {

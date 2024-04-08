@@ -22,7 +22,7 @@
 
 export const appParams = {
   appName: "LinkBeam",
-  appVersion: "0.1.0", 
+  appVersion: "BETA", // "0.1.0", 
   appDbName: "LinkBeamDB",
   appDbVersion: 1,
   keywordCountLimit: 5, 

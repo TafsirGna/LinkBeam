@@ -305,7 +305,3 @@ export default class FeedDataExtractor extends DataExtractorBase {
 	}
 
 }
-
-// var feedDataExtractor = new FeedDataExtractor();
-
-

@@ -124,6 +124,3 @@ export default class ProfileDataExtractor extends DataExtractorBase {
 
 }
 
-// Building the object 
-// var profileDataExtractor = new ProfileDataExtractor();
-
