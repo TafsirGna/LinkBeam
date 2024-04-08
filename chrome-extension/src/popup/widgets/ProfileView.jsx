@@ -30,6 +30,7 @@ import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
+import { LayersIcon } from "./SVGs";
 
 export default class ProfileView extends React.Component{
 
@@ -163,7 +164,9 @@ export default class ProfileView extends React.Component{
         <div class="clearfix mt-5">
           <div class="dropdown float-end mt-3 bd-gray">
             <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+              <LayersIcon 
+                size="18" 
+                className="text-muted"/>
             </div>
             <ul class="dropdown-menu shadow-lg">
               <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }</a></li>

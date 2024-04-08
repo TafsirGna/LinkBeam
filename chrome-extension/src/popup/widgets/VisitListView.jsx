@@ -3,6 +3,7 @@ import React from 'react';
 import { AlertCircleIcon } from "./SVGs";
 import ProfileVisitListItemView from "./ProfileVisitListItemView";
 import FeedVisitListItemView from "./FeedVisitListItemView";
+import sorry_icon from '../../assets/sorry_icon.png';
 
 export default class VisitListView extends React.Component{
 
@@ -34,7 +35,9 @@ export default class VisitListView extends React.Component{
               </div> }
 
         { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-2">
-                    <AlertCircleIcon size="100" className="mb-3 text-muted" />
+                    <img 
+                      src={sorry_icon} 
+                      width="80" />
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No viewed profiles</span></p>
                     <p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>
                   </div> }

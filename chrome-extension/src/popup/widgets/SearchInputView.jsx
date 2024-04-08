@@ -44,6 +44,10 @@ export default class SearchInputView extends React.Component{
     };
 
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.searchPosts = this.searchPosts.bind(this);
+    this.searchProfiles = this.searchProfiles.bind(this);
+    this.searchReminders = this.searchReminders.bind(this);
+
   }
 
   componentDidMount() {
@@ -88,6 +92,13 @@ export default class SearchInputView extends React.Component{
 
           break;
         }
+
+        case "posts":{
+
+          eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, []);
+
+          break;
+        }
       }
 
       return;
@@ -111,110 +122,181 @@ export default class SearchInputView extends React.Component{
 
       case dbData.objectStoreNames.VISITS:{
 
-        (async () => {
-
-          var visits = null;
-          try{
-
-            var urls = [];
-            await db.visits
-                    .filter(visit =>  Object.hasOwn(visit, "profileData") 
-                                        && visit.profileData.fullName
-                                        && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                    .each(visit => {
-                      if (urls.indexOf(visit.url) == -1){
-                        urls.push(visit.url);
-                      }
-                    });
-
-            for (var url of urls){
-
-              var profileVisits = await db.visits
-                                            .where("url")
-                                            .equals(url)
-                                            .sortBy("date");
-
-              const profile = getProfileDataFrom(profileVisits);
-
-              if (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
-
-                profile.fullName = highlightSearchText(profile.fullName);
-                visits = visits ? visits : [];
-
-                profileVisits = profileVisits.map(visit => {
-                  visit.profileData = profile;
-                  return visit;
-                });
-
-                visits = visits.concat(profileVisits);
-              }
-
-            }
-
-          }
-          catch(error){
-            console.error("Error : ", error);
-          }
-
-          if (visits){
-
-            visits.sort((a, b) => new Date(b.date) - new Date(a.date));
-            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
-
-          }
-
-        })();
+        this.searchProfiles()
 
         break;
       }
 
       case dbData.objectStoreNames.REMINDERS:{
 
-        (async () => {
+        this.searchReminders();
 
-          var reminders = null;
+        break;
+
+      }
+
+      case "posts":{
+
+        this.searchPosts();
+
+        break;
+
+      }
+    }
+
+  }
+
+  async searchReminders(){
+
+    var reminders = null;
+
+    try{
+
+      reminders = await db.reminders
+                              .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                              .toArray();
+
+      reminders.forEach(async (reminder) => {
 
           try{
 
-            reminders = await db.reminders
-                                    .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                                    .toArray();
+            const visits = await db.visits
+                                   .where("url")
+                                   .equals(reminder.url)
+                                   .sortBy("date");
 
-            reminders.forEach(async (reminder) => {
+            const profile = getProfileDataFrom(visits);
+            reminder.profile = profile;
 
-                try{
-
-                  const visits = await db.visits
-                                         .where("url")
-                                         .equals(reminder.url)
-                                         .sortBy("date");
-
-                  const profile = getProfileDataFrom(visits);
-                  reminder.profile = profile;
-
-                  reminder.text = highlightSearchText(reminder.text);
-
-                }
-                catch(error){
-                  console.log("Error : ", error);
-                }
-                
-              }
-            );
+            reminder.text = highlightSearchText(reminder.text);
 
           }
           catch(error){
-            console.error("Error : ", error);
+            console.log("Error : ", error);
           }
+          
+        }
+      );
 
-          if (reminders){
-            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
+    }
+    catch(error){
+      console.error("Error : ", error);
+    }
+
+    if (reminders){
+      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
+    }
+
+  }
+
+  async searchPosts(){
+
+    const getMatchingActivity = (profile, searchText) => {
+
+      var activityList = [];
+      if (profile.activity){
+        for (var activity of profile.activity){
+          if (activity.title.toLowerCase().indexOf(this.state.text) != -1){
+            activity.profile = profile;
+            activity.date = profile.date;
+            activityList.push(activity);
           }
-
-        })();
-
-        break;
+        }
       }
+
+      return activityList;
+
+    }
+
+
+    var posts = [];
+
+    try{
+
+      var matchingPosts = await db.feedPosts
+                                  .filter(post => (post.content.text 
+                                                      && post.content.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
+                                                  || (post.initiator
+                                                      && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
+                                                  || (post.content.author
+                                                      && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                                  .toArray();
+
+      if (matchingPosts){
+        posts = posts.concat(matchingPosts);
+      }
+
+      matchingPosts = [];
+      await db.visits
+              .filter(visit => Object.hasOwn(visit, "profileData"))
+              .each(visit => {
+                visit.profileData.date = visit.date;
+                matchingPosts = matchingPosts.concat(getMatchingActivity(visit.profileData));
+              });
+
+      if (matchingPosts){
+        posts = posts.concat(matchingPosts);
+      }           
+
+    }
+    catch(error){
+      console.error("Error : ", error);
+    }
+
+    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, posts);
+
+  }
+
+  async searchProfiles(){
+
+    var visits = null;
+    try{
+
+      var urls = [];
+      await db.visits
+              .filter(visit =>  Object.hasOwn(visit, "profileData") 
+                                  && visit.profileData.fullName
+                                  && (visit.profileData.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+              .each(visit => {
+                if (urls.indexOf(visit.url) == -1){
+                  urls.push(visit.url);
+                }
+              });
+
+      for (var url of urls){
+
+        var profileVisits = await db.visits
+                                      .where("url")
+                                      .anyOf([url, encodeURI(url), decodeURI(url)])
+                                      .sortBy("date");
+
+        var profile = getProfileDataFrom(profileVisits);
+
+        if (profile.fullName.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
+
+          profile.fullName = highlightSearchText(profile.fullName);
+          visits = visits ? visits : [];
+
+          profileVisits = profileVisits.map(visit => {
+            visit.profileData = profile;
+            return visit;
+          });
+
+          visits = visits.concat(profileVisits);
+        }
+
+      }
+
+    }
+    catch(error){
+      console.error("Error : ", error);
+    }
+
+    if (visits){
+
+      visits.sort((a, b) => new Date(b.date) - new Date(a.date));
+      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "homeAllVisitsList", value: {list: visits, action: "search", text: this.state.text }});
+
     }
 
   }

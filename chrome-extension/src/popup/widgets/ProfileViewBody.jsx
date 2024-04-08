@@ -34,6 +34,7 @@ import moment from 'moment';
 import { appParams, computePeriodTimeSpan } from "../Local_library";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { AlertCircleIcon } from "./SVGs";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -111,7 +112,8 @@ export default class ProfileViewBody extends React.Component{
                                                                                                                   placement="top"
                                                                                                                   overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
                                                                                                                 >
-                                                                                                                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                                                                                                  <AlertCircleIcon
+                                                                                                                    size="16"/>
                                                                                                                 </OverlayTrigger>
                                                                                                               </span>}
                                                                         </span>}
@@ -124,7 +126,8 @@ export default class ProfileViewBody extends React.Component{
                                                                                                                   placement="top"
                                                                                                                   overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
                                                                                                                 >
-                                                                                                                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                                                                                                  <AlertCircleIcon
+                                                                                                                    size="16"/>
                                                                                                                 </OverlayTrigger>
                                                                                                               </span>}
                                                                         </span>} 
@@ -137,11 +140,25 @@ export default class ProfileViewBody extends React.Component{
                                                                                                                   placement="top"
                                                                                                                   overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
                                                                                                                 >
-                                                                                                                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                                                                                                  <AlertCircleIcon
+                                                                                                                    size="16"/>
                                                                                                                 </OverlayTrigger>
                                                                                                               </span>}
                                                                         </span>} 
-                                                        { index == 4 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.activity ? this.props.profile.activity.length : ""}</span>}
+                                                        { index == 4 && <span>
+                                                                          { this.props.profile.activity && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                                                                {this.props.profile.activity.length}
+                                                                                                            </span>}
+                                                                          { !this.props.profile.activity && <span class="badge ms-1 text-warning px-0">
+                                                                                                                <OverlayTrigger
+                                                                                                                  placement="top"
+                                                                                                                  overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                                >
+                                                                                                                  <AlertCircleIcon
+                                                                                                                    size="16"/>
+                                                                                                                </OverlayTrigger>
+                                                                                                              </span>}
+                                                                        </span>}
                                                         { index == 5 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.profileSuggestions ? this.props.profile.profileSuggestions.length : ""}</span>}
                                                       </a>
                                                     </li>

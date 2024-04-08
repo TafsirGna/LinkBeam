@@ -31,6 +31,7 @@ const eventBus = {
   SET_APP_SUBSCRIPTION: "SET_APP_SUBSCRIPTION",
   SET_PROFILE_LOCAL_DATA: "SET_PROFILE_LOCAL_DATA",
   SHOW_FEED_POST_DATA_MODAL: "SHOW_FEED_POST_DATA_MODAL",
+  SET_MATCHING_POSTS_DATA: "SET_MATCHING_POSTS_DATA",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

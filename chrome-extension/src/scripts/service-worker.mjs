@@ -458,8 +458,6 @@ async function recordProfileVisit(tabData){
 
     }
 
-    console.log("xxxxxxxxxxxxxxxxxxxx : ", tabData);
-
     const profileVisits = await db
                             .visits
                             .where('url')
@@ -468,7 +466,7 @@ async function recordProfileVisit(tabData){
 
     if (profileVisits.length){
 
-        const visit = profileVisits.filter(profileVisit => profileVisit.tabId == tabData.tabId);
+        var visit = profileVisits.filter(profileVisit => profileVisit.tabId == tabData.tabId);
         visit = visit.length ? visit[0] : null;
 
         const fullProfileData = getProfileDataFrom(profileVisits);

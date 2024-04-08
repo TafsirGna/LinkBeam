@@ -27,6 +27,7 @@ import moment from 'moment';
 import { 
   appParams,
   getPeriodVisits,
+  getProfileDataFrom,
 } from "./Local_library";
 import { Link } from 'react-router-dom';
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
@@ -64,7 +65,28 @@ export default class ChartExpansionView extends React.Component{
 
       for (var visit of visits){
         if (profiles.map(e => e.url).indexOf(visit.url) == -1){
-          profiles.push(visit.profile);
+
+          var profile = null;
+          try{
+
+            const profileVisits = await db.visits
+                                          .where("url")
+                                          .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                                          .sortBy("date");
+
+            profile = getProfileDataFrom(profileVisits);
+            profile.url = visit.url;
+            profile.date = profileVisits[0].date;
+
+          }
+          catch(error){
+            console.error("Error : ", error);
+          }
+
+          if (profile){
+            profiles.push(profile);
+          }
+
         }
       }
 

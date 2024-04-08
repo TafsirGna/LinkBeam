@@ -27,17 +27,26 @@ import {
 } from "../Local_library";
 import SearchInputView from "./SearchInputView";
 import ProfileActivityListView from "./ProfileActivityListView";
+import eventBus from "../EventBus";
 
 export default class SearchPostFormView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      posts: [],
     };
 
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, (data) => {
+        
+        this.setState({posts: data});
+
+      }
+    );
 
   }
 
@@ -46,6 +55,8 @@ export default class SearchPostFormView extends React.Component{
   }
 
   componentWillUnmount(){
+
+    eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
 
   }
 
@@ -58,7 +69,7 @@ export default class SearchPostFormView extends React.Component{
 
         <div class="mt-2">
           <ProfileActivityListView 
-            showPost={() => {}}
+            objects={this.state.posts}
             variant="list"/> 
         </div>
 

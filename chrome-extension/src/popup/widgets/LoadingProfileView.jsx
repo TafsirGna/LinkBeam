@@ -48,11 +48,12 @@ export default class LoadingprofileView extends React.Component{
 
         const visits = await db.visits
                                 .where("url")
-                                .equals(encodeURI(profileUrl))
+                                .anyOf([profileUrl, encodeURI(profileUrl), decodeURI(profileUrl)])
                                 .sortBy("date");
 
         var profile = getProfileDataFrom(visits);
         profile.url = profileUrl;
+        profile.date = visits[0].date;
 
         await Promise.all ([profile].map (async profile => {
           [profile.bookmark] = await Promise.all([

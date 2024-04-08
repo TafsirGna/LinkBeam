@@ -21,7 +21,6 @@
 
 /*import './AggregatedVisitListView.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   dbDataSanitizer, 
@@ -30,6 +29,7 @@ import {
 import ProfileVisitListItemView from "./ProfileVisitListItemView";
 import FeedVisitListItemView from "./FeedVisitListItemView";
 import SeeMoreButtonView from "./SeeMoreButtonView";
+import sorry_icon from '../../assets/sorry_icon.png';
 
 export default class AggregatedVisitListView extends React.Component{
 
@@ -93,7 +93,9 @@ export default class AggregatedVisitListView extends React.Component{
 
                               { this.props.object.list.length == 0 
                                   && <div class="text-center m-5 mt-2">
-                                      <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                      <img 
+                                        src={sorry_icon} 
+                                        width="80" />
                                       <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No data to show</span></p>
                                       {/*<p><span class="badge text-bg-light fst-italic shadow text-muted border border-warning">Get started by visiting a linkedin profile</span></p>*/}
                                     </div> }

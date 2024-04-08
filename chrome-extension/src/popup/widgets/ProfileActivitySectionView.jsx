@@ -10,16 +10,34 @@ export default class ProfileActivitySectionView extends React.Component{
     this.state = {
     };
 
+    this.getObjects = this.getObjects.bind(this);
+
   }
 
   componentDidMount() {
 
   }
 
+  getObjects(){
+
+    if (!this.props.profile.activity){
+      return [];
+    }
+
+    return this.props.profile.activity.map(activity => { 
+            activity.profile = this.props.profile;
+            activity.date = this.props.profile.date; 
+            return activity;
+          });
+
+  }
+
   render(){
     return (
       <>
-        <ProfileActivityListView objects={[this.props.profile]} variant="timeline" showPost={() => {}} />
+        <ProfileActivityListView 
+          objects={this.getObjects()} 
+          variant="timeline" />
       </>
     );
   }

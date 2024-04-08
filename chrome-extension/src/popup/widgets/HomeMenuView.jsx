@@ -75,7 +75,9 @@ export default class HomeMenu extends React.Component{
             data-bs-toggle="dropdown" 
             aria-expanded="false" 
             title="Actions">
-            <LayersIcon size="18" className=""/>
+            <LayersIcon 
+              size="18" 
+              className=""/>
           </div>
           <ul class="dropdown-menu shadow-lg">
             <li>
