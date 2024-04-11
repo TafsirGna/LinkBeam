@@ -1,8 +1,11 @@
 /*import './FeedPostDataMarkerView.css'*/
 import React from 'react';
 import { appParams } from "../../popup/Local_library";
-import { BarChartIcon } from "../../popup/widgets/SVGs";
+import { 
+  BarChartIcon, 
+  LayersIcon } from "../../popup/widgets/SVGs";
 import eventBus from "../../popup/EventBus";
+import { Dropdown } from "flowbite-react";
 
 export default class FeedPostDataMarkerView extends React.Component{
 
@@ -45,7 +48,28 @@ export default class FeedPostDataMarkerView extends React.Component{
                 
                 {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
               </button>*/}
-              <button onClick={this.showFeedPostDataModal} type="button" class="text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800" data-dismiss-target="#alert-additional-content-1" aria-label="Close">
+
+              <Dropdown 
+                label="" 
+                dismissOnClick={false} 
+                renderTrigger={() => 
+                  <span 
+                    class="handy-cursor mx-2 text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                    title="Actions">
+                    <LayersIcon 
+                      size="12"
+                      className=""/>
+                  </span>
+                }>
+                <Dropdown.Item>Add reminder</Dropdown.Item>
+              </Dropdown>
+
+
+              <button 
+                onClick={this.showFeedPostDataModal} 
+                type="button" 
+                class="text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                title="See trend">
                 <BarChartIcon 
                     size="12"
                     className=""/>

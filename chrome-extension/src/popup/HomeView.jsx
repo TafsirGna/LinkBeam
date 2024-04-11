@@ -147,7 +147,7 @@ export default class HomeView extends React.Component{
 
                 const profileVisits = await db.visits
                                           .where('url')
-                                          .equals(url)
+                                          .equals(visit.url)
                                           .sortBy("date");
 
 

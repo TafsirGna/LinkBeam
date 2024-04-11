@@ -154,11 +154,17 @@ chrome.tabs.onActivated.addListener(function(activeInfo) {
     currentTabId = activeInfo.tabId;
     // windowId = info.windowId
 
+    console.log("changing tab : ", currentTabId);
+
     chrome.tabs.query({}, function(tabs){
+
+        console.log("Existing tabs : ", tabs);
 
         // pausing or reactivating linkedin tabs
         tabs.forEach(tab => {
+            console.log("tab :::::::::: ", tab, tab.url && testTabBaseUrl(tab.url));
             if (tab.url && testTabBaseUrl(tab.url)){
+                console.log("******************* ", tab.id);
                 chrome.tabs.sendMessage(tab.id, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: currentTabId}}, (response) => {
                     console.log('activated tab id sent', response);
                 }); 
@@ -323,7 +329,7 @@ async function recordFeedVisit(tabData){
 
     const dateTime = new Date().toISOString();
 
-    const visit = await db
+    var visit = await db
                             .visits
                             .where({url: tabData.tabUrl, tabId: tabData.tabId})
                             .first();
@@ -331,26 +337,24 @@ async function recordFeedVisit(tabData){
     if (visit){
 
         // Incrementing the time count
-        await db
-                .visits
-                .where({url: tabData.tabUrl, tabId: tabData.tabId})
-                .modify(visit => {
-                    visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-                    visit.feedItemsMetrics = tabData.extractedData.metrics;
-                });
+        visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+        visit.feedItemsMetrics = tabData.extractedData.metrics;
+
+        await db.visits
+                .put(visit);
 
     }
     else{
 
-        const dateTime = new Date().toISOString();
-
-        await db.visits.add({
+        visit = {
             date: dateTime,
             url: tabData.tabUrl,
             timeCount: 1, 
             tabId: tabData.tabId,
             feedItemsMetrics: tabData.extractedData.metrics,
-        });
+        };
+
+        await db.visits.add(visit);
 
     }
 
@@ -362,12 +366,12 @@ async function recordFeedVisit(tabData){
     // save all the sent posts
     for (var post of tabData.extractedData.posts){
 
-        var dbPost = await db.feedPosts
+        const dbPost = await db.feedPosts
                              .where("uid")
                              .equals(post.id)
-                             .first(),
+                             .first();
 
-            newPost = {
+        const newPost = {
                 uid: post.id,
                 category: post.category,
                 initiator: post.initiator,
@@ -376,6 +380,8 @@ async function recordFeedVisit(tabData){
                     text: post.content.text,
                 },
             };
+
+        console.log("'''''''''''' : ", dbPost, newPost);
 
         if (!dbPost){
 
@@ -402,15 +408,17 @@ async function recordFeedVisit(tabData){
 
         if (!postView){
 
-            // saving the post view
-            await db.feedPostViews.add({
+            postView = {
                 uid: post.id,
                 date: new Date().toISOString(),
                 tabId: tabData.tabId, 
                 reactions: post.content.reactions,
                 commentsCount: post.content.commentsCount,
                 repostsCount: post.content.repostsCount,
-            });
+            };
+
+            // saving the post view
+            await db.feedPostViews.add(postView);
             
         }
         

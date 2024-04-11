@@ -1,4 +1,4 @@
-/*import './ProfileViewReminderModal.css'*/
+/*import './ProfileGanttChart.css'*/
 import React from 'react';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';

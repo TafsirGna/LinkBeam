@@ -25,7 +25,7 @@ import React from 'react';
 import CustomToast from "./toasts/CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
-import ProfileViewReminderModal from "./modals/ProfileReminderModal";
+import ReminderModal from "./modals/ReminderModal";
 import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
@@ -184,8 +184,8 @@ export default class ProfileView extends React.Component{
           profile={this.props.profile} 
           localDataObject={{profiles: this.state.allProfiles}}/>
 
-        <ProfileViewReminderModal 
-          profile={this.props.profile} 
+        <ReminderModal 
+          object={this.props.profile} 
           show={this.state.reminderModalShow} 
           onHide={this.handleReminderModalClose} />
         

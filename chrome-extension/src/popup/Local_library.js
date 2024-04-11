@@ -42,7 +42,7 @@ export const appParams = {
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
   
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
-  TIME_COUNT_INC_VALUE: 3,
+  TIME_COUNT_INC_VALUE: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
@@ -956,7 +956,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
                       : 23;
 
       if (!labels){
-        labels = range(1, limit, 1).map(label => `${label}h`);
+        labels = range(0, limit, 1).map(label => `${label}h`);
       }
 
       resData[metric] = labels.map(label => Number(label.slice(0, label.length - 1)) in data[dateString] 

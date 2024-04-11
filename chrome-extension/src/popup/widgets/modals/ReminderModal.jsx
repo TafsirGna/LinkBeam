@@ -19,7 +19,7 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './ProfileViewReminderModal.css'*/
+/*import './ReminderModal.css'*/
 import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -43,7 +43,7 @@ function freshReminder(url = null){
 
 }
 
-export default class ProfileViewReminderModal extends React.Component{
+export default class ReminderModal extends React.Component{
 
   constructor(props){
     super(props);
@@ -69,7 +69,7 @@ export default class ProfileViewReminderModal extends React.Component{
                     var reminder = null;
                     try{
                       await db.reminders.add(this.state.reminder);
-                      reminder = await db.reminders.where("url").equals(this.props.profile.url);
+                      reminder = await db.reminders.where("url").equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
                     }
                     catch(error){
                       console.error("Error : ", error);
@@ -82,6 +82,7 @@ export default class ProfileViewReminderModal extends React.Component{
                   };
 
     }
+    
     this.setState({validated: true}, callback);
 
   }
@@ -94,7 +95,7 @@ export default class ProfileViewReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        var reminder = this.props.profile.reminder ? this.props.profile.reminder : freshReminder(this.props.profile.url);
+        var reminder = this.props.object.reminder ? this.props.object.reminder : freshReminder(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
         this.setState({reminder: reminder, validated: false});
       }
     }
@@ -140,8 +141,8 @@ export default class ProfileViewReminderModal extends React.Component{
                   value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"
-                  // readOnly={this.state.display ? true : false}
-                  disabled={this.props.profile.reminder ? true : false}
+                  // readOnly={this.state.display}
+                  disabled={this.props.object.reminder ? true : false}
                   required
                 />
                 <Form.Control.Feedback type="invalid">
@@ -153,7 +154,7 @@ export default class ProfileViewReminderModal extends React.Component{
                 controlId="reminderForm.contentControlTextarea"
               >
                 <Form.Label>Content</Form.Label>
-                <Form.Control required disabled={this.props.profile.reminder ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
+                <Form.Control required disabled={this.props.object.reminder ? true : false} as="textarea" rows={3} value={this.state.reminder.text} onChange={this.handleReminderTextAreaChange} className="shadow-sm" />
                 <Form.Control.Feedback type="invalid">
                   Please enter a content.
                 </Form.Control.Feedback>
@@ -164,7 +165,7 @@ export default class ProfileViewReminderModal extends React.Component{
             <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
               Close
             </Button>
-            { !this.props.profile.reminder && <Button variant="primary" size="sm" onClick={this.saveReminder} /*onClick={() => {this.refs.form.submit()}}*/ className="shadow">
+            { !this.props.object.reminder && <Button variant="primary" size="sm" onClick={this.saveReminder} /*onClick={() => {this.refs.form.submit()}}*/ className="shadow">
                           Save 
                         </Button>}
           </Modal.Footer>

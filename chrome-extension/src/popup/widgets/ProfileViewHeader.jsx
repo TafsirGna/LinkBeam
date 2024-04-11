@@ -166,7 +166,10 @@ export default class ProfileViewHeader extends React.Component{
             <h5 class="card-title">{ this.props.profile.fullName }</h5>
             {/*<p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>*/}
             <p class="card-text mb-1"><small class="text-body-secondary">{ this.props.profile.title }</small></p>
-            <p class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" onClick={this.handleConnectionModalShow} title="Click to see more infos">
+            <p 
+              class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" 
+              /*onClick={this.handleConnectionModalShow} 
+              title="Click to see more infos"*/>
               <small class="text-body-secondary handy-cursor" >
                 {(this.props.profile.nFollowers ? dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nFollowers) : "") + (this.props.profile.nConnections ? " · " : "")} 
                 {this.props.profile.nConnections ? dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nConnections) : ""}

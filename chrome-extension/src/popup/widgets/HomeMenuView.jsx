@@ -116,6 +116,14 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
+                onClick={() => {switchToView(eventBus, "Reminders")}}>
+                Reminders
+              </a>
+            </li>
+            <li>
+              <a 
+                class="dropdown-item small" 
+                href="#" 
                 onClick={() => {switchToView(eventBus, "Settings")}}>
                 Settings
               </a>

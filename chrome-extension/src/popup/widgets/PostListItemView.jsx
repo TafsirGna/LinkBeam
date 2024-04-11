@@ -1,9 +1,13 @@
 /*import './PostListItemView.css'*/
 import React, { useEffect, useState } from 'react';
-import { BarChartIcon } from "./SVGs";
+import { 
+  BarChartIcon,
+  LayersIcon,
+} from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import FeedPostTrendLineChart from "./charts/FeedPostTrendLineChart";
+import ReminderModal from "./modals/ReminderModal";
 import { db } from "../../db";
 import { categoryVerbMap } from "../Local_library";
 import default_user_icon from '../../assets/user_icons/default.png';
@@ -57,6 +61,7 @@ export default class PostListItemView extends React.Component{
     this.state = {
       postViews: null,
       postModalShow: false,
+      reminderModalShow: false,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -74,6 +79,9 @@ export default class PostListItemView extends React.Component{
   componentDidUpdate(prevProps, prevState){
 
   }
+
+  handleReminderModalClose = () => this.setState({reminderModalShow: false});
+  handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
   handlePostModalClose = () => this.setState({postModalShow: false});
   handlePostModalShow = () => this.setState({postModalShow: true}, async () => {
@@ -158,7 +166,7 @@ export default class PostListItemView extends React.Component{
                   <img class="mx-1" width="16" height="16" src={this.props.object.category ? categoryIconMap[this.props.object.category] : share_icon} alt=""/>
                 </span>
               </OverlayTrigger>
-              this <a href={`https://www.linkedin.com/feed/update/${this.props.object.uid}`}>post</a>
+              this <a href={`https://www.linkedin.com/feed/update/${this.props.object.uid}`} class="fst-italic">post</a>
               { this.props.object.category 
                   && <span class="ms-1"> 
                       of
@@ -190,6 +198,26 @@ export default class PostListItemView extends React.Component{
                   <BarChartIcon size="14"/>
                 </span>
               </span>
+
+              <div class="dropdown d-inline mx-2">
+                <span 
+                  class="border shadow-sm rounded p-1 text-muted dropdown-toggle"
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false">
+                  <span  
+                    class="handy-cursor mx-1 text-primary">
+                    <LayersIcon size="14"/>
+                  </span>
+                </span>
+                <ul class="dropdown-menu shadow">
+                  <li>
+                    <a class="dropdown-item small text-muted handy-cursor" onClick={this.handleReminderModalShow}>
+                      Add reminder
+                    </a>
+                    </li>
+                </ul>
+              </div>
+
             </div>
           </p>
         </div>
@@ -215,6 +243,11 @@ export default class PostListItemView extends React.Component{
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <ReminderModal 
+          object={this.props.object} 
+          show={this.state.reminderModalShow} 
+          onHide={this.handleReminderModalClose} />
 
       </>
     );

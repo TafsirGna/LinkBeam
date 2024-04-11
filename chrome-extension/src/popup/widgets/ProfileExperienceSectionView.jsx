@@ -10,6 +10,7 @@ import eventBus from "../EventBus";
 import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import EdExpInfoModal from "./modals/EdExpInfoModal";
+import sorry_icon from '../../assets/sorry_icon.png';
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -91,7 +92,9 @@ export default class ProfileExperienceSectionView extends React.Component{
         <span>{ JSON.stringify(this.props.profile.experience)}</span>*/}
 
         { !this.props.profile.experience && <div class="text-center m-5 mt-2">
-                    <AlertCircleIcon size="100" className="text-muted"/>
+                    <img 
+                      src={sorry_icon} 
+                      width="80" />
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No experience data here</span></p>
                   </div> }
 

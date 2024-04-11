@@ -74,12 +74,17 @@ export default class AboutView extends React.Component{
             </p>
             <p class="mt-2 small">
               Designed by {appParams.appAuthor}
-              <img 
-                src={beaver_icon} 
-                alt="twbs" 
-                width="14" 
-                height="14" 
-                class="rounded-circle flex-shrink-0"/>
+              <OverlayTrigger
+                placement="bottom"
+                overlay={<Tooltip id="tooltip1">Hello, there</Tooltip>}
+              >
+                <img 
+                  src={beaver_icon} 
+                  alt="twbs" 
+                  width="14" 
+                  height="14" 
+                  class="rounded-circle flex-shrink-0"/>
+              </OverlayTrigger>
               .
             </p>
             <div>

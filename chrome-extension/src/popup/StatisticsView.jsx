@@ -134,7 +134,7 @@ export default class StatisticsView extends React.Component{
 
   handleCarrouselSelect = (selectedIndex) => {
 
-    var controlsVisibility = (selectedIndex == 1) ? false : true;
+    var controlsVisibility = (selectedIndex != 1);
 
     this.setState({
       carrouselActiveItemIndex: selectedIndex,

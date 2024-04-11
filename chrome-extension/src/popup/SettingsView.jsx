@@ -54,8 +54,6 @@ const betweenRange = (lower, upper, date) => {
   return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
 }
 
-const reminderCountObservable = liveQuery(() => db.reminders.count());
-
 const keywordCountObservable = liveQuery(() => db.keywords.count());
 
 export default class SettingsView extends React.Component{
@@ -97,11 +95,6 @@ export default class SettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    this.reminderSubscription = reminderCountObservable.subscribe(
-      result => this.setState({reminderCount: result}),
-      error => this.setState({error})
-    );
-
     this.keywordSubscription = keywordCountObservable.subscribe(
       result => this.setState({keywordCount: result}),
       error => this.setState({error})
@@ -142,11 +135,6 @@ export default class SettingsView extends React.Component{
     if (this.keywordSubscription) {
       this.keywordSubscription.unsubscribe();
       this.keywordSubscription = null;
-    }
-
-    if (this.reminderSubscription) {
-      this.reminderSubscription.unsubscribe();
-      this.reminderSubscription = null;
     }
 
   }
@@ -479,21 +467,6 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Reminders <span class="badge text-bg-secondary ms-1 shadow">{this.state.reminderCount}</span></strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="View reminders"
-                    onClick={() => {switchToView(eventBus, "Reminders")}}>
-                      View
-                  </a>
-                </div>
-                {/*<span class="d-block">@username</span>*/}
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">My identity</strong>
                   <a 
                     href="#" 
@@ -585,8 +558,8 @@ export default class SettingsView extends React.Component{
                   value={this.state.offCanvasFormStartDate}
                   onChange={this.handleOffCanvasFormStartDateInputChange}
                   className=""
-                  // readOnly={this.state.display ? true : false}
-                  disabled={this.state.offCanvasFormSelectValue == "1" ? true : false}
+                  // readOnly={this.state.display}
+                  disabled={this.state.offCanvasFormSelectValue == "1"}
                   required
                   size="sm"
                 />
@@ -604,8 +577,8 @@ export default class SettingsView extends React.Component{
                   value={this.state.offCanvasFormEndDate}
                   onChange={this.handleOffCanvasFormEndDateInputChange}
                   className=""
-                  // readOnly={this.state.display ? true : false}
-                  disabled={this.state.offCanvasFormSelectValue == "1" ? true : false}
+                  // readOnly={this.state.display}
+                  disabled={this.state.offCanvasFormSelectValue == "1"}
                   required
                   size="sm"
                 />

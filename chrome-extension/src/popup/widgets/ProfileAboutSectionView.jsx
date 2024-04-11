@@ -1,4 +1,4 @@
-/*import './ProfileViewReminderModal.css'*/
+/*import './ProfileAboutSectionView.css'*/
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import Collapse from 'react-bootstrap/Collapse';
@@ -199,30 +199,32 @@ export default class ProfileAboutSectionView extends React.Component{
 				{ this.props.profile.info && <div class="m-4">
 
 																			<div class="row">
-																				<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}>
-																					<div class="card-body">
-																						<h5 class="card-title">{this.wordCount()}</h5>
-																						<p class="card-text">Word count</p>
-																					</div>
-																				</div>
-																				<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "CHAR_COUNT", value: this.characterCount()})}}>
-																					<div class="card-body">
-																						<h5 class="card-title">{this.characterCount()}</h5>
-																						<p class="card-text">Character count</p>
-																					</div>
-																				</div>
-																				<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "AVG_WORD_LENGTH", value: this.averageWordLength()})}}>
-																					<div class="card-body">
-																						<h5 class="card-title">{this.averageWordLength()}</h5>
-																						<p class="card-text">Average word length</p>
-																					</div>
-																				</div>
-																				<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleDonutChartModalShow({label: "UNIQUE_WORDS_COUNT", value: this.state.oneUseWordCount})}}>
-																					<div class="card-body">
-																						<h5 class="card-title">{this.state.oneUseWordCount}%</h5>
-																						<p class="card-text">Unique words</p>
-																					</div>
-																				</div>
+
+																				{[{
+																					cardText: "Word count",
+																					cardTitle: this.wordCount(),
+																					onClickFunc: null,
+																				},
+																				{
+																					cardText: "Character count",
+																					cardTitle: this.characterCount(),
+																					onClickFunc: null,
+																				},
+																				{
+																					cardText: "Average word length",
+																					cardTitle: this.averageWordLength(),
+																					onClickFunc: null,
+																				},
+																				{
+																					cardText: "Unique words",
+																					cardTitle: `${this.state.oneUseWordCount}%`,
+																					onClickFunc: null,
+																				}].map(item => (<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" /*onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}*/>
+																															<div class="card-body">
+																																<h5 class="card-title">{item.cardTitle}</h5>
+																																<p class="card-text">{item.cardText}</p>
+																															</div>
+																														</div>))}
 																			</div>
 
 																			{this.state.uniqueWordsCount && <div class="border border-1 mb-3 mt-2 shadow rounded">

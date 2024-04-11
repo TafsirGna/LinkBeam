@@ -25,7 +25,7 @@ import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeyword
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 
-const EXTRACTION_INTERVAL_TIME = 3000;
+const EXTRACTION_INTERVAL_TIME = 5000;
 
 export class DataExtractorBase {
 
@@ -35,6 +35,7 @@ export class DataExtractorBase {
     this.webPageData = null;
     this.pageUrl = window.location.href;
     this.isActiveTab = true;
+    this.extractSendTimeOut = null;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -43,7 +44,6 @@ export class DataExtractorBase {
 
 	// Function for sending the page data
 	sendTabData(data){
-    console.log("!!!!!!!!!!!!!!! : ");
 
     var pageUrl = this.pageUrl.split("?")[0];
     pageUrl = pageUrl.indexOf("/feed") != -1 
@@ -55,9 +55,13 @@ export class DataExtractorBase {
 	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: pageUrl }}, (response) => {
 	    
       console.log('linkedin-data response sent', response, data);
-	    this.webPageData = data;
+      if (this.extractSendTimeOut){
+        return;
+      }
 
-      setTimeout(() => {
+      this.webPageData = data;
+
+      this.extractSendTimeOut = setTimeout(() => {
         this.extractSendTabData();
       }, EXTRACTION_INTERVAL_TIME);
 
@@ -71,11 +75,6 @@ export class DataExtractorBase {
 
 	getTabId(messageData, sendResponse){
 
-	  // Acknowledge the message
-	  sendResponse({
-	      status: "ACK"
-	  });
-
 	  this.tabId = messageData.tabId;
 
     this.setUpExtensionWidgets();
@@ -86,22 +85,19 @@ export class DataExtractorBase {
 
   extractSendTabData(){
 
+    if (this.extractSendTimeOut){
+      clearTimeout(this.extractSendTimeOut);
+      this.extractSendTimeOut = null;
+    }
+
     if (!this.isActiveTab){
-
-      setTimeout(() => {
-        this.extractSendTabData();
-      }, EXTRACTION_INTERVAL_TIME);
-
+      return;
     }
 
     var webPageData = this.extractData();
 
     if (!webPageData){
-      
-      setTimeout(() => {
-        this.extractSendTabData();
-      }, EXTRACTION_INTERVAL_TIME);
-
+      return;
     }
 
     if (webPageData == this.webPageData){
@@ -146,22 +142,23 @@ export class DataExtractorBase {
 		chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
 
 		  if (message.header == "CS_SETUP_DATA") {
+
+        // Acknowledge the message
+        sendResponse({
+            status: "ACK"
+        });
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
           if (!this.tabId){
 	         this.getTabId(message.data, sendResponse);
           }
           else{
-            sendResponse({
-                status: "ACK"
-            });
 
-            if (this.tabId != message.data.tabId){
-              this.isActiveTab = false;
+            this.isActiveTab = (this.tabId == message.data.tabId); 
+            if (this.isActiveTab){
+              this.extractSendTabData();
             }
-            else{
-              this.isActiveTab = true;
-            }
+
           }
 	      }
 	      else if (Object.hasOwn(message.data, "reminders")){
