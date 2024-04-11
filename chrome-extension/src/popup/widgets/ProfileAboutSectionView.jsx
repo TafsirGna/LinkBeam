@@ -219,7 +219,7 @@ export default class ProfileAboutSectionView extends React.Component{
 																					cardText: "Unique words",
 																					cardTitle: `${this.state.oneUseWordCount}%`,
 																					onClickFunc: null,
-																				}].map(item => (<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" /*onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}*/>
+																				}].map(item => (<div class=/*handy-cursor*/" card mb-3 shadow small text-muted col mx-2 border border-1" /*onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}*/>
 																															<div class="card-body">
 																																<h5 class="card-title">{item.cardTitle}</h5>
 																																<p class="card-text">{item.cardText}</p>

@@ -124,6 +124,23 @@ export default class PostListItemView extends React.Component{
 
   }
 
+  async onReminderActionClick(){
+
+    if (this.props.object.reminder){
+
+      // deleting the reminder
+      await db.reminders
+              .delete(this.props.object.reminder.id);
+
+      this.toggleToastShow();
+
+    }
+    else{
+      this.handleReminderModalShow();
+    }
+
+  }
+
 
   render(){
     return (
@@ -211,8 +228,10 @@ export default class PostListItemView extends React.Component{
                 </span>
                 <ul class="dropdown-menu shadow">
                   <li>
-                    <a class="dropdown-item small text-muted handy-cursor" onClick={this.handleReminderModalShow}>
-                      Add reminder
+                    <a 
+                      class={"dropdown-item small handy-cursor " + (this.props.object.reminder ? "text-danger" : "text-muted")} 
+                      onClick={this.onReminderActionClick}>
+                      { this.props.object.reminder ? "Delete " : "Add "} reminder
                     </a>
                     </li>
                 </ul>

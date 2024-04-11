@@ -63,7 +63,7 @@ export default class LoadingprofileView extends React.Component{
 
         await Promise.all ([profile].map (async profile => {
           [profile.reminder] = await Promise.all([
-            db.reminders.where('url').equals(profile.url).first()
+            db.reminders.where('objectId').equals(profile.url).first()
           ]);
         }));
 

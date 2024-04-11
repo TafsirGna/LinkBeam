@@ -28,7 +28,7 @@ export const db = new Dexie(appParams.appDbName);
 db.version(appParams.appDbVersion).stores({
   visits: '++id, url, date, tabId',
   keywords: '++id, &name, createdOn',
-  reminders: '++id, &url, createdOn, active, date',
+  reminders: '++id, &objectId, createdOn, active, date',
   settings: '++id',
   bookmarks: '++id, &url, createdOn',
   feedPosts: '++id, &uid',

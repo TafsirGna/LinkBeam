@@ -70,6 +70,12 @@ export default class AllPostsModal extends React.Component{
                           .anyOf(uids)
                           .toArray(); 
 
+    await Promise.all (posts.map (async post => {
+      [post.reminder] = await Promise.all([
+         db.reminders.where('objectId').equals(post.uid).first()
+       ]);
+    }));
+
     posts.reverse();
 
   	this.setState({posts: posts});

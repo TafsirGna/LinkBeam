@@ -23,10 +23,6 @@
 import React from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-import { db } from "../../db";
-import { 
-  getProfileDataFrom, 
-} from "../Local_library";
 import { DuplicateIcon } from "./SVGs";
 
 export default class ReminderListItemView extends React.Component{
@@ -34,37 +30,31 @@ export default class ReminderListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      profileData: null,
     };
-
-    this.setProfileData = this.setProfileData.bind(this);
 
   }
 
   componentDidMount() {
 
-    this.setProfileData();
-
   }
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.object != this.props.object){
-      this.setProfileData();
-    }
+  }
+
+  getObjectLink(){
+
+    return this.props.object.objectId.indexOf("/in/") != -1
+              ?  `/index.html?view=Profile&data=${this.props.object.objectId}`
+              : `https://www.linkedin.com/feed/update/${this.props.object.objectId}`;
 
   }
 
-  async setProfileData(){
+  getItemTitle(){
 
-    const visits = await db.visits
-                            .where("url")
-                            .equals(this.props.object.url)
-                            .sortBy("date");
-
-    const profileData = getProfileDataFrom(visits);
-
-    this.setState({profileData: profileData});
+    return this.props.object.objectId.indexOf("/in/") != -1
+              ? this.props.object.object.fullName
+              : "Feed Post";
 
   }
 
@@ -72,27 +62,32 @@ export default class ReminderListItemView extends React.Component{
     return (
       <>
 
-        { this.state.profileData && <a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                  <div class="d-flex gap-2 w-100 justify-content-between">
-                    <div>
-                      <h6 class="mb-0 d-flex gap-2 w-100">
-                        <a href={"/index.html?view=Profile&data=" + this.props.object.url} target="_blank" class="text-decoration-none text-muted w-100">{this.state.profileData.fullName}</a>
-                        <span class="text-muted">·</span>
-                        <OverlayTrigger
-                          placement="top"
-                          overlay={<ReactTooltip id="tooltip1">Visit Linkedin Page</ReactTooltip>}
-                        >
-                          <a href={this.props.object.url} target="_blank" class="">
-                            <DuplicateIcon
-                              size="18"/>
-                          </a>
-                        </OverlayTrigger>
-                      </h6>
-                      <p class="mb-0 opacity-75 fst-italic" dangerouslySetInnerHTML={{__html: this.props.object.text}}></p>
-                    </div>
-                    <small class="opacity-50 text-nowrap">{moment(this.props.object.createdOn, moment.ISO_8601).fromNow()}</small>
-                  </div>
-                </a>}
+        <a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+          <div class="d-flex gap-2 w-100 justify-content-between">
+            <div>
+              <h6 class="mb-0 d-flex gap-2 w-100">
+                <a 
+                  href={this.getObjectLink()} 
+                  target="_blank" 
+                  class="text-decoration-none text-muted w-100">
+                    {this.getItemTitle()}
+                  </a>
+                <span class="text-muted">·</span>
+                <OverlayTrigger
+                  placement="top"
+                  overlay={<ReactTooltip id="tooltip1">Visit Linkedin Page</ReactTooltip>}
+                >
+                  <a href={this.props.object.url} target="_blank" class="">
+                    <DuplicateIcon
+                      size="18"/>
+                  </a>
+                </OverlayTrigger>
+              </h6>
+              <p class="mb-0 opacity-75 fst-italic" dangerouslySetInnerHTML={{__html: this.props.object.text}}></p>
+            </div>
+            <small class="opacity-50 text-nowrap">{moment(this.props.object.createdOn, moment.ISO_8601).fromNow()}</small>
+          </div>
+        </a>
 
       </>
     );

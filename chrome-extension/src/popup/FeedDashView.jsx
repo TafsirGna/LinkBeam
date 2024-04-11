@@ -61,6 +61,8 @@ export default class FeedDashView extends React.Component{
       allPostsModalShow: false,
       chartModalShow: false,
       chartModalTitle: "",
+      toastMessage: "",
+      toastShow: false,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -144,10 +146,16 @@ export default class FeedDashView extends React.Component{
               }
             });
 
-    const feedPosts = await db.feedPosts
+    var feedPosts = await db.feedPosts
                               .where("uid")
                               .anyOf(uids)
                               .toArray();
+
+    await Promise.all (feedPosts.map (async post => {
+      [post.reminder] = await Promise.all([
+         db.reminders.where('objectId').equals(post.uid).first()
+       ]);
+    }));
 
     this.setState({feedPosts: feedPosts});
 
@@ -164,6 +172,8 @@ export default class FeedDashView extends React.Component{
     this.setState({endDate: event.target.value});
 
   }
+
+  toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
 
   render(){
     return (
@@ -326,6 +336,13 @@ export default class FeedDashView extends React.Component{
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {/*Toasts*/}
+        <CustomToast 
+          globalData={this.props.globalData} 
+          message={this.state.toastMessage} 
+          show={this.state.toastShow} 
+          onClose={this.toggleToastShow} />
 
       </>
     );

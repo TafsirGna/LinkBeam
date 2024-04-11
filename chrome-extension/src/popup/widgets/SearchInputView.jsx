@@ -48,6 +48,7 @@ export default class SearchInputView extends React.Component{
     this.searchPosts = this.searchPosts.bind(this);
     this.searchProfiles = this.searchProfiles.bind(this);
     this.searchReminders = this.searchReminders.bind(this);
+    this.highlightSearchText = this.highlightSearchText.bind(this);
 
   }
 
@@ -69,6 +70,17 @@ export default class SearchInputView extends React.Component{
     if (e.key === 'Enter') {
       this.searchText();
     }
+  }
+
+  highlightSearchText = (propValue) => {
+
+    const index = propValue.toLowerCase().indexOf(this.state.text.toLowerCase());
+    var result = propValue.slice(0, index)
+    result += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${propValue.slice(index, (index + this.state.text.length))}</span>`;
+    result += propValue.slice((index + this.state.text.length));
+
+    return result;
+
   }
 
   searchText(){
@@ -104,19 +116,6 @@ export default class SearchInputView extends React.Component{
 
       return;
       
-    }
-
-    // if the given search text is not empty then
-
-    const highlightSearchText = (propValue) => {
-
-      const index = propValue.toLowerCase().indexOf(this.state.text.toLowerCase());
-      var result = propValue.slice(0, index)
-      result += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${propValue.slice(index, (index + this.state.text.length))}</span>`;
-      result += propValue.slice((index + this.state.text.length));
-
-      return result;
-
     }
 
     switch(this.props.objectStoreName){
@@ -163,13 +162,13 @@ export default class SearchInputView extends React.Component{
 
             const visits = await db.visits
                                    .where("url")
-                                   .anyOf([reminder.url, encodeURI(reminder.url), decodeURI(reminder.url)])
+                                   .anyOf([reminder.objectId, encodeURI(reminder.objectId), decodeURI(reminder.objectId)])
                                    .sortBy("date");
 
             const profile = getProfileDataFrom(visits);
             reminder.profile = profile;
 
-            reminder.text = highlightSearchText(reminder.text);
+            reminder.text = this.highlightSearchText(reminder.text);
 
           }
           catch(error){
@@ -298,7 +297,7 @@ export default class SearchInputView extends React.Component{
 
         if (dbDataSanitizer.preSanitize(profile.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
 
-          profile.fullName = highlightSearchText(profile.fullName);
+          profile.fullName = this.highlightSearchText(profile.fullName);
           visits = visits ? visits : [];
 
           profileVisits = profileVisits.map(visit => {

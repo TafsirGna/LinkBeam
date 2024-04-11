@@ -674,36 +674,7 @@ export async function setGlobalDataKeywords(db, eventBus, liveQuery){
 
 export async function setGlobalDataReminders(db, eventBus){
 
-  var reminders = null;
-  
-  try{
-
-    reminders = await db.reminders.toArray();
-
-    reminders.forEach(async (reminder) => {
-
-        try{
-
-          const visits = await db.visits
-                                 .where("url")
-                                 .equals(reminder.url)
-                                 .sortBy("date");
-
-          const profile = getProfileDataFrom(visits);
-          reminder.profile = profile;
-
-        }
-        catch(error){
-          console.log("Error : ", error);
-        }
-        
-      }
-    );
-
-  }
-  catch(error){
-    console.log("Error : ", error);
-  }
+  var reminders = await getReminders(db, "all");
 
   if (reminders){
     eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
@@ -1204,25 +1175,57 @@ export function saveCurrentPageTitle(pageTitle){
 
 export async function getTodayReminders(db, callback){
 
+  var reminders = await getReminders(db, "today");
+
+  if (reminders){
+    callback(reminders);  
+  }
+
+}
+
+async function getReminders(db, criteria){
+
+  var reminders = null;
+
   try{
 
-    var reminders = null;
-    reminders = await db
+    if (criteria == "today"){
+
+      reminders = await db
                               .reminders
                               .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
                               .toArray();
+
+    }
+    else if (criteria == "all"){
+
+      reminders = await db.reminders.toArray();
+
+    }
                               
     reminders.forEach(async (reminder) => {
 
       try{
 
-        const visits = await db.visits
-                               .where("url")
-                               .equals(reminder.url)
-                               .sortBy("date");
+        if (reminder.objectId.indexOf("/in/") != -1){
 
-        const profile = getProfileDataFrom(visits);
-        reminder.profile = profile;
+          const visits = await db.visits
+                                 .where("url")
+                                 .equals(reminder.objectId)
+                                 .sortBy("date");
+
+          const profile = getProfileDataFrom(visits);
+          reminder.object = profile;
+
+        }
+        else{
+
+          reminder.object = await db.feedPosts 
+                                    .where("uid")
+                                    .equals(reminder.objectId)
+                                    .first();
+
+        }
 
       }
       catch(error){
@@ -1236,9 +1239,7 @@ export async function getTodayReminders(db, callback){
     console.error("Error : ", error);
   }
 
-  if (reminders){
-    callback(reminders);  
-  }
+  return reminders;
 
 }
 

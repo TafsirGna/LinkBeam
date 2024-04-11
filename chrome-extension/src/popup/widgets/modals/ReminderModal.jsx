@@ -31,13 +31,13 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from "../../../db";
 import eventBus from "../../EventBus";
 
-function freshReminder(url = null){
+function freshReminder(objectId = null){
 
   return {
         createdOn: (new Date()).toISOString(),
         date: (new Date()).toISOString().split('T')[0],
         text: "",
-        url: url,
+        objectId: objectId,
         active: true,
       };
 
@@ -69,7 +69,7 @@ export default class ReminderModal extends React.Component{
                     var reminder = null;
                     try{
                       await db.reminders.add(this.state.reminder);
-                      reminder = await db.reminders.where("url").equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
+                      reminder = await db.reminders.where("objectId").equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
                     }
                     catch(error){
                       console.error("Error : ", error);

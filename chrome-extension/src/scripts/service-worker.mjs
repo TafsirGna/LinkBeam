@@ -329,100 +329,102 @@ async function recordFeedVisit(tabData){
 
     const dateTime = new Date().toISOString();
 
-    var visit = await db
-                            .visits
-                            .where({url: tabData.tabUrl, tabId: tabData.tabId})
-                            .first();
+    db.visits
+      .where({url: tabData.tabUrl, tabId: tabData.tabId})
+      .first()
+      .then(async (visit) => {
 
-    if (visit){
+        if (visit){
 
-        // Incrementing the time count
-        visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
-        visit.feedItemsMetrics = tabData.extractedData.metrics;
+            // Incrementing the time count
+            visit.timeCount += appParams.TIME_COUNT_INC_VALUE;
+            visit.feedItemsMetrics = tabData.extractedData.metrics;
 
-        await db.visits
-                .put(visit);
-
-    }
-    else{
-
-        visit = {
-            date: dateTime,
-            url: tabData.tabUrl,
-            timeCount: 1, 
-            tabId: tabData.tabId,
-            feedItemsMetrics: tabData.extractedData.metrics,
-        };
-
-        await db.visits.add(visit);
-
-    }
-
-    // display the updated badge text
-    if (currentTabId == tabData.tabId){
-        chrome.action.setBadgeText({text: postCount.toString()});
-    }
-
-    // save all the sent posts
-    for (var post of tabData.extractedData.posts){
-
-        const dbPost = await db.feedPosts
-                             .where("uid")
-                             .equals(post.id)
-                             .first();
-
-        const newPost = {
-                uid: post.id,
-                category: post.category,
-                initiator: post.initiator,
-                content: {
-                    author: post.content.author,
-                    text: post.content.text,
-                },
-            };
-
-        console.log("'''''''''''' : ", dbPost, newPost);
-
-        if (!dbPost){
-
-            db.transaction('rw', db.feedPosts, function() {
-                // saving the post
-                db.feedPosts.add(newPost);
-            }).then(function() {
-                console.log("Transaction committed");
-            }).catch(function(err) {
-                console.error(err);
-            });
+            await db.visits
+                    .update(visit.id, visit);
 
         }
         else{
 
-            await db.feedPosts
-                    .update(dbPost.id, newPost);
-
-        }
-
-        var postView = await db.feedPostViews
-                               .where({uid: post.id, tabId: tabData.tabId})
-                               .first(); 
-
-        if (!postView){
-
-            postView = {
-                uid: post.id,
-                date: new Date().toISOString(),
-                tabId: tabData.tabId, 
-                reactions: post.content.reactions,
-                commentsCount: post.content.commentsCount,
-                repostsCount: post.content.repostsCount,
+            visit = {
+                date: dateTime,
+                url: tabData.tabUrl,
+                timeCount: 1, 
+                tabId: tabData.tabId,
+                feedItemsMetrics: tabData.extractedData.metrics,
             };
 
-            // saving the post view
-            await db.feedPostViews.add(postView);
+            await db.visits.add(visit);
+
+        }
+
+        // display the updated badge text
+        if (currentTabId == tabData.tabId){
+            chrome.action.setBadgeText({text: postCount.toString()});
+        }
+
+        // save all the sent posts
+        for (var post of tabData.extractedData.posts){
+
+            const newPost = {
+                    uid: post.id,
+                    category: post.category,
+                    initiator: post.initiator,
+                    content: {
+                        author: post.content.author,
+                        text: post.content.text,
+                    },
+                };
+
+            // await db.transaction('rw', [db.feedPosts, db.feedPostViews], function() {
+            //     // saving the post
+            //     db.feedPosts.add(newPost);
+            // }).then(function() {
+            //     console.log("Transaction committed");
+            // }).catch(function(err) {
+            //     console.error(err);
+            // });
+
+
+            await db.feedPosts
+                    .where("uid")
+                    .equals(post.id)
+                    .first()
+                    .then(async (dbPost) => {
+                        
+                        if (dbPost){
+                            await db.feedPosts
+                                .update(dbPost.id, newPost);
+                        }
+                        else{
+                            await db.feedPosts.add(newPost);
+                        }
+
+                        var postView = await db.feedPostViews
+                                               .where({uid: post.id, tabId: tabData.tabId})
+                                               .first(); 
+
+                        if (!postView){
+
+                            postView = {
+                                uid: post.id,
+                                date: new Date().toISOString(),
+                                tabId: tabData.tabId, 
+                                reactions: post.content.reactions,
+                                commentsCount: post.content.commentsCount,
+                                repostsCount: post.content.repostsCount,
+                            };
+
+                            // saving the post view
+                            await db.feedPostViews.add(postView);
+                            
+                        }
+
+                    });
             
         }
-        
-    }
+
+      });
 
 }
 
