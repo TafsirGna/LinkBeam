@@ -364,6 +364,7 @@ async function recordFeedVisit(tabData){
         }
 
         // save all the sent posts
+        var posts = [];
         for (var post of tabData.extractedData.posts){
 
             const newPost = {
@@ -420,9 +421,25 @@ async function recordFeedVisit(tabData){
                             
                         }
 
+                        post.reminder = await db.reminders
+                                                 .where("objectId")
+                                                 .equals(newPost.uid)
+                                                 .first();
+
+                        post.viewsCount = await db.feedPostViews
+                                                 .where("uid")
+                                                 .equals(newPost.uid)
+                                                 .count();
+
+                        posts.push(post);
+
                     });
             
         }
+
+        chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: posts}}, (response) => {
+            console.log('response sent', response);
+        });  
 
       });
 
@@ -590,37 +607,131 @@ async function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
-        case messageMeta.header.REQUEST_POST_VIEWS_DATA:{
+        case messageMeta.header.CRUD_OBJECT:{
             // acknowledge receipt
             sendResponse({
                 status: "ACK"
             });
-            
-            // Saving the new notification setting state
-            const postUid = message.data.postUid,
-                  tabId = message.data.tabId;
-            fetchPostViews(tabId, postUid);
+
+            var result = null;
+            switch(message.data.objectStoreName){
+                case "reminders":{
+                    result = await crudReminders(message.data.action, message.data.object);
+                    break;
+                }
+                case "feedPostViews":{
+                    result = await crudFeedPostViews(message.data.action, message.data.props);
+                    break;
+                }
+            }
+
+            chrome.tabs.sendMessage(message.data.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: message.data.action, objectStoreName: message.data.objectStoreName, object: result}}, (response) => {
+                console.log('crud process response sent', response, result);
+            });
+
             break;
         }
 
     }
 }
 
+async function crudFeedPostViews(action, props){
 
-async function fetchPostViews(tabId, postUid){
+    var result = null;
+    switch(action){
+        case "read":{
+            result = await fetchPostViews(props);
+            break;
+        }
+    }
 
-    const feedPostViews = await db.feedPostViews
-                                  .where("uid")
-                                  .equals(postUid)
-                                  .toArray();
+    return result;
 
-    const settings = await db.settings
-                             .where("id")
-                             .equals(1)
-                             .first();
+}
 
-    chrome.tabs.sendMessage(tabId, {header: messageMeta.header.RESPONSE_POST_VIEWS_DATA, data: {lastDataResetDate: settings.lastDataResetDate, objects: feedPostViews}}, (response) => {
-        console.log('post views data response sent', response);
-    }); 
+async function crudReminders(action, reminder){
+
+    var result = null;
+    switch(action){
+
+        case "add":{
+            result = await saveReminder(reminder);
+            break;
+        }
+
+        case "delete":{
+            result = await deleteReminder(reminder);
+            break;
+        }
+    }
+
+    return result;
+
+}
+
+async function saveReminder(reminder){
+
+    reminder.createdOn = (new Date()).toISOString();
+    reminder.active = true;
+
+    try{
+
+        await db.reminders
+                .add(reminder);
+
+        return await db.reminders
+                       .where("objectId")
+                       .equals(reminder.objectId)
+                       .first();
+
+    }
+    catch(error){
+        console.error("Error : ", error);
+    } 
+
+    return null;
+
+}
+
+async function deleteReminder(reminder){
+
+    try{
+
+        await db.reminders
+                .delete(reminder.id);
+
+        return reminder.objectId;
+
+    }
+    catch(error){
+        console.error("Error : ", error);
+    } 
+
+    return null;
+
+}
+
+
+async function fetchPostViews(props){
+
+    try{
+
+        const feedPostViews = await db.feedPostViews
+                                      .where("uid")
+                                      .equals(props.uid)
+                                      .toArray();
+
+        const settings = await db.settings
+                                 .where("id")
+                                 .equals(1)
+                                 .first();
+
+        return {lastDataResetDate: settings.lastDataResetDate, views: feedPostViews};
+
+    }
+    catch(error){
+        console.error("Error : ", error);
+        return null;
+    }
 
 }

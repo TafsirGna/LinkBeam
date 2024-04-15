@@ -100,7 +100,7 @@ export default class FeedPostDataModal extends React.Component{
         
         this.setState({show: true, post: data.object}, () => {
 
-          chrome.runtime.sendMessage({header: messageMeta.header.REQUEST_POST_VIEWS_DATA, data: {tabId: this.props.tabId, postUid: data.object.id}}, (response) => {
+          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.object.id}}}, (response) => {
             // Got an asynchronous response with the data from the service worker
             console.log("Post views data request sent !");
           });
@@ -123,9 +123,11 @@ export default class FeedPostDataModal extends React.Component{
 
       switch(message.header){
 
-        case messageMeta.header.RESPONSE_POST_VIEWS_DATA:{
+        case messageMeta.header.CRUD_OBJECT_RESPONSE:{
 
-          this.setChartData(message.data.lastDataResetDate, message.data.objects);
+          if (message.data.objectStoreName == "feedPostViews"){
+            this.setChartData(message.data.object.lastDataResetDate, message.data.object.views);
+          }
 
           break;
 

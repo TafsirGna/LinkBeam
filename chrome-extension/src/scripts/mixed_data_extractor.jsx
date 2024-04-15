@@ -59,7 +59,7 @@ class MixedDataExtractor extends DataExtractorBase {
                 this.pageUrl = pageUrl;
                 this.webPageData = null;
             }
-            return FeedDataExtractor.extractData();
+            return FeedDataExtractor.extractData(this.tabId);
 
         }
         else if (pageUrl.indexOf("/in/") != -1){

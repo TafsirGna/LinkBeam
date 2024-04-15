@@ -64,7 +64,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		
 	}
 
-	static extractPostDataFrom(postContainerElement, postCategory, authorName){
+	static extractPostDataFrom(tabId, postContainerElement, postCategory, authorName){
 
 		const uid = postContainerElement.getAttribute("data-id");
 		
@@ -121,7 +121,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 					for (var arrayItem of reactionsTagContent.split("\n")){
 						var index = arrayItem.indexOf(metric);
 						if (index != -1){
-							value = Number(arrayItem.slice(0, index).replaceAll(",", "."));
+							value = Number(arrayItem.slice(0, index).replaceAll(",", ""));
 							break;
 						}
 					}
@@ -133,8 +133,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 				var otherTermIndex = reactionsTagContent.indexOf("other");
 				if (otherTermIndex != -1){
-					value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex));
-					value ++;
+					value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex).replaceAll(",", ""));
+					value++;
 				}
 				else{
 					var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
@@ -151,7 +151,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 						arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
 					}
 
-					const val = Number(arrayItems.join("").replaceAll(",", ".")); 
+					const val = Number(arrayItems.join("").replaceAll(",", "")); 
 					if (!isNaN(val)){
 						value = val;
 					}
@@ -194,7 +194,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
 	              <FeedPostDataMarkerView 
-	              	object={post}/>
+	              	object={post}
+	              	tabId={tabId}/>
 	            </React.StrictMode>
 	        );
 
@@ -206,7 +207,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	}
 
-	static extractItemsCountByCategory(){
+	static extractItemsCountByCategory(tabId){
 
 		var metricLabels = Object.keys(categoryVerbMap);
 		metricLabels.push("publications"); 
@@ -269,7 +270,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 			if (["suggestions"].indexOf(postCategory) == -1
 					&& authorName){
-				var post = this.extractPostDataFrom(postContainerElement, postCategory, authorName);
+				var post = this.extractPostDataFrom(tabId, postContainerElement, postCategory, authorName);
 				if (post){
 					this.posts.push(post);
 				}
@@ -292,10 +293,10 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	}
 
-	static extractData(){
+	static extractData(tabId){
 
 		let pageData = { 
-			metrics: this.extractItemsCountByCategory()
+			metrics: this.extractItemsCountByCategory(tabId)
 		};
 
 		pageData.posts = this.posts;

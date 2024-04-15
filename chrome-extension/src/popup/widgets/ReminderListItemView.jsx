@@ -23,18 +23,25 @@
 import React from 'react';
 import moment from 'moment';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-import { DuplicateIcon } from "./SVGs";
+import { 
+  DuplicateIcon, 
+  ClockIcon,
+} from "./SVGs";
+import { db } from "../../db";
 
 export default class ReminderListItemView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      reminderObject: null,
     };
 
   }
 
   componentDidMount() {
+
+    this.setReminderObject();
 
   }
 
@@ -58,6 +65,33 @@ export default class ReminderListItemView extends React.Component{
 
   }
 
+  async setReminderObject(){
+
+    if (this.state.reminderObject){
+      return;
+    }
+
+    var post = null;
+    try{
+
+      post = await db.feedPosts
+                         .where("uid")
+                         .equals(this.props.object.objectId)
+                         .first();
+
+    }
+    catch(error){
+      console.error("Error : ", error);
+    }
+
+    if (!post){
+      return null;
+    }
+
+    this.setState({reminderObject: post});
+
+  }
+
   render(){
     return (
       <>
@@ -66,24 +100,49 @@ export default class ReminderListItemView extends React.Component{
           <div class="d-flex gap-2 w-100 justify-content-between">
             <div>
               <h6 class="mb-0 d-flex gap-2 w-100">
-                <a 
-                  href={this.getObjectLink()} 
-                  target="_blank" 
-                  class="text-decoration-none text-muted w-100">
-                    {this.getItemTitle()}
-                  </a>
+                { this.props.object.objectId.indexOf("/in/") != -1
+                    && <a 
+                                  href={this.getObjectLink()} 
+                                  target="_blank" 
+                                  class="text-decoration-none text-muted w-100">
+                                  {this.getItemTitle()}
+                                </a>}
+                { this.props.object.objectId.indexOf("/in/") == -1
+                    && <OverlayTrigger
+                          placement="top"
+                          overlay={<ReactTooltip id="tooltip1">{this.state.reminderObject 
+                                                                  ? (this.state.reminderObject.initiator
+                                                                      ? this.state.reminderObject.initiator.name
+                                                                      : this.state.reminderObject.content.author.name)
+                                                                  : null}</ReactTooltip>}
+                        >
+                          <a 
+                            href={this.getObjectLink()} 
+                            target="_blank" 
+                            class="text-decoration-none text-muted w-100">
+                            {this.getItemTitle()}
+                          </a>
+                        </OverlayTrigger>}
                 <span class="text-muted">·</span>
                 <OverlayTrigger
                   placement="top"
                   overlay={<ReactTooltip id="tooltip1">Visit Linkedin Page</ReactTooltip>}
                 >
-                  <a href={this.props.object.url} target="_blank" class="">
+                  <a 
+                    href={ this.props.object.objectId.indexOf("/in/") != -1 ? `https://${this.props.object.objectId}` : this.getObjectLink() } 
+                    target="_blank" 
+                    class="">
                     <DuplicateIcon
                       size="18"/>
                   </a>
                 </OverlayTrigger>
               </h6>
               <p class="mb-0 opacity-75 fst-italic" dangerouslySetInnerHTML={{__html: this.props.object.text}}></p>
+              <div class={`small mt-1 ${new Date(this.props.object.date) >= new Date() ? "text-warning" : "text-muted"}`}>
+                <ClockIcon
+                  size="14"/>
+                <span class="ms-2">{moment(this.props.object.date, moment.ISO_8601).format('ll')}</span>
+              </div>
             </div>
             <small class="opacity-50 text-nowrap">{moment(this.props.object.createdOn, moment.ISO_8601).fromNow()}</small>
           </div>

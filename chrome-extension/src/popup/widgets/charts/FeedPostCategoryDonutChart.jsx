@@ -64,8 +64,8 @@ export default class FeedPostCategoryDonutChart extends React.Component{
 
     // setting the labels
     for (var visit of this.props.objects){
-      for (var metric in categoryVerbMap){
-        const index = labels.indexOf(metric);
+      for (var index = 0; index < labels.length; index++){
+        var metric = labels[index];
         data[index] += visit.feedItemsMetrics[metric] ? visit.feedItemsMetrics[metric] : 0;
       }
     }

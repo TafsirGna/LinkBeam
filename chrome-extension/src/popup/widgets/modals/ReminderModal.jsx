@@ -69,14 +69,21 @@ export default class ReminderModal extends React.Component{
                     var reminder = null;
                     try{
                       await db.reminders.add(this.state.reminder);
-                      reminder = await db.reminders.where("objectId").equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
+
+                      reminder = await db.reminders
+                                         .where("objectId")
+                                         .equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid)
+                                         .first();
                     }
                     catch(error){
                       console.error("Error : ", error);
                     }
 
-                    if (reminder){
+                    if (reminder.objectId.indexOf("/in/") != - 1){
                       eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
+                    }
+                    else{
+                      eventBus.dispatch(eventBus.POST_REMINDER_ADDED, {post: this.props.object, reminder: reminder});
                     }
 
                   };

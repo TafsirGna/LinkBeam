@@ -20,7 +20,7 @@ export default class InjectedReminderToastView extends React.Component{
     }
 
     handleRemindersToastShow = () => { this.setState({remindersToastShow: true}); }
-    handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, () => { if (callback) {callback()}}); }
+    handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, callback); }
 
     handleRemindersModalShow = () => {
         if (this.state.remindersToastShow){

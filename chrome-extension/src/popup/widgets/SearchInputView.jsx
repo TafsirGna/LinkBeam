@@ -156,27 +156,48 @@ export default class SearchInputView extends React.Component{
                               .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
                               .toArray();
 
-      reminders.forEach(async (reminder) => {
+      // or 
 
-          try{
+      var uids = [];
+      await db.feedPosts
+              .filter(post => (post.initiator && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1 )
+                                || post.content.author && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
+              .each(post => {
+                if (uids.indexOf(post.uid) == -1){
+                  uids.push(post.uid);
+                }
+              });
 
-            const visits = await db.visits
-                                   .where("url")
-                                   .anyOf([reminder.objectId, encodeURI(reminder.objectId), decodeURI(reminder.objectId)])
-                                   .sortBy("date");
+      await db.reminders
+              .where("objectId")
+              .anyOf(uids)
+              .each(reminder => {
+                if (reminders.map(r => r.id).indexOf(reminder.id) == -1){
+                  reminders.push(reminder);
+                }
+              });   
 
-            const profile = getProfileDataFrom(visits);
-            reminder.profile = profile;
 
-            reminder.text = this.highlightSearchText(reminder.text);
+      for (var reminder of reminders){
 
-          }
-          catch(error){
-            console.log("Error : ", error);
-          }
-          
+        try{
+
+          const visits = await db.visits
+                                 .where("url")
+                                 .anyOf([reminder.objectId, encodeURI(reminder.objectId), decodeURI(reminder.objectId)])
+                                 .sortBy("date");
+
+          const profile = getProfileDataFrom(visits);
+          reminder.profile = profile;
+
+          // reminder.text = this.highlightSearchText(reminder.text);
+
         }
-      );
+        catch(error){
+          console.log("Error : ", error);
+        }
+        
+      };
 
     }
     catch(error){

@@ -3,13 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { 
   BarChartIcon,
   LayersIcon,
+  CheckIcon,
 } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import FeedPostTrendLineChart from "./charts/FeedPostTrendLineChart";
 import ReminderModal from "./modals/ReminderModal";
+import eventBus from "../EventBus";
 import { db } from "../../db";
-import { categoryVerbMap } from "../Local_library";
+import { 
+  categoryVerbMap,
+  appParams,
+  secondsToHms,
+} from "../Local_library";
 import default_user_icon from '../../assets/user_icons/default.png';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -62,6 +68,8 @@ export default class PostListItemView extends React.Component{
       postViews: null,
       postModalShow: false,
       reminderModalShow: false,
+      updated: false,
+      postTimeCount: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -70,33 +78,83 @@ export default class PostListItemView extends React.Component{
 
     this.onEnteringUserTooltip = this.onEnteringUserTooltip.bind(this);
     this.onExitingUserTooltip = this.onExitingUserTooltip.bind(this);
+    this.onReminderActionClick = this.onReminderActionClick.bind(this);
+    this.registerUpdateEvent = this.registerUpdateEvent.bind(this);
+    this.setPostViews = this.setPostViews.bind(this);
+    this.getPostTimeCount = this.getPostTimeCount.bind(this);
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
+      {
+        if (data.post.id == this.props.object.id){
+          this.handleReminderModalClose();
+          this.registerUpdateEvent();
+        }
+      }
+    );
+
+    this.getPostTimeCount();
 
   }
 
   componentDidUpdate(prevProps, prevState){
 
+    // console.log(";;;;;;;;;;;;; : ", prevProps.object, this.props.object);
+
+    // if (prevProps.object.reminder != this.props.object.reminder){
+    //   this.setState({updated: true}, () => {
+    //     setTimeout(() => {
+    //       this.setState({updated: false});
+    //     }, appParams.TIMER_VALUE)
+    //   });
+    // }
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.POST_REMINDER_ADDED);
+    eventBus.remove(eventBus.POST_REMINDER_DELETED);
+
+  }
+
+  registerUpdateEvent = () => {
+    this.setState({updated: true}, () => {
+      setTimeout(() => {
+        this.setState({updated: false});
+      }, appParams.TIMER_VALUE)
+    });
   }
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
   handlePostModalClose = () => this.setState({postModalShow: false});
-  handlePostModalShow = () => this.setState({postModalShow: true}, async () => {
+  handlePostModalShow = () => this.setState({postModalShow: true}, () => {
     if (this.state.postViews){
       return;
     }
+
+    this.setPostViews();
+
+  });
+
+  async setPostViews(callback = null){
 
     const views = await db.feedPostViews
                           .where("uid")
                           .equals(this.props.object.uid)
                           .sortBy("date");
 
-    this.setState({postViews: views});
+    this.setState({postViews: views}, () => {
+      if (callback){
+        callback();
+      }
+    });
 
-  });
+  }
 
   onEnteringUserTooltip = async () => {
 
@@ -132,11 +190,28 @@ export default class PostListItemView extends React.Component{
       await db.reminders
               .delete(this.props.object.reminder.id);
 
-      this.toggleToastShow();
+      eventBus.dispatch(eventBus.POST_REMINDER_DELETED, this.props.object.id);
+
+      this.registerUpdateEvent();
 
     }
     else{
       this.handleReminderModalShow();
+    }
+
+  }
+
+  getPostTimeCount(){
+
+    if (!this.state.postViews){
+      this.setPostViews(this.getPostTimeCount);
+    }
+    else{
+      var value = 0;
+      for (const postView of this.state.postViews){
+        value += postView.timeCount ? postView.timeCount : 0;
+      }
+      this.setState({postTimeCount: secondsToHms(value, false)});
     }
 
   }
@@ -156,24 +231,32 @@ export default class PostListItemView extends React.Component{
             class="shadow rounded-circle flex-shrink-0 me-2"/>
           <p class="pb-3 mb-0 small lh-sm w-100">
             
-              <a 
-                class="d-block text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                href={this.props.object.category 
-                        ? this.props.object.initiator.url
-                        : this.props.object.content.author.url}>
-                <OverlayTrigger 
-                  trigger="hover" 
-                  placement="top" 
-                  onEntering={this.onEnteringUserTooltip}
-                  onExiting={this.onExitingUserTooltip}
-                  overlay={<UpdatingPopover id="popover-contained">{this.state.userTooltipContent}</UpdatingPopover>}>
-                  <span>
-                    { this.props.object.category 
-                        ? this.props.object.initiator.name
-                        : this.props.object.content.author.name } 
-                  </span>
-                </OverlayTrigger>
-              </a>
+              <div class="mb-2">
+                <a 
+                  class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
+                  href={this.props.object.category 
+                          ? this.props.object.initiator.url
+                          : this.props.object.content.author.url}>
+                  <OverlayTrigger 
+                    trigger="hover" 
+                    placement="top" 
+                    onEntering={this.onEnteringUserTooltip}
+                    onExiting={this.onExitingUserTooltip}
+                    overlay={<UpdatingPopover id="popover-contained">{this.state.userTooltipContent}</UpdatingPopover>}>
+                    <span>
+                      { this.props.object.category 
+                          ? this.props.object.initiator.name
+                          : this.props.object.content.author.name } 
+                    </span>
+                  </OverlayTrigger>
+                </a>
+                { this.state.updated && <div class="d-inline ms-2">
+                                  <span class="badge text-bg-success fst-italic shadow-sm pb-0">
+                                    <CheckIcon size="16"/>
+                                    Updated
+                                  </span>
+                                </div>}
+              </div>
             <div class="w-100 p-1 py-3 rounded shadow-sm border">
               <OverlayTrigger
                 placement="top"
@@ -237,6 +320,10 @@ export default class PostListItemView extends React.Component{
                 </ul>
               </div>
 
+              { this.state.postTimeCount 
+                  && <span class="badge bg-light-subtle border border-light-subtle text-light-emphasis rounded-pill">
+                      {this.state.postTimeCount}
+                    </span>}
             </div>
           </p>
         </div>

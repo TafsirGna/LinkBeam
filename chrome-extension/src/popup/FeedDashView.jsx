@@ -48,6 +48,7 @@ import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
+import CustomToast from "./widgets/toasts/CustomToast";
 
 export default class FeedDashView extends React.Component{
 
@@ -74,6 +75,28 @@ export default class FeedDashView extends React.Component{
 
   componentDidMount() {
 
+    eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
+      {
+        const index = this.state.feedPosts.map(p => p.id).indexOf(data.post.id);
+        if (index != -1){
+          this.state.feedPosts[index].reminder = data.reminder;
+        }
+        console.log("fff 1");
+        this.toggleToastShow("Reminder added!");
+      }
+    );
+
+    eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
+      {
+        const index = this.state.feedPosts.map(p => p.id).indexOf(data);
+        if (index != -1){
+          this.state.feedPosts[index].reminder = null;
+        }
+        console.log("fff 2");
+        this.toggleToastShow("Reminder deleted!");
+      }
+    );
+
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
@@ -95,6 +118,13 @@ export default class FeedDashView extends React.Component{
         const d = new Date().toISOString().split("T")[0]
         this.setState({startDate: d, endDate: d});
     }
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.POST_REMINDER_ADDED);
+    eventBus.remove(eventBus.POST_REMINDER_DELETED);
 
   }
 
@@ -173,7 +203,7 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  toggleToastShow = (message = "") => this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));
+  toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}), ()=>{console.log("hhh");});};
 
   render(){
     return (

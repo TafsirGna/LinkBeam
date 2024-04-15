@@ -116,8 +116,8 @@ export const messageMeta = {
   header: {
     CS_SETUP_DATA: "CS_SETUP_DATA",
     EXTRACTED_DATA: "EXTRACTED_DATA",
-    REQUEST_POST_VIEWS_DATA: "REQUEST_POST_VIEWS_DATA", 
-    RESPONSE_POST_VIEWS_DATA: "RESPONSE_POST_VIEWS_DATA", 
+    CRUD_OBJECT: "CRUD_OBJECT",
+    CRUD_OBJECT_RESPONSE: "CRUD_OBJECT_RESPONSE",
   }
 }
 
@@ -849,26 +849,25 @@ export function getVisitsTotalTime(visits){
 export function getPostMetricValue(postViews, metric){
 
     var value = 0;
+    postViews.sort((a, b) => new Date(a.date) > new Date(b.date));
+
+    if (!postViews.length){
+      return 0; 
+    }
     
     switch (metric){
       case "reactions": {
-        for (var postView of postViews){
-          value += postView.reactions ? postView.reactions : 0;
-        }
+        value += postViews[postViews.length - 1].reactions ? postViews[postViews.length - 1].reactions : 0;
         break;
       }
 
       case "comments": {
-        for (var postView of postViews){
-          value += postView.commentsCount ? postView.commentsCount : 0;
-        }
+        value += postViews[postViews.length - 1].commentsCount ? postViews[postViews.length - 1].commentsCount : 0;
         break;
       }
 
       case "reposts": {
-        for (var postView of postViews){
-          value += postView.repostsCount ? postView.repostsCount : 0;
-        }
+        value += postViews[postViews.length - 1].repostsCount ? postViews[postViews.length - 1].repostsCount : 0;
         break;
       }
     }
@@ -914,7 +913,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
   var labels = null,
       resData = {};
 
-  metrics.forEach(metric => {
+  for (const metric of metrics){
 
     resData[metric] = [];
 
@@ -947,7 +946,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
       for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = incDate(date)){
         
-        var label = date.toISOString().split("T")[0];
+        const label = date.toISOString().split("T")[0];
 
         if (!labelsOk){
           labels.push(label);
@@ -955,11 +954,11 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
         if (label in data){
 
-          var visits = [];
-          Object.keys(data[label]).forEach(hourString => {
-            visits = visits.concat(data[label][hourString]);
-          });
-          resData[metric].push(getMetricValue(visits, metric));
+          var objects = [];
+          for (const hourString of Object.keys(data[label])){
+            objects = objects.concat(data[label][hourString]);
+          };
+          resData[metric].push(getMetricValue(objects, metric));
 
         }
         else{
@@ -970,7 +969,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
     }
 
-  });
+  };
 
   return {labels: labels, values: resData};
 
@@ -1154,16 +1153,30 @@ export const groupVisitsByProfile = (visits) => {
 
 }
 
-export const secondsToHms = (d) => {
+export const secondsToHms = (d, label = true) => {
     d = Number(d);
     var h = Math.floor(d / 3600);
     var m = Math.floor(d % 3600 / 60);
     var s = Math.floor(d % 3600 % 60);
 
-    var hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
-    var mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-    var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-    return hDisplay + mDisplay + sDisplay; 
+    var hDisplay = null,
+        mDisplay = null,
+        sDisplay = null;
+    if (label){
+
+      hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+      mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+      sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+
+    }
+    else{
+
+      hDisplay = h > 0 ? (h < 10 ? `0${h}` : h) : "00";
+      mDisplay = ` : ${m > 0 ? (m < 10 ? `0${m}` : m) : "00"}`;
+      sDisplay = ` : ${s > 0 ? (s < 10 ? `0${s}` : s) : "00"}`;
+
+    }
+    return [hDisplay, mDisplay, sDisplay].join(""); 
 }
 
 
@@ -1203,7 +1216,7 @@ async function getReminders(db, criteria){
 
     }
                               
-    reminders.forEach(async (reminder) => {
+    for (var reminder of reminders){
 
       try{
 
@@ -1232,7 +1245,7 @@ async function getReminders(db, criteria){
         console.error("Error : ", error);
       }
 
-    });
+    };
 
   }
   catch(error){
