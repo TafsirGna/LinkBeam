@@ -3,6 +3,7 @@ import React from 'react';
 import { 
   appParams,
   messageMeta, 
+  secondsToHms,
 } from "../../popup/Local_library";
 import { 
   BarChartIcon, 
@@ -22,6 +23,18 @@ const freshReminder = () => {
 
 }
 
+function isElVisible (ele) {
+  const { top, bottom } = ele.getBoundingClientRect();
+  const vHeight = (window.innerHeight || document.documentElement.clientHeight);
+
+  return (
+    (top > 0 || bottom > 0) &&
+    top < vHeight
+  );
+}
+
+const timeInc = 1;
+
 export default class FeedPostDataMarkerView extends React.Component{
 
   constructor(props){
@@ -32,7 +45,9 @@ export default class FeedPostDataMarkerView extends React.Component{
       processing: false,
       updated: false,
       timerDisplay: false,
-      impressionCount: 0,
+      impressionCount: null,
+      timeCount: 0, 
+      timerInterval: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -40,12 +55,60 @@ export default class FeedPostDataMarkerView extends React.Component{
     this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
     this.updateReminder = this.updateReminder.bind(this);
+    this.runTimer = this.runTimer.bind(this);
     
   }
 
   componentDidMount() {
 
     this.startListening();
+
+    this.setState({timerDisplay: this.props.timerDisplay});
+
+    eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
+        
+        this.setState({timerDisplay: data.timerDisplay});
+
+      }
+    );
+
+    document.addEventListener("scroll", (event) => {
+
+      const element = document.querySelector(".scaffold-finite-scroll__content")
+                              .querySelector(`div[data-id='${this.props.object.id}']`)
+                              .querySelector(".feed-shared-update-v2");
+
+      if (isElVisible(element)){
+        if (!this.state.timerInterval){
+          this.runTimer();
+        }
+      }
+      else{
+        if (this.state.timerInterval){
+          clearInterval(this.state.timerInterval);
+          this.setState({timerInterval: null});
+        }
+      }
+
+    });
+
+  }
+
+  runTimer(){
+
+    // var value = 0;
+    const timerInterval = setInterval(() => {
+        this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}));
+      }, (timeInc * 1000)
+    );
+
+    this.setState({timerInterval: timerInterval});
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.TIMER_DISPLAY_UPDATED);
 
   }
 
@@ -149,7 +212,13 @@ export default class FeedPostDataMarkerView extends React.Component{
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
-  toggleTimerDisplay = () => this.setState((prevState) => ({timerDisplay: !prevState.timerDisplay}));
+  /*() => this.setState((prevState) => ({timerDisplay: !prevState.timerDisplay}),*/
+  toggleTimerDisplay = () => {
+
+    // let the other markers know of the change of settings
+    eventBus.dispatch(eventBus.TIMER_DISPLAY_UPDATED, {timerDisplay: !this.state.timerDisplay});
+
+  };
 
   sendReminderData(){
 
@@ -219,9 +288,11 @@ export default class FeedPostDataMarkerView extends React.Component{
       <>
         <div class={"shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 "} role="alert">
           <div class="flex items-center">
-            <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>
-            </svg>
+            <Tooltip content="Proudly yours">
+              <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>
+              </svg>
+            </Tooltip>
             <span class="sr-only">Info</span>
             <h3 class="text-sm font-medium">LinkBeam</h3>
           </div>
@@ -235,9 +306,10 @@ export default class FeedPostDataMarkerView extends React.Component{
               {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
             </button>*/}
 
-            { this.state.timerDisplay && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                          00:00:00
-                        </span>}
+            { this.state.timerDisplay 
+                && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                    {secondsToHms(this.state.timeCount, false)}
+                  </span>}
 
             { this.state.updated 
                 && <span class="flex items-center bg-green-100 text-green-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
@@ -258,11 +330,14 @@ export default class FeedPostDataMarkerView extends React.Component{
                     className=""/>
                 </span>
               }>
-              <Dropdown.Item 
-                onClick={this.toggleTimerDisplay}
-                className="">
-                Show/hide timer
-              </Dropdown.Item>
+              <Tooltip content={secondsToHms(this.state.timeCount, false)}>
+                <Dropdown.Item 
+                  // onClick={this.toggleTimerDisplay}
+                  >
+                  {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
+                  timer
+                </Dropdown.Item>
+              </Tooltip>
               { Object.hasOwn(this.state.reminder, "id") 
                   && <Dropdown.Item 
                         onClick={this.handleReminderModalShow}
@@ -277,13 +352,21 @@ export default class FeedPostDataMarkerView extends React.Component{
             </Dropdown>
 
 
-            <Tooltip content={`${this.state.impressionCount} impressions`}>
+            <Tooltip content={this.state.impressionCount ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>
               <button 
                 onClick={this.showFeedPostDataModal} 
                 type="button" 
                 class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                 >
-                <span class="text-base me-2">({this.state.impressionCount})</span>
+
+                { !this.state.impressionCount
+                    &&  <Spinner
+                            aria-label="Extra small spinner example"
+                            className="me-2"
+                            size="xs"
+                          />}
+
+                { this.state.impressionCount && <span class="text-base me-2">({this.state.impressionCount})</span>}
                 <BarChartIcon 
                     size="14"
                     className=""/>

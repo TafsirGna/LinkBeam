@@ -1156,15 +1156,16 @@ export const groupVisitsByProfile = (visits) => {
 export const secondsToHms = (d, label = true) => {
     d = Number(d);
     var h = Math.floor(d / 3600);
-    var m = Math.floor(d % 3600 / 60);
-    var s = Math.floor(d % 3600 % 60);
+    var m = Math.floor((d % 3600) / 60);
+    var s = Math.floor((d % 3600) % 60);
 
     var hDisplay = null,
         mDisplay = null,
         sDisplay = null;
+
     if (label){
 
-      hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+      hDisplay = h > 0 ? h + (h == 1 ? " hour " : " hours ") : "";
       mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
       sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
 
@@ -1176,6 +1177,7 @@ export const secondsToHms = (d, label = true) => {
       sDisplay = ` : ${s > 0 ? (s < 10 ? `0${s}` : s) : "00"}`;
 
     }
+
     return [hDisplay, mDisplay, sDisplay].join(""); 
 }
 

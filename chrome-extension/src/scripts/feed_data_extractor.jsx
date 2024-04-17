@@ -41,7 +41,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		super();
 	}
 
-	static setUpExtensionWidgets(tabId){
+	static setUpExtensionWidgets(props){
 
 		const feedContainerElement = document.querySelector(".scaffold-finite-scroll__content");
 
@@ -58,13 +58,13 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		ReactDOM.createRoot(newDivTag.shadowRoot).render(
             <React.StrictMode>
               <style type="text/css">{styles}</style>
-              <FeedPostDataModal tabId={tabId}/>
+              <FeedPostDataModal tabId={props.tabId}/>
             </React.StrictMode>
         );
 		
 	}
 
-	static extractPostDataFrom(tabId, postContainerElement, postCategory, authorName){
+	static extractPostDataFrom(props, postContainerElement, postCategory, authorName){
 
 		const uid = postContainerElement.getAttribute("data-id");
 		
@@ -185,17 +185,19 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		// displaying the info widget
 		if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
+			// Adding the marker
 			var newDivTag = document.createElement('div');
 			newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-	        postContainerElement.prepend(newDivTag);
-	        newDivTag.attachShadow({ mode: 'open' });
+      postContainerElement.prepend(newDivTag);
+      newDivTag.attachShadow({ mode: 'open' });
 
 			ReactDOM.createRoot(newDivTag.shadowRoot).render(
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
 	              <FeedPostDataMarkerView 
 	              	object={post}
-	              	tabId={tabId}/>
+	              	tabId={props.tabId}
+	              	timerDisplay={props.timerDisplay}/>
 	            </React.StrictMode>
 	        );
 
@@ -207,7 +209,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	}
 
-	static extractItemsCountByCategory(tabId){
+	static extractItemsCountByCategory(props){
 
 		var metricLabels = Object.keys(categoryVerbMap);
 		metricLabels.push("publications"); 
@@ -270,7 +272,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 			if (["suggestions"].indexOf(postCategory) == -1
 					&& authorName){
-				var post = this.extractPostDataFrom(tabId, postContainerElement, postCategory, authorName);
+				var post = this.extractPostDataFrom(props, postContainerElement, postCategory, authorName);
 				if (post){
 					this.posts.push(post);
 				}
@@ -293,10 +295,10 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	}
 
-	static extractData(tabId){
+	static extractData(props){
 
 		let pageData = { 
-			metrics: this.extractItemsCountByCategory(tabId)
+			metrics: this.extractItemsCountByCategory(props)
 		};
 
 		pageData.posts = this.posts;

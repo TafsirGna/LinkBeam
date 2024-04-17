@@ -27,17 +27,27 @@ import {
 } from "./data_extractor_lib";
 import FeedDataExtractor from "./feed_data_extractor";
 import ProfileDataExtractor from "./profile_data_extractor";
+import eventBus from "../popup/EventBus";
 
 class MixedDataExtractor extends DataExtractorBase {
 
     constructor(){
         super();
+        this.timerDisplay = false;
+
+        eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
+        
+            this.timerDisplay = data.timerDisplay;
+
+          }
+        );
     }
 
     setUpExtensionWidgets(){
 
         if (this.pageUrl.indexOf("/feed") != -1){
-            FeedDataExtractor.setUpExtensionWidgets(this.tabId);
+            const props = {tabId: this.tabId};
+            FeedDataExtractor.setUpExtensionWidgets(props);
         }
         else if (this.pageUrl.indexOf("/in/") != -1){
             ProfileDataExtractor.setUpExtensionWidgets(this.tabId);
@@ -51,15 +61,17 @@ class MixedDataExtractor extends DataExtractorBase {
 
         if (pageUrl.indexOf("/feed") != -1){
             
+            const props = {tabId: this.tabId, timerDisplay: this.timerDisplay};
             if (this.pageUrl != pageUrl){
                 FeedDataExtractor.posts = [];
                 FeedDataExtractor.viewedPosts = {};
-                FeedDataExtractor.setUpExtensionWidgets(this.tabId);
+                FeedDataExtractor.setUpExtensionWidgets(props);
 
                 this.pageUrl = pageUrl;
                 this.webPageData = null;
             }
-            return FeedDataExtractor.extractData(this.tabId);
+
+            return FeedDataExtractor.extractData(props);
 
         }
         else if (pageUrl.indexOf("/in/") != -1){
