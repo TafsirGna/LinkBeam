@@ -36,6 +36,8 @@ import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
 import { db } from "../db";
+import Offcanvas from 'react-bootstrap/Offcanvas';
+import Form from 'react-bootstrap/Form';
 import { 
   saveCurrentPageTitle, 
   appParams,
@@ -56,6 +58,9 @@ export default class StatisticsView extends React.Component{
       carrouselActiveItemIndex: 0,
       controlsVisibility: true,
       relChartDisplayCrit: "suggestions",
+      offCanvasShow: false,
+      offCanvasFormStartDate: (new Date()).toISOString().split("T")[0],
+      offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
     };
 
     this.onViewChange = this.onViewChange.bind(this);
@@ -64,6 +69,8 @@ export default class StatisticsView extends React.Component{
     this.onChartExpansion = this.onChartExpansion.bind(this);
     this.setRelChartDisplayCrit = this.setRelChartDisplayCrit.bind(this);
     this.setObjects = this.setObjects.bind(this);
+    this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
+    this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -79,6 +86,9 @@ export default class StatisticsView extends React.Component{
 
   }
 
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasFormSelectValue: "1"})};
+  handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
+
   onViewChange(index){
 
     this.setState({
@@ -86,14 +96,24 @@ export default class StatisticsView extends React.Component{
       periodVisits: null,
       periodProfiles: null,
     }, () => {
-      this.setObjects();
+
+      if (index == 3){
+        this.handleOffCanvasShow();
+      }
+      else{
+        this.setObjects();
+      }
+
     });
 
   }
 
   async setObjects(){
 
-    var visits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles");
+    var visits = await getPeriodVisits({
+      start: this.state.offCanvasFormStartDate,
+      end: this.state.offCanvasFormEndDate,      
+    }, {moment: moment}, db, "profiles");
     
     var profiles = [];
     for (var visit of visits){
@@ -158,6 +178,22 @@ export default class StatisticsView extends React.Component{
     this.setState({relChartDisplayCrit: value});
 
   }
+
+  handleOffCanvasFormStartDateInputChange(event) {
+
+    this.setState({offCanvasFormStartDate: event.target.value}); 
+
+  }
+
+  handleOffCanvasFormEndDateInputChange(event) {
+
+    this.setState({offCanvasFormEndDate: event.target.value}, () => {
+      if (new Date(this.state.offCanvasFormEndDate) < new Date(this.state.offCanvasFormStartDate)){
+        this.setState({offCanvasFormStartDate: this.state.offCanvasFormEndDate});
+      }
+    }); 
+
+  }
   
   render(){
 
@@ -197,7 +233,7 @@ export default class StatisticsView extends React.Component{
 
                 { ["days", "month", "year"].map((item, index) => (<li>
                                                                     <a 
-                                                                      class={"dropdown-item small " + (this.state.view == index ? "active" : "")} 
+                                                                      class={`dropdown-item small ${this.state.view == index ? "active" : ""}`} 
                                                                       href="#" 
                                                                       onClick={() => {this.onViewChange(index)}}>
                                                                       Last {item}
@@ -206,6 +242,15 @@ export default class StatisticsView extends React.Component{
                                                                     </a>
                                                                   </li>)) }
 
+                <li>
+                  <a 
+                    class={`dropdown-item small ${this.state.view == 3 ? "active" : ""}`}
+                    onClick={() => {this.onViewChange(3)}}
+                    title={this.state.view == 3 ? `${moment(this.state.offCanvasFormStartDate, moment.ISO_8601).format('ll')} - ${moment(this.state.offCanvasFormEndDate, moment.ISO_8601).format('ll')}` : null}>
+                    Specific dates
+                    {this.state.view == 3 && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                  </a>
+                </li>
                 <li>
                   <a 
                     class="dropdown-item small" 
@@ -312,6 +357,56 @@ export default class StatisticsView extends React.Component{
             </span>
           </div>
         </div>
+
+        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Specific dates</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+
+            <Form noValidate validated={this.state.offCanvasFormValidated} id="offcanvas_form" className="small text-muted">
+              <Form.Group className="my-3" controlId="reminderForm.scheduledForControlInput1">
+                <Form.Label>Starting</Form.Label>
+                <Form.Control
+                  type="date"
+                  autoFocus
+                  max={(new Date(this.state.offCanvasFormEndDate)).toISOString().split("T")[0]}
+                  min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
+                  value={this.state.offCanvasFormStartDate}
+                  onChange={this.handleOffCanvasFormStartDateInputChange}
+                  className=""
+                  required
+                  size="sm"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please choose a valid date.
+                </Form.Control.Feedback>
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="reminderForm.scheduledForControlInput2">
+                <Form.Label>Ending</Form.Label>
+                <Form.Control
+                  type="date"
+                  autoFocus
+                  max={new Date().toISOString().slice(0, 10)}
+                  min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
+                  value={this.state.offCanvasFormEndDate}
+                  onChange={this.handleOffCanvasFormEndDateInputChange}
+                  className=""
+                  required
+                  size="sm"
+                />
+                <Form.Control.Feedback type="invalid">
+                  Please choose a valid date.
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Form>
+
+            <div class="d-flex">
+              <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={null}>Apply</button>
+            </div>
+
+          </Offcanvas.Body>
+        </Offcanvas>
       </>
     );
   }

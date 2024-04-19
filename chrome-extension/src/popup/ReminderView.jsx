@@ -33,6 +33,7 @@ import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import { db } from "../db";
 import eventBus from "./EventBus";
+import { CalendarIcon } from "./widgets/SVGs";
 
 export default class ReminderView extends React.Component{
 
@@ -71,7 +72,18 @@ export default class ReminderView extends React.Component{
                     objectStoreName={dbData.objectStoreNames.REMINDERS}
                     globalData={this.props.globalData}  /> } 
 
-          <div class="mt-3">
+          <span class="handy-cursor border shadow rounded p-1">
+            <a 
+              title="Show on calendar" 
+              class="mx-1 text-muted"
+              href="#"
+              target="_blank">
+              <CalendarIcon 
+                size="16"/>
+            </a>
+          </span>
+
+          <div class="mt-2">
             <ReminderListView 
               objects={this.props.globalData.reminderList ? this.props.globalData.reminderList.list : null}  
             />

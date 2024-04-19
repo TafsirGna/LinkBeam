@@ -42,7 +42,7 @@ export const appParams = {
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
   
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
-  TIME_COUNT_INC_VALUE: 5,
+  TAB_TIME_INC_VALUE: 5,
   WEB_APP_ITEM_LIMIT_NUM: 3,
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
@@ -997,32 +997,47 @@ export function getVisitsPostCount(visits){
 
 }
 
-export async function getPeriodVisits(index, func, db, category, profileUrl = null){
+export const isLinkedinFeed = (url) => url.indexOf("/feed") != -1;
+export const isLinkedinProfilePage = (url) => url.indexOf("/in/") != -1;
 
-  var startDate = null;
-  switch(index){
-    case 0: {
-      startDate = func.moment().subtract(6, 'days').toDate();
-      break;
+export async function getPeriodVisits(dateValue, func, db, category, profileUrl = null){
+
+  var startDate = null,
+      endDate = null;
+
+  if (isNaN(dateValue)){
+
+    endDate = new Date();
+    switch(dateValue){
+      case 0: {
+        startDate = func.moment().subtract(6, 'days').toDate();
+        break;
+      }
+
+      case 1: {
+        startDate = func.moment().subtract(30, 'days').toDate();
+        break;
+      }
+
+      case 2: {
+        startDate = func.moment().subtract(12, 'months').toDate();
+        break;
+      }
     }
 
-    case 1: {
-      startDate = func.moment().subtract(30, 'days').toDate();
-      break;
-    }
+  }
+  else{
 
-    case 2: {
-      startDate = func.moment().subtract(12, 'months').toDate();
-      break;
-    }
+    startDate = dateValue.start;
+    endDate = dateValue.end;
+
   }
 
-  var collection = collection = db.visits
-                    .filter(visit => dateBetweenRange(startDate, new Date(), visit.date)
+  const visits = db.visits
+                    .filter(visit => dateBetweenRange(startDate, endDate, visit.date)
                                       && (profileUrl ? visit.url == profileUrl : true)
-                                      && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : Object.hasOwn(visit, "feedItemsMetrics")) );
-
-  var visits = await collection.toArray();
+                                      && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : Object.hasOwn(visit, "feedItemsMetrics")) )
+                    .toArray();
 
   return visits;
 
@@ -1206,10 +1221,9 @@ async function getReminders(db, criteria){
 
     if (criteria == "today"){
 
-      reminders = await db
-                              .reminders
-                              .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
-                              .toArray();
+      reminders = await db.reminders
+                          .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
+                          .toArray();
 
     }
     else if (criteria == "all"){
@@ -1222,7 +1236,7 @@ async function getReminders(db, criteria){
 
       try{
 
-        if (reminder.objectId.indexOf("/in/") != -1){
+        if (isLinkedinProfilePage(reminder.objectId)){
 
           const visits = await db.visits
                                  .where("url")

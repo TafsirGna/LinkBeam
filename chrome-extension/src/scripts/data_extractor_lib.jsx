@@ -24,54 +24,25 @@ import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedRemind
 import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeywordToastView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
-
-const EXTRACTION_INTERVAL_TIME = 5000;
+import {
+    isLinkedinFeed,
+    isLinkedinProfilePage,
+} from "../popup/Local_library";
 
 export class DataExtractorBase {
+
+  static EXTRACTION_PROCESS_INTERVAL_TIME = 3000;
 
 	constructor(){
 
     this.tabId = null;
-    this.webPageData = null;
-    this.pageUrl = window.location.href;
     this.isActiveTab = true;
-    this.extractSendTimeOut = null;
+    this.pageUrl = window.location.href;
 
 		// Starting listening to different messages
 		this.startMessageListener();
 
 	}
-
-	// Function for sending the page data
-	sendTabData(data){
-
-    var pageUrl = this.pageUrl.split("?")[0];
-    pageUrl = pageUrl.indexOf("/feed") != -1 
-                ? pageUrl 
-                : ( pageUrl.indexOf("/in/") != -1 
-                    ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
-                    : null);
-
-	  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: this.tabId, tabUrl: pageUrl }}, (response) => {
-	    
-      console.log('linkedin-data response sent', response, data);
-      if (this.extractSendTimeOut){
-        return;
-      }
-
-      this.webPageData = data;
-
-      this.extractSendTimeOut = setTimeout(() => {
-        this.extractSendTabData();
-      }, EXTRACTION_INTERVAL_TIME);
-
-	  });
-
-	}
-
-	// extractData(){
-
-	// }
 
 	getTabId(messageData, sendResponse){
 
@@ -79,34 +50,13 @@ export class DataExtractorBase {
 
     this.setUpExtensionWidgets();
 
-    this.extractSendTabData();
+    this.runTabDataExtractionProcess();
 
 	}
 
-  extractSendTabData(){
+  // runTabDataExtractionProcess(){
 
-    if (this.extractSendTimeOut){
-      clearTimeout(this.extractSendTimeOut);
-      this.extractSendTimeOut = null;
-    }
-
-    if (!this.isActiveTab){
-      return;
-    }
-
-    var webPageData = this.extractData();
-
-    if (!webPageData){
-      return;
-    }
-
-    if (webPageData == this.webPageData){
-      webPageData = null;
-    }
-
-    this.sendTabData(webPageData);    
-
-  }
+  // }
 
 	showToast(messageData, property, sendResponse){
 
@@ -153,12 +103,7 @@ export class DataExtractorBase {
 	         this.getTabId(message.data, sendResponse);
           }
           else{
-
             this.isActiveTab = (this.tabId == message.data.tabId); 
-            if (this.isActiveTab){
-              this.extractSendTabData();
-            }
-
           }
 	      }
 	      else if (Object.hasOwn(message.data, "reminders")){
@@ -175,6 +120,25 @@ export class DataExtractorBase {
 	}
 
 };
+
+// Function for sending the page data
+ export function sendTabData(tabId, pageUrl, data){
+
+    pageUrl = pageUrl.split("?")[0];
+    pageUrl = isLinkedinFeed(pageUrl)
+                ? pageUrl 
+                : (isLinkedinProfilePage(pageUrl)
+                    ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
+                    : null);
+
+    chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
+      
+      console.log('linkedin-data response sent', response, data);
+      // this.webPageData = data;
+
+    });
+
+  }
 
 
 

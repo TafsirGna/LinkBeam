@@ -20,73 +20,80 @@
 */
 
 
-
-
 import { 
     DataExtractorBase,
 } from "./data_extractor_lib";
+import {
+    isLinkedinFeed,
+    isLinkedinProfilePage,
+} from "../popup/Local_library";
 import FeedDataExtractor from "./feed_data_extractor";
 import ProfileDataExtractor from "./profile_data_extractor";
 import eventBus from "../popup/EventBus";
+
 
 class MixedDataExtractor extends DataExtractorBase {
 
     constructor(){
         super();
-        this.timerDisplay = false;
+        this.timer = null;
 
         eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
-        
-            this.timerDisplay = data.timerDisplay;
-
+            FeedDataExtractor.timerDisplay = data.timerDisplay;
           }
         );
     }
 
     setUpExtensionWidgets(){
 
-        if (this.pageUrl.indexOf("/feed") != -1){
-            const props = {tabId: this.tabId};
-            FeedDataExtractor.setUpExtensionWidgets(props);
+        if (isLinkedinFeed(this.pageUrl)){
+            FeedDataExtractor.setUpExtensionWidgets();
         }
-        else if (this.pageUrl.indexOf("/in/") != -1){
-            ProfileDataExtractor.setUpExtensionWidgets(this.tabId);
+        else if (isLinkedinProfilePage(this.pageUrl)){
+            ProfileDataExtractor.setUpExtensionWidgets();
         }
 
     }
 
-    extractData(){
+    runTabDataExtractionProcess(){
 
-        const pageUrl = window.location.href;
+        this.timer = setTimeout(() => {
 
-        if (pageUrl.indexOf("/feed") != -1){
-            
-            const props = {tabId: this.tabId, timerDisplay: this.timerDisplay};
-            if (this.pageUrl != pageUrl){
-                FeedDataExtractor.posts = [];
-                FeedDataExtractor.viewedPosts = {};
-                FeedDataExtractor.setUpExtensionWidgets(props);
-
-                this.pageUrl = pageUrl;
-                this.webPageData = null;
+            if (!this.isActiveTab){
+                this.runTabDataExtractionProcess();
+                return;
             }
 
-            return FeedDataExtractor.extractData(props);
+            const pageUrl = window.location.href;
+            const props = {
+                tabId: this.tabId, 
+            };
 
-        }
-        else if (pageUrl.indexOf("/in/") != -1){
+            if (isLinkedinFeed(pageUrl)){
 
-            if (this.pageUrl != pageUrl){
-                ProfileDataExtractor.setUpExtensionWidgets(this.tabId);
+                if (this.pageUrl != pageUrl){
+                    FeedDataExtractor.setUpExtensionWidgets();
+                    this.pageUrl = pageUrl;
+                }
 
-                this.pageUrl = pageUrl;
-                this.webPageData = null;
+                FeedDataExtractor.runTabDataExtractionProcess(props);
+                this.runTabDataExtractionProcess();
+
             }
-            return ProfileDataExtractor.extractData();
+            else if (isLinkedinProfilePage(pageUrl)){
 
-        }
+                if (this.pageUrl != pageUrl){
+                    ProfileDataExtractor.webPageData = null;
+                    ProfileDataExtractor.setUpExtensionWidgets();
+                    this.pageUrl = pageUrl;
+                }
 
-        return null;
+                ProfileDataExtractor.runTabDataExtractionProcess(props);
+                this.runTabDataExtractionProcess();
+
+            }
+
+        }, DataExtractorBase.EXTRACTION_PROCESS_INTERVAL_TIME);
 
     }
 

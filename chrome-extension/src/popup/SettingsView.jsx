@@ -417,13 +417,13 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Max time alarm</strong>
+                  <strong class="text-gray-dark">Max time per day</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
                       <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.maxTimeAlarm : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
-                      {["Never", "15 mins", "30 mins", "1 hour"].map((value) => (
+                      {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
                             <li>
                               <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
                                 {value}

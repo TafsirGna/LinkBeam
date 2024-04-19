@@ -4,7 +4,11 @@ import {
   appParams,
   messageMeta, 
   secondsToHms,
+  categoryVerbMap,
 } from "../../popup/Local_library";
+import{
+  sendTabData,
+} from "../../scripts/data_extractor_lib";
 import { 
   BarChartIcon, 
   LayersIcon,
@@ -48,6 +52,8 @@ export default class FeedPostDataMarkerView extends React.Component{
       impressionCount: null,
       timeCount: 0, 
       timerInterval: null,
+      postHtmlElementVisible: false,
+      postHtmlElement: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -56,6 +62,7 @@ export default class FeedPostDataMarkerView extends React.Component{
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
     this.updateReminder = this.updateReminder.bind(this);
     this.runTimer = this.runTimer.bind(this);
+    this.extractSendPostObject = this.extractSendPostObject.bind(this);
     
   }
 
@@ -72,13 +79,35 @@ export default class FeedPostDataMarkerView extends React.Component{
       }
     );
 
-    document.addEventListener("scroll", (event) => {
+    const postHtmlElement = document.querySelector(".scaffold-finite-scroll__content")
+                            .querySelector(`div[data-id='${this.props.postUid}']`)
+                            .querySelector(".feed-shared-update-v2");
 
-      const element = document.querySelector(".scaffold-finite-scroll__content")
-                              .querySelector(`div[data-id='${this.props.object.id}']`)
-                              .querySelector(".feed-shared-update-v2");
+    if (isElVisible(postHtmlElement)){
+      this.setState({postHtmlElementVisible: true});
+    }
 
-      if (isElVisible(element)){
+    this.setState({postHtmlElement: postHtmlElement}, () => {
+
+      document.addEventListener("scroll", (event) => {
+
+        const visible = isElVisible(this.state.postHtmlElement);
+        this.setState({postHtmlElementVisible: visible});
+
+      });
+
+    })
+
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevState.postHtmlElementVisible != this.state.postHtmlElementVisible){
+
+      if (this.state.postHtmlElementVisible){
+        if (!this.state.impressionCount){
+          this.extractSendPostObject();
+        }
         if (!this.state.timerInterval){
           this.runTimer();
         }
@@ -90,7 +119,130 @@ export default class FeedPostDataMarkerView extends React.Component{
         }
       }
 
-    });
+    }
+
+  }
+
+  extractSendPostObject(){
+
+    console.log("iiiiiiiiii : ", "extracting");
+
+    var post = {
+      id: this.props.postUid,
+      category: null,
+      content: {},
+    };
+
+    const postContainerHeaderElement = this.state.postHtmlElement.querySelector(".update-components-header");
+
+    if (postContainerHeaderElement){
+
+      const headerText = postContainerHeaderElement.textContent.toLowerCase();
+      for (var category in categoryVerbMap){
+
+        if (headerText.indexOf(categoryVerbMap[category]) != -1){
+          post.category = category;
+        }
+
+      };
+
+      post.initiator = {
+        name: postContainerHeaderElement.querySelector("a.update-components-text-view__mention") 
+            ? postContainerHeaderElement.querySelector("a.update-components-text-view__mention").textContent 
+            : null,
+        url: postContainerHeaderElement.querySelector("a.app-aware-link ") 
+            ? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
+            : null,
+        picture: postContainerHeaderElement.querySelector("img")
+              ? postContainerHeaderElement.querySelector("img").src 
+              : null,
+      };
+
+    }
+
+    var reactionsTagContent = this.state.postHtmlElement.querySelector(".social-details-social-counts") 
+                  ? this.state.postHtmlElement.querySelector(".social-details-social-counts").textContent
+                  : null ;
+
+    const getPostReactionsValues = metric => {
+
+      var value = null;
+
+      if (!reactionsTagContent){
+        return value;
+      }
+
+      if (["comment", "repost"].indexOf(metric) != -1){
+
+        if (reactionsTagContent.indexOf(metric) != -1){
+          for (var arrayItem of reactionsTagContent.split("\n")){
+            var index = arrayItem.indexOf(metric);
+            if (index != -1){
+              value = Number(arrayItem.slice(0, index).replaceAll(",", ""));
+              break;
+            }
+          }
+        }
+
+      }
+
+      if (metric == "reaction"){
+
+        var otherTermIndex = reactionsTagContent.indexOf("other");
+        if (otherTermIndex != -1){
+          value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex).replaceAll(",", ""));
+          value++;
+        }
+        else{
+          var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
+          arrayItems.forEach((arrayItem, index) => {
+            index1 = arrayItem.indexOf("comment") != -1 ? index : index1;
+            index2 = arrayItem.indexOf("repost") != -1 ? index : index2;
+          });
+
+          if (index1 != -1){
+            arrayItems.splice(index1, 1);
+          }
+
+          if (index2 != -1){
+            arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
+          }
+
+          const val = Number(arrayItems.join("").replaceAll(",", "")); 
+          if (!isNaN(val)){
+            value = val;
+          }
+
+        }
+
+      }
+      
+      return value;
+    };
+
+    post.content = {
+      author:{
+        name: this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden")
+               ? this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden").textContent
+               : null,
+        url: this.state.postHtmlElement.querySelector(".update-components-actor__meta a.app-aware-link")
+            ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
+            : null,
+        picture: this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")
+              ? this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
+              : null,
+      },
+      text: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
+          ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
+          : null,
+      reactions: getPostReactionsValues("reaction"),
+      commentsCount: getPostReactionsValues("comment"),               
+      repostsCount: getPostReactionsValues("repost"),
+    };
+
+    console.log("iiiiiiiiii : ", "sending");
+
+    sendTabData(this.props.tabId, window.location.href, post);
 
   }
 
@@ -98,7 +250,11 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     // var value = 0;
     const timerInterval = setInterval(() => {
-        this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}));
+        this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
+          if (!(this.state.timeCount % 3)){
+            // sendTabData()
+          }
+        });
       }, (timeInc * 1000)
     );
 
@@ -114,7 +270,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
   showFeedPostDataModal(){
 
-    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, {object: this.props.object});
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, {tabId: this.props.tabId, postUid: this.props.postUid});
 
   }
 
@@ -138,7 +294,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
                 if (message.data.object){
                   const reminder = message.data.object;
-                  if (reminder.objectId != this.props.object.id){
+                  if (reminder.objectId != this.props.postUid){
                     return;
                   }
                   this.setState({
@@ -160,7 +316,7 @@ export default class FeedPostDataMarkerView extends React.Component{
               if (message.data.objectStoreName == "reminders"){
 
                 if (message.data.object){
-                  if (message.data.object != this.props.object.id){
+                  if (message.data.object != this.props.postUid){
                     return;
                   }
                   this.setState({
@@ -181,7 +337,7 @@ export default class FeedPostDataMarkerView extends React.Component{
             case "read":{
               if (message.data.objectStoreName == "feedPosts"){
 
-                const index = message.data.objects.map(p => p.id).indexOf(this.props.object.id);
+                const index = message.data.objects.map(p => p.id).indexOf(this.props.postUid);
                 if (index != -1){
                   if (message.data.objects[index].reminder){
                     this.setState({reminder: message.data.objects[index].reminder})
@@ -226,7 +382,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
       this.setState(prevState => {
         let reminder = Object.assign({}, prevState.reminder);
-        reminder.objectId = this.props.object.id;
+        reminder.objectId = this.props.postUid;
         return { reminder };
       }, () => {
 
@@ -335,7 +491,7 @@ export default class FeedPostDataMarkerView extends React.Component{
                   // onClick={this.toggleTimerDisplay}
                   >
                   {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
-                  timer
+                  Timer
                 </Dropdown.Item>
               </Tooltip>
               { Object.hasOwn(this.state.reminder, "id") 
@@ -354,7 +510,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
             <Tooltip content={this.state.impressionCount ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>
               <button 
-                onClick={this.showFeedPostDataModal} 
+                onClick={() => {if (this.state.impressionCount) {this.showFeedPostDataModal()}}} 
                 type="button" 
                 class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                 >

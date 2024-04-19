@@ -81,7 +81,6 @@ export default class FeedDashView extends React.Component{
         if (index != -1){
           this.state.feedPosts[index].reminder = data.reminder;
         }
-        console.log("fff 1");
         this.toggleToastShow("Reminder added!");
       }
     );
@@ -92,7 +91,6 @@ export default class FeedDashView extends React.Component{
         if (index != -1){
           this.state.feedPosts[index].reminder = null;
         }
-        console.log("fff 2");
         this.toggleToastShow("Reminder deleted!");
       }
     );
@@ -149,12 +147,10 @@ export default class FeedDashView extends React.Component{
 
   async setVisits(){
 
-    const visits = await db.visits
-                           .filter(visit => dateBetweenRange(this.state.startDate, this.state.endDate, visit.date)
-                                            && Object.hasOwn(visit, "feedItemsMetrics"))
-                           .toArray();
-
-          // getPeriodVisits()
+    const visits = await getPeriodVisits({
+                              start: this.state.startDate,
+                              end: this.state.endDate,
+                            }, {moment: moment}, db);
 
     this.setState({ visits: visits });
 

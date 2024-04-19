@@ -94,6 +94,31 @@ export default class AllPostsModal extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
+            <div class="clearfix">
+
+              <div class="float-end d-flex align-items-center gap-2">
+
+                <svg title="Sort by" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-muted"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+
+                <div class="dropdown">
+                  <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                    <span class="rounded shadow-sm badge border text-primary">Sort by</span>
+                  </div>
+                  <ul class="dropdown-menu shadow-lg border">
+                    {["date (desc)", "duration (desc)"].map((value) => (
+                          <li>
+                            <a class="dropdown-item small" href="#" onClick={null}>
+                              {value}
+                            </a>
+                          </li>  
+                      ))}
+                  </ul>
+                </div>
+
+              </div>
+
+            </div>
+
           	{ !this.state.posts 
                 && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                       {/*<span class="visually-hidden">Loading...</span>*/}

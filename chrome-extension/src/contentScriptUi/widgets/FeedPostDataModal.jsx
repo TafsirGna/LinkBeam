@@ -81,7 +81,6 @@ export default class FeedPostDataModal extends React.Component{
     super(props);
     this.state = {
       show: false,
-      post: null,
       data: null,
       freshPost: false,
     };
@@ -98,9 +97,9 @@ export default class FeedPostDataModal extends React.Component{
 
     eventBus.on(eventBus.SHOW_FEED_POST_DATA_MODAL, (data) => {
         
-        this.setState({show: true, post: data.object}, () => {
+        this.setState({show: true}, () => {
 
-          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.object.id}}}, (response) => {
+          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: data.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.postUid}}}, (response) => {
             // Got an asynchronous response with the data from the service worker
             console.log("Post views data request sent !");
           });

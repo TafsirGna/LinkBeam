@@ -34,12 +34,42 @@ import {
 
 export default class ProfileDataExtractor extends DataExtractorBase {
 
+  static webPageData = null;
+
   constructor(){
     super();
+
+    this.extractSendTimeOut = null;
+
   }
 
-  static setUpExtensionWidgets(tabId){
-    
+  static setUpExtensionWidgets(){
+    // if i need to do something here for later ideas
+  }
+
+  runTabDataExtractionProcess(){
+
+    if (this.extractSendTimeOut){
+      clearTimeout(this.extractSendTimeOut);
+      this.extractSendTimeOut = null;
+    }
+
+    if (!this.isActiveTab){
+      return;
+    }
+
+    var webPageData = this.extractData();
+
+    if (!webPageData){
+      return;
+    }
+
+    if (webPageData == this.webPageData){
+      webPageData = null;
+    }
+
+    this.sendTabData(webPageData);  
+
   }
 
   static extractData(){
