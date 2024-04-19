@@ -147,10 +147,12 @@ export default class FeedDashView extends React.Component{
 
   async setVisits(){
 
+    console.log("''''''''''''''''''' : ", this.state.startDate, this.state.endDate);
+
     const visits = await getPeriodVisits({
                               start: this.state.startDate,
                               end: this.state.endDate,
-                            }, {moment: moment}, db);
+                            }, {moment: moment}, db, "feed");
 
     this.setState({ visits: visits });
 

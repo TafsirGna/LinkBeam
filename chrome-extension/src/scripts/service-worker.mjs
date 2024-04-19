@@ -203,8 +203,9 @@ function injectScriptsInTab(tabId, url){
 
         if (isLinkedinFeed(url)){
             db.keywords.toArray().then((keywords) => {
+                keywords = keywords.map(keyword => keyword.name);
                 chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {allKeywords: keywords}}, (response) => {
-                    console.log('Keywords sent', response);
+                    console.log('Keywords sent', keywords, response);
                 }); 
             });
         }
@@ -472,15 +473,21 @@ async function recordFeedVisit(tabData){
                                          .equals(newPost.uid)
                                          .first();
 
-                post.viewsCount = await db.feedPostViews
-                                         .where("uid")
-                                         .equals(newPost.uid)
-                                         .count();
+                post.viewsCount = 0;
+                post.timeCount = 0;
+
+                await db.feedPostViews
+                         .where("uid")
+                         .equals(newPost.uid)
+                         .each(postView => {
+                            post.viewsCount++;
+                            post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+                         })
 
             });
 
         visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
-        console.log("poooooooooooooost : ", post.category, visit.feedItemsMetrics);
+        // console.log("poooooooooooooost : ", post.category, visit.feedItemsMetrics);
         await db.visits.update(visit.id, visit);
         
         // display the updated badge text
@@ -652,6 +659,26 @@ async function processMessageEvent(message, sender, sendResponse){
             // Saving the new notification setting state
             var tabData = message.data;
             await processTabData(tabData);
+            break;
+        }
+
+        case messageMeta.header.FEED_POST_TIME_UPDATE:{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            // Saving the new notification setting state
+            var postUid = message.data.postUid,
+                timeCount = message.data.time,
+                tabId = message.data.tabId;
+
+            await db.feedPostViews
+                    .where({uid: postUid, tabId: tabId})
+                    .modify(postView => {
+                        postView.timeCount = timeCount;
+                    });
+
             break;
         }
 

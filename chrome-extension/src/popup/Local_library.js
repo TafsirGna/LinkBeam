@@ -717,22 +717,26 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
     var profiles = [];
     for (var visit of visits){
 
-      const index = profiles.map(p => p.url).indexOf(visit.url);
-      if (index != -1){
-        visit.profileData = profiles[index].payload;
-      }
-      else{
+      if (isLinkedinProfilePage(visit.url)){
 
-        const profileVisits = await db.visits
-                                      .where('url')
-                                      .equals(visit.url)
-                                      .sortBy("date");
+        const index = profiles.map(p => p.url).indexOf(visit.url);
+        if (index != -1){
+          visit.profileData = profiles[index].payload;
+        }
+        else{
 
-        const profile = getProfileDataFrom(profileVisits);
+          const profileVisits = await db.visits
+                                        .where('url')
+                                        .equals(visit.url)
+                                        .sortBy("date");
 
-        visit.profileData = profile;
-        profiles.push({url: visit.url, payload: profile});
+          const profile = getProfileDataFrom(profileVisits);
 
+          visit.profileData = profile;
+          profiles.push({url: visit.url, payload: profile});
+
+        }
+        
       }
 
     }
@@ -1008,6 +1012,12 @@ export async function getPeriodVisits(dateValue, func, db, category, profileUrl 
 
   if (isNaN(dateValue)){
 
+    startDate = dateValue.start;
+    endDate = dateValue.end;
+
+  }
+  else{
+
     endDate = new Date();
     switch(dateValue){
       case 0: {
@@ -1025,12 +1035,6 @@ export async function getPeriodVisits(dateValue, func, db, category, profileUrl 
         break;
       }
     }
-
-  }
-  else{
-
-    startDate = dateValue.start;
-    endDate = dateValue.end;
 
   }
 
@@ -1146,7 +1150,6 @@ export const groupVisitsByProfile = (visits) => {
 
   var results = [];
   for (var visit of visits){
-    // var index = results.map(e => e.url).indexOf(visit.url);
     var index = results.findIndex(e => e.url == visit.url && e.date.split("T")[0] == visit.date.split("T")[0]);
     if (index == -1){
       visit.count = 1;
@@ -1157,13 +1160,15 @@ export const groupVisitsByProfile = (visits) => {
         (results[index]).count++;
       }
       else{
-        visit.count = (results[index]).count + 1;
+        visit.count = ++(results[index]).count;
         results[index] = visit;
       }
     }
   }
 
   results.sort((a,b) => new Date(b.date.split("T")[0]) - new Date(a.date.split("T")[0]));
+
+  console.log("$$$$$$$$$$$$$$$$$$$$$$$$ : ", results);
 
   return results;
 

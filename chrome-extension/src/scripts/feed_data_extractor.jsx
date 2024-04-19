@@ -83,8 +83,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 			}
 
 			// if a post doesn't have neither a category (publication) nor author, then pass
-			if (!postContainerElement.querySelector(".update-components-header")
-					 && !postContainerElement.querySelector(".update-components-actor__name .visually-hidden")){
+			if (!postContainerElement.querySelector(".update-components-actor__name .visually-hidden")){
 				return;
 			}
 

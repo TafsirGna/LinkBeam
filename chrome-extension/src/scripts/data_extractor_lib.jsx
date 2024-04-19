@@ -27,6 +27,7 @@ import React from 'react';
 import {
     isLinkedinFeed,
     isLinkedinProfilePage,
+    messageMeta,
 } from "../popup/Local_library";
 
 export class DataExtractorBase {
@@ -92,7 +93,7 @@ export class DataExtractorBase {
 		// Retrieving the tabId variable
 		chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
 
-		  if (message.header == "CS_SETUP_DATA") {
+		  if (message.header == messageMeta.header.CS_SETUP_DATA) {
 
         // Acknowledge the message
         sendResponse({
@@ -115,6 +116,7 @@ export class DataExtractorBase {
 	      }
         else if (Object.hasOwn(message.data, "allKeywords")){
           this.allKeywords = message.data.allKeywords;
+          console.log("|||||||||||||||| : ", this.allKeywords);
         }
 
 		  }
