@@ -15,8 +15,17 @@ import {
   CheckIcon,
 } from "../../popup/widgets/SVGs";
 import eventBus from "../../popup/EventBus";
-import { Dropdown, Spinner, Tooltip } from "flowbite-react";
-import { Button, Label, TextInput, Textarea } from "flowbite-react";
+import { 
+  Dropdown, 
+  Spinner, 
+  Tooltip, 
+  Popover, 
+  Badge,
+  Button, 
+  Label, 
+  TextInput, 
+  Textarea 
+} from "flowbite-react";
 
 const freshReminder = () => {
 
@@ -54,6 +63,7 @@ export default class FeedPostDataMarkerView extends React.Component{
       timerInterval: null,
       postHtmlElementVisible: false,
       postHtmlElement: null,
+      foundKeywords: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -96,7 +106,16 @@ export default class FeedPostDataMarkerView extends React.Component{
 
       });
 
-    })
+    });
+
+    // check this post for all contained keywords
+    var keywords = [];
+    for (const keyword of this.props.allKeywords){
+      if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
+        keywords.push(keyword);
+      }
+    };
+    this.setState({foundKeywords: keywords});
 
   }
 
@@ -474,6 +493,45 @@ export default class FeedPostDataMarkerView extends React.Component{
                         size="16"
                         className="ml-2"/>
                   </span>}
+
+            <Popover
+                aria-labelledby="default-popover"
+                content={
+                  <div className="w-64 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
+                      <h3 id="default-popover" className="font-semibold text-gray-900 dark:text-white">Keywords</h3>
+                    </div>
+                    <div className="px-3 py-2">
+                      { !this.state.foundKeywords
+                          &&  <Spinner
+                                  aria-label="Extra small spinner example"
+                                  className="me-2"
+                                  size="xs"
+                                />}
+                      { this.state.foundKeywords
+                          && <p>
+                              {this.state.foundKeywords.map(keyword => (<Badge color="info">{keyword}</Badge>))}
+                          </p> }
+                    </div>
+                  </div>
+                }
+              >
+              <button 
+                type="button" 
+                class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                >
+
+                { !this.state.foundKeywords
+                    &&  <Spinner
+                            aria-label="Extra small spinner example"
+                            className="me-2"
+                            size="xs"
+                          />}
+
+                { this.state.foundKeywords && <span class="text-base me-2">({this.state.foundKeywords.length})</span>}
+                <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+              </button>
+            </Popover>
 
             <Dropdown 
               label="" 

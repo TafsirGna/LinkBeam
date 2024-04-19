@@ -65,11 +65,16 @@ class MixedDataExtractor extends DataExtractorBase {
             }
 
             const pageUrl = window.location.href;
-            const props = {
+            var props = {
                 tabId: this.tabId, 
             };
 
             if (isLinkedinFeed(pageUrl)){
+
+                props = {
+                    ...props,
+                    allKeywords: this.allKeywords,
+                }
 
                 if (this.pageUrl != pageUrl){
                     FeedDataExtractor.setUpExtensionWidgets();

@@ -38,6 +38,7 @@ export class DataExtractorBase {
     this.tabId = null;
     this.isActiveTab = true;
     this.pageUrl = window.location.href;
+    this.allKeywords = null;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -112,6 +113,9 @@ export class DataExtractorBase {
 	      else if (Object.hasOwn(message.data, "detectedKeywords")){
 	        this.showToast(message.data, "detectedKeywords", sendResponse);
 	      }
+        else if (Object.hasOwn(message.data, "allKeywords")){
+          this.allKeywords = message.data.allKeywords;
+        }
 
 		  }
 

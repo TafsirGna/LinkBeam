@@ -88,10 +88,12 @@ export default class FeedDataExtractor extends DataExtractorBase {
 				return;
 			}
 
-			if (postContainerElement.querySelector(".update-components-header")
-															.textContent
-															.toLowerCase()
-															.indexOf(categoryVerbMap['suggestions']) != -1){
+			// excluding suggested posts
+			if (postContainerElement.querySelector(".update-components-header") 
+						&& postContainerElement.querySelector(".update-components-header")
+																		.textContent
+																		.toLowerCase()
+																		.indexOf(categoryVerbMap['suggestions']) != -1){
 				return;
 			}
 
@@ -109,7 +111,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		              <FeedPostDataMarkerView 
 		              	postUid={postContainerElement.getAttribute("data-id")}
 		              	tabId={props.tabId}
-		              	timerDisplay={this.timerDisplay}/>
+		              	timerDisplay={this.timerDisplay}
+		              	allKeywords={props.allKeywords}/>
 		            </React.StrictMode>
 		        );
 

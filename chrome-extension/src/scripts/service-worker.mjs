@@ -194,12 +194,20 @@ function injectScriptsInTab(tabId, url){
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
     
-    async function injectDataExtractorParams(tabId){
+    async function injectDataExtractorParams(tabId, url){
 
         // Inject tab id
         chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: tabId}}, (response) => {
             console.log('tabId sent', response);
         }); 
+
+        if (isLinkedinFeed(url)){
+            db.keywords.toArray().then((keywords) => {
+                chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {allKeywords: keywords}}, (response) => {
+                    console.log('Keywords sent', response);
+                }); 
+            });
+        }
 
         const settings = await db
                                .settings
@@ -214,7 +222,7 @@ function injectScriptsInTab(tabId, url){
                         console.log('Reminders sent', response);
                     }); 
                 }
-            })
+            });
         }     
 
     };
@@ -228,7 +236,7 @@ function injectScriptsInTab(tabId, url){
                 files: [dataExtractorPath],
             }, 
             () => {
-                injectDataExtractorParams(tabId);
+                injectDataExtractorParams(tabId, url);
             }
         );
     }
@@ -472,6 +480,7 @@ async function recordFeedVisit(tabData){
             });
 
         visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+        console.log("poooooooooooooost : ", post.category, visit.feedItemsMetrics);
         await db.visits.update(visit.id, visit);
         
         // display the updated badge text
