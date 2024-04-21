@@ -44,8 +44,9 @@ export default class HomeMenu extends React.Component{
       <>
 
         { ((this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0)
-            /*|| (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false)*/)
-          && <div class="dropdown">
+            /*|| (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false)*/
+            || this.props.args.previousDaySavedTime != null)
+              && <div class="dropdown">
                             <div 
                               data-bs-toggle="dropdown" 
                               aria-expanded="false" 
@@ -63,8 +64,15 @@ export default class HomeMenu extends React.Component{
                               </div>
                             </div>
                             <ul class="dropdown-menu shadow-lg border border-secondary">
+
                               {/*{ (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false) && <li><a class="dropdown-item small" onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}>Show ui in tab</a></li>}*/}
-                              { (this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0) && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
+                              
+                              { (this.props.globalData.todayReminderList 
+                                  && this.props.globalData.todayReminderList.length > 0) && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
+                              
+                              { this.props.args.previousDaySavedTime 
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}}>Time saved yesterday</a></li>}
+
                             </ul>
                           </div>}
 

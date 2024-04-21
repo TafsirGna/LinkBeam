@@ -4,10 +4,7 @@ import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import { 
 	getChartColors,
-	getVisitsTotalTime,
-	getVisitsPostCount,
 	getFeedLineChartsData,
-	getPostMetricValue,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -90,7 +87,7 @@ export default class FeedMetricsLineChart extends React.Component{
 			return;
 		}
 
-		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, getPostMetricValue, [this.props.metric], {moment: moment})
+		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.props.metricValueFunction, [this.props.metric], {moment: moment})
 
 		const colors = getChartColors(1);
 		this.setState({
@@ -108,6 +105,7 @@ export default class FeedMetricsLineChart extends React.Component{
 			}
 		});
 	}
+
 
 	render(){
 		return (

@@ -27,6 +27,7 @@ import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootst
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import SearchPostFormView from "./widgets/SearchPostFormView";
+import party_popper_icon from '../assets/party-popper_icon.png';
 import { 
   saveCurrentPageTitle, 
   appParams, 
@@ -34,9 +35,11 @@ import {
   dbData,
   setGlobalDataHomeAllVisitsList,
   getProfileDataFrom,
+  getVisitsTotalTime,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
+import moment from 'moment';
 
 export default class HomeView extends React.Component{
 
@@ -46,6 +49,7 @@ export default class HomeView extends React.Component{
       currentTabIndex: 0,
       offCanvasShow: false,
       offCanvasTitle: null,
+      previousDaySavedTime: null, 
     };
 
     // Binding all the needed functions
@@ -61,6 +65,34 @@ export default class HomeView extends React.Component{
     if (!this.props.globalData.homeTodayVisitsList){
       this.getVisitList("today");
     }
+
+    // check if the previous day, the user has been able to stick to its goal of saving time through the extension
+    (async () => {
+
+      const settings = await db.settings
+                               .where({id: 1})
+                               .first();
+
+      if (settings.maxTimeAlarm == "Never"){
+        return;
+      }
+
+      const visits = await db.visits
+                            .where("date")
+                            .startsWith(moment().subtract(1, 'days').toDate().toISOString().split("T")[0])
+                            .toArray();
+
+      const totalTime = getVisitsTotalTime(visits); // in minutes
+      if (totalTime == 0){
+        return;
+      }
+
+      const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
+      if (totalTime < maxTimeValue){
+        this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
+      }
+
+    })();
     
   }
 
@@ -72,10 +104,14 @@ export default class HomeView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasTitle: null}, 
+  handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
-        deactivateTodayReminders(db);
-        eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
+        if (this.state.offCanvasTitle == "Reminders"){
+          deactivateTodayReminders(db);
+          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
+        }
+
+        this.setState({offCanvasTitle: null});
       }
     )
   };
@@ -184,7 +220,13 @@ export default class HomeView extends React.Component{
 
         <div class="clearfix">
           {/*setting icon*/}
-          <HomeMenuView globalData={this.props.globalData} handleOffCanvasShow={this.handleOffCanvasShow} />
+          <HomeMenuView 
+            globalData={this.props.globalData} 
+            handleOffCanvasShow={this.handleOffCanvasShow} 
+            args={{
+              previousDaySavedTime: this.state.previousDaySavedTime,
+            }}
+            />
         </div>
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
@@ -231,6 +273,22 @@ export default class HomeView extends React.Component{
 
             { this.state.offCanvasTitle == "Posts"
                 && <SearchPostFormView/>}
+
+            { this.state.offCanvasTitle == "Saved time"
+                && <div class="text-center">
+                    <img 
+                      src={party_popper_icon} 
+                      alt="twbs" 
+                      width="100" 
+                      height="100" 
+                      class=""/>
+
+                    <p class="mt-3">
+                      <span class="badge text-bg-light fst-italic shadow text-muted border border-success">
+                        Congratulations! You've saved {this.state.previousDaySavedTime} minutes yesterday
+                      </span>
+                    </p>
+                </div>}
 
           </Offcanvas.Body>
         </Offcanvas>

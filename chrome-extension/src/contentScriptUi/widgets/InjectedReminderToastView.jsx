@@ -1,10 +1,19 @@
 /*import './WebUiRequestToast.css'*/
 import React from 'react';
-import { appParams, dbDataSanitizer, deactivateTodayReminders } from "../../popup/Local_library";
+import { 
+    appParams, 
+    dbDataSanitizer, 
+    deactivateTodayReminders,
+    isLinkedinProfilePage,
+} from "../../popup/Local_library";
 import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
+import linkedin_icon from '../../assets/linkedin_icon.png';
 import elevator_tone_audio from '../../assets/audio/elevator-tone.mp3';
+import { 
+  Tooltip, 
+} from "flowbite-react";
 
 
 export default class InjectedReminderToastView extends React.Component{
@@ -20,7 +29,7 @@ export default class InjectedReminderToastView extends React.Component{
     }
 
     handleRemindersToastShow = () => { this.setState({remindersToastShow: true}); }
-    handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, callback); }
+    handleRemindersToastClose = (callback = null) => { this.setState({remindersToastShow: false}, () => {if (callback) {callback()}}); }
 
     handleRemindersModalShow = () => {
         if (this.state.remindersToastShow){
@@ -112,11 +121,19 @@ const ReminderListItemView = (props) => {
     return (
 
         <div class="flex items-center p-4">
-            <img src={props.object.profile.avatar ? props.object.profile.avatar : default_user_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0 rounded shadow"/>
+            <img src={isLinkedinProfilePage(props.object.objectId) ? (props.object.object.avatar ? props.object.object.avatar : chrome.runtime.getURL("/assets/linkedin_icon.png")) : linkedin_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0 rounded shadow"/>
             <div class="ml-4 flex-auto">
               <div class="font-medium inline-flex items-center">
-                <a class="mr-3" href={ /*props.appSettingsData.productID == props.object.createdOn ? "#" :  "/web_ui.html?web-ui-page-profile-id="+props.object.get("createdBy").getUsername()*/ "#" } target="_blank">
-                  { dbDataSanitizer.preSanitize(props.object.profile.fullName) }
+                <a 
+                    class="mr-3" 
+                    href={ isLinkedinProfilePage(props.object.objectId) ? `https://${props.object.objectId}` : `https://www.linkedin.com/feed/update/${props.object.objectId}`} 
+                    target="_blank">
+                    { isLinkedinProfilePage(props.object.objectId) 
+                        && <span>{dbDataSanitizer.preSanitize(props.object.object.fullName)}</span> }
+                    { !isLinkedinProfilePage(props.object.objectId)
+                        && <Tooltip content={props.object.object.initiator ? dbDataSanitizer.preSanitize(props.object.object.initiator.name) : dbDataSanitizer.preSanitize(props.object.object.content.author.name)}>
+                            Feed Post
+                        </Tooltip>}
                 </a>
                 <span class="font-light text-xs ml-2">{LuxonDateTime.fromISO(props.object.createdOn).toRelative()}</span>
               </div>

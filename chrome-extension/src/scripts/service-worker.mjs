@@ -394,6 +394,7 @@ function showBadgeText(feedItemsMetrics, tabId){
         badgeText += feedItemsMetrics[metric];
     }
 
+    console.log("µµµµµµµµµµµµµµµµµ : ", activeTabData.id, tabId, badgeText);
     if (activeTabData.id == tabId){
         chrome.action.setBadgeText({text: badgeText.toString()});
     }

@@ -27,6 +27,8 @@ import {
   groupObjectsByDate,
   setGlobalDataSettings,
   dbData,
+  isLinkedinProfilePage,
+  getProfileDataFrom,
 } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -57,6 +59,7 @@ export default class CalendarView extends React.Component{
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
+      dataType: null,
     };
 
     this.onClickDay = this.onClickDay.bind(this);
@@ -67,20 +70,31 @@ export default class CalendarView extends React.Component{
 
   componentDidMount() {
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataType = urlParams.get("dataType");
+
+    if (!dataType){
+      return;
+    }
+
     // Setting the nav default active key
     this.setState({
-      tabActiveKey: this.state.tabTitles[0], 
+      tabActiveKey: dataType == "Reminders" ? dataType : this.state.tabTitles[0], 
       activeStartDate: moment(this.state.selectedDate).startOf('month').format("YYYY-MM-DD"),
+      dataType: dataType,
     });
 
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    // Requesting this month's visits list
-    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
-
-    this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
+    if (dataType == "ProfileVisits"){
+      // Requesting this month's visits list
+      this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
+    }
+    else if (dataType == "Reminders"){
+      this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
+    }
 
   }
 
@@ -120,8 +134,21 @@ export default class CalendarView extends React.Component{
       case dbData.objectStoreNames.REMINDERS: {
 
         var monthReminderList = await db.reminders
-                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
+                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth)
+                                                                /*&& isLinkedinProfilePage(reminder.objectId)*/)
                                          .toArray();
+
+        await Promise.all (monthReminderList.map (async reminder => {
+
+          const visits = await db.visits
+                                 .where("url")
+                                 .equals(reminder.objectId)
+                                 .sortBy("date");
+
+          const profile = getProfileDataFrom(visits);
+          reminder.object = profile;
+
+        }));
 
         // Grouping the reminders by date
         var results = groupObjectsByDate(monthReminderList);
@@ -178,8 +205,12 @@ export default class CalendarView extends React.Component{
 
       this.setState({activeStartDate: activeDate}, () => {
 
-        this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
-        this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+        if (this.state.dataType == "Reminders"){
+          this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+        }
+        else if (this.state.dataType == "ProfileVisits"){
+          this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
+        }
 
       });
 
@@ -264,12 +295,23 @@ export default class CalendarView extends React.Component{
                     activeKey={this.state.tabActiveKey}
                     onSelect={this.onNavSelectKey}>
 
-                    {this.state.tabTitles.map((tabTitle, index) => (
+                    {this.state.dataType == "Reminders"
+                      && <Nav.Item>
+                          <Nav.Link href="#Reminders" eventKey="Reminders">
+                            Reminders
+                            { this.getDayObjectList(this.state.monthReminderList)
+                                && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}
+                          </Nav.Link>
+                        </Nav.Item>}
+
+                    {this.state.dataType == "ProfileVisits" 
+                      && this.state.tabTitles.map((tabTitle, index) => (
                                                       <Nav.Item>
                                                         <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
                                                           {tabTitle}
-                                                          { (index == 0 && this.getDayObjectList(this.state.monthVisitsList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthVisitsList).length}</span>}
-                                                          {/*{ (index == 1 && this.getDayObjectList(this.state.monthReminderList)) && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthReminderList).length}</span>}*/}
+                                                          { (index == 0 
+                                                                && this.getDayObjectList(this.state.monthVisitsList)) 
+                                                              && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.getDayObjectList(this.state.monthVisitsList).length}</span>}
                                                         </Nav.Link>
                                                       </Nav.Item>
                                                     ))}
@@ -281,17 +323,26 @@ export default class CalendarView extends React.Component{
                   <Card.Text>
                     With supporting text below as a natural lead-in to additional content.
                   </Card.Text>*/}
-                  { this.state.tabActiveKey == this.state.tabTitles[0] && <VisitListView 
-                                                                            objects={this.getDayObjectList(this.state.monthVisitsList)} 
-                                                                            seeMore={() => {}} 
-                                                                            loading={false} 
-                                                                            visitLeft={false}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[1] && <ReminderListView 
-                                                                            objects={this.getDayObjectList(this.state.monthReminderList)}/>}
+                  { this.state.dataType == "Reminders" 
+                      && <ReminderListView 
+                            objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                  { this.state.tabActiveKey == this.state.tabTitles[2] && <DailyVisitsBarChart 
-                                                                            objects={this.getDayObjectList(this.state.monthVisitsList)}/>}
+                  { this.state.dataType == "ProfileVisits"
+                      && <div>
+
+                          { this.state.tabActiveKey == this.state.tabTitles[0] 
+                              && <VisitListView 
+                                  objects={this.getDayObjectList(this.state.monthVisitsList)} 
+                                  seeMore={() => {}} 
+                                  loading={false} 
+                                  visitLeft={false}/>}
+
+                          { this.state.tabActiveKey == this.state.tabTitles[1] 
+                              && <DailyVisitsBarChart 
+                                  objects={this.getDayObjectList(this.state.monthVisitsList)}/>}
+
+                      </div>}
 
                 </Card.Body>
               </Card>

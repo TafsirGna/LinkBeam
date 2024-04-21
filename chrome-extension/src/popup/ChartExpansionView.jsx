@@ -48,6 +48,8 @@ export default class ChartExpansionView extends React.Component{
       carrouselActiveItemIndex: 0,
       carrouselChartView: 0,
       relChartDisplayCrit: "suggestions",
+      offCanvasFormStartDate: null,
+      offCanvasFormEndDate: null,
     };
 
   }
@@ -56,7 +58,9 @@ export default class ChartExpansionView extends React.Component{
 
     var carrouselActiveItemIndex = /*localStorage*/sessionStorage.getItem('carrouselActiveItemIndex'),
         carrouselChartView = /*localStorage*/sessionStorage.getItem('carrouselChartView'),
-        relChartDisplayCrit = /*localStorage*/sessionStorage.getItem('relChartDisplayCrit');
+        relChartDisplayCrit = /*localStorage*/sessionStorage.getItem('relChartDisplayCrit'),
+        offCanvasFormStartDate = sessionStorage.getItem('offCanvasFormStartDate'),
+        offCanvasFormEndDate = sessionStorage.getItem('offCanvasFormEndDate');
 
     (async () => {
 
@@ -98,6 +102,8 @@ export default class ChartExpansionView extends React.Component{
       carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
       carrouselChartView: parseInt(carrouselChartView),
       relChartDisplayCrit: relChartDisplayCrit,
+      offCanvasFormStartDate: offCanvasFormStartDate,
+      offCanvasFormEndDate: offCanvasFormEndDate,
     });
 
   }
@@ -122,7 +128,11 @@ export default class ChartExpansionView extends React.Component{
                         objects={this.state.periodVisits} 
                         view={this.state.carrouselChartView} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true}
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }} />}
 
               { this.state.carrouselActiveItemIndex == 2 && 
                       <VisitsKeywordsBarChart 

@@ -64,6 +64,7 @@ export default class FeedPostDataMarkerView extends React.Component{
       postHtmlElementVisible: false,
       postHtmlElement: null,
       foundKeywords: null,
+      fetchedTimeCount: 0,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -110,7 +111,6 @@ export default class FeedPostDataMarkerView extends React.Component{
     });
 
     // check this post for all contained keywords
-    console.log("ééééééééééééé : ", postHtmlElement, postHtmlElement.textContent);
     var keywords = [];
     for (var keyword of this.props.allKeywords){
       if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
@@ -283,7 +283,7 @@ export default class FeedPostDataMarkerView extends React.Component{
               return;
             }
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {tabId: this.props.tabId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
-              console.log('time count update request sent', response, data);
+              console.log('time count update request sent', response);
             });
           }
         });
@@ -371,17 +371,23 @@ export default class FeedPostDataMarkerView extends React.Component{
 
                 const index = message.data.objects.map(p => p.id).indexOf(this.props.postUid);
                 if (index != -1){
-                  if (message.data.objects[index].reminder){
-                    this.setState({reminder: message.data.objects[index].reminder})
+
+                  var post = message.data.objects[index];
+
+                  if (post.reminder){
+                    this.setState({reminder: post.reminder})
                   }
 
-                  if (message.data.objects[index].viewsCount){
-                    this.setState({impressionCount: message.data.objects[index].viewsCount});
+                  if (post.viewsCount){
+                    this.setState({impressionCount: post.viewsCount});
                   }
 
-                  if (message.data.objects[index].timeCount){
-                    this.setState({timeCount: message.data.objects[index].timeCount});
+                  if (post.timeCount){
+                    this.setState({fetchedTimeCount: post.timeCount}, () => {
+                      console.log("################# : ", this.state.fetchedTimeCount);
+                    });
                   }
+                  
                 }
 
               }
@@ -474,15 +480,19 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     if (Object.hasOwn(this.state.reminder, "id")){
 
-      this.setState({processing: true}, () => {
+      if (confirm("You're about to delete this reminder. Proceed ?")){
 
-        // Send message to the background
-        chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, objectStoreName: "reminders", action: "delete", object: this.state.reminder}}, (response) => {
-          // Got an asynchronous response with the data from the service worker
-          console.log("Post reminder data Request sent !");
+        this.setState({processing: true}, () => {
+
+          // Send message to the background
+          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, objectStoreName: "reminders", action: "delete", object: this.state.reminder}}, (response) => {
+            // Got an asynchronous response with the data from the service worker
+            console.log("Post reminder data Request sent !");
+          });
+
         });
 
-      });
+      }
 
     }
     else{
@@ -495,7 +505,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     return <button 
                 type="button" 
-                title={`${this.state.foundKeywords.length} found keywords`}
+                title={`${this.state.foundKeywords.length == "0" ? "No" : this.state.foundKeywords.length} found keyword${this.state.foundKeywords.length > 1 ? "s" : ""}`}
                 class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                 >
 
@@ -537,7 +547,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
             { this.state.timerDisplay 
                 && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                    {secondsToHms(this.state.timeCount, false)}
+                    {secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
                   </span>}
 
             { this.state.updated 
@@ -592,7 +602,7 @@ export default class FeedPostDataMarkerView extends React.Component{
                     className=""/>
                 </span>
               }>
-              <Tooltip content={secondsToHms(this.state.timeCount, false)}>
+              <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
                 <Dropdown.Item 
                   // onClick={this.toggleTimerDisplay}
                   >
@@ -639,75 +649,82 @@ export default class FeedPostDataMarkerView extends React.Component{
 
 
 
-        <div class={"modal-container-ac84bbb3728 " + (this.state.reminderModalShow ? "" : "hidden")}>
-          <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-            
-            <div class="p-4">
-
-              <form className="flex flex-col gap-4">
-                <div>
-                  <div className="mb-2 block">
-                    <Label htmlFor="date" value="Remind at" />
+        { this.state.reminderModalShow 
+            && <div class={"modal-container-ac84bbb3728 "}>
+                  <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+                    
+                    <div class="p-4">
+        
+                      <form className="flex flex-col gap-4">
+                        <div>
+                          <div className="mb-2 block">
+                            <Label htmlFor="date" value="Remind at" />
+                          </div>
+                          <TextInput 
+                            id="date" 
+                            type="date" 
+                            value={this.state.reminder.date}
+                            onChange={this.handleReminderDateInputChange} 
+                            /*placeholder=""*/ 
+                            disabled={Object.hasOwn(this.state.reminder, "id")}
+                            required />
+                        </div>
+                        <div>
+                          <div className="mb-2 block">
+                            <Label htmlFor="content" value="Content" />
+                          </div>
+                          <Textarea 
+                            id="content" 
+                            rows={4} 
+                            value={this.state.reminder.text} 
+                            onChange={this.handleReminderTextAreaChange}
+                            disabled={Object.hasOwn(this.state.reminder, "id")}
+                            required />
+                        </div>
+        
+                        { this.state.processing 
+                            && <div  
+                                  class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                  <Spinner aria-label="Default status example" className="mx-auto" />
+                                </div>}
+                                
+                        { !this.state.processing 
+                            && <div>
+        
+                                { !Object.hasOwn(this.state.reminder, "id") 
+                                    && /*<Button className="w-full" onClick={this.sendReminderData}>Submit</Button>*/
+                                       <button 
+                                          type="button" 
+                                          onClick={this.sendReminderData}
+                                          class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                          Submit
+                                        </button> }
+        
+                                { Object.hasOwn(this.state.reminder, "id") 
+                                  && <div  
+                                        class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                        <span>
+                                          <CheckIcon
+                                            size="18"
+                                            className="mx-auto"/>
+                                        </span>
+                                      </div> }
+        
+                              </div>  }
+                      </form>
+        
+                    </div>
+        
+                    <div class="p-4">
+                      <div 
+                        onClick={this.handleReminderModalClose} 
+                        class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                        <span>Dismiss</span>
+                      </div>
+                    </div>
+                    
                   </div>
-                  <TextInput 
-                    id="date" 
-                    type="date" 
-                    value={this.state.reminder.date}
-                    onChange={this.handleReminderDateInputChange} 
-                    /*placeholder=""*/ 
-                    disabled={Object.hasOwn(this.state.reminder, "id")}
-                    required />
-                </div>
-                <div>
-                  <div className="mb-2 block">
-                    <Label htmlFor="content" value="Content" />
-                  </div>
-                  <Textarea 
-                    id="content" 
-                    rows={4} 
-                    value={this.state.reminder.text} 
-                    onChange={this.handleReminderTextAreaChange}
-                    disabled={Object.hasOwn(this.state.reminder, "id")}
-                    required />
-                </div>
-
-                { this.state.processing 
-                    && <div  
-                          class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                          <Spinner aria-label="Default status example" className="mx-auto" />
-                        </div>}
-                        
-                { !this.state.processing 
-                    && <div>
-
-                        { !Object.hasOwn(this.state.reminder, "id") 
-                            && <Button className="w-full" onClick={this.sendReminderData}>Submit</Button> }
-
-                        { Object.hasOwn(this.state.reminder, "id") 
-                          && <div  
-                                class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                <span>
-                                  <CheckIcon
-                                    size="18"
-                                    className="mx-auto"/>
-                                </span>
-                              </div> }
-
-                      </div>  }
-              </form>
-
-            </div>
-
-            <div class="p-4">
-              <div 
-                onClick={this.handleReminderModalClose} 
-                class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                <span>Dismiss</span>
-              </div>
-            </div>
-            
-          </div>
-        </div> 
+                </div> }
       </>
     );
   }

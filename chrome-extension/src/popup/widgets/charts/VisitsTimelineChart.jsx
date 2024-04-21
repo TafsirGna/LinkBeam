@@ -92,10 +92,20 @@ export default class VisitsTimelineChart extends React.Component{
 		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
 		var visits = groupObjectsByDate(this.props.objects);
 
-		var upperLimit = (view == 0 ? 7 : 31);
-		for (var i=0; i < upperLimit; i++){
-			var date = moment().subtract(i, 'days');
-			results.titles.push(view == 0 ? date.format('dddd') : date.format("DD-MM"));
+		const periodRange = (start, stop, step) => Array.from({ length: (moment(stop).diff(moment(start), "days")) / step + 1 }, (_, i) => moment(start).add(i * step, "days"));
+
+		var startDate = null, endDate = null;
+		if (view == 3){
+			startDate = new Date(this.props.periodRangeLimits.start);
+			endDate = new Date(this.props.periodRangeLimits.end);
+		}
+		else{
+			startDate = moment().subtract((view == 0 ? 6 : 30), 'days').toDate();
+			endDate = new Date();
+		}
+
+		for (var date of periodRange(startDate, endDate, 1)){
+			results.titles.push((view == 0) ? date.format('dddd') : date.format("DD-MM"));
 			results.valuesDataset1.push((date.toISOString().split("T")[0] in visits) ? visits[date.toISOString().split("T")[0]].length : 0);
 
 			var valueDataset2 = 0;
@@ -107,10 +117,6 @@ export default class VisitsTimelineChart extends React.Component{
 			}
 			results.valuesDataset2.push(valueDataset2);
 		}
-
-		results.titles.reverse();
-		results.valuesDataset1.reverse();
-		results.valuesDataset2.reverse();
 
 		return results;
 
@@ -169,6 +175,10 @@ export default class VisitsTimelineChart extends React.Component{
 			}
 			case 2: {
 				results = this.getYearVisitsChartLabels();
+				break;
+			}
+			case 3: {
+				results = this.getDaysVisitsChartLabels(this.props.view);
 				break;
 			}
 		}

@@ -15,6 +15,7 @@ import {
   categoryVerbMap,
   appParams,
   secondsToHms,
+  getPostMetricValue,
 } from "../Local_library";
 import default_user_icon from '../../assets/user_icons/default.png';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -69,7 +70,6 @@ export default class PostListItemView extends React.Component{
       postModalShow: false,
       reminderModalShow: false,
       updated: false,
-      postTimeCount: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -81,7 +81,7 @@ export default class PostListItemView extends React.Component{
     this.onReminderActionClick = this.onReminderActionClick.bind(this);
     this.registerUpdateEvent = this.registerUpdateEvent.bind(this);
     this.setPostViews = this.setPostViews.bind(this);
-    this.getPostTimeCount = this.getPostTimeCount.bind(this);
+    // this.getPostTimeCount = this.getPostTimeCount.bind(this);
   }
 
   componentDidMount() {
@@ -95,21 +95,11 @@ export default class PostListItemView extends React.Component{
       }
     );
 
-    this.getPostTimeCount();
+    // this.getPostTimeCount();
 
   }
 
   componentDidUpdate(prevProps, prevState){
-
-    // console.log(";;;;;;;;;;;;; : ", prevProps.object, this.props.object);
-
-    // if (prevProps.object.reminder != this.props.object.reminder){
-    //   this.setState({updated: true}, () => {
-    //     setTimeout(() => {
-    //       this.setState({updated: false});
-    //     }, appParams.TIMER_VALUE)
-    //   });
-    // }
 
   }
 
@@ -201,22 +191,6 @@ export default class PostListItemView extends React.Component{
 
   }
 
-  getPostTimeCount(){
-
-    if (!this.state.postViews){
-      this.setPostViews(this.getPostTimeCount);
-    }
-    else{
-      var value = 0;
-      for (const postView of this.state.postViews){
-        value += postView.timeCount ? postView.timeCount : 0;
-      }
-      this.setState({postTimeCount: secondsToHms(value, false)});
-    }
-
-  }
-
-
   render(){
     return (
       <>
@@ -293,9 +267,10 @@ export default class PostListItemView extends React.Component{
               <span class="border shadow-sm rounded p-1 text-muted">
                 <span 
                   onClick={this.handlePostModalShow} 
-                  class="handy-cursor mx-1 text-primary"
-                  title="see metrics">
-                  <BarChartIcon size="14"/>
+                  class="handy-cursor mx-1 text-primary small"
+                  title={`${this.state.postViews ? `${this.state.postViews.length} impression${this.state.postViews.length > 1 ? "s" : ""} |` : ""} see metrics`}>
+                  {this.state.postViews ? `(${this.state.postViews.length})` : null}
+                  <BarChartIcon size="14" className="ms-1"/>
                 </span>
               </span>
 
@@ -320,9 +295,9 @@ export default class PostListItemView extends React.Component{
                 </ul>
               </div>
 
-              { this.state.postTimeCount 
+              { Object.hasOwn(this.props.object, "timeCount")
                   && <span class="badge bg-light-subtle border border-light-subtle text-light-emphasis rounded-pill">
-                      {this.state.postTimeCount}
+                      {secondsToHms(this.props.object.timeCount, false)}
                     </span>}
             </div>
           </p>
@@ -340,7 +315,8 @@ export default class PostListItemView extends React.Component{
               { this.state.postModalShow 
                   && <FeedPostTrendLineChart
                       objects={this.state.postViews}
-                      globalData={this.props.globalData}/> }
+                      globalData={this.props.globalData}
+                      metricValueFunction={getPostMetricValue}/> }
 
           </Modal.Body>
           <Modal.Footer>

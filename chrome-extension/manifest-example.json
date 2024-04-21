@@ -20,7 +20,8 @@
      "resources": [
                     "/assets/web_ui.js",
                     "/assets/gaming-lock.mp3",
-                    "/assets/elevator-tone.mp3"
+                    "/assets/elevator-tone.mp3",
+                    "/assets/linkedin_icon.png"
       ]
   }],
   "host_permissions": ["*://*/*"]

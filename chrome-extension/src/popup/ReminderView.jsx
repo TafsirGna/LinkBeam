@@ -76,7 +76,7 @@ export default class ReminderView extends React.Component{
             <a 
               title="Show on calendar" 
               class="mx-1 text-muted"
-              href="#"
+              href="/index.html?view=Calendar&dataType=Reminders" 
               target="_blank">
               <CalendarIcon 
                 size="16"/>

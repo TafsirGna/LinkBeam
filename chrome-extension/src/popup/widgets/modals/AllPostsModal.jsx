@@ -30,6 +30,7 @@ import {
   dateBetweenRange,
 } from "../../Local_library";
 import { db } from "../../../db";
+import eventBus from "../../EventBus";
 
 export default class AllPostsModal extends React.Component{
 
@@ -37,10 +38,33 @@ export default class AllPostsModal extends React.Component{
     super(props);
     this.state = {
     	posts: null,
+      sortByValueIndex: 0,
     };
+
+    this.setSortByValue = this.setSortByValue.bind(this);
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
+      {
+        const index = this.state.posts.map(p => p.id).indexOf(data.post.id);
+        if (index != -1){
+          this.state.posts[index].reminder = data.reminder;
+        }
+        // this.toggleToastShow("Reminder added!");
+      }
+    );
+
+    eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
+      {
+        const index = this.state.posts.map(p => p.id).indexOf(data);
+        if (index != -1){
+          this.state.posts[index].reminder = null;
+        }
+        // this.toggleToastShow("Reminder deleted!");
+      }
+    );
 
   }
 
@@ -48,9 +72,19 @@ export default class AllPostsModal extends React.Component{
    
     if (prevProps.show != this.props.show){
 
-    	this.setPosts();
+      if (this.props.show){
+        this.setState({sortByValueIndex: 0});
+        this.setPosts();
+      }
 
     }
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.POST_REMINDER_ADDED);
+    eventBus.remove(eventBus.POST_REMINDER_DELETED);
 
   }
 
@@ -74,12 +108,45 @@ export default class AllPostsModal extends React.Component{
       [post.reminder] = await Promise.all([
          db.reminders.where('objectId').equals(post.uid).first()
        ]);
+
+      post.timeCount = 0; post.date = null;
+      await db.feedPostViews.where("uid").equals(post.uid).each(postView => {
+        post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+        if (post.date){
+          post.date = (new Date(post.date) >= new Date(postView.date)) ? post.date : postView.date;
+        }
+        else{
+          post.date = postView.date;
+        }
+      });
+
     }));
 
-    posts.reverse();
+    // descending order
+    posts.sort(function(a, b){return new Date(b.date) - new Date(a.date)});
 
   	this.setState({posts: posts});
 
+  }
+
+  setSortByValue(index){
+    this.setState({sortByValueIndex: index}, () => {
+
+      var posts = this.state.posts;
+      switch(index){
+        case 0: { // sort by date
+          posts.sort(function(a, b){return new Date(b.date) - new Date(a.date)});
+          break;
+        }
+        case 1:{
+          posts.sort(function(a, b){return b.timeCount - a.timeCount});
+          break;
+        }
+      }
+      this.setState({posts: null}, () => {
+        this.setState({posts: posts});
+      });
+    });
   }
 
   render(){
@@ -105,10 +172,12 @@ export default class AllPostsModal extends React.Component{
                     <span class="rounded shadow-sm badge border text-primary">Sort by</span>
                   </div>
                   <ul class="dropdown-menu shadow-lg border">
-                    {["date (desc)", "duration (desc)"].map((value) => (
+                    {["date (desc)", "duration (desc)"].map((value, index) => (
                           <li>
-                            <a class="dropdown-item small" href="#" onClick={null}>
+                            <a class={`dropdown-item small ${this.state.sortByValueIndex == index ? "active" : ""}`} href="#" onClick={() => {this.setSortByValue(index)}}>
                               {value}
+                              { this.state.sortByValueIndex == index
+                                  && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                             </a>
                           </li>  
                       ))}

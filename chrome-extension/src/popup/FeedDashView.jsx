@@ -183,6 +183,12 @@ export default class FeedDashView extends React.Component{
       [post.reminder] = await Promise.all([
          db.reminders.where('objectId').equals(post.uid).first()
        ]);
+
+      post.timeCount = 0;
+      await db.feedPostViews.where("uid").equals(post.uid).each(postView => {
+        post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+      });
+
     }));
 
     this.setState({feedPosts: feedPosts});
@@ -202,6 +208,34 @@ export default class FeedDashView extends React.Component{
   }
 
   toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}), ()=>{console.log("hhh");});};
+
+  getMetricValue(visits, metric){
+
+    var value = null;
+    switch(metric){
+      case "Total time": {
+        value = getVisitsTotalTime(visits); 
+        break;
+      }
+
+      case "Post Count": {
+        value = getVisitsPostCount(visits); 
+        break;
+      }
+
+      case "Visit Count": {
+        value = visits.length; 
+        break;
+      }
+
+      case "Mean time": {
+        value = (getVisitsTotalTime(visits) / visits.length).toFixed(2); 
+        break;
+      }
+    }
+
+    return value;
+  }
 
   render(){
     return (
@@ -355,7 +389,8 @@ export default class FeedDashView extends React.Component{
                         end: this.state.endDate,
                       }}
                       objects={this.state.visits}
-                      metric={this.state.chartModalTitle}/>}
+                      metric={this.state.chartModalTitle}
+                      metricValueFunction={this.getMetricValue}/>}
 
           </Modal.Body>
           <Modal.Footer>

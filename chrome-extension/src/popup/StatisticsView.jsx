@@ -110,10 +110,19 @@ export default class StatisticsView extends React.Component{
 
   async setObjects(){
 
-    var visits = await getPeriodVisits({
-      start: this.state.offCanvasFormStartDate,
-      end: this.state.offCanvasFormEndDate,      
-    }, {moment: moment}, db, "profiles");
+    if (this.state.offCanvasShow){
+      this.handleOffCanvasClose();
+    }
+
+    var periodValue = this.state.view;
+    if (this.state.view == 3){
+      periodValue = {
+        start: this.state.offCanvasFormStartDate,
+        end: this.state.offCanvasFormEndDate,      
+      };
+    }
+      
+    var visits = await getPeriodVisits(periodValue, {moment: moment}, db, "profiles");
     
     var profiles = [];
     for (var visit of visits){
@@ -168,6 +177,8 @@ export default class StatisticsView extends React.Component{
     /*localStorage*/sessionStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
     /*localStorage*/sessionStorage.setItem('carrouselChartView', this.state.view);
     /*localStorage*/sessionStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
+    sessionStorage.setItem('offCanvasFormStartDate', this.state.offCanvasFormStartDate);
+    sessionStorage.setItem('offCanvasFormEndDate', this.state.offCanvasFormEndDate);
 
     window.open("/index.html?view=ChartExpansion", '_blank');
 
@@ -246,6 +257,7 @@ export default class StatisticsView extends React.Component{
                   <a 
                     class={`dropdown-item small ${this.state.view == 3 ? "active" : ""}`}
                     onClick={() => {this.onViewChange(3)}}
+                    href="#"
                     title={this.state.view == 3 ? `${moment(this.state.offCanvasFormStartDate, moment.ISO_8601).format('ll')} - ${moment(this.state.offCanvasFormEndDate, moment.ISO_8601).format('ll')}` : null}>
                     Specific dates
                     {this.state.view == 3 && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
@@ -254,7 +266,7 @@ export default class StatisticsView extends React.Component{
                 <li>
                   <a 
                     class="dropdown-item small" 
-                    href="/index.html?view=Calendar" 
+                    href="/index.html?view=Calendar&dataType=ProfileVisits" 
                     target="_blank">
                     Show calendar
                   </a>
@@ -271,42 +283,52 @@ export default class StatisticsView extends React.Component{
             indicators={false}
             activeIndex={this.state.carrouselActiveItemIndex} onSelect={this.handleCarrouselSelect}>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 0 && <VisitsTimelineChart 
+              { this.state.carrouselActiveItemIndex == 0 
+                  && <VisitsTimelineChart 
                               objects={this.state.periodVisits} 
                               view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }}
                               carrouselIndex={0} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 1 && <StatIndicatorsView 
+              { this.state.carrouselActiveItemIndex == 1 
+                  && <StatIndicatorsView 
                               objects={this.state.periodVisits}
                               carrouselIndex={1} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 2 && <VisitsKeywordsBarChart 
+              { this.state.carrouselActiveItemIndex == 2 
+                  && <VisitsKeywordsBarChart 
                               globalData={this.props.globalData} 
                               objects={this.state.periodProfiles} 
                               carrouselIndex={2}/>}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 3 && <ProfilesNetworkMetricsBubbleChart 
+              { this.state.carrouselActiveItemIndex == 3 
+                  && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
                               profiles={this.state.periodProfiles}
                               carrouselIndex={3} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 4 && <ProfilesGeoMapChart 
+              { this.state.carrouselActiveItemIndex == 4 
+                  && <ProfilesGeoMapChart 
                               context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
                               objects={this.state.periodProfiles} 
                               carrouselIndex={4} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 5 && <ExpEdStackBarChart 
+              { this.state.carrouselActiveItemIndex == 5 
+                  && <ExpEdStackBarChart 
                               objects={this.state.periodProfiles} 
                               carrouselIndex={5} />}
             </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 6 && 
-                            <div>
+              { this.state.carrouselActiveItemIndex == 6 
+                  && <div>
                               <ProfilesGraphChart 
                                 objects={this.state.periodProfiles} 
                                 displayCriteria={ this.state.relChartDisplayCrit } 
@@ -402,7 +424,7 @@ export default class StatisticsView extends React.Component{
             </Form>
 
             <div class="d-flex">
-              <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={null}>Apply</button>
+              <button type="button" class="shadow btn btn-primary btn-sm ms-auto" onClick={this.setObjects}>Apply</button>
             </div>
 
           </Offcanvas.Body>
