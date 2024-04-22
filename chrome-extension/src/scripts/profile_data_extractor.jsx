@@ -19,15 +19,11 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import { 
-  messageMeta,
-  appParams,
-} from "../react_components/Local_library";*/
-
 import { 
   DataExtractorBase, 
   publicDataExtractor, 
   authDataExtractor ,
+  sendTabData,
 } from "./data_extractor_lib";
 
 // Content script designed to make sure the active tab is a linkedin page
@@ -39,7 +35,7 @@ export default class ProfileDataExtractor extends DataExtractorBase {
   constructor(){
     super();
 
-    this.extractSendTimeOut = null;
+    // this.extractSendTimeOut = null;
 
   }
 
@@ -47,28 +43,18 @@ export default class ProfileDataExtractor extends DataExtractorBase {
     // if i need to do something here for later ideas
   }
 
-  runTabDataExtractionProcess(){
+  static runTabDataExtractionProcess(props){
 
-    if (this.extractSendTimeOut){
-      clearTimeout(this.extractSendTimeOut);
-      this.extractSendTimeOut = null;
-    }
+    const webPageData = this.extractData();
 
-    if (!this.isActiveTab){
+    if (!webPageData
+          || (webPageData && webPageData == this.webPageData)){
       return;
     }
 
-    var webPageData = this.extractData();
-
-    if (!webPageData){
-      return;
-    }
-
-    if (webPageData == this.webPageData){
-      webPageData = null;
-    }
-
-    this.sendTabData(webPageData);  
+    sendTabData(props.tabId, props.pageUrl, webPageData, () => {
+      this.webPageData = webPageData;
+    });  
 
   }
 

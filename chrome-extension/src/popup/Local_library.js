@@ -55,7 +55,6 @@ export const appParams = {
     KEYWORDS: "Keywords",
     BOOKMARKS: "Bookmarks",
     STATISTICS: "Statistics",
-    PROFILE_ACTIVITY: "Profile Activity",
     PROFILE: "Profile",
     MY_ACCOUNT: "MyAccount",
     FEEDBACK: "Feedback",
@@ -85,8 +84,6 @@ export const dbData = {
     SETTINGS: "settings",
     REMINDERS: "reminders",
     KEYWORDS: "keywords",
-    PROFILE_ACTIVITY: "profile_activity",
-    TRACKED_POSTS: "tracked_posts",
   }
 }
 

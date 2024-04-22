@@ -28,6 +28,9 @@ import {
   ClockIcon,
 } from "./SVGs";
 import { db } from "../../db";
+import { 
+  isLinkedinProfilePage,
+} from "../Local_library";
 
 export default class ReminderListItemView extends React.Component{
 
@@ -51,7 +54,7 @@ export default class ReminderListItemView extends React.Component{
 
   getObjectLink(){
 
-    return this.props.object.objectId.indexOf("/in/") != -1
+    return isLinkedinProfilePage(this.props.object.objectId)
               ?  `/index.html?view=Profile&data=${this.props.object.objectId}`
               : `https://www.linkedin.com/feed/update/${this.props.object.objectId}`;
 
@@ -59,7 +62,7 @@ export default class ReminderListItemView extends React.Component{
 
   getItemTitle(){
 
-    return this.props.object.objectId.indexOf("/in/") != -1
+    return isLinkedinProfilePage(this.props.object.objectId)
               ? this.props.object.object.fullName
               : "Feed Post";
 

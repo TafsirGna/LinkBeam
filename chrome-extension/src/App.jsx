@@ -94,6 +94,7 @@ export default class App extends React.Component{
 
       if (!currentPageTitle){
         currentPageTitle = localStorage.getItem('currentPageTitle');
+        currentPageTitle = currentPageTitle ? currentPageTitle : appParams.COMPONENT_CONTEXT_NAMES.HOME;
       }
 
       this.setState({currentPageTitle: currentPageTitle});
@@ -187,43 +188,56 @@ export default class App extends React.Component{
         { this.state.missingDatabase == true && <ErrorPageView data="missingDb" />}
 
         {/*Index Page*/}
-        { this.state.currentPageTitle == "Home" && <HomeView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME 
+            && <HomeView globalData={this.state.globalData} /> }
 
         {/*About Page*/}
-        { this.state.currentPageTitle == "About" && <AboutView /> }
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.ABOUT 
+            && <AboutView /> }
 
         {/*Settings Page */}
-        { this.state.currentPageTitle == "Settings" && <SettingsView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.SETTINGS 
+            && <SettingsView globalData={this.state.globalData} /> }
 
         {/*FeedDash Page */}
-        { this.state.currentPageTitle == "FeedDash" && <FeedDashView globalData={this.state.globalData} /> }
+        { this.state.currentPageTitle == "FeedDash" 
+            && <FeedDashView globalData={this.state.globalData} /> }
 
         {/*Statistics Page*/}
-        { this.state.currentPageTitle == "Statistics" && <StatisticsView globalData={this.state.globalData}/>}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.STATISTICS 
+            && <StatisticsView globalData={this.state.globalData}/>}
 
         {/*Keywords Page */}
-        { this.state.currentPageTitle == "Keywords" && <KeywordView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS 
+            && <KeywordView globalData={this.state.globalData} />}
 
         {/*MyAccount Page */}
-        { this.state.currentPageTitle == "MyAccount" && <MyAccount globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT 
+            && <MyAccount globalData={this.state.globalData} />}
 
         {/*Profile Page */}
-        { this.state.currentPageTitle == "Profile" && <MainProfileView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "Profile" 
+            && <MainProfileView globalData={this.state.globalData} />}
 
         {/*Reminders Page*/}
-        { this.state.currentPageTitle == "Reminders" && <ReminderView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.REMINDERS 
+            && <ReminderView globalData={this.state.globalData} />}
 
         {/*Bookmarks Page*/}
-        { this.state.currentPageTitle == "Bookmarks" && <BookmarkView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS 
+            && <BookmarkView globalData={this.state.globalData} />}
 
         {/*Calendar Page*/}
-        { this.state.currentPageTitle == "Calendar" && <CalendarView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.CALENDAR 
+            && <CalendarView globalData={this.state.globalData} />}
 
         {/*LicenseCredits Page */}
-        { this.state.currentPageTitle == "LicenseCredits" && <LicenseCreditsView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "LicenseCredits" 
+            && <LicenseCreditsView globalData={this.state.globalData} />}
 
         {/*ChartExpansion Page*/}
-        { this.state.currentPageTitle == "ChartExpansion" && <ChartExpansionView globalData={this.state.globalData} />}
+        { this.state.currentPageTitle == "ChartExpansion" 
+            && <ChartExpansionView globalData={this.state.globalData} />}
 
       </>
     );

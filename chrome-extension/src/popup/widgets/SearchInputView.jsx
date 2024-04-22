@@ -188,7 +188,7 @@ export default class SearchInputView extends React.Component{
                                  .sortBy("date");
 
           const profile = getProfileDataFrom(visits);
-          reminder.profile = profile;
+          reminder.object = profile;
 
           // reminder.text = this.highlightSearchText(reminder.text);
 

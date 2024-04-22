@@ -40,6 +40,7 @@ export class DataExtractorBase {
     this.isActiveTab = true;
     this.pageUrl = window.location.href;
     this.allKeywords = null;
+    this.appSettings = null;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -116,7 +117,10 @@ export class DataExtractorBase {
 	      }
         else if (Object.hasOwn(message.data, "allKeywords")){
           this.allKeywords = message.data.allKeywords;
-          console.log("|||||||||||||||| : ", this.allKeywords);
+          // console.log("|||||||||||||||| : ", this.allKeywords);
+        }
+        else if (Object.hasOwn(message.data, "settings")){
+          this.appSettings = message.data.settings;
         }
 
 		  }
@@ -128,7 +132,7 @@ export class DataExtractorBase {
 };
 
 // Function for sending the page data
- export function sendTabData(tabId, pageUrl, data){
+ export function sendTabData(tabId, pageUrl, data, callback = null){
 
     pageUrl = pageUrl.split("?")[0];
     pageUrl = isLinkedinFeed(pageUrl)
@@ -140,7 +144,8 @@ export class DataExtractorBase {
     chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
       
       console.log('linkedin-data response sent', response, data);
-      // this.webPageData = data;
+
+      if (callback) { callback(); }
 
     });
 

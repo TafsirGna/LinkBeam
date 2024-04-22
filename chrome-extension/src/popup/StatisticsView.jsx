@@ -410,7 +410,7 @@ export default class StatisticsView extends React.Component{
                   type="date"
                   autoFocus
                   max={new Date().toISOString().slice(0, 10)}
-                  min={this.props.globalData.settings ? this.props.globalData.settings.lastDataResetDate.split("T")[0] : this.state.offCanvasFormStartDate}
+                  min={(new Date(this.state.offCanvasFormStartDate)).toISOString().split("T")[0]}
                   value={this.state.offCanvasFormEndDate}
                   onChange={this.handleOffCanvasFormEndDateInputChange}
                   className=""

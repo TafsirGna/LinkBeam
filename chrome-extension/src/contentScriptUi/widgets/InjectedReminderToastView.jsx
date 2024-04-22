@@ -59,7 +59,8 @@ export default class InjectedReminderToastView extends React.Component{
   render(){
     return (
       <>
-        {this.state.remindersToastShow && <div class="toast-container-ac84bbb3728">
+        {this.state.remindersToastShow 
+            && <div class="toast-container-ac84bbb3728 text-lg">
                     <div id="toast-interactive" class="fixed bottom-5 right-5 w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:bg-gray-800 dark:text-gray-400" role="alert">
                         <div class="flex">
                             <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:text-blue-300 dark:bg-blue-900">

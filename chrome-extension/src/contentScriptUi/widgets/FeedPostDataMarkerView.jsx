@@ -665,6 +665,7 @@ export default class FeedPostDataMarkerView extends React.Component{
                             type="date" 
                             value={this.state.reminder.date}
                             onChange={this.handleReminderDateInputChange} 
+                            min={(new Date()).toISOString().split('T')[0]}
                             /*placeholder=""*/ 
                             disabled={Object.hasOwn(this.state.reminder, "id")}
                             required />

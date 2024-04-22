@@ -34,13 +34,7 @@ import {
 } from "../popup/Local_library";
 import Dexie from 'dexie';
 
-let activeTabData = {
-    id: null, 
-    // url: null,
-};
 let timer = null;
-
-let pageObjects = {};
 
 /** The following code is executed on installation
  * and check if the required database already exists.
@@ -109,22 +103,26 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                 Dexie.exists(appParams.appDbName).then(async function (exists) {
                     if (exists) {
 
-                        if (activeTabData.id == tabId){
-                            if (isUrlOfInterest(url)){
-                                countTabTime(tabId, url);   
-                            } 
-                        }
+                        chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
 
-                        if (isUrlOfInterest(url)){
-                            const visit = await db.visits
-                                                  .where("tabId")
-                                                  .equals(tabId)
-                                                  .first();
-
-                            if (!visit){
-                                injectScriptsInTab(tabId, url);
+                            if (tabs[0].id == tabId){
+                                if (isUrlOfInterest(url)){
+                                    countTabTime(tabId, url);   
+                                } 
                             }
-                        }
+
+                            if (isUrlOfInterest(url)){
+                                const visit = await db.visits
+                                                      .where("tabId")
+                                                      .equals(tabId)
+                                                      .first();
+
+                                if (!visit){
+                                    injectScriptsInTab(tabId, url);
+                                }
+                            }
+
+                        });
                         
                     }
                 });
@@ -185,9 +183,9 @@ async function countTabTime(tabId, url){
 
 }
 
-/**
- * 
- * 
+/** This function injects the content scripts into the page
+ * along with some setup data in order to harverst the necessary data
+ * or displays visuals for the user to interact with
  */
 
 function injectScriptsInTab(tabId, url){
@@ -215,6 +213,10 @@ function injectScriptsInTab(tabId, url){
                                .where('id')
                                .equals(1)
                                .first();
+
+        chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {settings: {lastDataResetDate: settings.lastDataResetDate}}}, (response) => {
+            console.log('Settings sent', response);
+        }); 
 
         if (settings.notifications){
             getTodayReminders(db, (reminders) => {
@@ -244,6 +246,10 @@ function injectScriptsInTab(tabId, url){
 
 };
 
+/** Whenever needed, this function reset the timer
+ * for a new timer to start over
+ */
+
 function resetTimer(){
     if (timer){
         clearInterval(timer);
@@ -257,10 +263,9 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
     resetTimer();
 
-    activeTabData.id = activeInfo.tabId;
     // windowId = info.windowId
 
-    console.log("changing tab : ", activeTabData.id);
+    console.log("changing tab : ", activeInfo.tabId);
 
     chrome.tabs.query({}, function(tabs){
 
@@ -271,7 +276,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
             // console.log("tab :::::::::: ", tab, tab.url && testTabBaseUrl(tab.url));
             if (tab.url && testTabBaseUrl(tab.url)){
                 // console.log("******************* ", tab.id);
-                chrome.tabs.sendMessage(tab.id, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: activeTabData.id}}, (response) => {
+                chrome.tabs.sendMessage(tab.id, {header: messageMeta.header.CS_SETUP_DATA, data: {tabId: activeInfo.tabId}}, (response) => {
                     console.log('activated tab id sent', response);
                 }); 
             }
@@ -309,15 +314,11 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                                             .first();
 
                                 if (visit){
-                                    if (activeTabData.id == activeInfo.tabId){
-                                        chrome.action.setBadgeText({text: "1"});
-                                    }
+                                    chrome.action.setBadgeText({text: "1"});
                                 }
                                 else{
 
-                                    if (activeTabData.id == activeInfo.tabId){
-                                        chrome.action.setBadgeText({text: null});
-                                    }
+                                    chrome.action.setBadgeText({text: null});
 
                                     injectScriptsInTab(activeInfo.tabId, url);
 
@@ -337,9 +338,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                                 }
                                 else{
 
-                                    if (activeTabData.id == activeInfo.tabId){
-                                        chrome.action.setBadgeText({text: null});
-                                    }
+                                    chrome.action.setBadgeText({text: null});
 
                                     injectScriptsInTab(activeInfo.tabId, url);
 
@@ -371,9 +370,6 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 async function processTabData(tabData){
     
     console.log("linkedInData : ", tabData);
-    // if (activeTabData.id != tabData.tabId){
-    //     return;
-    // }
 
     if (tabData.extractedData){
         if (isLinkedinFeed(tabData.tabUrl)){ // feed data
@@ -394,10 +390,12 @@ function showBadgeText(feedItemsMetrics, tabId){
         badgeText += feedItemsMetrics[metric];
     }
 
-    console.log("µµµµµµµµµµµµµµµµµ : ", activeTabData.id, tabId, badgeText);
-    if (activeTabData.id == tabId){
-        chrome.action.setBadgeText({text: badgeText.toString()});
-    }
+    // checking first that the user is on the linkedin tab before setting the badge text
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        if (tabs[0].id == tabId){
+            chrome.action.setBadgeText({text: badgeText.toString()});
+        }
+    });
 
 }
 
@@ -586,9 +584,12 @@ async function recordProfileVisit(tabData){
                 profileData: newProfileData,
             });
 
-            if (activeTabData.id == tabData.tabId){
-                chrome.action.setBadgeText({text: "1"});
-            }
+            // checking first that the user is on the linkedin tab before setting the badge text
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                if (tabs[0].id == tabData.tabId){
+                    chrome.action.setBadgeText({text: "1"});
+                }
+            });
 
             openNewTab(tabData.tabUrl, settings);
 
@@ -616,9 +617,12 @@ async function recordProfileVisit(tabData){
 
         await db.visits.add(visit);
 
-        if (activeTabData.id == tabData.tabId){
-            chrome.action.setBadgeText({text: "1"});
-        }
+        // checking first that the user is on the linkedin tab before setting the badge text
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            if (tabs[0].id == tabData.tabId){
+                chrome.action.setBadgeText({text: "1"});
+            }
+        });
 
         openNewTab(tabData.tabUrl, settings);
 

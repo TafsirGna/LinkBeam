@@ -74,6 +74,7 @@ class MixedDataExtractor extends DataExtractorBase {
                 props = {
                     ...props,
                     allKeywords: this.allKeywords,
+                    appSettings: this.appSettings,
                 }
 
                 if (this.pageUrl != pageUrl){
@@ -86,6 +87,11 @@ class MixedDataExtractor extends DataExtractorBase {
 
             }
             else if (isLinkedinProfilePage(pageUrl)){
+
+                props = {
+                    ...props,
+                    pageUrl: pageUrl,
+                }
 
                 if (this.pageUrl != pageUrl){
                     ProfileDataExtractor.webPageData = null;

@@ -45,17 +45,15 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	static setUpExtensionWidgets(){
 
-		const feedContainerElement = document.querySelector(".scaffold-finite-scroll__content");
-
-		if (feedContainerElement.querySelector(`.${feedPostDataModalClassName}`)){
+		if (document.body.querySelector(`.${feedPostDataModalClassName}`)){
 			return;
 		}
 
 		// adding the post stats modal
 		var newDivTag = document.createElement('div');
 		newDivTag.classList.add(feedPostDataModalClassName);
-        feedContainerElement.prepend(newDivTag);
-        newDivTag.attachShadow({ mode: 'open' });
+    document.body.appendChild(newDivTag);
+    newDivTag.attachShadow({ mode: 'open' });
 
 		ReactDOM.createRoot(newDivTag.shadowRoot).render(
             <React.StrictMode>
