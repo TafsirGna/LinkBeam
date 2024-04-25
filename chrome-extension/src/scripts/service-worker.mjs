@@ -32,6 +32,7 @@ import {
     isLinkedinFeed,
     isLinkedinProfilePage,
 } from "../popup/Local_library";
+import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
 
 /** The following code is executed on installation
@@ -93,7 +94,8 @@ function isUrlOfInterest(url){
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
-    if (changeInfo.url){
+    if (changeInfo.url && changeInfo.status == "loading"){
+        
         var url = changeInfo.url;
         if (testTabBaseUrl(url) && isUrlOfInterest(url)){
 
@@ -119,8 +121,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
         }
         else{
+
+            chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+                if (tabs[0].id == tabId){
+                    resetTabTimer();
+                }
+            });
             chrome.action.setBadgeText({text: null});
         }
+
     }
 
   }
@@ -208,11 +217,26 @@ function injectScriptsInTab(tabId, url, visitId){
             getTodayReminders(db, (reminders) => {
                 if (reminders.length){
 
-                    chrome.notifications.create('', {
-                      title: 'Linkbeam',
-                      message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
-                      iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
-                      type: 'basic'
+                    var uuid = uuidv4();
+                    chrome.notifications.create(uuid, {
+                        title: 'Linkbeam',
+                        message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
+                        iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                        type: 'basic',
+                        buttons: [{
+                            title: "Show",
+                            // iconUrl: "/path/to/yesIcon.png",
+                        }]
+                    });
+
+                    chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+                        if (notificationId == uuid){
+                            if (buttonIndex == 0){
+                                chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {show: true, widget: "ReminderModal"}}, (response) => {
+                                    console.log('Show reminder modal request sent', response);
+                                }); 
+                            }
+                        }
                     });
 
                     chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {reminders: reminders}}, (response) => {
@@ -260,14 +284,15 @@ async function handleNewInterestingTab(tabId, url, runTimer){
         runTabTimer(tabId, url);
     }
 
-    var sessionItem = await chrome.storage.session.get(["myTabs"]);
+    var sessionItem = await chrome.storage.session.get(["myTabs"]),
+        visitId = null, 
+        myTabs = null;
     const badgeText = "!";
-    var visitId = null;
     chrome.action.setBadgeText({text: badgeText});
 
     if (!sessionItem.myTabs){
 
-        var myTabs = {};  
+        myTabs = {};  
         myTabs[tabId] = {badgeText: badgeText};
 
         if (isLinkedinFeed(url)){
@@ -275,17 +300,43 @@ async function handleNewInterestingTab(tabId, url, runTimer){
             myTabs[tabId].visits = [{id: visitId, url: url}];
         }
 
-        injectScriptsInTab(tabId, url, visitId);
-        chrome.storage.session.set({ myTabs: myTabs });
-
     }
     else{
+
+        myTabs = sessionItem.myTabs;  
+
         if (Object.hasOwn(sessionItem.myTabs, tabId)){
+
             chrome.action.setBadgeText({text: sessionItem.myTabs[tabId].badgeText});
+            
+            if (!sessionItem.myTabs[tabId].visits){
+
+                if (isLinkedinFeed(url)){
+                    visitId = await addFreshFeedVisit();
+                    myTabs[tabId].visits = [{id: visitId, url: url}];
+                }
+
+            }
+            else{
+
+                const index = myTabs.visits.map(v => v.url).indexOf(url);
+                if (index == -1){
+
+                    if (isLinkedinFeed(url)){
+                        visitId = await addFreshFeedVisit();
+                        myTabs[tabId].visits.push({id: visitId, url: url});
+                    }
+
+                }
+                else{
+                    visitId = myTabs[tabId].visits[index].id;
+                }
+
+            }
+
         }
         else{
 
-            var myTabs = sessionItem.myTabs;  
             myTabs[tabId] = {badgeText: badgeText};
 
             if (isLinkedinFeed(url)){
@@ -300,11 +351,12 @@ async function handleNewInterestingTab(tabId, url, runTimer){
                 }
             }
 
-            injectScriptsInTab(tabId, url, visitId);
-            chrome.storage.session.set({ myTabs: myTabs });
-
         }
     }
+
+    chrome.storage.session.set({ myTabs: myTabs });
+    console.log('Injectinnnnnnnnnnnng');
+    injectScriptsInTab(tabId, url, visitId);
 
     async function addFreshFeedVisit(){
         var feedItemsMetrics = {};
@@ -432,60 +484,58 @@ async function recordFeedVisit(tabData){
         // });
 
 
-        await db.feedPosts
-            .where("uid")
-            .equals(post.id)
-            .first()
-            .then(async (dbPost) => {
-                
-                if (dbPost){
-                    await db.feedPosts
-                            .update(dbPost.id, newPost);
-                }
-                else{
-                    await db.feedPosts.add(newPost);
-                }
+        var dbPost = await db.feedPosts
+                            .where("uid")
+                            .equals(post.id)
+                            .first();
 
-                var postView = await db.feedPostViews
-                                       .where({uid: post.id, visitId: visitId})
-                                       .first(); 
+        if (dbPost){
+            await db.feedPosts
+                    .update(dbPost.id, newPost);
+        }
+        else{
+            await db.feedPosts.add(newPost);
+        }
 
-                if (!postView){
+        var postView = await db.feedPostViews
+                               .where({uid: post.id, visitId: visitId})
+                               .first(); 
 
-                    postView = {
-                        uid: post.id,
-                        date: dateTime,
-                        visitId: visitId, 
-                        reactions: post.content.reactions,
-                        commentsCount: post.content.commentsCount,
-                        repostsCount: post.content.repostsCount,
-                        timeCount: 1,
-                    };
+        if (!postView){
 
-                    // saving the post view
-                    await db.feedPostViews.add(postView);
-                    
-                }
+            postView = {
+                uid: post.id,
+                date: dateTime,
+                visitId: visitId, 
+                reactions: post.content.reactions,
+                commentsCount: post.content.commentsCount,
+                repostsCount: post.content.repostsCount,
+                timeCount: 1,
+            };
 
-                post.reminder = await db.reminders
-                                         .where("objectId")
-                                         .equals(newPost.uid)
-                                         .first();
+            // saving the post view
+            await db.feedPostViews.add(postView);
 
-                post.viewsCount = 0;
-                post.timeCount = 0;
+            visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+            
+        }
 
-                await db.feedPostViews
-                         .where("uid")
-                         .equals(newPost.uid)
-                         .each(postView => {
-                            post.viewsCount++;
-                            post.timeCount += (postView.timeCount ? postView.timeCount : 0);
-                         })
+        post.reminder = await db.reminders
+                                 .where("objectId")
+                                 .equals(newPost.uid)
+                                 .first();
 
-            });
+        post.viewsCount = 0;
+        post.timeCount = 0;
 
-        visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+        await db.feedPostViews
+                 .where("uid")
+                 .equals(newPost.uid)
+                 .each(postView => {
+                    post.viewsCount++;
+                    post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+                 });
+
         await db.visits.update(visit.id, visit);
         
         // display the updated badge text
@@ -534,6 +584,14 @@ async function recordProfileVisit(tabData){
         }
 
         if (detectedKeywords.length){
+
+            chrome.notifications.create('', {
+              title: 'Linkbeam',
+              message: `${detectedKeywords.length}  keyword${reminders.length <= 1 ? "" : "s"} detected `,
+              iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+              type: 'basic'
+            });
+
             chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {detectedKeywords: detectedKeywords}}, (response) => {
                 console.log('detectedKeywords sent', response);
             });  

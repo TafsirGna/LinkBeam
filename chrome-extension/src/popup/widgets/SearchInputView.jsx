@@ -148,8 +148,6 @@ export default class SearchInputView extends React.Component{
 
   async searchReminders(){
 
-    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, null);
-
     var reminders = null;
 
     try{
@@ -214,6 +212,8 @@ export default class SearchInputView extends React.Component{
 
   async searchPosts(){
 
+    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, null);
+
     async function getMatchingActivity(visit, searchText, matchingPosts){
 
       if (visit.profileData.activity){
@@ -263,11 +263,24 @@ export default class SearchInputView extends React.Component{
       var matchingPosts = await db.feedPosts
                                   .filter(post => (post.content.text 
                                                       && post.content.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
-                                                  || (post.initiator
+                                                  || (post.initiator && post.initiator.name
                                                       && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
-                                                  || (post.content.author
+                                                  || (post.content.author && post.content.author.name
                                                       && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
                                   .toArray();
+
+      for (var post of matchingPosts){
+
+        var views = await db.feedPostViews
+                .where({uid: post.uid})
+                .reverse()
+                .sortBy("date");
+
+        if (views.length){
+          post.date = views[0].date;
+        }
+
+      }
 
       if (matchingPosts){
         posts = posts.concat(matchingPosts);
@@ -282,7 +295,19 @@ export default class SearchInputView extends React.Component{
 
       if (matchingPosts){
         posts = posts.concat(matchingPosts);
-      }           
+      }        
+
+      posts.sort((a, b) => {
+        if (new Date(a.date) < new Date(b.date)){
+          return 1;
+        }
+        else if (new Date(a.date) > new Date(b.date)){
+          return -1;
+        }
+        else{
+          return 0;
+        }
+      });   
 
     }
     catch(error){

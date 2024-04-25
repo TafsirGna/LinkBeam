@@ -20,7 +20,7 @@
 */
 
 import styles from "../contentScriptUi/styles.min.css";
-import InjectedReminderToastView from "../contentScriptUi/widgets/InjectedReminderToastView";
+import TodayReminderModalView from "../contentScriptUi/widgets/TodayReminderModalView";
 import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeywordToastView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
@@ -62,7 +62,7 @@ export class DataExtractorBase {
 
   // }
 
-	showToast(messageData, property, sendResponse){
+	createModalWidgets(messageData, property, sendResponse){
 
 	  // Acknowledge the message
 	  sendResponse({
@@ -83,8 +83,12 @@ export class DataExtractorBase {
 	  ReactDOM.createRoot(shadowRoot).render(
 	    <React.StrictMode>
 	      <style type="text/css">{styles}</style>
-	      { property == "reminders" && <InjectedReminderToastView objects={objects} />}
-	      { property == "detectedKeywords" && <InjectedKeywordToastView objects={objects} />}
+	      { property == "reminders" 
+            && <TodayReminderModalView 
+                  objects={objects} />}
+	      { property == "detectedKeywords" 
+            && <InjectedKeywordToastView 
+                  objects={objects} />}
 	    </React.StrictMode>
 	  );
 
@@ -123,10 +127,10 @@ export class DataExtractorBase {
           }
 	      }
 	      else if (Object.hasOwn(message.data, "reminders")){
-	        this.showToast(message.data, "reminders", sendResponse);
+	        this.createModalWidgets(message.data, "reminders", sendResponse);
 	      }
 	      else if (Object.hasOwn(message.data, "detectedKeywords")){
-	        this.showToast(message.data, "detectedKeywords", sendResponse);
+	        this.createModalWidgets(message.data, "detectedKeywords", sendResponse);
 	      }
         else if (Object.hasOwn(message.data, "allKeywords")){
           this.allKeywords = message.data.allKeywords;

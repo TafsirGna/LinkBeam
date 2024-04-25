@@ -35,6 +35,7 @@ import eventBus from "../popup/EventBus";
 class MixedDataExtractor extends DataExtractorBase {
 
     constructor(){
+
         super();
         this.timer = null;
 
@@ -42,6 +43,7 @@ class MixedDataExtractor extends DataExtractorBase {
             FeedDataExtractor.timerDisplay = data.timerDisplay;
           }
         );
+        
     }
 
     setUpExtensionWidgets(){
@@ -116,4 +118,11 @@ class MixedDataExtractor extends DataExtractorBase {
 
 }
 
-const mixedDataExtractor = new MixedDataExtractor();
+if (typeof mixedDataExtractor == "undefined"){
+    console.log("neeeeeeeeeeewwwwwwwwwwwww");
+    const mixedDataExtractor = new MixedDataExtractor();
+}
+else{
+    console.log("oooooooooollllllllllldddd");
+    mixedDataExtractor = new MixedDataExtractor();
+}
