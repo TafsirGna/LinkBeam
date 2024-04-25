@@ -82,7 +82,7 @@ export default class TodayReminderModalView extends React.Component{
                                 { this.props.objects.map((reminder, index) => <ReminderListItemView object={reminder} /> ) }
                             </> } 
                     
-                    <div class="p-4">
+                    <div class="p-4 text-lg">
                       <div onClick={this.handleRemindersModalClose} class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                         <span>Dismiss</span>
                       </div>
@@ -101,7 +101,7 @@ const ReminderListItemView = (props) => {
 
         <div class="flex items-center p-4">
             <img src={isLinkedinProfilePage(props.object.objectId) ? (props.object.object.avatar ? props.object.object.avatar : chrome.runtime.getURL("/assets/default.png")) : chrome.runtime.getURL("/assets/linkedin_icon.png")} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0 rounded shadow"/>
-            <div class="ml-4 flex-auto">
+            <div class="ml-4 flex-auto text-2xl">
               <div class="font-medium inline-flex items-center">
                 <a 
                     class="mr-3" 
@@ -114,9 +114,9 @@ const ReminderListItemView = (props) => {
                             Feed Post
                         </Tooltip>}
                 </a>
-                <span class="font-light text-xs ml-2">{LuxonDateTime.fromISO(props.object.createdOn).toRelative()}</span>
+                <span class="font-light text-base ml-2">{LuxonDateTime.fromISO(props.object.createdOn).toRelative()}</span>
               </div>
-              <div class="mt-1 text-slate-700 text-sm">
+              <div class="mt-1 text-slate-700 text-lg">
                 { props.object.text }
               </div>
             </div>

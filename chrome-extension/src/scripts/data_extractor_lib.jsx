@@ -28,6 +28,7 @@ import {
     isLinkedinFeed,
     isLinkedinProfilePage,
     messageMeta,
+    appParams,
 } from "../popup/Local_library";
 
 export class DataExtractorBase {

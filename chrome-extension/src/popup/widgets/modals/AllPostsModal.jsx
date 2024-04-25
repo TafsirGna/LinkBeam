@@ -110,7 +110,10 @@ export default class AllPostsModal extends React.Component{
        ]);
 
       post.timeCount = 0; post.date = null;
-      await db.feedPostViews.where("uid").equals(post.uid).each(postView => {
+      await db.feedPostViews
+              .where({uid: post.uid})
+              .filter(postView => dateBetweenRange(this.props.startDate, this.props.endDate, postView.date))
+              .each(postView => {
         post.timeCount += (postView.timeCount ? postView.timeCount : 0);
         if (post.date){
           post.date = (new Date(post.date) >= new Date(postView.date)) ? post.date : postView.date;

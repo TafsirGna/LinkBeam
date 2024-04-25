@@ -147,8 +147,6 @@ export default class FeedDashView extends React.Component{
 
   async setVisits(){
 
-    console.log("''''''''''''''''''' : ", this.state.startDate, this.state.endDate);
-
     const visits = await getPeriodVisits({
                               start: this.state.startDate,
                               end: this.state.endDate,
@@ -185,9 +183,12 @@ export default class FeedDashView extends React.Component{
        ]);
 
       post.timeCount = 0;
-      await db.feedPostViews.where("uid").equals(post.uid).each(postView => {
-        post.timeCount += (postView.timeCount ? postView.timeCount : 0);
-      });
+      await db.feedPostViews
+              .where({uid: post.uid})
+              .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
+              .each(postView => {
+                post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+              });
 
     }));
 

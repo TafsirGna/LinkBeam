@@ -156,7 +156,6 @@ async function runTabTimer(tabId, url){
         }
 
         const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
-        console.log("rrrrrrrrrrrrr : ", index, url, sessionItem.myTabs);
         if (index == -1){
             return;
         }
@@ -319,7 +318,7 @@ async function handleNewInterestingTab(tabId, url, runTimer){
             }
             else{
 
-                const index = myTabs.visits.map(v => v.url).indexOf(url);
+                const index = myTabs[tabId].visits.map(v => v.url).indexOf(url);
                 if (index == -1){
 
                     if (isLinkedinFeed(url)){
