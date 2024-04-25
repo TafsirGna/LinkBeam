@@ -145,6 +145,7 @@ export default class ReminderModal extends React.Component{
                   type="date"
                   autoFocus
                   // max={new Date().toISOString().slice(0, 10)}
+                  min={new Date().toISOString().split("T")[0]}
                   value={this.state.reminder.date}
                   onChange={this.handleReminderDateInputChange}
                   className="shadow"

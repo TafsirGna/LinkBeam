@@ -46,8 +46,13 @@ class MixedDataExtractor extends DataExtractorBase {
 
     setUpExtensionWidgets(){
 
+        const props = {
+            appSettings: this.appSettings,
+            visitId: this.visitId,
+        }
+        
         if (isLinkedinFeed(this.pageUrl)){
-            FeedDataExtractor.setUpExtensionWidgets();
+            FeedDataExtractor.setUpExtensionWidgets(props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
             ProfileDataExtractor.setUpExtensionWidgets();
@@ -75,10 +80,11 @@ class MixedDataExtractor extends DataExtractorBase {
                     ...props,
                     allKeywords: this.allKeywords,
                     appSettings: this.appSettings,
+                    visitId: this.visitId,
                 }
 
                 if (this.pageUrl != pageUrl){
-                    FeedDataExtractor.setUpExtensionWidgets();
+                    FeedDataExtractor.setUpExtensionWidgets(props);
                     this.pageUrl = pageUrl;
                 }
 

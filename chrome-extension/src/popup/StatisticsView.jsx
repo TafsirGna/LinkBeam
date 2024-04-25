@@ -372,7 +372,7 @@ export default class StatisticsView extends React.Component{
 
           <div class="clearfix">
             <span class="text-muted small float-end fst-italic mt-2 badge">
-              Data recorded since 
+              {"Data recorded since "}
               {this.props.globalData.settings 
                 ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') 
                 : ""}

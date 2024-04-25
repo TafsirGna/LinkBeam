@@ -366,7 +366,7 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Activate popup notifications</strong>
+                  <strong class="text-gray-dark">Enable popup notifications</strong>
                   <Form.Check // prettier-ignore
                     type="switch"
                     id="notif-custom-switch"
@@ -399,12 +399,12 @@ export default class SettingsView extends React.Component{
                   <strong class="text-gray-dark">Outdated profiles reminder</strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedPostReminder : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedProfileReminder : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
                             <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedPostReminder", value)}}>
+                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
                                 {value}
                               </a>
                             </li>  

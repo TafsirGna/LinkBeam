@@ -145,6 +145,14 @@ export default class ProfileGanttChart extends React.Component{
                     weight: "bolder"
                 }
             }
+          },
+          tooltip: {
+            callbacks: {
+              label: ((tooltipItem, data) => {
+                // console.log(tooltipItem);
+                return `[${moment(tooltipItem.raw.x[0], 'YYYY-MM-DD').format("MMM YY")} - ${moment(tooltipItem.raw.x[1], 'YYYY-MM-DD').format("MMM YY")}]`;
+              })
+            }
           }
         }
       }

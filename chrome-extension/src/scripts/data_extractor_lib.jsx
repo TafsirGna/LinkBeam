@@ -41,6 +41,7 @@ export class DataExtractorBase {
     this.pageUrl = window.location.href;
     this.allKeywords = null;
     this.appSettings = null;
+    this.visitId = null;
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -103,7 +104,19 @@ export class DataExtractorBase {
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
           if (!this.tabId){
-	         this.getTabId(message.data, sendResponse);
+
+            if (Object.hasOwn(message.data, "settings")){
+              this.appSettings = message.data.settings;
+            }
+
+            if (Object.hasOwn(message.data, "visitId")){
+              if (message.data.visitId){
+                this.visitId = message.data.visitId;
+              }
+            }
+
+            this.getTabId(message.data, sendResponse);
+
           }
           else{
             this.isActiveTab = (this.tabId == message.data.tabId); 
@@ -117,10 +130,6 @@ export class DataExtractorBase {
 	      }
         else if (Object.hasOwn(message.data, "allKeywords")){
           this.allKeywords = message.data.allKeywords;
-          // console.log("|||||||||||||||| : ", this.allKeywords);
-        }
-        else if (Object.hasOwn(message.data, "settings")){
-          this.appSettings = message.data.settings;
         }
 
 		  }

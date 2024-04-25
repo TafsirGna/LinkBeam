@@ -148,6 +148,8 @@ export default class SearchInputView extends React.Component{
 
   async searchReminders(){
 
+    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, null);
+
     var reminders = null;
 
     try{

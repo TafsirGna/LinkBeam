@@ -8,8 +8,6 @@ import {
 } from "../../popup/Local_library";
 import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
-import default_user_icon from '../../assets/user_icons/default.png';
-import linkedin_icon from '../../assets/linkedin_icon.png';
 import elevator_tone_audio from '../../assets/audio/elevator-tone.mp3';
 import { 
   Tooltip, 
@@ -122,7 +120,7 @@ const ReminderListItemView = (props) => {
     return (
 
         <div class="flex items-center p-4">
-            <img src={isLinkedinProfilePage(props.object.objectId) ? (props.object.object.avatar ? props.object.object.avatar : chrome.runtime.getURL("/assets/linkedin_icon.png")) : linkedin_icon} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0 rounded shadow"/>
+            <img src={isLinkedinProfilePage(props.object.objectId) ? (props.object.object.avatar ? props.object.object.avatar : chrome.runtime.getURL("/assets/default.png")) : chrome.runtime.getURL("/assets/linkedin_icon.png")} alt="twbs" width="40" height="40" class="rounded-circle flex-shrink-0 rounded shadow"/>
             <div class="ml-4 flex-auto">
               <div class="font-medium inline-flex items-center">
                 <a 

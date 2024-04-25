@@ -43,7 +43,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		super();
 	}
 
-	static setUpExtensionWidgets(){
+	static setUpExtensionWidgets(props){
 
 		if (document.body.querySelector(`.${feedPostDataModalClassName}`)){
 			return;
@@ -58,7 +58,9 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		ReactDOM.createRoot(newDivTag.shadowRoot).render(
             <React.StrictMode>
               <style type="text/css">{styles}</style>
-              <FeedPostDataModal/>
+              <FeedPostDataModal
+              	appSettings={props.appSettings}
+              	visitId={props.visitId}/>
             </React.StrictMode>
         );
 		
@@ -109,7 +111,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		              	postUid={postContainerElement.getAttribute("data-id")}
 		              	tabId={props.tabId}
 		              	timerDisplay={this.timerDisplay}
-		              	allKeywords={props.allKeywords}/>
+		              	allKeywords={props.allKeywords}
+		              	visitId={props.visitId}/>
 		            </React.StrictMode>
 		        );
 

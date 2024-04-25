@@ -83,11 +83,13 @@ export default class FeedPostDataModal extends React.Component{
       show: false,
       data: null,
       freshPost: false,
+      metricChangeValues: null, 
     };
 
     this.startListening = this.startListening.bind(this);
     this.setChartData = this.setChartData.bind(this);
     this.checkPostFreshness = this.checkPostFreshness.bind(this);
+    this.setMetricChangeValues = this.setMetricChangeValues.bind(this);
 
   }
 
@@ -97,7 +99,10 @@ export default class FeedPostDataModal extends React.Component{
 
     eventBus.on(eventBus.SHOW_FEED_POST_DATA_MODAL, (data) => {
         
-        this.setState({show: true}, () => {
+        this.setState({
+          show: true, 
+          metricChangeValues: null,
+        }, () => {
 
           chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: data.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.postUid}}}, (response) => {
             // Got an asynchronous response with the data from the service worker
@@ -125,7 +130,9 @@ export default class FeedPostDataModal extends React.Component{
         case messageMeta.header.CRUD_OBJECT_RESPONSE:{
 
           if (message.data.objectStoreName == "feedPostViews"){
-            this.setChartData(message.data.object.lastDataResetDate, message.data.object.views);
+            var feedPostViews = message.data.object.views;
+            this.setChartData(feedPostViews);
+            this.setMetricChangeValues(feedPostViews);
           }
 
           break;
@@ -135,6 +142,25 @@ export default class FeedPostDataModal extends React.Component{
       }
 
     });
+
+  }
+
+  setMetricChangeValues(feedPostViews){
+
+    if (feedPostViews.length < 2){
+      return;
+    }
+
+    // feedPostViews.sort(function(a, b){ return new Date(b.date) - new Date(a.date) });
+    const views = feedPostViews.toReversed();
+
+    var values = {
+      reactions: views[0].reactions - views[1].reactions,
+      comments: views[0].commentsCount - views[1].commentsCount,
+      reposts: views[0].repostsCount - views[1].repostsCount,
+    };
+
+    this.setState({metricChangeValues: values});
 
   }
 
@@ -157,13 +183,13 @@ export default class FeedPostDataModal extends React.Component{
 
   }
 
-  setChartData(lastDataResetDate, objects){
+  setChartData(objects){
 
     const titles = ["reactions", "comments", "reposts"];
     const colors = getChartColors(titles.length);
 
     const rangeDates = {
-      start: lastDataResetDate.split("T")[0],
+      start: this.props.appSettings.lastDataResetDate.split("T")[0],
       end: new Date().toISOString().split("T")[0],
     }
 
@@ -198,7 +224,7 @@ export default class FeedPostDataModal extends React.Component{
         <div class={"modal-container-ac84bbb3728 " + (this.state.show ? "" : "hidden")}>
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             
-            <div class="p-4">
+            <div class="p-4 text-2xl">
 
               { !this.state.data 
                   && <div class="text-center">
@@ -207,20 +233,30 @@ export default class FeedPostDataModal extends React.Component{
 
               { this.state.data
                     && <div>
-                          { this.state.freshPost && <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
-                                                        <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                                          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                                                        </svg>
-                                                        <div class="ms-3 text-sm font-medium">
-                                                          Just to notice that this is the first time this post appears on your feed
-                                                        </div>
-                                                        {/*<button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-border-4" aria-label="Close">
-                                                          <span class="sr-only">Dismiss</span>
-                                                          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                                          </svg>
-                                                        </button>*/}
-                                                    </div>}
+                          { this.state.freshPost 
+                              && <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
+                                      <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                                      </svg>
+                                      <div class="ms-3 text-sm font-medium">
+                                        Just to notice that this is the first time this post appears on your feed
+                                      </div>
+                                      {/*<button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-yellow-50 text-yellow-500 rounded-lg focus:ring-2 focus:ring-yellow-400 p-1.5 hover:bg-yellow-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-yellow-300 dark:hover:bg-gray-700" data-dismiss-target="#alert-border-4" aria-label="Close">
+                                        <span class="sr-only">Dismiss</span>
+                                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                                        </svg>
+                                      </button>*/}
+                                  </div> }
+
+                          { this.state.metricChangeValues 
+                              && <div>
+                                  { Object.keys(this.state.metricChangeValues).map(metric => (
+                                      <span class={`${this.state.metricChangeValues[metric] == 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"} text-xs font-medium me-2 px-2.5 py-0.5 rounded`}>
+                                        {`${this.state.metricChangeValues[metric]} ${metric}`}
+                                      </span>
+                                    ))}
+                              </div>}
                           <Line options={options} data={this.state.data} />
                       </div> }
 

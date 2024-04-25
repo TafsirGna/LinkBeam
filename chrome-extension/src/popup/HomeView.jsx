@@ -50,11 +50,14 @@ export default class HomeView extends React.Component{
       offCanvasShow: false,
       offCanvasTitle: null,
       previousDaySavedTime: null, 
+      outdatedProfiles: null,
     };
 
     // Binding all the needed functions
     this.getVisitList = this.getVisitList.bind(this);
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
+    this.checkPreviousDaySavedTime = this.checkPreviousDaySavedTime.bind(this);
+    this.checkOutdatedProfiles = this.checkOutdatedProfiles.bind(this);
 
   }
 
@@ -67,33 +70,96 @@ export default class HomeView extends React.Component{
     }
 
     // check if the previous day, the user has been able to stick to its goal of saving time through the extension
-    (async () => {
+    this.checkPreviousDaySavedTime();
 
-      const settings = await db.settings
-                               .where({id: 1})
-                               .first();
-
-      if (settings.maxTimeAlarm == "Never"){
-        return;
-      }
-
-      const visits = await db.visits
-                            .where("date")
-                            .startsWith(moment().subtract(1, 'days').toDate().toISOString().split("T")[0])
-                            .toArray();
-
-      const totalTime = getVisitsTotalTime(visits); // in minutes
-      if (totalTime == 0){
-        return;
-      }
-
-      const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
-      if (totalTime < maxTimeValue){
-        this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
-      }
-
-    })();
+    this.checkOutdatedProfiles();
     
+  }
+
+  async checkOutdatedProfiles(){
+
+    var tippingPoint = null;
+
+    const settings = await db.settings
+                             .where({id: 1})
+                             .first();
+
+    if (settings.outdatedProfileReminder == "Never"){
+      return;
+    }
+
+    switch(settings.outdatedProfileReminder){
+
+      case "> 1 month":{
+        tippingPoint = moment().subtract(1, 'months').toDate();
+        break;
+      }
+
+      case "> 6 months":{
+        tippingPoint = moment().subtract(6, 'months').toDate();
+        break;
+      }
+
+      case "> 1 year":{
+        tippingPoint = moment().subtract(1, 'years').toDate();
+        break;
+      }
+
+    }
+
+    const visits = await db.visits
+                           .filter(visit => new Date(visit.date) < tippingPoint
+                                            && Object.hasOwn(visit, "profileData"))
+                           .sortBy("date");
+
+    var profiles = [];
+    for (var visit of visits){
+
+      const index = profiles.map(p => p.url).indexOf(visit.url);
+      if (index == -1){
+
+        const profileVisits = await db.visits
+                                      .where({url: visit.url})
+                                      .sortBy("date");
+
+        var profile = getProfileDataFrom(profileVisits);
+        profile.url = visit.url;
+
+        profiles.push(profile);
+
+      }
+
+    }
+
+    this.setState({outdatedProfiles: profiles});
+
+  }
+
+  async checkPreviousDaySavedTime(){
+
+    const settings = await db.settings
+                             .where({id: 1})
+                             .first();
+
+    if (settings.maxTimeAlarm == "Never"){
+      return;
+    }
+
+    const visits = await db.visits
+                          .where("date")
+                          .startsWith(moment().subtract(1, 'days').toDate().toISOString().split("T")[0])
+                          .toArray();
+
+    const totalTime = getVisitsTotalTime(visits); // in minutes
+    if (totalTime == 0){
+      return;
+    }
+
+    const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
+    if (totalTime < maxTimeValue){
+      this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
+    }
+
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -225,6 +291,7 @@ export default class HomeView extends React.Component{
             handleOffCanvasShow={this.handleOffCanvasShow} 
             args={{
               previousDaySavedTime: this.state.previousDaySavedTime,
+              outdatedProfiles: this.state.outdatedProfiles,
             }}
             />
         </div>

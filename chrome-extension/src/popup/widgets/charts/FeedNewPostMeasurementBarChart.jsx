@@ -168,7 +168,7 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
         { !this.state.barData 
             && <div class="text-center">
-                  <div class="spinner-border spinner-border-sm" role="status">
+                  <div class="spinner-border spinner-border-sm text-primary" role="status">
                   <span class="visually-hidden">Loading...</span>
                 </div>
               </div> }

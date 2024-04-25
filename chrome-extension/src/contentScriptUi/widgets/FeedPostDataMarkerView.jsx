@@ -112,11 +112,13 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     // check this post for all contained keywords
     var keywords = [];
-    for (var keyword of this.props.allKeywords){
-      if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
-        keywords.push(keyword);
-      }
-    };
+    if (this.props.allKeywords){
+      for (var keyword of this.props.allKeywords){
+        if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
+          keywords.push(keyword);
+        }
+      };
+    }
     this.setState({foundKeywords: keywords});
 
   }
@@ -282,7 +284,7 @@ export default class FeedPostDataMarkerView extends React.Component{
             if (!this.state.impressionCount){
               return;
             }
-            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {tabId: this.props.tabId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
+            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.props.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
               console.log('time count update request sent', response);
             });
           }

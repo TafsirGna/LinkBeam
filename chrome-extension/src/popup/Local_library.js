@@ -46,6 +46,7 @@ export const appParams = {
   WEB_APP_ITEM_LIMIT_NUM: 3,
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
+  LINKEDIN_FEED_URL: "https://www.linkedin.com/feed/",
   COMPONENT_CONTEXT_NAMES: {
     ABOUT: "About",
     HOME: "Home",
@@ -827,9 +828,10 @@ export function getNewProfileData(oldProfileData, extractedProfileData){
   var newProfileData = {};
 
   for (var property in extractedProfileData){
-    newProfileData[property] = (oldProfileData[property] == extractedProfileData[property])  
-                                  ? null
-                                  : extractedProfileData[property];
+    newProfileData[property] = (JSON.stringify(oldProfileData[property]) == JSON.stringify(extractedProfileData[property]))  
+                                ? null
+                                : extractedProfileData[property];
+    
   }
 
   return newProfileData;

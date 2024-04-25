@@ -13,7 +13,9 @@
   },
   "permissions": [
     "tabs",
-    "scripting"
+    "scripting",
+    "storage",
+    "notifications"
   ],
   "web_accessible_resources": [{
      "matches": ["*://*/*"],
@@ -21,7 +23,8 @@
                     "/assets/web_ui.js",
                     "/assets/gaming-lock.mp3",
                     "/assets/elevator-tone.mp3",
-                    "/assets/linkedin_icon.png"
+                    "/assets/linkedin_icon.png",
+                    "/assets/default.png"
       ]
   }],
   "host_permissions": ["*://*/*"]

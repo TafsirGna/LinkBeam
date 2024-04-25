@@ -166,7 +166,7 @@ export default class About extends React.Component{
             installedOn: new Date().toISOString(),
             productID: uuidv4(), 
             userIcon: "default",
-            outdatedPostReminder: "> 1 year",
+            outdatedProfileReminder: "> 1 year",
             maxTimeAlarm: "1 hour",
             autoTabOpening: true,
             lastDataRefactoringDate: new Date().toISOString(),
