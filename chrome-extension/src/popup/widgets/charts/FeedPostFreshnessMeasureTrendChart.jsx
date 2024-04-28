@@ -1,11 +1,13 @@
-/*import './FeedPostCategorySizeTrendChart.css'*/
+/*import './FeedPostFreshnessMeasureTrendChart.css'*/
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import moment from 'moment';
 import { 
 	getChartColors,
 	getFeedLineChartsData,
+	dateBetweenRange,
 } from "../../Local_library";
+import { db } from "../../../db";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -46,40 +48,61 @@ const lineOptions = {
 	},
 };
 
-export default class FeedPostCategorySizeTrendChart extends React.Component{
+export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 
 	constructor(props){
 		super(props);
 		this.state = {
 			lineData: null,
+			feedPostViews: null,
 		};
 
   	this.setChartData = this.setChartData.bind(this);
+  	this.setFeedPostViews = this.setFeedPostViews.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.setChartData();
+		this.setFeedPostViews();
 
 	}
 
 	componentDidUpdate(prevProps, prevState){
 
-		// everytime the view choice is changed, the chart is reset
-		if (prevProps.objects != this.props.objects){
-			this.setChartData();
-		}
+    if (prevProps.rangeDates != this.props.rangeDates){      
+    	this.setFeedPostViews();
+    }
 
-	}
+    if (prevProps.category != this.props.category){
+    	this.setChartData();
+    }
+
+  }
 
 	componentWillUnmount(){
 
   }
 
+  async setFeedPostViews(){
+
+  	if (!this.props.rangeDates){
+  		return;
+  	}
+
+  	var feedPostViews = await db.feedPostViews
+										            .filter(postView => dateBetweenRange(this.props.rangeDates.start, this.props.rangeDates.end, postView.date))
+										            .toArray();
+
+		this.setState({feedPostViews: feedPostViews}, () => {
+			this.setChartData();
+		});
+
+  }
+
 	async setChartData(){
 
-		if (!this.props.objects){
+		if (!this.props.category){
 			this.setState({lineData: null});
 			return;
 		}
@@ -87,7 +110,7 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 		const titles = [this.props.category];
 		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: this.props.colors};
 
-		const data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, titles, {moment: moment});
+		const data = await getFeedLineChartsData(this.state.feedPostViews, this.props.rangeDates, this.getMetricValue, titles, {moment: moment});
 
 		const datasets = titles.map((title, index) => 
 			({
@@ -108,12 +131,52 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 
 	}
 
-	getMetricValue(objects, metric){
+	async getMetricValue(objects, metric){
 
-		var value = 0;
-		for (const object of objects){
-			value += object.feedItemsMetrics[metric];
+		var value = 0,
+				uids = [];
+
+		objects.sort((a, b) => {
+			if (new Date(a.date) > new Date(b.date)){
+        return 1;
+      }
+      else if (new Date(a.date) < new Date(b.date)){
+        return -1;
+      }
+      else{
+        return 0;
+      }
+     });
+
+		// if (objects){
+			
+		for (var object of objects){
+
+			if (uids.indexOf(object.uid) != -1){
+				continue;
+			}
+
+			const postView = await db.feedPostViews
+                                .where({uid: object.uid})
+                                .filter(postView => new Date(postView.date) < new Date(objects[0].date))
+                                .first();
+
+      if (postView){
+      	if (metric == "Old"){
+        	value++;
+      	}
+      }
+      else{
+      	if (metric == "New"){
+      		value++;
+      	}
+      }
+
+			uids.push(object.uid);
+
 		}
+
+		// }
 
 		return value;
 

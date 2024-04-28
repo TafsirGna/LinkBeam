@@ -42,7 +42,9 @@ export default class ProfileNetworkSectionView extends React.Component{
 
   async handleFormSelectInputChange(event) {
 
-    setLocalProfiles(this, db, eventBus, [event.target.value])
+    if (!this.props.localDataObject.profiles){
+      setLocalProfiles(db, eventBus, /*[event.target.value]*/)
+    }
 
     this.setState({formSelectInputVal: event.target.value}); 
 

@@ -21,9 +21,12 @@
 
 /*import './FeedNewPostMeasurementBarChart.css'*/
 import React from 'react';
-import { Bar } from 'react-chartjs-2';
+import { Bar, getElementAtEvent } from 'react-chartjs-2';
 // import { faker } from '@faker-js/faker';
 import { db } from "../../../db";
+import FeedPostFreshnessMeasureTrendChart from "./FeedPostFreshnessMeasureTrendChart";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 import { 
   getChartColors, 
   dateBetweenRange,
@@ -80,9 +83,13 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
     super(props);
     this.state = {
       barData: null,
+      freshnessTrendModalShow: false,
+      chartRef: React.createRef(),
+      selectedCategory: null,
     };
 
     this.setChartData = this.setChartData.bind(this);
+    this.onBarChartClick = this.onBarChartClick.bind(this);
   }
 
   componentDidMount() {
@@ -90,6 +97,9 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
     this.setChartData()
 
   }
+
+  handleFreshnessTrendModalClose = () => {this.setState({freshnessTrendModalShow: false});}
+  handleFreshnessTrendModalShow = () => {this.setState({freshnessTrendModalShow: true});}
 
   async setChartData(){
 
@@ -162,6 +172,19 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
   }
 
+  onBarChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      this.setState({selectedCategory: this.state.barData.labels[(elements[0]).index]}, () => {
+        this.handleFreshnessTrendModalShow();
+      });
+    }
+
+  }
+
   render(){
     return (
       <>
@@ -175,12 +198,35 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
         { this.state.barData 
             &&  <div class="p-3">
-                  <Bar options={barOptions} data={this.state.barData} />
-                  { this.props.displayLegend 
-                      && this.props.displayLegend == true 
-                      && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
-                          Chart of visits of the days with the spent time
-                        </p> }
+                  <Bar 
+                    options={barOptions} 
+                    data={this.state.barData} 
+                    ref={this.state.chartRef}
+                    onClick={this.onBarChartClick}/>
+
+                  <Modal show={this.state.freshnessTrendModalShow} onHide={this.handleFreshnessTrendModalClose}>
+                    <Modal.Header closeButton>
+                      <Modal.Title>{this.state.selectedCategory != null ? `Evolution of the ${this.state.selectedCategory.toLowerCase()} posts count` : null}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+
+                      <FeedPostFreshnessMeasureTrendChart
+                        category={this.state.selectedCategory}
+                        rangeDates={this.props.rangeDates}
+                        colors={this.state.barData.datasets[0].borderColor}/>
+
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button variant="secondary" size="sm" onClick={this.handleFreshnessTrendModalClose} className="shadow">
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </Modal>
+                  {/*{ this.props.displayLegend 
+                                        && this.props.displayLegend == true 
+                                        && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                                            Chart of visits of the days with the spent time
+                                          </p> }*/}
                 </div> }
 
       </>

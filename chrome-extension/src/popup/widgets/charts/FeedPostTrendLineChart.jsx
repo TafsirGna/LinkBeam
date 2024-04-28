@@ -55,13 +55,13 @@ export default class FeedPostTrendLineChart extends React.Component{
 			lineData: null,
 		};
 
-  	this.setChartLabels = this.setChartLabels.bind(this);
+  	this.setChartData = this.setChartData.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.setChartLabels();
+		this.setChartData();
 
 	}
 
@@ -69,7 +69,7 @@ export default class FeedPostTrendLineChart extends React.Component{
 
 		// everytime the view choice is changed, the chart is reset
 		if (prevProps.objects != this.props.objects){
-			this.setChartLabels();
+			this.setChartData();
 		}
 
 	}
@@ -78,7 +78,7 @@ export default class FeedPostTrendLineChart extends React.Component{
 
   }
 
-	setChartLabels(){
+	async setChartData(){
 
 		if (!this.props.objects){
 			this.setState({lineData: null});
@@ -93,7 +93,7 @@ export default class FeedPostTrendLineChart extends React.Component{
 			end: new Date().toISOString().split("T")[0],
 		}
 
-		const data = getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, {moment: moment});
+		const data = await getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, {moment: moment});
 
 		const datasets = titles.map((title, index) => 
 			({

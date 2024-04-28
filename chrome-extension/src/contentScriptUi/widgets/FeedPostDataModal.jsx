@@ -183,7 +183,7 @@ export default class FeedPostDataModal extends React.Component{
 
   }
 
-  setChartData(objects){
+  async setChartData(objects){
 
     const titles = ["reactions", "comments", "reposts"];
     const colors = getChartColors(titles.length);
@@ -195,7 +195,7 @@ export default class FeedPostDataModal extends React.Component{
 
     this.checkPostFreshness(objects);
 
-    const data = getFeedLineChartsData(objects, rangeDates, getPostMetricValue, titles, {luxon: LuxonDateTime});
+    const data = await getFeedLineChartsData(objects, rangeDates, getPostMetricValue, titles, {luxon: LuxonDateTime});
 
     const datasets = titles.map((title, index) => 
       ({
@@ -224,7 +224,7 @@ export default class FeedPostDataModal extends React.Component{
         <div class={"modal-container-ac84bbb3728 " + (this.state.show ? "" : "hidden")}>
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             
-            <div class="p-4 text-2xl">
+            <div class="p-4">
 
               { !this.state.data 
                   && <div class="text-center">
@@ -250,9 +250,9 @@ export default class FeedPostDataModal extends React.Component{
                                   </div> }
 
                           { this.state.metricChangeValues 
-                              && <div>
+                              && <div class="text-lg">
                                   { Object.keys(this.state.metricChangeValues).map(metric => (
-                                      <span class={`${this.state.metricChangeValues[metric] == 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"} text-xs font-medium me-2 px-2.5 py-0.5 rounded`}>
+                                      <span class={`${this.state.metricChangeValues[metric] == 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"} font-medium me-2 px-2.5 py-0.5 rounded`}>
                                         {`${this.state.metricChangeValues[metric]} ${metric}`}
                                       </span>
                                     ))}
@@ -262,7 +262,7 @@ export default class FeedPostDataModal extends React.Component{
 
             </div>
 
-            <div class="p-4">
+            <div class="p-4 text-lg">
               <div 
                 onClick={this.handleModalClose} 
                 class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">

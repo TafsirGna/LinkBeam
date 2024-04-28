@@ -33,7 +33,7 @@ import styles from "../contentScriptUi/styles.min.css";
 import FeedPostDataMarkerView from "../contentScriptUi/widgets/FeedPostDataMarkerView";
 import FeedPostDataModal from "../contentScriptUi/widgets/FeedPostDataModal";
 
-const feedPostDataModalClassName = "linkbeamFeedPostDataModalClassName";
+const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
 export default class FeedDataExtractor extends DataExtractorBase {
 
@@ -45,13 +45,14 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	static setUpExtensionWidgets(props){
 
-		if (document.body.querySelector(`.${feedPostDataModalClassName}`)){
+		if (document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 			return;
 		}
 
 		// adding the post stats modal
 		var newDivTag = document.createElement('div');
-		newDivTag.classList.add(feedPostDataModalClassName);
+		// newDivTag.classList.add(feedPostDataModalClassName);
+		newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
     document.body.appendChild(newDivTag);
     newDivTag.attachShadow({ mode: 'open' });
 
@@ -67,6 +68,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 	}
 
 	static runTabDataExtractionProcess(props){
+
+		console.log("vvvvvvvvvvvvvvvvvvvvvvv");
 
 		const postContainerElements = document.querySelector(".scaffold-finite-scroll__content")
 																					.querySelectorAll("div[data-id]");
@@ -88,13 +91,13 @@ export default class FeedDataExtractor extends DataExtractorBase {
 			}
 
 			// excluding suggested posts
-			if (postContainerElement.querySelector(".update-components-header") 
-						&& postContainerElement.querySelector(".update-components-header")
-																		.textContent
-																		.toLowerCase()
-																		.indexOf(categoryVerbMap['suggestions']) != -1){
-				return;
-			}
+			// if (postContainerElement.querySelector(".update-components-header") 
+			// 			&& postContainerElement.querySelector(".update-components-header")
+			// 															.textContent
+			// 															.toLowerCase()
+			// 															.indexOf(categoryVerbMap['suggestions']) != -1){
+			// 	return;
+			// }
 
 			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
@@ -110,7 +113,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		              <FeedPostDataMarkerView 
 		              	postUid={postContainerElement.getAttribute("data-id")}
 		              	tabId={props.tabId}
-		              	timerDisplay={this.timerDisplay}
+		              	// timerDisplay={this.timerDisplay}
 		              	allKeywords={props.allKeywords}
 		              	visitId={props.visitId}/>
 		            </React.StrictMode>

@@ -57,7 +57,7 @@ export default class FeedPostDataMarkerView extends React.Component{
       reminder: freshReminder(),
       processing: false,
       updated: false,
-      timerDisplay: false,
+      // timerDisplay: false,
       impressionCount: null,
       timeCount: 0, 
       timerInterval: null,
@@ -65,6 +65,7 @@ export default class FeedPostDataMarkerView extends React.Component{
       postHtmlElement: null,
       foundKeywords: null,
       fetchedTimeCount: 0,
+      isSuggestedPost: false,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -82,18 +83,29 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     this.startListening();
 
-    this.setState({timerDisplay: this.props.timerDisplay});
+    // this.setState({timerDisplay: this.props.timerDisplay});
 
-    eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
+    // eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
         
-        this.setState({timerDisplay: data.timerDisplay});
+    //     this.setState({timerDisplay: data.timerDisplay});
 
-      }
-    );
+    //   }
+    // );
 
     const postHtmlElement = document.querySelector(".scaffold-finite-scroll__content")
                             .querySelector(`div[data-id='${this.props.postUid}']`)
                             .querySelector(".feed-shared-update-v2");
+
+    // check if it's a suggested post
+    var isSuggestedPost = false;
+    if (postHtmlElement.querySelector(".update-components-header") 
+         && postHtmlElement.querySelector(".update-components-header")
+                                 .textContent
+                                 .toLowerCase()
+                                 .indexOf(categoryVerbMap['suggestions']) != -1){
+      isSuggestedPost = true;
+      this.setState({isSuggestedPost: isSuggestedPost});
+    }
 
     if (isElVisible(postHtmlElement)){
       this.setState({postHtmlElementVisible: true});
@@ -110,16 +122,20 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     });
 
-    // check this post for all contained keywords
-    var keywords = [];
-    if (this.props.allKeywords){
-      for (var keyword of this.props.allKeywords){
-        if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
-          keywords.push(keyword);
-        }
-      };
+    if (!isSuggestedPost){
+
+      // check this post for all contained keywords
+      var keywords = [];
+      if (this.props.allKeywords){
+        for (var keyword of this.props.allKeywords){
+          if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
+            keywords.push(keyword);
+          }
+        };
+      }
+      this.setState({foundKeywords: keywords});
+
     }
-    this.setState({foundKeywords: keywords});
 
   }
 
@@ -128,7 +144,7 @@ export default class FeedPostDataMarkerView extends React.Component{
     if (prevState.postHtmlElementVisible != this.state.postHtmlElementVisible){
 
       if (this.state.postHtmlElementVisible){
-        if (!this.state.impressionCount){
+        if (this.state.impressionCount == null){
           this.extractSendPostObject();
         }
         if (!this.state.timerInterval){
@@ -269,8 +285,6 @@ export default class FeedPostDataMarkerView extends React.Component{
       repostsCount: getPostReactionsValues("repost"),
     };
 
-    console.log("iiiiiiiiii : ", "sending");
-
     sendTabData(this.props.tabId, window.location.href, post);
 
   }
@@ -281,7 +295,7 @@ export default class FeedPostDataMarkerView extends React.Component{
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
           if (!(this.state.timeCount % 3)){
-            if (!this.state.impressionCount){
+            if (this.state.impressionCount == null || this.state.isSuggestedPost){
               return;
             }
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.props.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
@@ -316,6 +330,8 @@ export default class FeedPostDataMarkerView extends React.Component{
       sendResponse({
           status: "ACK"
       });
+
+      console.log("################# 0 : ", message.data);
 
       switch(message.header){
 
@@ -369,6 +385,9 @@ export default class FeedPostDataMarkerView extends React.Component{
             }
 
             case "read":{
+
+              console.log("################# 1 : ", message.data, this.props.postUid);
+
               if (message.data.objectStoreName == "feedPosts"){
 
                 const index = message.data.objects.map(p => p.id).indexOf(this.props.postUid);
@@ -376,17 +395,17 @@ export default class FeedPostDataMarkerView extends React.Component{
 
                   var post = message.data.objects[index];
 
-                  if (post.reminder){
+                  if (Object.hasOwn(post, "reminder") && post.reminder){
                     this.setState({reminder: post.reminder})
                   }
 
-                  if (post.viewsCount){
+                  if (Object.hasOwn(post, "viewsCount")){
+                    console.log("################# 1 : ", message.data, this.props.postUid, post.viewsCount);
                     this.setState({impressionCount: post.viewsCount});
                   }
 
-                  if (post.timeCount){
+                  if (Object.hasOwn(post, "timeCount")){
                     this.setState({fetchedTimeCount: post.timeCount}, () => {
-                      console.log("################# : ", this.state.fetchedTimeCount);
                     });
                   }
                   
@@ -429,14 +448,18 @@ export default class FeedPostDataMarkerView extends React.Component{
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
   /*() => this.setState((prevState) => ({timerDisplay: !prevState.timerDisplay}),*/
-  toggleTimerDisplay = () => {
+  // toggleTimerDisplay = () => {
 
-    // let the other markers know of the change of settings
-    eventBus.dispatch(eventBus.TIMER_DISPLAY_UPDATED, {timerDisplay: !this.state.timerDisplay});
+  //   // let the other markers know of the change of settings
+  //   eventBus.dispatch(eventBus.TIMER_DISPLAY_UPDATED, {timerDisplay: !this.state.timerDisplay});
 
-  };
+  // };
 
   sendReminderData(){
+
+    if (this.state.isSuggestedPost){
+      return;
+    }
 
     this.setState({processing: true}, () => {
 
@@ -479,6 +502,10 @@ export default class FeedPostDataMarkerView extends React.Component{
   }
 
   updateReminder(){
+
+    if (this.state.isSuggestedPost){
+      return;
+    }
 
     if (Object.hasOwn(this.state.reminder, "id")){
 
@@ -527,207 +554,217 @@ export default class FeedPostDataMarkerView extends React.Component{
   render(){
     return (
       <>
-        <div class={"shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 "} role="alert">
-          <div class="flex items-center">
-            <Tooltip content="Proudly yours">
-              <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>
-              </svg>
-            </Tooltip>
-            <span class="sr-only">Info</span>
-            <h3 class="text-sm font-medium">LinkBeam</h3>
-          </div>
-          
-          <div class="flex ml-auto">
-            {/*<button onClick={() => {}} type="button" class="text-white bg-blue-800 hover:bg-blue-900 focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-              <svg class="-ml-0.5 mr-2 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 14">
-                <path d="M10 0C4.612 0 0 5.336 0 7c0 1.742 3.546 7 10 7 6.454 0 10-5.258 10-7 0-1.664-4.612-7-10-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
-              </svg>
-              
-              {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
-            </button>*/}
-
-            { this.state.timerDisplay 
-                && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                    {secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
-                  </span>}
-
-            { this.state.updated 
-                && <span class="flex items-center bg-green-100 text-green-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                      Updated
-                      <CheckIcon
-                        size="16"
-                        className="ml-2"/>
-                  </span>}
-
-            { this.state.foundKeywords 
-                && <div> 
-                    { this.state.foundKeywords.length != 0
-                      && <Popover
-                            aria-labelledby="default-popover"
-                            content={
-                              <div className="w-64 text-sm text-gray-500 dark:text-gray-400">
-                                <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
-                                  <h3 id="default-popover" className="font-semibold text-gray-900 dark:text-white">Keywords</h3>
-                                </div>
-                                <div className="px-3 py-2">
-                                  { !this.state.foundKeywords
-                                      &&  <Spinner
-                                              aria-label="Extra small spinner example"
-                                              className="me-2"
-                                              size="xs"
-                                            />}
-                                  { this.state.foundKeywords
-                                      && <p>
-                                          {this.state.foundKeywords.map(keyword => (<Badge color="info">{keyword}</Badge>))}
-                                      </p> }
+        { !this.state.isSuggestedPost 
+            && <div>
+                  <div class={`shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 `} role="alert">
+                    <div class="flex items-center">
+                      <Tooltip content="Proudly yours">
+                        <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"></path>
+                        </svg>
+                      </Tooltip>
+                      <span class="sr-only">Info</span>
+                      <h3 class="text-sm font-medium">LinkBeam</h3>
+                    </div>
+                    
+                    <div class="flex ml-auto">
+                      {/*<button onClick={() => {}} type="button" class="text-white bg-blue-800 hover:bg-blue-900 focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <svg class="-ml-0.5 mr-2 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 14">
+                          <path d="M10 0C4.612 0 0 5.336 0 7c0 1.742 3.546 7 10 7 6.454 0 10-5.258 10-7 0-1.664-4.612-7-10-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
+                        </svg>
+                        
+                        {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
+                      </button>*/}
+        
+                      {/*{ this.state.timerDisplay 
+                          && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                              {secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
+                            </span>}*/}
+        
+                      { this.state.updated 
+                          && <span class="flex items-center bg-green-100 text-green-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                Updated
+                                <CheckIcon
+                                  size="16"
+                                  className="ml-2"/>
+                            </span>}
+        
+                      { this.state.foundKeywords 
+                          && <div> 
+                              { this.state.foundKeywords.length != 0
+                                && <Popover
+                                      aria-labelledby="default-popover"
+                                      content={
+                                        <div className="w-64 text-sm text-gray-500 dark:text-gray-400">
+                                          <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
+                                            <h3 id="default-popover" className="font-semibold text-gray-900 dark:text-white">Keywords</h3>
+                                          </div>
+                                          <div className="px-3 py-2">
+                                            { !this.state.foundKeywords
+                                                &&  <Spinner
+                                                        aria-label="Extra small spinner example"
+                                                        className="me-2"
+                                                        size="xs"
+                                                      />}
+                                            { this.state.foundKeywords
+                                                && <p>
+                                                    {this.state.foundKeywords.map(keyword => (<Badge color="info">{keyword}</Badge>))}
+                                                </p> }
+                                          </div>
+                                        </div>
+                                      }
+                                    >
+                                    { this.getKeywordCountWidget() }
+                                  </Popover>}
+        
+                              { this.state.foundKeywords.length == 0
+                                  && this.getKeywordCountWidget() }
+        
+                            </div>}
+        
+                      <Dropdown 
+                        label="" 
+                        renderTrigger={() => 
+                          <span 
+                            class="flex items-center handy-cursor mx-2 text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                            title="Actions">
+                            <LayersIcon 
+                              size="14"
+                              className=""/>
+                          </span>
+                        }>
+                        <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
+                          <Dropdown.Item 
+                            // onClick={this.toggleTimerDisplay}
+                            >
+                            {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
+                            Timer
+                          </Dropdown.Item>
+                        </Tooltip>
+                        { Object.hasOwn(this.state.reminder, "id") 
+                            && <Dropdown.Item 
+                                  onClick={this.handleReminderModalShow}
+                                  className="">
+                                  Show reminder
+                                  </Dropdown.Item>}
+                        <Dropdown.Item 
+                          onClick={this.updateReminder}
+                          className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
+                          { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
+                        </Dropdown.Item>
+                      </Dropdown>
+        
+        
+                      <Tooltip content={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>
+                        <button 
+                          onClick={() => {if (this.state.impressionCount != null) {this.showFeedPostDataModal()}}} 
+                          type="button" 
+                          class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                          >
+        
+                          { this.state.impressionCount == null
+                              &&  <Spinner
+                                      aria-label="Extra small spinner example"
+                                      className="me-2"
+                                      size="xs"
+                                    />}
+        
+                          { this.state.impressionCount != null && <span class="text-base me-2">({this.state.impressionCount})</span>}
+                          <BarChartIcon 
+                              size="14"
+                              className=""/>
+                        </button>
+                      </Tooltip>
+                    </div>
+                  </div>
+        
+        
+        
+                  { this.state.reminderModalShow 
+                      && <div class={"modal-container-ac84bbb3728 "}>
+                            <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+                              
+                              <div class="p-4">
+                  
+                                <form className="flex flex-col gap-4">
+                                  <div>
+                                    <div className="mb-2 block">
+                                      <Label 
+                                        htmlFor="date" 
+                                        value="Remind at" 
+                                        className="text-lg"/>
+                                    </div>
+                                    <TextInput 
+                                      id="date" 
+                                      type="date" 
+                                      value={this.state.reminder.date}
+                                      onChange={this.handleReminderDateInputChange} 
+                                      min={(new Date()).toISOString().split('T')[0]}
+                                      /*placeholder=""*/ 
+                                      disabled={Object.hasOwn(this.state.reminder, "id")}
+                                      className="text-lg"
+                                      required />
+                                  </div>
+                                  <div>
+                                    <div className="mb-2 block">
+                                      <Label 
+                                        htmlFor="content" 
+                                        value="Content"
+                                        className="text-lg" />
+                                    </div>
+                                    <Textarea 
+                                      id="content" 
+                                      rows={4} 
+                                      value={this.state.reminder.text} 
+                                      onChange={this.handleReminderTextAreaChange}
+                                      disabled={Object.hasOwn(this.state.reminder, "id")}
+                                      className="text-lg"
+                                      required />
+                                  </div>
+                  
+                                  { this.state.processing 
+                                      && <div  
+                                            class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                            <Spinner aria-label="Default status example" className="mx-auto" />
+                                          </div>}
+                                          
+                                  { !this.state.processing 
+                                      && <div>
+                  
+                                          { !Object.hasOwn(this.state.reminder, "id") 
+                                              && <button 
+                                                    type="button" 
+                                                    onClick={this.sendReminderData}
+                                                    class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                    Submit
+                                                  </button> }
+                  
+                                          { Object.hasOwn(this.state.reminder, "id") 
+                                            && <div  
+                                                  class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                                  <span>
+                                                    <CheckIcon
+                                                      size="18"
+                                                      className="mx-auto"/>
+                                                  </span>
+                                                </div> }
+                  
+                                        </div>  }
+                                </form>
+                  
+                              </div>
+                  
+                              <div class="p-4 text-lg">
+                                <div 
+                                  onClick={this.handleReminderModalClose} 
+                                  class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                                  <span>Dismiss</span>
                                 </div>
                               </div>
-                            }
-                          >
-                          { this.getKeywordCountWidget() }
-                        </Popover>}
-
-                    { this.state.foundKeywords.length == 0
-                        && this.getKeywordCountWidget() }
-
-                  </div>}
-
-            <Dropdown 
-              label="" 
-              renderTrigger={() => 
-                <span 
-                  class="flex items-center handy-cursor mx-2 text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                  title="Actions">
-                  <LayersIcon 
-                    size="14"
-                    className=""/>
-                </span>
-              }>
-              <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
-                <Dropdown.Item 
-                  // onClick={this.toggleTimerDisplay}
-                  >
-                  {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
-                  Timer
-                </Dropdown.Item>
-              </Tooltip>
-              { Object.hasOwn(this.state.reminder, "id") 
-                  && <Dropdown.Item 
-                        onClick={this.handleReminderModalShow}
-                        className="">
-                        Show reminder
-                        </Dropdown.Item>}
-              <Dropdown.Item 
-                onClick={this.updateReminder}
-                className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
-                { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
-              </Dropdown.Item>
-            </Dropdown>
-
-
-            <Tooltip content={this.state.impressionCount ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>
-              <button 
-                onClick={() => {if (this.state.impressionCount) {this.showFeedPostDataModal()}}} 
-                type="button" 
-                class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                >
-
-                { !this.state.impressionCount
-                    &&  <Spinner
-                            aria-label="Extra small spinner example"
-                            className="me-2"
-                            size="xs"
-                          />}
-
-                { this.state.impressionCount && <span class="text-base me-2">({this.state.impressionCount})</span>}
-                <BarChartIcon 
-                    size="14"
-                    className=""/>
-              </button>
-            </Tooltip>
-          </div>
-        </div>
-
-
-
-        { this.state.reminderModalShow 
-            && <div class={"modal-container-ac84bbb3728 "}>
-                  <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-                    
-                    <div class="p-4">
-        
-                      <form className="flex flex-col gap-4">
-                        <div>
-                          <div className="mb-2 block">
-                            <Label htmlFor="date" value="Remind at" />
-                          </div>
-                          <TextInput 
-                            id="date" 
-                            type="date" 
-                            value={this.state.reminder.date}
-                            onChange={this.handleReminderDateInputChange} 
-                            min={(new Date()).toISOString().split('T')[0]}
-                            /*placeholder=""*/ 
-                            disabled={Object.hasOwn(this.state.reminder, "id")}
-                            required />
-                        </div>
-                        <div>
-                          <div className="mb-2 block">
-                            <Label htmlFor="content" value="Content" />
-                          </div>
-                          <Textarea 
-                            id="content" 
-                            rows={4} 
-                            value={this.state.reminder.text} 
-                            onChange={this.handleReminderTextAreaChange}
-                            disabled={Object.hasOwn(this.state.reminder, "id")}
-                            required />
-                        </div>
-        
-                        { this.state.processing 
-                            && <div  
-                                  class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                  <Spinner aria-label="Default status example" className="mx-auto" />
-                                </div>}
-                                
-                        { !this.state.processing 
-                            && <div>
-        
-                                { !Object.hasOwn(this.state.reminder, "id") 
-                                    && /*<Button className="w-full" onClick={this.sendReminderData}>Submit</Button>*/
-                                       <button 
-                                          type="button" 
-                                          onClick={this.sendReminderData}
-                                          class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                          Submit
-                                        </button> }
-        
-                                { Object.hasOwn(this.state.reminder, "id") 
-                                  && <div  
-                                        class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                        <span>
-                                          <CheckIcon
-                                            size="18"
-                                            className="mx-auto"/>
-                                        </span>
-                                      </div> }
-        
-                              </div>  }
-                      </form>
-        
-                    </div>
-        
-                    <div class="p-4">
-                      <div 
-                        onClick={this.handleReminderModalClose} 
-                        class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                        <span>Dismiss</span>
-                      </div>
-                    </div>
-                    
-                  </div>
-                </div> }
+                              
+                            </div>
+                          </div> }
+                </div>}
       </>
     );
   }

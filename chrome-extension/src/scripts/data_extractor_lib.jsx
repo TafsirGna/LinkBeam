@@ -20,8 +20,8 @@
 */
 
 import styles from "../contentScriptUi/styles.min.css";
-import TodayReminderModalView from "../contentScriptUi/widgets/TodayReminderModalView";
-import InjectedKeywordToastView from "../contentScriptUi/widgets/InjectedKeywordToastView";
+import TodayRemindersModalView from "../contentScriptUi/widgets/TodayRemindersModalView";
+import KeywordsModalView from "../contentScriptUi/widgets/KeywordsModalView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {
@@ -70,14 +70,19 @@ export class DataExtractorBase {
 	      status: "ACK"
 	  });
 
+    const LinkbeamKeywordReminderModalsWrapperId = `Linkbeam_${property}ModalWrapperId`;
+    if (document.body.querySelector(`#${LinkbeamKeywordReminderModalsWrapperId}`)){
+      return;
+    }
+
 	  var objects = messageData[property];
 
 	  var shadowHost = document.createElement('div');
-	  shadowHost.id = /*appParams.extShadowHostId*/"extShadowHostId";
+	  shadowHost.id = LinkbeamKeywordReminderModalsWrapperId;
+    // shadowHost.classList.add(LinkbeamKeywordReminderModalsWrapperClassName);
 	  shadowHost.style.cssText='all:initial';
 	  document.body.appendChild(shadowHost);
 
-	  shadowHost = document.getElementById(/*appParams.extShadowHostId*/"extShadowHostId");
 	  shadowHost.attachShadow({ mode: 'open' });
 	  const shadowRoot = shadowHost.shadowRoot;
 
@@ -85,11 +90,13 @@ export class DataExtractorBase {
 	    <React.StrictMode>
 	      <style type="text/css">{styles}</style>
 	      { property == "reminders" 
-            && <TodayReminderModalView 
-                  objects={objects} />}
+            && <TodayRemindersModalView 
+                  objects={objects}
+                  /*className={}*/ />}
 	      { property == "detectedKeywords" 
-            && <InjectedKeywordToastView 
-                  objects={objects} />}
+            && <KeywordsModalView 
+                  objects={objects}
+                  /*className={}*/ />}
 	    </React.StrictMode>
 	  );
 

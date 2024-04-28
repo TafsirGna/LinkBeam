@@ -534,83 +534,127 @@ export function notifyException(){
   
 }
 
-export async function setLocalProfiles(component, db, eventBus, propertyList, callback = null){
+export async function setLocalProfiles(db, eventBus/*, propertyList, callback = null*/){
+// export async function setLocalProfiles(component, db, eventBus, propertyList, callback = null){
 
-    async function initProfiles(profiles){
+  var profiles = [];
 
-      if (component.state.allProfilesReadiness){
-        return null;
-      }
+  await db.visits
+          .filter(visit => Object.hasOwn(visit, "profileData"))
+          .each(visit => {
+            if (profiles.map(p => p.url).indexOf(visit.url) == -1){
+              profiles.push({url: visit.url});
+            }
+          });
 
-      // No need to load all the profiles with all its properties, only the needed properties
-      var allProfilesReadiness = component.state.allProfilesReadiness;
-      await db.profiles
-              .each(profile => {
+  for (var profile of profiles){
 
-                if (!allProfilesReadiness){
+    const profileVisits = await db.visits
+                      .where({url: profile.url})
+                      .sortBy("date");
 
-                  var index = profiles.map(e => e.url).indexOf(profile.url);
-                  if (index == -1){
-                    var object = {url: profile.url};
+    profile = {
+      ...profile,
+      ...(getProfileDataFrom(profileVisits, ["education", "experience", "languages", "certifications", "profileSuggestions"])),
+    };
 
-                    propertyList.forEach(property => {
-                      property = (property == "suggestions") ? "profileSuggestions" : property;
-                      object[property] = profile[property];
-                    })
+  }
 
-                    profiles.push(object);
-                  }
-                  else{
+  eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
 
-                    propertyList.forEach(property => {
-                      if (profiles[index][property]){
-                        allProfilesReadiness = true;
-                      }
-                    });
+    // async function initProfiles(profiles){
 
-                    if (!allProfilesReadiness){
-                      propertyList.forEach(property => {
-                        property = (property == "suggestions") ? "profileSuggestions" : property;
-                        profiles[index][property] = profile[property];
-                      });
-                    }
+    //   if (component.state.allProfilesReadiness){
+    //     return null;
+    //   }
 
-                  }
+    //   // No need to load all the profiles with all its properties, only the needed properties
+    //   var objects = [];
 
-                }
-  
-              });
+    //   await db.visits
+    //           .each(visit => {
+    //             const index = objects.map(p => p.url).indexOf(visit.url);
+    //             if (index == -1){
 
-      if (allProfilesReadiness){
-        return null;
-      }
+    //               const profileVisits = await db.visits
+    //                                 .where({url: visit.url})
+    //                                 .sortBy("date");
 
-      // weird :-)
-      if (profiles == component.props.localDataObject.profiles){
-        return null;
-      }
+    //               var profile = getProfileDataFrom(profileVisits);
+    //               profile.url = visit.url;
+    //               objects.push(profile);
 
-      component.setState({allProfilesReadiness: true});
+    //             }
+    //           });
 
-      return profiles;
 
-    }
+    //   var allProfilesReadiness = component.state.allProfilesReadiness;
+    //   for (var profile of objects){
 
-    // binding the initProfiles function
-    initProfiles = initProfiles.bind(component);
+    //     if (!allProfilesReadiness){
 
-    var profiles = !component.props.localDataObject.profiles ? [] : component.props.localDataObject.profiles;
+    //       var index = profiles.map(e => e.url).indexOf(profile.url);
+    //       if (index == -1){
+    //         var object = {url: profile.url};
 
-    profiles = await initProfiles(profiles);
+    //         propertyList.forEach(property => {
+    //           property = (property == "suggestions") ? "profileSuggestions" : property;
+    //           object[property] = profile[property];
+    //         })
 
-    if (profiles){
-      eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
-    }
-    else{
-      if (callback){
-        component[callback]();
-      }
-    }
+    //         profiles.push(object);
+    //       }
+    //       else{
+
+    //         propertyList.forEach(property => {
+    //           if (profiles[index][property]){
+    //             allProfilesReadiness = true;
+    //           }
+    //         });
+
+    //         if (!allProfilesReadiness){
+    //           propertyList.forEach(property => {
+    //             property = (property == "suggestions") ? "profileSuggestions" : property;
+    //             profiles[index][property] = profile[property];
+    //           });
+    //         }
+
+    //       }
+
+    //     }
+
+    //   };
+
+    //   if (allProfilesReadiness){
+    //     return null;
+    //   }
+
+    //   // weird :-)
+    //   if (profiles == component.props.localDataObject.profiles){
+    //     return null;
+    //   }
+
+    //   component.setState({allProfilesReadiness: true});
+
+    //   return profiles;
+
+    // }
+
+    // // binding the initProfiles function
+    // initProfiles = initProfiles.bind(component);
+
+    // var profiles = !component.props.localDataObject.profiles ? [] : component.props.localDataObject.profiles;
+
+    // profiles = await initProfiles(profiles);
+
+    // if (profiles){
+    //   eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
+    // }
+    // else{
+    //   if (callback){
+    //     component[callback]();
+    //   }
+    // }
 
 };
 
@@ -790,33 +834,49 @@ export function getVisitPostCount(visit){
 
 }
 
-export function getProfileDataFrom(visits){
+export function getProfileDataFrom(visits, properties = null){
 
   var profileVisits = visits.reverse();
   var profileData = {};
-
   var nullProperties = [];
+
   for (var property in visits[0].profileData){
+
+    if (properties && properties.indexOf(property) == -1){
+      continue;
+    }
+
     if (visits[0].profileData[property] == null){
       nullProperties.push(property);
     }
     else{
       profileData[property] = visits[0].profileData[property];
     }
+
   }
 
   for (var visit of profileVisits){
+
     for (var property in visit.profileData){
-      if (visit.profileData[property] != null){
-        if (profileData[property] == null){
-          profileData[property] = visit.profileData[property];
-          nullProperties.splice(nullProperties.indexOf(property), 1);
-        }
+
+      if (properties && properties.indexOf(property) == -1){
+        continue;
       }
+
+      if (visit.profileData[property] != null
+          && profileData[property] == null){
+
+        profileData[property] = visit.profileData[property];
+        nullProperties.splice(nullProperties.indexOf(property), 1);
+
+      }
+
     }
+
     if (!nullProperties.length){
       break;
     }
+
   }
 
   return profileData;
@@ -850,7 +910,7 @@ export function getVisitsTotalTime(visits){
 }
 
 
-export function getPostMetricValue(postViews, metric){
+export async function getPostMetricValue(postViews, metric){
 
     var value = 0;
     postViews.sort((a, b) => new Date(a.date) > new Date(b.date));
@@ -880,7 +940,7 @@ export function getPostMetricValue(postViews, metric){
 
   }
 
-export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, func){
+export async function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, func){
 
   const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
 
@@ -899,7 +959,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
   for (var visit of objects){
     const dateString = visit.date.split("T")[0],
-          hourString = visit.date.slice(11, 13);
+          hourString = Number(func.moment ? func.moment(visit.date).format("HH") : func.luxon.fromISO(visit.date).toLocaleString({ hour: 'numeric' })); /*visit.date.slice(11, 13)*/;
     if (dateString in data){
       if (hourString in data[dateString]){
         data[dateString][hourString].push(visit);
@@ -926,16 +986,18 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
 
       // initializing the labels
       const limit = new Date().toISOString().split("T")[0] == dateString 
-                      ? Number(new Date().toISOString().slice(11, 13))
+                      ? Number(func.moment ? func.moment().format("HH") : func.luxon.toLocaleString({ hour: 'numeric' })) /*Number(new Date().toISOString().slice(11, 13))*/
                       : 23;
 
       if (!labels){
         labels = range(0, limit, 1).map(label => `${label}h`);
       }
 
-      resData[metric] = labels.map(label => Number(label.slice(0, label.length - 1)) in data[dateString] 
-                                      ? getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric)
+      for (const label of labels){
+        resData[metric].push(Number(label.slice(0, label.length - 1)) in data[dateString] 
+                                      ? (await getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric))
                                       : 0);
+      }
 
     }
     else{
@@ -962,7 +1024,7 @@ export function getFeedLineChartsData(objects, rangeDates, getMetricValue, metri
           for (const hourString of Object.keys(data[label])){
             objects = objects.concat(data[label][hourString]);
           };
-          resData[metric].push(getMetricValue(objects, metric));
+          resData[metric].push((await getMetricValue(objects, metric)));
 
         }
         else{

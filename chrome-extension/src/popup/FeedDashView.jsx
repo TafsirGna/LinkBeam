@@ -33,6 +33,7 @@ import {
   getVisitsTotalTime,
   dateBetweenRange,
   getPeriodVisits,
+  categoryVerbMap,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -49,6 +50,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
 import CustomToast from "./widgets/toasts/CustomToast";
+import FeedActiveUserListItemView, { totalInteractions } from "./widgets/FeedActiveUserListItemView";
 
 export default class FeedDashView extends React.Component{
 
@@ -64,12 +66,16 @@ export default class FeedDashView extends React.Component{
       chartModalTitle: "",
       toastMessage: "",
       toastShow: false,
+      activeListIndex: 0,
+      mostActiveUsers: null,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
     this.handleEndDateInputChange = this.handleEndDateInputChange.bind(this);
     this.setVisits = this.setVisits.bind(this);
     this.setFeedPosts = this.setFeedPosts.bind(this);
+    this.setActiveListIndex = this.setActiveListIndex.bind(this);
+    this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
 
   }
 
@@ -141,6 +147,8 @@ export default class FeedDashView extends React.Component{
 
       this.setFeedPosts();
 
+      this.setMostActiveUsers();
+
     }
 
   }
@@ -208,7 +216,7 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}), ()=>{console.log("hhh");});};
+  toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));};
 
   getMetricValue(visits, metric){
 
@@ -236,6 +244,107 @@ export default class FeedDashView extends React.Component{
     }
 
     return value;
+  }
+
+  setActiveListIndex(index){
+    this.setState({activeListIndex: index}, () => {
+      if (index == 1 && !this.state.mostActiveUsers){
+        this.setMostActiveUsers();
+      }
+    });
+  }
+
+  async setMostActiveUsers(){
+
+    var mostActiveUsers = [];
+
+    var uids = [];
+    await db.feedPostViews
+            .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
+            .each(postView => {
+              if (uids.indexOf(postView.uid) == -1){
+                uids.push(postView.uid);
+              }
+            });
+
+    const posts = await db.feedPosts
+                          .where("uid")
+                          .anyOf(uids)
+                          .toArray();
+
+    for (var post of posts){
+
+      // for initiator
+      if (post.initiator && post.initiator.name){
+        const index = mostActiveUsers.map(m => m.url).indexOf(post.initiator.url);
+        if (index == -1){
+
+          var feedItemsMetrics = {};
+          for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { 
+            feedItemsMetrics[category] = (post.category 
+                                            ? (post.category == category ? 1 : 0) 
+                                            : (category == "publications" ? 1 : 0)); 
+          }
+
+          mostActiveUsers.push({
+            name: post.initiator.name,
+            url: post.initiator.url,
+            picture: post.initiator.picture,
+            feedItemsMetrics: feedItemsMetrics,
+          });
+        }
+        else{
+
+          for (var category in mostActiveUsers[index].feedItemsMetrics) { 
+            if (post.category){
+              if (post.category == category){
+                mostActiveUsers[index].feedItemsMetrics[category]++;
+              }
+            }
+            else{
+              if (category == "publications"){
+                mostActiveUsers[index].feedItemsMetrics[category]++;
+              }
+            }
+          }
+
+        }
+      }
+
+      // for author
+      if (post.content.author && post.content.author.name){
+        const index = mostActiveUsers.map(m => m.url).indexOf(post.content.author.url);
+        if (index == -1){
+
+          var feedItemsMetrics = {};
+          for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { 
+            feedItemsMetrics[category] = (category == "publications" ? 1 : 0); 
+          }
+
+          mostActiveUsers.push({
+            name: post.content.author.name,
+            url: post.content.author.url,
+            picture: post.content.author.picture,
+            feedItemsMetrics: feedItemsMetrics,
+          });
+        }
+        else{
+
+          for (var category in mostActiveUsers[index].feedItemsMetrics) { 
+            if (category == "publications"){
+              mostActiveUsers[index].feedItemsMetrics[category]++;
+            }
+          }
+
+        }
+      }
+    }
+
+    mostActiveUsers.sort((a, b) => totalInteractions(b) - totalInteractions(a));
+    mostActiveUsers = mostActiveUsers.slice(0, 10);
+
+    this.setState({mostActiveUsers: mostActiveUsers});
+
   }
 
   render(){
@@ -316,7 +425,6 @@ export default class FeedDashView extends React.Component{
               </div>
               <div class="border rounded shadow mt-3">
                 <FeedNewPostMeasurementBarChart
-                  objects={this.state.visits}
                   rangeDates={{
                     start: this.state.startDate,
                     end: this.state.endDate,
@@ -325,42 +433,90 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="col border rounded shadow py-3">
               <FeedPostCategoryDonutChart 
-                objects={this.state.visits}/>
+                objects={this.state.visits}
+                rangeDates={{
+                  start: this.state.startDate,
+                  end: this.state.endDate,
+                }}
+                  />
             </div>
           </div>
 
-          <div class="my-3 p-3 bg-body rounded shadow border mx-3">
-            <h6 class="border-bottom pb-2 mb-0">Posts</h6>
-
-            { !this.state.feedPosts && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                      {/*<span class="visually-hidden">Loading...</span>*/}
-                    </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
-                  </div>
-                </div>}
-
-            { this.state.feedPosts 
-              && <>
-                {this.state.feedPosts.length == 0
-                  && <div class="text-center m-5">
-                        <AlertCircleIcon size="100" className="text-muted"/>
-                        <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
-                      </div>}
-
-                { this.state.feedPosts.length  != 0
-                    && <div>
-                        { this.state.feedPosts.map(((post, index) => <PostListItemView  
-                                                                        startDate={this.state.startDate}
-                                                                        endDate={this.state.endDate}
-                                                                        object={post}
-                                                                        globalData={this.props.globalData}/>))}
-                        <small class="d-block text-end mt-3 fst-italic">
-                          <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
-                        </small>
-                      </div>}
-                </>}
-
+          <div class="mt-4 ms-3">
+            <span 
+              class={`handy-cursor badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis ${this.state.activeListIndex == 0 ? "shadow" : "shadow-sm"}`}
+              onClick={() => {this.setActiveListIndex(0)}}>
+              Posts
+            </span>
+            <span 
+              class={`handy-cursor badge bg-info-subtle border border-info-subtle text-info-emphasis mx-2 ${this.state.activeListIndex == 1 ? "shadow" : "shadow-sm"}`}
+              onClick={() => {this.setActiveListIndex(1)}}>
+              Most active users
+            </span>
           </div>
+
+          { this.state.activeListIndex == 0 
+              && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
+                      <h6 class="border-bottom pb-2 mb-0">Posts</h6>
+          
+                      { !this.state.feedPosts && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                                {/*<span class="visually-hidden">Loading...</span>*/}
+                              </div>
+                              <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                            </div>
+                          </div>}
+          
+                      { this.state.feedPosts 
+                        && <>
+                          {this.state.feedPosts.length == 0
+                            && <div class="text-center m-5">
+                                  <AlertCircleIcon size="100" className="text-muted"/>
+                                  <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
+                                </div>}
+          
+                          { this.state.feedPosts.length  != 0
+                              && <div>
+                                  { this.state.feedPosts.map(((post, index) => <PostListItemView  
+                                                                                  startDate={this.state.startDate}
+                                                                                  endDate={this.state.endDate}
+                                                                                  object={post}
+                                                                                  globalData={this.props.globalData}/>))}
+                                  <small class="d-block text-end mt-3 fst-italic">
+                                    <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
+                                  </small>
+                                </div>}
+                          </>}
+          
+                    </div>}
+
+
+          { this.state.activeListIndex == 1
+              && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
+                      <h6 class="border-bottom pb-2 mb-0">Most active users</h6>
+          
+                      { !this.state.mostActiveUsers && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                                {/*<span class="visually-hidden">Loading...</span>*/}
+                              </div>
+                              <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                            </div>
+                          </div>}
+          
+                      { this.state.mostActiveUsers 
+                        && <>
+                          {this.state.mostActiveUsers.length == 0
+                            && <div class="text-center m-5">
+                                  <AlertCircleIcon size="100" className="text-muted"/>
+                                  <p><span class="badge text-bg-primary fst-italic shadow">No recorded users yet</span></p>
+                                </div>}
+          
+                          { this.state.mostActiveUsers.length  != 0
+                              && <div>
+                                 { this.state.mostActiveUsers.map((object, index) => <FeedActiveUserListItemView  
+                                                                                        object={object}/>)}
+                                </div>}
+                          </>}
+          
+                    </div>}
 
   			</div>
 

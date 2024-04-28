@@ -53,13 +53,13 @@ export default class FeedMetricsLineChart extends React.Component{
 			lineData: null,
 		};
 
-  		this.setChartLabels = this.setChartLabels.bind(this);
+  		this.setChartData = this.setChartData.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.setChartLabels();
+		this.setChartData();
 
 	}
 
@@ -67,11 +67,11 @@ export default class FeedMetricsLineChart extends React.Component{
 
 		// everytime the view choice is changed, the chart is reset
 		if (prevProps.objects != this.props.objects){
-			this.setChartLabels();
+			this.setChartData();
 		}
 
 		if (prevProps.metric != this.props.metric){
-			this.setChartLabels();
+			this.setChartData();
 		}
 
 	}
@@ -80,14 +80,14 @@ export default class FeedMetricsLineChart extends React.Component{
 
   }
 
-	setChartLabels(){
+	async setChartData(){
 
 		if (!this.props.objects){
 			this.setState({lineData: null});
 			return;
 		}
 
-		var data = getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.props.metricValueFunction, [this.props.metric], {moment: moment})
+		var data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.props.metricValueFunction, [this.props.metric], {moment: moment})
 
 		const colors = getChartColors(1);
 		this.setState({

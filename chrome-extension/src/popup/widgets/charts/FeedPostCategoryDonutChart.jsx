@@ -5,7 +5,7 @@ import { Doughnut, getElementAtEvent } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { AlertCircleIcon } from "../SVGs";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-// import FeedPostCategorySizeTrendChart from "./FeedPostCategorySizeTrendChart";
+import FeedPostCategorySizeTrendChart from "./FeedPostCategorySizeTrendChart";
 import { 
   getChartColors, 
   categoryVerbMap,
@@ -131,11 +131,33 @@ export default class FeedPostCategoryDonutChart extends React.Component{
                     && this.state.data 
                     && <div>
                         { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) != 0 /*if the sum of the values isn't zero*/
-                            && <Doughnut 
-                                  ref={this.state.chartRef}
-                                  data={this.state.data} 
-                                  options={options}
-                                  onClick={this.onDonutChartClick} />}
+                            && <div>
+                                  <Doughnut 
+                                    ref={this.state.chartRef}
+                                    data={this.state.data} 
+                                    options={options}
+                                    onClick={this.onDonutChartClick} />
+
+                                  <Modal show={this.state.categorySizeTrendModalShow} onHide={this.handleCategorySizeTrendModalClose}>
+                                    <Modal.Header closeButton>
+                                      <Modal.Title>{this.state.selectedCategoryIndex != null ? `Evolution of the ${this.state.data.labels[this.state.selectedCategoryIndex]} count` : null}</Modal.Title>
+                                    </Modal.Header>
+                                    <Modal.Body>
+
+                                      <FeedPostCategorySizeTrendChart
+                                        objects={this.props.objects}
+                                        category={this.state.data.labels[this.state.selectedCategoryIndex]}
+                                        rangeDates={this.props.rangeDates}
+                                        colors={[this.state.data.datasets[0].borderColor[this.state.selectedCategoryIndex]]}/>
+
+                                    </Modal.Body>
+                                    <Modal.Footer>
+                                      <Button variant="secondary" size="sm" onClick={this.handleCategorySizeTrendModalClose} className="shadow">
+                                        Close
+                                      </Button>
+                                    </Modal.Footer>
+                                  </Modal>
+                                </div>}
                         { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) == 0 /*if the sum of the values is zero*/
                             && <div class="text-center m-5 mt-2">
                                 <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
@@ -146,23 +168,6 @@ export default class FeedPostCategoryDonutChart extends React.Component{
 
                 </div>}
 
-        <Modal show={this.state.categorySizeTrendModalShow} onHide={this.handleCategorySizeTrendModalClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>{this.state.selectedCategoryIndex != null ? `Evolution of the ${this.state.data.labels[this.state.selectedCategoryIndex]} count` : null}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-
-            {/*<FeedPostCategorySizeTrendChart
-              objects={this.props.objects}
-              category={this.state.selectedCategory}/> */} 
-
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleCategorySizeTrendModalClose} className="shadow">
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
       </>
     );
   }

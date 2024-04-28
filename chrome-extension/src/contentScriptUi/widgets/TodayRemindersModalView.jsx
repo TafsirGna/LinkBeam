@@ -15,7 +15,7 @@ import {
 } from "flowbite-react";
 
 
-export default class TodayReminderModalView extends React.Component{
+export default class TodayRemindersModalView extends React.Component{
 
     constructor(props){
         super(props);
@@ -74,7 +74,8 @@ export default class TodayReminderModalView extends React.Component{
     return (
       <>
 
-        { this.state.remindersModalShow && <div class={"modal-container-ac84bbb3728 "}>
+        { this.state.remindersModalShow 
+            && <div class={`${this.props.className ? this.props.className : null}`}>
                   <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
         
                     { this.props.objects 

@@ -277,9 +277,9 @@ async function resetTabTimer(){
     }
 }
 
-async function handleNewInterestingTab(tabId, url, runTimer){
+async function handleNewInterestingTab(tabId, url, onNewTab){
 
-    if (runTimer){
+    if (onNewTab){
         runTabTimer(tabId, url);
     }
 
@@ -287,7 +287,10 @@ async function handleNewInterestingTab(tabId, url, runTimer){
         visitId = null, 
         myTabs = null;
     const badgeText = "!";
-    chrome.action.setBadgeText({text: badgeText});
+
+    if (onNewTab){
+        chrome.action.setBadgeText({text: badgeText});
+    }
 
     if (!sessionItem.myTabs){
 
@@ -306,7 +309,9 @@ async function handleNewInterestingTab(tabId, url, runTimer){
 
         if (Object.hasOwn(sessionItem.myTabs, tabId)){
 
-            chrome.action.setBadgeText({text: sessionItem.myTabs[tabId].badgeText});
+            if (onNewTab){
+                chrome.action.setBadgeText({text: sessionItem.myTabs[tabId].badgeText});
+            }
             
             if (!sessionItem.myTabs[tabId].visits){
 
@@ -463,65 +468,73 @@ async function recordFeedVisit(tabData){
         }
 
         var post = tabData.extractedData;
-        const newPost = {
-            uid: post.id,
-            category: post.category,
-            initiator: post.initiator,
-            content: {
-                author: post.content.author,
-                text: post.content.text,
-            },
-        };
 
-        // await db.transaction('rw', [db.feedPosts, db.feedPostViews], function() {
-        //     // saving the post
-        //     db.feedPosts.add(newPost);
-        // }).then(function() {
-        //     console.log("Transaction committed");
-        // }).catch(function(err) {
-        //     console.error(err);
-        // });
-
-
-        var dbPost = await db.feedPosts
-                            .where("uid")
-                            .equals(post.id)
-                            .first();
-
-        if (dbPost){
-            await db.feedPosts
-                    .update(dbPost.id, newPost);
+        if (post.category == "suggestions"){
+            visit.feedItemsMetrics[post.category]++;
         }
         else{
-            await db.feedPosts.add(newPost);
-        }
 
-        var postView = await db.feedPostViews
-                               .where({uid: post.id, visitId: visitId})
-                               .first(); 
-
-        if (!postView){
-
-            postView = {
+            const newPost = {
                 uid: post.id,
-                date: dateTime,
-                visitId: visitId, 
-                reactions: post.content.reactions,
-                commentsCount: post.content.commentsCount,
-                repostsCount: post.content.repostsCount,
-                timeCount: 1,
+                category: post.category,
+                initiator: post.initiator,
+                content: {
+                    author: post.content.author,
+                    text: post.content.text,
+                },
             };
 
-            // saving the post view
-            await db.feedPostViews.add(postView);
+            // await db.transaction('rw', [db.feedPosts, db.feedPostViews], function() {
+            //     // saving the post
+            //     db.feedPosts.add(newPost);
+            // }).then(function() {
+            //     console.log("Transaction committed");
+            // }).catch(function(err) {
+            //     console.error(err);
+            // });
 
-            visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
-            
+
+            var dbPost = await db.feedPosts
+                                .where("uid")
+                                .equals(post.id)
+                                .first();
+
+            if (dbPost){
+                await db.feedPosts
+                        .update(dbPost.id, newPost);
+            }
+            else{
+                await db.feedPosts.add(newPost);
+            }
+
+            var postView = await db.feedPostViews
+                                   .where({uid: post.id, visitId: visitId})
+                                   .first(); 
+
+            if (!postView){
+
+                postView = {
+                    uid: post.id,
+                    date: dateTime,
+                    visitId: visitId, 
+                    reactions: post.content.reactions,
+                    commentsCount: post.content.commentsCount,
+                    repostsCount: post.content.repostsCount,
+                    timeCount: 1,
+                };
+
+                // saving the post view
+                await db.feedPostViews.add(postView);
+
+                visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+                
+            }
+
         }
 
         post.reminder = await db.reminders
                                  .where("objectId")
-                                 .equals(newPost.uid)
+                                 .equals(post.id)
                                  .first();
 
         post.viewsCount = 0;
@@ -529,7 +542,7 @@ async function recordFeedVisit(tabData){
 
         await db.feedPostViews
                  .where("uid")
-                 .equals(newPost.uid)
+                 .equals(post.id)
                  .each(postView => {
                     post.viewsCount++;
                     post.timeCount += (postView.timeCount ? postView.timeCount : 0);

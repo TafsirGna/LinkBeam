@@ -119,10 +119,10 @@ class MixedDataExtractor extends DataExtractorBase {
 }
 
 if (typeof mixedDataExtractor == "undefined"){
-    console.log("neeeeeeeeeeewwwwwwwwwwwww");
+//     console.log("neeeeeeeeeeewwwwwwwwwwwww");
     const mixedDataExtractor = new MixedDataExtractor();
 }
 else{
-    console.log("oooooooooollllllllllldddd");
+//     console.log("oooooooooollllllllllldddd");
     mixedDataExtractor = new MixedDataExtractor();
 }
