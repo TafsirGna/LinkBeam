@@ -43,6 +43,7 @@ export class DataExtractorBase {
     this.allKeywords = null;
     this.appSettings = null;
     this.visitId = null;
+    this.otherArgs = {};
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -125,6 +126,10 @@ export class DataExtractorBase {
               if (message.data.visitId){
                 this.visitId = message.data.visitId;
               }
+            }
+
+            if (Object.hasOwn(message.data, "postData")){
+                this.otherArgs.postData = message.data.postData;
             }
 
             this.getTabId(message.data, sendResponse);

@@ -88,6 +88,11 @@ export default class HomeView extends React.Component{
       return;
     }
 
+    const localItems = await chrome.storage.local.get(["outdatedProfileReminderMoment"]);
+    if (localItems.outdatedProfileReminderMoment && moment().diff(moment(localItems.outdatedProfileReminderMoment), "days") < 7){
+      return;
+    }
+
     switch(settings.outdatedProfileReminder){
 
       case "> 1 month":{
@@ -132,6 +137,7 @@ export default class HomeView extends React.Component{
     }
 
     this.setState({outdatedProfiles: profiles});
+    await chrome.storage.local.set({ outdatedProfileReminderMoment: new Date().toISOString() });
 
   }
 
@@ -142,6 +148,11 @@ export default class HomeView extends React.Component{
                              .first();
 
     if (settings.maxTimeAlarm == "Never"){
+      return;
+    }
+
+    const localItems = await chrome.storage.local.get(["previousDaySavedTimeMoment"]);
+    if (localItems.previousDaySavedTimeMoment && localItems.previousDaySavedTimeMoment == new Date().toISOString()){
       return;
     }
 
@@ -158,6 +169,7 @@ export default class HomeView extends React.Component{
     const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
     if (totalTime < maxTimeValue){
       this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
+      await chrome.storage.local.set({ previousDaySavedTimeMoment: new Date().toISOString() });
     }
 
   }
@@ -352,7 +364,7 @@ export default class HomeView extends React.Component{
 
                     <p class="mt-3">
                       <span class="badge text-bg-light fst-italic shadow text-muted border border-success">
-                        Congratulations! You've saved {this.state.previousDaySavedTime} minutes yesterday
+                        Congratulations! You've saved {this.state.previousDaySavedTime.toFixed(2)} minutes yesterday
                       </span>
                     </p>
                 </div>}

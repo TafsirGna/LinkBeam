@@ -15,8 +15,12 @@
     "tabs",
     "scripting",
     "storage",
-    "notifications"
+    "notifications",
+    "contextMenus"
   ],
+  "icons": {
+    "512": "app_logo.png"
+  },
   "web_accessible_resources": [{
      "matches": ["*://*/*"],
      "resources": [

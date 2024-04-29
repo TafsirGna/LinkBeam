@@ -31,6 +31,8 @@ import {
     categoryVerbMap,
     isLinkedinFeed,
     isLinkedinProfilePage,
+    isLinkedinFeedPostPage,
+    deactivateTodayReminders,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
@@ -83,7 +85,9 @@ chrome.runtime.onInstalled.addListener(details => {
 });
 
 function isUrlOfInterest(url){
-    return isLinkedinFeed(url) || isLinkedinProfilePage(url);
+    return isLinkedinFeed(url) 
+            || isLinkedinProfilePage(url)
+            || isLinkedinFeedPostPage(url);
 }
 
 
@@ -172,6 +176,36 @@ async function runTabTimer(tabId, url){
 
 }
 
+async function getPostFromPostUrl(url){
+
+    var postUid = url.slice(url.indexOf("urn:li:activity:")).replaceAll("/", "");
+
+    var post = await db.feedPosts
+                       .where({uid: postUid})
+                       .first();
+
+    if (!post){
+        post = {};
+    }
+
+    post.reminder = await db.reminders
+                             .where("objectId")
+                             .equals(postUid)
+                             .first();
+
+    post.viewsCount = 0;
+
+    await db.feedPostViews
+             .where("uid")
+             .equals(postUid)
+             .each(postView => {
+                post.viewsCount++;
+             });
+
+    return post;
+
+}
+
 /** This function injects the content scripts into the page
  * along with some setup data in order to harverst the necessary data
  * or displays visuals for the user to interact with
@@ -190,12 +224,18 @@ function injectScriptsInTab(tabId, url, visitId){
                                .equals(1)
                                .first();
 
+        var postData = null;
+        if (isLinkedinFeedPostPage(url)){
+            postData = await getPostFromPostUrl(url);
+        }
+
         chrome.tabs.sendMessage(tabId, {
                 header: messageMeta.header.CS_SETUP_DATA, 
                 data: {
                     tabId: tabId, 
                     settings: {lastDataResetDate: settings.lastDataResetDate},
                     visitId: visitId,
+                    postData: postData,
                 }
             }, 
             (response) => {
@@ -233,6 +273,7 @@ function injectScriptsInTab(tabId, url, visitId){
                             if (buttonIndex == 0){
                                 chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {show: true, widget: "ReminderModal"}}, (response) => {
                                     console.log('Show reminder modal request sent', response);
+                                    deactivateTodayReminders(db);
                                 }); 
                             }
                         }
@@ -277,10 +318,19 @@ async function resetTabTimer(){
     }
 }
 
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === 'my_menu_item') {
+    console.log('hello');
+  }
+});
+
 async function handleNewInterestingTab(tabId, url, onNewTab){
 
     if (onNewTab){
-        runTabTimer(tabId, url);
+        await resetTabTimer();
+        if (!isLinkedinFeedPostPage(url)){
+            runTabTimer(tabId, url);
+        }
     }
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
@@ -359,10 +409,24 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
     }
 
     chrome.storage.session.set({ myTabs: myTabs });
-    console.log('Injectinnnnnnnnnnnng');
     injectScriptsInTab(tabId, url, visitId);
 
+    // if (isLinkedinFeed(url)){ 
+    //     createBrowsingOnBehalfMenu();
+    // }
+
+    // function createBrowsingOnBehalfMenu(){
+
+    //     chrome.contextMenus.create({
+    //         id: "browse_on_behalf_menu",
+    //         title: "Browse on behalf",
+    //         contexts: ["all"]
+    //     });
+
+    // }
+
     async function addFreshFeedVisit(){
+
         var feedItemsMetrics = {};
         const dateTime = new Date().toISOString();
         for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { feedItemsMetrics[category] =  0; }
@@ -376,6 +440,7 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 
         await db.visits.add(visit);
         return (await db.visits.where({date: dateTime}).first()).id;
+
     }
 
 }
@@ -383,9 +448,6 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
     // console.log(activeInfo.tabId);
-
-    await resetTabTimer();
-
     // windowId = info.windowId
 
     console.log("changing tab : ", activeInfo.tabId);

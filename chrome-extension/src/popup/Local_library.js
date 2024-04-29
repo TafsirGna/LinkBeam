@@ -1063,8 +1063,9 @@ export function getVisitsPostCount(visits){
 
 }
 
-export const isLinkedinFeed = (url) => url.indexOf("/feed") != -1;
+export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL;
 export const isLinkedinProfilePage = (url) => url.indexOf("/in/") != -1;
+export const isLinkedinFeedPostPage = (url) => url.indexOf("linkedin.com/feed/update/") != -1;
 
 export async function getPeriodVisits(dateValue, func, db, category, profileUrl = null){
 

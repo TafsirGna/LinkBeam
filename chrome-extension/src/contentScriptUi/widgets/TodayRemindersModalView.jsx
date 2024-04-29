@@ -3,7 +3,6 @@ import React from 'react';
 import { 
     appParams, 
     dbDataSanitizer, 
-    deactivateTodayReminders,
     isLinkedinProfilePage,
     messageMeta,
 } from "../../popup/Local_library";
@@ -32,9 +31,7 @@ export default class TodayRemindersModalView extends React.Component{
     }
 
     handleRemindersModalClose = () => {
-       this.setState({remindersModalShow: false}, () => {
-            deactivateTodayReminders(db);
-       }); 
+       this.setState({remindersModalShow: false}); 
     }
   
 

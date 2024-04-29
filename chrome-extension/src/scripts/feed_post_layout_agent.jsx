@@ -34,9 +34,7 @@ import FeedPostDataModal from "../contentScriptUi/widgets/FeedPostDataModal";
 
 const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
-export default class FeedDataExtractor extends DataExtractorBase {
-
-	static timerDisplay = false;
+export default class FeedPostLayoutAgent extends DataExtractorBase {
 
 	constructor(){
 		super();
@@ -44,75 +42,56 @@ export default class FeedDataExtractor extends DataExtractorBase {
 
 	static setUpExtensionWidgets(props){
 
-		if (document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
-			return;
+		if (!document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
+
+			// adding the post stats modal
+			var newDivTag = document.createElement('div');
+			// newDivTag.classList.add(feedPostDataModalClassName);
+			newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
+	    document.body.appendChild(newDivTag);
+	    newDivTag.attachShadow({ mode: 'open' });
+
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <FeedPostDataModal
+	              	appSettings={props.appSettings}
+	              	/*visitId={props.visitId}*//>
+	            </React.StrictMode>
+	        );
+
 		}
 
-		// adding the post stats modal
-		var newDivTag = document.createElement('div');
-		// newDivTag.classList.add(feedPostDataModalClassName);
-		newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
-    document.body.appendChild(newDivTag);
-    newDivTag.attachShadow({ mode: 'open' });
 
-		ReactDOM.createRoot(newDivTag.shadowRoot).render(
-            <React.StrictMode>
-              <style type="text/css">{styles}</style>
-              <FeedPostDataModal
-              	appSettings={props.appSettings}
-              	/*visitId={props.visitId}*//>
-            </React.StrictMode>
-        );
-		
-	}
+		var postContainerElement = document.querySelector(".scaffold-layout__main")
+								 											 .querySelector("div[data-urn]");
 
-	static runTabDataExtractionProcess(props){
-
-		console.log("vvvvvvvvvvvvvvvvvvvvvvv");
-
-		const postContainerElements = document.querySelector(".scaffold-finite-scroll__content")
-																					.querySelectorAll("div[data-id]");
-
-		Array.from(postContainerElements).forEach(postContainerElement => {
-
-			if (postContainerElement.querySelector(".feed-shared-update-v2")){
-				if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
-					return;
-				}
-			}
-			else{
-				return;
-			}
-
-			// if a post doesn't have neither a category (publication) nor author, then pass
-			if (!postContainerElement.querySelector(".update-components-actor__name .visually-hidden")){
-				return;
-			}
-
-			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+		if (!postContainerElement.parentNode.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
 				// Adding the marker
 				var newDivTag = document.createElement('div');
 				newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-	      postContainerElement.prepend(newDivTag);
+	      postContainerElement.parentNode.prepend(newDivTag);
 	      newDivTag.attachShadow({ mode: 'open' });
 
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
 		            <React.StrictMode>
 		              <style type="text/css">{styles}</style>
 		              <FeedPostDataMarkerView 
-		              	postUid={postContainerElement.getAttribute("data-id")}
+		              	postUid={postContainerElement.getAttribute("data-urn")}
 		              	tabId={props.tabId}
-		              	// timerDisplay={this.timerDisplay}
 		              	allKeywords={props.allKeywords}
-		              	visitId={props.visitId}/>
+		              	postData={props.otherArgs ? props.otherArgs.postData : null}
+		              	/*visitId={props.visitId}*//>
 		            </React.StrictMode>
 		        );
 
 			}
-
-		});
-
+		
 	}
+
+	// static runTabDataExtractionProcess(props){
+
+	// }
 
 }

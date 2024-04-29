@@ -5,6 +5,8 @@ import {
   messageMeta, 
   secondsToHms,
   categoryVerbMap,
+  isLinkedinFeedPostPage,
+  isLinkedinFeed,
 } from "../../popup/Local_library";
 import{
   sendTabData,
@@ -76,12 +78,12 @@ export default class FeedPostDataMarkerView extends React.Component{
     this.runTimer = this.runTimer.bind(this);
     this.extractSendPostObject = this.extractSendPostObject.bind(this);
     this.clearTimer = this.clearTimer.bind(this);
+    this.checkKeywords = this.checkKeywords.bind(this);
+    this.getPostHtmlElTextContent = this.getPostHtmlElTextContent.bind(this);
     
   }
 
   componentDidMount() {
-
-    this.startListening();
 
     // this.setState({timerDisplay: this.props.timerDisplay});
 
@@ -92,9 +94,24 @@ export default class FeedPostDataMarkerView extends React.Component{
     //   }
     // );
 
-    const postHtmlElement = document.querySelector(".scaffold-finite-scroll__content")
-                            .querySelector(`div[data-id='${this.props.postUid}']`)
-                            .querySelector(".feed-shared-update-v2");
+    const postHtmlElement = isLinkedinFeed(window.location.href) ? document.querySelector(".scaffold-finite-scroll__content")
+                                                                    .querySelector(`div[data-id='${this.props.postUid}']`)
+                                                                    .querySelector(".feed-shared-update-v2")
+                                                                 : null;
+
+    if (!postHtmlElement){
+      if (isLinkedinFeedPostPage(window.location.href)){
+        this.setState({
+          impressionCount: this.props.postData.viewsCount,
+          reminder: this.props.postData.reminder,
+        });
+
+        this.checkKeywords();
+      }
+      return;
+    }
+
+    this.startListening();
 
     // check if it's a suggested post
     var isSuggestedPost = false;
@@ -120,22 +137,12 @@ export default class FeedPostDataMarkerView extends React.Component{
 
       });
 
-    });
-
-    if (!isSuggestedPost){
-
-      // check this post for all contained keywords
-      var keywords = [];
-      if (this.props.allKeywords){
-        for (var keyword of this.props.allKeywords){
-          if (postHtmlElement.textContent.toLowerCase().indexOf(keyword.toLowerCase()) != -1){
-            keywords.push(keyword);
-          }
-        };
+      if (!isSuggestedPost){
+        // Screen this post for all contained keywords
+        this.checkKeywords();
       }
-      this.setState({foundKeywords: keywords});
 
-    }
+    });
 
   }
 
@@ -161,6 +168,20 @@ export default class FeedPostDataMarkerView extends React.Component{
 
   }
 
+  checkKeywords(){
+
+    var keywords = [];
+    if (this.props.allKeywords){
+      for (var keyword of this.props.allKeywords){
+        if (this.getPostHtmlElTextContent().indexOf(keyword.toLowerCase()) != -1){
+          keywords.push(keyword);
+        }
+      };
+    }
+    this.setState({foundKeywords: keywords});
+
+  }
+
   clearTimer(){
 
     clearInterval(this.state.timerInterval);
@@ -169,8 +190,6 @@ export default class FeedPostDataMarkerView extends React.Component{
   }
 
   extractSendPostObject(){
-
-    console.log("iiiiiiiiii : ", "extracting");
 
     var post = {
       id: this.props.postUid,
@@ -295,7 +314,8 @@ export default class FeedPostDataMarkerView extends React.Component{
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
           if (!(this.state.timeCount % 3)){
-            if (this.state.impressionCount == null || this.state.isSuggestedPost){
+            if (this.state.impressionCount == null 
+                  || this.state.isSuggestedPost){
               return;
             }
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.props.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
@@ -330,8 +350,6 @@ export default class FeedPostDataMarkerView extends React.Component{
       sendResponse({
           status: "ACK"
       });
-
-      console.log("################# 0 : ", message.data);
 
       switch(message.header){
 
@@ -386,8 +404,6 @@ export default class FeedPostDataMarkerView extends React.Component{
 
             case "read":{
 
-              console.log("################# 1 : ", message.data, this.props.postUid);
-
               if (message.data.objectStoreName == "feedPosts"){
 
                 const index = message.data.objects.map(p => p.id).indexOf(this.props.postUid);
@@ -400,7 +416,6 @@ export default class FeedPostDataMarkerView extends React.Component{
                   }
 
                   if (Object.hasOwn(post, "viewsCount")){
-                    console.log("################# 1 : ", message.data, this.props.postUid, post.viewsCount);
                     this.setState({impressionCount: post.viewsCount});
                   }
 
@@ -534,7 +549,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
     return <button 
                 type="button" 
-                title={`${this.state.foundKeywords.length == "0" ? "No" : this.state.foundKeywords.length} found keyword${this.state.foundKeywords.length > 1 ? "s" : ""}`}
+                title={`${this.state.foundKeywords.length == "0" ? "No" : this.state.foundKeywords.length} keyword${this.state.foundKeywords.length > 1 ? "s" : ""} detected`}
                 class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                 >
 
@@ -548,6 +563,15 @@ export default class FeedPostDataMarkerView extends React.Component{
                 { this.state.foundKeywords && <span class="text-base me-2">({this.state.foundKeywords.length})</span>}
                 <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
               </button>;
+
+  }
+
+  getPostHtmlElTextContent(){
+
+    return (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
+                                                                     .querySelector("div[data-urn]")
+                                                                     .textContent.toLowerCase()
+                                                          : this.state.postHtmlElement.textContent.toLowerCase()
 
   }
 
@@ -595,7 +619,7 @@ export default class FeedPostDataMarkerView extends React.Component{
                                 && <Popover
                                       aria-labelledby="default-popover"
                                       content={
-                                        <div className="w-64 text-sm text-gray-500 dark:text-gray-400">
+                                        <div className="w-64 text-lg text-gray-500 dark:text-gray-400">
                                           <div className="border-b border-gray-200 bg-gray-100 px-3 py-2 dark:border-gray-600 dark:bg-gray-700">
                                             <h3 id="default-popover" className="font-semibold text-gray-900 dark:text-white">Keywords</h3>
                                           </div>
@@ -608,7 +632,10 @@ export default class FeedPostDataMarkerView extends React.Component{
                                                       />}
                                             { this.state.foundKeywords
                                                 && <p>
-                                                    {this.state.foundKeywords.map(keyword => (<Badge color="info">{keyword}</Badge>))}
+                                                    {this.state.foundKeywords.map(keyword => (
+                                                      // <Badge color="info" className="text-lg">{keyword}</Badge>
+                                                      <span class="bg-blue-100 text-blue-800 text font-medium mx-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 text-base">{`${keyword} (${this.getPostHtmlElTextContent().split(keyword).length - 1})`}</span>
+                                                    ))}
                                                 </p> }
                                           </div>
                                         </div>
@@ -633,25 +660,28 @@ export default class FeedPostDataMarkerView extends React.Component{
                               className=""/>
                           </span>
                         }>
-                        <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
-                          <Dropdown.Item 
-                            // onClick={this.toggleTimerDisplay}
-                            >
-                            {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
-                            Timer
-                          </Dropdown.Item>
-                        </Tooltip>
-                        { Object.hasOwn(this.state.reminder, "id") 
+                        { !isLinkedinFeedPostPage(window.location.href) 
+                            && <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
+                                                  <Dropdown.Item 
+                                                    // onClick={this.toggleTimerDisplay}
+                                                    >
+                                                    {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
+                                                    Timer
+                                                  </Dropdown.Item>
+                                                </Tooltip>}
+                        { this.state.reminder 
+                            && Object.hasOwn(this.state.reminder, "id") 
                             && <Dropdown.Item 
                                   onClick={this.handleReminderModalShow}
                                   className="">
                                   Show reminder
                                   </Dropdown.Item>}
-                        <Dropdown.Item 
-                          onClick={this.updateReminder}
-                          className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
-                          { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
-                        </Dropdown.Item>
+                        { this.state.reminder  
+                            && <Dropdown.Item 
+                                  onClick={this.updateReminder}
+                                  className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
+                                  { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
+                                </Dropdown.Item>}
                       </Dropdown>
         
         

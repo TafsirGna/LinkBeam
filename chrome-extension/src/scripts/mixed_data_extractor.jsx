@@ -26,9 +26,11 @@ import {
 import {
     isLinkedinFeed,
     isLinkedinProfilePage,
+    isLinkedinFeedPostPage,
 } from "../popup/Local_library";
 import FeedDataExtractor from "./feed_data_extractor";
 import ProfileDataExtractor from "./profile_data_extractor";
+import FeedPostLayoutAgent from "./feed_post_layout_agent";
 import eventBus from "../popup/EventBus";
 
 
@@ -51,6 +53,7 @@ class MixedDataExtractor extends DataExtractorBase {
         const props = {
             appSettings: this.appSettings,
             visitId: this.visitId,
+            otherArgs: this.otherArgs,
         }
         
         if (isLinkedinFeed(this.pageUrl)){
@@ -58,6 +61,9 @@ class MixedDataExtractor extends DataExtractorBase {
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
             ProfileDataExtractor.setUpExtensionWidgets();
+        }
+        else if (isLinkedinFeedPostPage(this.pageUrl)){
+            FeedPostLayoutAgent.setUpExtensionWidgets(props);
         }
 
     }

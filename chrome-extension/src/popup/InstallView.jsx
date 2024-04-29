@@ -169,7 +169,6 @@ export default class About extends React.Component{
             outdatedProfileReminder: "> 1 year",
             maxTimeAlarm: "1 hour",
             autoTabOpening: true,
-            lastDataRefactoringDate: new Date().toISOString(),
         });
 
         localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
