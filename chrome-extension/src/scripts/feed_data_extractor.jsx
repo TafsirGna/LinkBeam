@@ -60,6 +60,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
               <style type="text/css">{styles}</style>
               <FeedPostDataModal
               	appSettings={props.appSettings}
+              	tabId={props.tabId}
               	/*visitId={props.visitId}*//>
             </React.StrictMode>
         );

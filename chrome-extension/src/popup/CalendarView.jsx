@@ -29,6 +29,7 @@ import {
   dbData,
   isLinkedinProfilePage,
   getProfileDataFrom,
+  setReminderObject,
 } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -134,19 +135,12 @@ export default class CalendarView extends React.Component{
       case dbData.objectStoreNames.REMINDERS: {
 
         var monthReminderList = await db.reminders
-                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth)
-                                                                /*&& isLinkedinProfilePage(reminder.objectId)*/)
+                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
                                          .toArray();
 
         await Promise.all (monthReminderList.map (async reminder => {
 
-          const visits = await db.visits
-                                 .where("url")
-                                 .equals(reminder.objectId)
-                                 .sortBy("date");
-
-          const profile = getProfileDataFrom(visits);
-          reminder.object = profile;
+          await setReminderObject(db, reminder);
 
         }));
 

@@ -33,6 +33,7 @@ import {
   setGlobalDataHomeAllVisitsList,
   getProfileDataFrom,
   dbDataSanitizer,
+  setReminderObject,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -160,8 +161,8 @@ export default class SearchInputView extends React.Component{
 
       var uids = [];
       await db.feedPosts
-              .filter(post => (post.initiator && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1 )
-                                || post.content.author && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
+              .filter(post => (post.initiator && post.initiator.name && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1 )
+                                || post.content.author && post.content.author.name && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
               .each(post => {
                 if (uids.indexOf(post.uid) == -1){
                   uids.push(post.uid);
@@ -177,18 +178,11 @@ export default class SearchInputView extends React.Component{
                 }
               });   
 
-
       for (var reminder of reminders){
 
         try{
 
-          const visits = await db.visits
-                                 .where("url")
-                                 .anyOf([reminder.objectId, encodeURI(reminder.objectId), decodeURI(reminder.objectId)])
-                                 .sortBy("date");
-
-          const profile = getProfileDataFrom(visits);
-          reminder.object = profile;
+          await setReminderObject(db, reminder);
 
           // reminder.text = this.highlightSearchText(reminder.text);
 
@@ -205,6 +199,19 @@ export default class SearchInputView extends React.Component{
     }
 
     if (reminders){
+
+      reminders.sort((a, b) => {
+        if (new Date(a.date) < new Date(b.date)){
+          return 1;
+        }
+        else if (new Date(a.date) > new Date(b.date)){
+          return -1;
+        }
+        else{
+          return 0;
+        }
+      });
+      
       eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
     }
 

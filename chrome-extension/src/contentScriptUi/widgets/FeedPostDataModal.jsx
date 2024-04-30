@@ -104,7 +104,7 @@ export default class FeedPostDataModal extends React.Component{
           metricChangeValues: null,
         }, () => {
 
-          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: data.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.postUid}}}, (response) => {
+          chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.postUid}}}, (response) => {
             // Got an asynchronous response with the data from the service worker
             console.log("Post views data request sent !");
           });

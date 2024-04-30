@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './FeedPostDataMarkerView.css'*/
 import React from 'react';
 import { 
@@ -28,6 +49,9 @@ import {
   TextInput, 
   Textarea 
 } from "flowbite-react";
+import PostHighlightedKeywordView from "./PostHighlightedKeywordView";
+import ReactDOM from 'react-dom/client';
+import styles from "../styles.min.css";
 
 const freshReminder = () => {
 
@@ -78,21 +102,14 @@ export default class FeedPostDataMarkerView extends React.Component{
     this.runTimer = this.runTimer.bind(this);
     this.extractSendPostObject = this.extractSendPostObject.bind(this);
     this.clearTimer = this.clearTimer.bind(this);
-    this.checkKeywords = this.checkKeywords.bind(this);
+    this.checkAndHighlightKeywordsInPost = this.checkAndHighlightKeywordsInPost.bind(this);
     this.getPostHtmlElTextContent = this.getPostHtmlElTextContent.bind(this);
     
   }
 
   componentDidMount() {
 
-    // this.setState({timerDisplay: this.props.timerDisplay});
-
-    // eventBus.on(eventBus.TIMER_DISPLAY_UPDATED, (data) => {
-        
-    //     this.setState({timerDisplay: data.timerDisplay});
-
-    //   }
-    // );
+    this.startListening();
 
     const postHtmlElement = isLinkedinFeed(window.location.href) ? document.querySelector(".scaffold-finite-scroll__content")
                                                                     .querySelector(`div[data-id='${this.props.postUid}']`)
@@ -103,15 +120,13 @@ export default class FeedPostDataMarkerView extends React.Component{
       if (isLinkedinFeedPostPage(window.location.href)){
         this.setState({
           impressionCount: this.props.postData.viewsCount,
-          reminder: this.props.postData.reminder,
+          reminder: this.props.postData.reminder ? this.props.postData.reminder : freshReminder(),
         });
 
-        this.checkKeywords();
+        this.checkAndHighlightKeywordsInPost();
       }
       return;
     }
-
-    this.startListening();
 
     // check if it's a suggested post
     var isSuggestedPost = false;
@@ -139,7 +154,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
       if (!isSuggestedPost){
         // Screen this post for all contained keywords
-        this.checkKeywords();
+        this.checkAndHighlightKeywordsInPost();
       }
 
     });
@@ -165,20 +180,6 @@ export default class FeedPostDataMarkerView extends React.Component{
       }
 
     }
-
-  }
-
-  checkKeywords(){
-
-    var keywords = [];
-    if (this.props.allKeywords){
-      for (var keyword of this.props.allKeywords){
-        if (this.getPostHtmlElTextContent().indexOf(keyword.toLowerCase()) != -1){
-          keywords.push(keyword);
-        }
-      };
-    }
-    this.setState({foundKeywords: keywords});
 
   }
 
@@ -338,7 +339,7 @@ export default class FeedPostDataMarkerView extends React.Component{
 
   showFeedPostDataModal(){
 
-    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, {tabId: this.props.tabId, postUid: this.props.postUid});
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { postUid: this.props.postUid });
 
   }
 
@@ -548,21 +549,12 @@ export default class FeedPostDataMarkerView extends React.Component{
   getKeywordCountWidget(){
 
     return <button 
-                type="button" 
-                title={`${this.state.foundKeywords.length == "0" ? "No" : this.state.foundKeywords.length} keyword${this.state.foundKeywords.length > 1 ? "s" : ""} detected`}
-                class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                >
-
-                { !this.state.foundKeywords
-                    &&  <Spinner
-                            aria-label="Extra small spinner example"
-                            className="me-2"
-                            size="xs"
-                          />}
-
-                { this.state.foundKeywords && <span class="text-base me-2">({this.state.foundKeywords.length})</span>}
-                <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
-              </button>;
+            type="button" 
+            title={`${Object.keys(this.state.foundKeywords).length == "0" ? "No" : Object.keys(this.state.foundKeywords).length} keyword${Object.keys(this.state.foundKeywords).length > 1 ? "s" : ""} detected`}
+            class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
+            <span class="text-base me-2">({Object.keys(this.state.foundKeywords).length})</span>
+            <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+          </button>;
 
   }
 
@@ -571,7 +563,108 @@ export default class FeedPostDataMarkerView extends React.Component{
     return (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
                                                                      .querySelector("div[data-urn]")
                                                                      .textContent.toLowerCase()
-                                                          : this.state.postHtmlElement.textContent.toLowerCase()
+                                                          : this.state.postHtmlElement
+                                                                      .querySelector(".feed-shared-update-v2__description-wrapper")
+                                                                      .querySelector(".text-view-model")
+                                                                      .textContent
+                                                                      .toLowerCase();
+
+  }
+
+  // We're gonna use Deep First Search to pull this off
+  checkAndHighlightKeywordsInPost(){
+
+    function breakByKeywords(textContent, keywords/*, detected*/){
+
+      var indices = [];
+      for (var keyword of keywords){
+        for (var i = 0; i < textContent.length; i++){
+          if (textContent.slice(i).toLowerCase().indexOf(keyword) == 0){
+            indices.push({keyword: keyword, index: i});
+            // detected[keyword] = !(keyword in detected) ? 1 : detected[keyword] + 1;
+          }
+        }
+      }
+
+      if (!indices.length){
+        return [textContent];
+      }
+
+      indices.sort((a, b) => (a.index - b.index));
+      var start = 0, textArray = [];
+      for (var indexObject of indices){
+        if (start != indexObject.index){
+          textArray.push(textContent.slice(start, indexObject.index)); 
+        }
+        start = indexObject.index + indexObject.keyword.length;
+        textArray.push(textContent.slice(indexObject.index, start));
+      }
+
+      if (start < textContent.length){
+        textArray.push(textContent.slice(start));
+      }
+
+      return textArray;
+
+    }
+
+    function insertHtmlTags(node, textArray, keywords, detected){
+
+      for (var textItem of textArray){
+        var newChild = document.createElement('span');
+        if (keywords.indexOf(textItem.toLowerCase()) != -1){
+
+          detected[textItem] = !(textItem in detected) ? 1 : detected[textItem] + 1;
+
+          newChild.attachShadow({ mode: 'open' });
+          ReactDOM.createRoot(newChild.shadowRoot).render(
+                  <React.StrictMode>
+                    <style type="text/css">{styles}</style>
+                    <PostHighlightedKeywordView
+                      keyword={textItem}
+                      order={detected[textItem]}/>
+                  </React.StrictMode>
+              );
+
+        }
+        else{
+          newChild.innerHTML = textItem;
+        }
+        node.appendChild(newChild);
+      }
+
+      return node;
+
+    }
+
+    var htmlElement = (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
+                                                                       .querySelector("div[data-urn]")
+                                                                     : this.state.postHtmlElement
+                                                                                 .querySelector(".feed-shared-update-v2__description-wrapper")
+                                                                                 .querySelector(".text-view-model");
+
+    var keywords = this.props.allKeywords.map(keyword => keyword.toLowerCase());
+    var detected = {};
+
+    var pipe = [...htmlElement.childNodes];
+    while (pipe.length){
+      var node = pipe.shift();
+      var children = node.childNodes;
+
+      if (children.length){
+        pipe = [...children].concat(pipe);
+      }
+      else{ // leaf node
+        if (node.nodeType == Node.TEXT_NODE){
+          var newNode = document.createElement('span');
+          newNode = insertHtmlTags(newNode, breakByKeywords(node.nodeValue, keywords/*, detected*/), keywords, detected);
+          node.parentNode.replaceChild(newNode, node);
+        }
+      }
+
+    } 
+
+    this.setState({foundKeywords: detected});                                               
 
   }
 
@@ -606,7 +699,7 @@ export default class FeedPostDataMarkerView extends React.Component{
                             </span>}*/}
         
                       { this.state.updated 
-                          && <span class="flex items-center bg-green-100 text-green-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                          && <span class="flex items-center bg-green-100 text-green-800 text-lg font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
                                 Updated
                                 <CheckIcon
                                   size="16"
@@ -615,7 +708,7 @@ export default class FeedPostDataMarkerView extends React.Component{
         
                       { this.state.foundKeywords 
                           && <div> 
-                              { this.state.foundKeywords.length != 0
+                              { Object.keys(this.state.foundKeywords).length != 0
                                 && <Popover
                                       aria-labelledby="default-popover"
                                       content={
@@ -624,19 +717,11 @@ export default class FeedPostDataMarkerView extends React.Component{
                                             <h3 id="default-popover" className="font-semibold text-gray-900 dark:text-white">Keywords</h3>
                                           </div>
                                           <div className="px-3 py-2">
-                                            { !this.state.foundKeywords
-                                                &&  <Spinner
-                                                        aria-label="Extra small spinner example"
-                                                        className="me-2"
-                                                        size="xs"
-                                                      />}
-                                            { this.state.foundKeywords
-                                                && <p>
-                                                    {this.state.foundKeywords.map(keyword => (
-                                                      // <Badge color="info" className="text-lg">{keyword}</Badge>
-                                                      <span class="bg-blue-100 text-blue-800 text font-medium mx-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 text-base">{`${keyword} (${this.getPostHtmlElTextContent().split(keyword).length - 1})`}</span>
-                                                    ))}
-                                                </p> }
+                                            <p>
+                                              {Object.keys(this.state.foundKeywords).map(keyword => (
+                                                <span class="bg-blue-100 text-blue-800 text font-medium mx-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 text-base">{`${keyword} (${this.state.foundKeywords[keyword]})`}</span>
+                                              ))}
+                                            </p>
                                           </div>
                                         </div>
                                       }
@@ -644,45 +729,45 @@ export default class FeedPostDataMarkerView extends React.Component{
                                     { this.getKeywordCountWidget() }
                                   </Popover>}
         
-                              { this.state.foundKeywords.length == 0
+                              { Object.keys(this.state.foundKeywords).length == 0
                                   && this.getKeywordCountWidget() }
         
                             </div>}
         
-                      <Dropdown 
-                        label="" 
-                        renderTrigger={() => 
-                          <span 
-                            class="flex items-center handy-cursor mx-2 text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                            title="Actions">
-                            <LayersIcon 
-                              size="14"
-                              className=""/>
-                          </span>
-                        }>
-                        { !isLinkedinFeedPostPage(window.location.href) 
-                            && <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
-                                                  <Dropdown.Item 
-                                                    // onClick={this.toggleTimerDisplay}
-                                                    >
-                                                    {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
-                                                    Timer
-                                                  </Dropdown.Item>
-                                                </Tooltip>}
-                        { this.state.reminder 
-                            && Object.hasOwn(this.state.reminder, "id") 
-                            && <Dropdown.Item 
-                                  onClick={this.handleReminderModalShow}
-                                  className="">
-                                  Show reminder
-                                  </Dropdown.Item>}
-                        { this.state.reminder  
-                            && <Dropdown.Item 
-                                  onClick={this.updateReminder}
-                                  className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
-                                  { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
-                                </Dropdown.Item>}
-                      </Dropdown>
+                      { this.state.impressionCount != null 
+                          && this.state.impressionCount != 0
+                          && <Dropdown 
+                                label="" 
+                                renderTrigger={() => 
+                                  <span 
+                                    class="flex items-center handy-cursor mx-2 text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                                    title="Actions">
+                                    <LayersIcon 
+                                      size="14"
+                                      className=""/>
+                                  </span>
+                                }>
+                                { !isLinkedinFeedPostPage(window.location.href) 
+                                    && <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
+                                                          <Dropdown.Item 
+                                                            // onClick={this.toggleTimerDisplay}
+                                                            >
+                                                            {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
+                                                            Timer
+                                                          </Dropdown.Item>
+                                                        </Tooltip>}
+                                { Object.hasOwn(this.state.reminder, "id") 
+                                    && <Dropdown.Item 
+                                          onClick={this.handleReminderModalShow}
+                                          className="">
+                                          Show reminder
+                                          </Dropdown.Item>}
+                                { <Dropdown.Item 
+                                          onClick={this.updateReminder}
+                                          className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
+                                          { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
+                                        </Dropdown.Item>}
+                              </Dropdown>}
         
         
                       <Tooltip content={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>

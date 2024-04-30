@@ -96,10 +96,10 @@ function isUrlOfInterest(url){
  * and then injects the appropriate script into the concerned tab
  */
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
-    if (changeInfo.url && changeInfo.status == "loading"){
-        
+    if (changeInfo.url && changeInfo.status == "loading"){      
+
         var url = changeInfo.url;
         if (testTabBaseUrl(url) && isUrlOfInterest(url)){
 
@@ -131,6 +131,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
                     resetTabTimer();
                 }
             });
+
             chrome.action.setBadgeText({text: null});
         }
 
@@ -145,8 +146,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
  */
 
 async function runTabTimer(tabId, url){
-
-    await resetTabTimer();
 
     url = isLinkedinProfilePage(url) ? url.slice(url.indexOf("linkedin.com")) : url;
 
@@ -449,6 +448,8 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
     // console.log(activeInfo.tabId);
     // windowId = info.windowId
+
+    await resetTabTimer();
 
     console.log("changing tab : ", activeInfo.tabId);
 

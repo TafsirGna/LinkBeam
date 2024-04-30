@@ -64,13 +64,27 @@ export default class KeywordView extends React.Component{
   // Function for initiating the insertion of a keyword
   addKeyword(){
 
+    var message = null;
+
     if (this.state.keyword == ""){
       return;
     }
 
+    message = "The keyword should consist of only one word !";
     if (this.state.keyword.indexOf(" ") != -1){
-      alert("The keyword should consist of only one word !");
+      alert(message);
       return;
+    }
+
+    // is it contained in an already-saved keyword
+    message = "The given keyword is contained in or contains a keyword you've already saved !";
+    for (var keywordObject of this.props.globalData.keywordList){
+      if (keywordObject.name.toLowerCase().indexOf(this.state.keyword.toLowerCase()) != -1
+          || this.state.keyword.toLowerCase().indexOf(keywordObject.name.toLowerCase()) != -1){
+        alert(message);
+        return;
+      }
+
     }
 
     if (!this.checkInputKeyword()){

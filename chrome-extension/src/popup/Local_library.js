@@ -1304,25 +1304,7 @@ async function getReminders(db, criteria){
 
       try{
 
-        if (isLinkedinProfilePage(reminder.objectId)){
-
-          const visits = await db.visits
-                                 .where("url")
-                                 .equals(reminder.objectId)
-                                 .sortBy("date");
-
-          const profile = getProfileDataFrom(visits);
-          reminder.object = profile;
-
-        }
-        else{
-
-          reminder.object = await db.feedPosts 
-                                    .where("uid")
-                                    .equals(reminder.objectId)
-                                    .first();
-
-        }
+        await setReminderObject(db, reminder);
 
       }
       catch(error){
@@ -1336,7 +1318,47 @@ async function getReminders(db, criteria){
     console.error("Error : ", error);
   }
 
+  if (reminders){
+
+    reminders.sort((a, b) => {
+      if (new Date(a.date) < new Date(b.date)){
+        return 1;
+      }
+      else if (new Date(a.date) > new Date(b.date)){
+        return -1;
+      }
+      else{
+        return 0;
+      }
+    });
+
+  }
+  
   return reminders;
+
+}
+
+export async function setReminderObject(db, reminder){
+
+  if (isLinkedinProfilePage(reminder.objectId)){
+
+    const visits = await db.visits
+                           .where("url")
+                           .equals(reminder.objectId)
+                           .sortBy("date");
+
+    const profile = getProfileDataFrom(visits);
+    reminder.object = profile;
+
+  }
+  else{
+
+    reminder.object = await db.feedPosts 
+                              .where("uid")
+                              .equals(reminder.objectId)
+                              .first();
+
+  }
 
 }
 

@@ -37,14 +37,11 @@ export default class ReminderListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      reminderObject: null,
     };
 
   }
 
   componentDidMount() {
-
-    this.setReminderObject();
 
   }
 
@@ -68,33 +65,6 @@ export default class ReminderListItemView extends React.Component{
 
   }
 
-  async setReminderObject(){
-
-    if (this.state.reminderObject){
-      return;
-    }
-
-    var post = null;
-    try{
-
-      post = await db.feedPosts
-                         .where("uid")
-                         .equals(this.props.object.objectId)
-                         .first();
-
-    }
-    catch(error){
-      console.error("Error : ", error);
-    }
-
-    if (!post){
-      return null;
-    }
-
-    this.setState({reminderObject: post});
-
-  }
-
   render(){
     return (
       <>
@@ -103,20 +73,20 @@ export default class ReminderListItemView extends React.Component{
           <div class="d-flex gap-2 w-100 justify-content-between">
             <div>
               <h6 class="mb-0 d-flex gap-2 w-100">
-                { this.props.object.objectId.indexOf("/in/") != -1
+                { isLinkedinProfilePage(this.props.object.objectId)
                     && <a 
                                   href={this.getObjectLink()} 
                                   target="_blank" 
                                   class="text-decoration-none text-muted w-100">
                                   {this.getItemTitle()}
                                 </a>}
-                { this.props.object.objectId.indexOf("/in/") == -1
+                { !isLinkedinProfilePage(this.props.object.objectId)
                     && <OverlayTrigger
                           placement="top"
-                          overlay={<ReactTooltip id="tooltip1">{this.state.reminderObject 
-                                                                  ? (this.state.reminderObject.initiator
-                                                                      ? this.state.reminderObject.initiator.name
-                                                                      : this.state.reminderObject.content.author.name)
+                          overlay={<ReactTooltip id="tooltip1">{this.props.object.object 
+                                                                  ? (this.props.object.object.initiator
+                                                                      ? this.props.object.object.initiator.name
+                                                                      : this.props.object.object.content.author.name)
                                                                   : null}</ReactTooltip>}
                         >
                           <a 
@@ -132,7 +102,7 @@ export default class ReminderListItemView extends React.Component{
                   overlay={<ReactTooltip id="tooltip1">Visit Linkedin Page</ReactTooltip>}
                 >
                   <a 
-                    href={ this.props.object.objectId.indexOf("/in/") != -1 ? `https://${this.props.object.objectId}` : this.getObjectLink() } 
+                    href={ isLinkedinProfilePage(this.props.object.objectId) ? `https://${this.props.object.objectId}` : this.getObjectLink() } 
                     target="_blank" 
                     class="">
                     <DuplicateIcon

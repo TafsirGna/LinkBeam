@@ -54,6 +54,7 @@ class MixedDataExtractor extends DataExtractorBase {
             appSettings: this.appSettings,
             visitId: this.visitId,
             otherArgs: this.otherArgs,
+            tabId: this.tabId,
         }
         
         if (isLinkedinFeed(this.pageUrl)){
