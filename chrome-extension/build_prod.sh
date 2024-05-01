@@ -28,7 +28,7 @@ cp ./tmp/vite.config-3.js ./vite.config.js
 npm run build
 
 # Moving files to temporary directory
-mv ./dist/assets/mixed_data_extractor.js ./tmp/mixed_data_extractor.js
+mv ./dist/assets/main_content_script.js ./tmp/main_content_script.js
 
 # Copying the fourth config file
 cp ./tmp/vite.config-4.js ./vite.config.js
@@ -39,7 +39,7 @@ npm run build
 # Moving back files from temporary directory to assets folder
 # mv ./tmp/profile_data_extractor.js ./dist/assets/profile_data_extractor.js
 
-mv ./tmp/mixed_data_extractor.js ./dist/assets/mixed_data_extractor.js
+mv ./tmp/main_content_script.js ./dist/assets/main_content_script.js
 
 # mv ./tmp/web_ui.js ./dist/assets/web_ui.js
 

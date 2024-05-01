@@ -19,9 +19,9 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-import styles from "../contentScriptUi/styles.min.css";
-import TodayRemindersModalView from "../contentScriptUi/widgets/TodayRemindersModalView";
-import KeywordsModalView from "../contentScriptUi/widgets/KeywordsModalView";
+import styles from "../styles.min.css";
+import TodayRemindersListModal from "../widgets/TodayRemindersListModal";
+import DetectedKeywordsListModal from "../widgets/DetectedKeywordsListModal";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {
@@ -29,7 +29,7 @@ import {
     isLinkedinProfilePage,
     messageMeta,
     appParams,
-} from "../popup/Local_library";
+} from "../../popup/Local_library";
 
 export class DataExtractorBase {
 
@@ -91,7 +91,7 @@ export class DataExtractorBase {
 	    <React.StrictMode>
 	      <style type="text/css">{styles}</style>
 	      { property == "reminders" 
-            && <TodayRemindersModalView 
+            && <TodayRemindersListModal 
                   objects={objects}
                   /*className={}*/ />}
 	      { property == "detectedKeywords" 

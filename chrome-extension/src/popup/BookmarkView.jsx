@@ -34,7 +34,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import {
   setValue,
   selectBookmarks,
-} from '../slices/bookmarksSlice';
+} from '../redux/slices/bookmarksSlice';
 
 
 export default class BookmarkView extends React.Component{

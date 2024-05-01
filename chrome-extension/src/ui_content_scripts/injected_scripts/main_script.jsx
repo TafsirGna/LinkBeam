@@ -22,16 +22,16 @@
 
 import { 
     DataExtractorBase,
-} from "./data_extractor_lib";
+} from "./main_lib";
 import {
     isLinkedinFeed,
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
-} from "../popup/Local_library";
-import FeedDataExtractor from "./feed_data_extractor";
-import ProfileDataExtractor from "./profile_data_extractor";
-import FeedPostLayoutAgent from "./feed_post_layout_agent";
-import eventBus from "../popup/EventBus";
+} from "../../popup/Local_library";
+import FeedDataExtractor from "./feed_page_script";
+import ProfileDataExtractor from "./profile_page_script";
+import FeedPostLayoutAgent from "./feed_post_page_script";
+import eventBus from "../../popup/EventBus";
 
 
 class MixedDataExtractor extends DataExtractorBase {

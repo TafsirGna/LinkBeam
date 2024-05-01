@@ -2,7 +2,7 @@
 export default {
   // prefix: 'tw-',
   content: [
-    "./src/contentScriptUi/**/*.{js,jsx,ts,tsx}",
+    "./src/ui_content_scripts/**/*.{js,jsx,ts,tsx}",
     'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}'
   ],
   theme: {

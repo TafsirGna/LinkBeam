@@ -19,11 +19,11 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './PostHighlightedKeywordView.css'*/
+/*import './HighlightedKeywordView.css'*/
 import React from 'react';
-import { Tooltip } from "flowbite-react";
+// import { Tooltip } from "flowbite-react";
 
-export default class PostHighlightedKeywordView extends React.Component{
+export default class HighlightedKeywordView extends React.Component{
 
   constructor(props){
     super(props);
@@ -37,13 +37,20 @@ export default class PostHighlightedKeywordView extends React.Component{
 
   render(){
     return (
-        <span class="inline-flex">
-            <Tooltip content={`#${this.props.order}`} class="">
-                <span class="shadow-lg bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-                    {this.props.keyword}
-                </span>
-            </Tooltip>
+        <span 
+            class="bg-yellow-100 text-yellow-800 text-lg font-medium me-1 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
+            title={`#${this.props.order}`}>
+            {this.props.keyword}
         </span>
     );
   }
 }
+
+
+/*<span class="inline-flex">
+    <Tooltip content={`#${this.props.order}`} class="">
+        <span class="bg-yellow-100 text-yellow-800 text-lg font-medium me-1 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+            {this.props.keyword}
+        </span>
+    </Tooltip>
+</span>*/

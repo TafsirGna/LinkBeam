@@ -22,15 +22,15 @@
 
 import { 
 	DataExtractorBase,
-} from "./data_extractor_lib";
+} from "./main_lib";
 import React from 'react';
 import { 
 	appParams 
-} from "../popup/Local_library";
+} from "../../popup/Local_library";
 import ReactDOM from 'react-dom/client';
-import styles from "../contentScriptUi/styles.min.css";
-import FeedPostDataMarkerView from "../contentScriptUi/widgets/FeedPostDataMarkerView";
-import FeedPostDataModal from "../contentScriptUi/widgets/FeedPostDataModal";
+import styles from "../styles.min.css";
+import AboveFeedPostWidgetView from "../widgets/feed/AboveFeedPostWidgetView";
+import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
 
 const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
@@ -58,7 +58,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		ReactDOM.createRoot(newDivTag.shadowRoot).render(
             <React.StrictMode>
               <style type="text/css">{styles}</style>
-              <FeedPostDataModal
+              <FeedPostViewsChartModal
               	appSettings={props.appSettings}
               	tabId={props.tabId}
               	/*visitId={props.visitId}*//>
@@ -101,7 +101,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
 		            <React.StrictMode>
 		              <style type="text/css">{styles}</style>
-		              <FeedPostDataMarkerView 
+		              <AboveFeedPostWidgetView 
 		              	postUid={postContainerElement.getAttribute("data-id")}
 		              	tabId={props.tabId}
 		              	// timerDisplay={this.timerDisplay}

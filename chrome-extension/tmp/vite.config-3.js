@@ -10,7 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
 
-        mixed_data_extractor: resolve(__dirname, 'src/scripts/mixed_data_extractor.jsx'),
+        main_content_script: resolve(__dirname, 'src/ui_content_scripts/injected_scripts/main_script.jsx'),
 
       },
       output: {

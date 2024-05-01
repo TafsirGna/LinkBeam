@@ -19,7 +19,7 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './FeedPostDataModal.css'*/
+/*import './FeedPostViewsChartModal.css'*/
 import React from 'react';
 import { 
   appParams, 
@@ -27,9 +27,9 @@ import {
   messageMeta,
   getFeedLineChartsData,
   getPostMetricValue,
-} from "../../popup/Local_library";
-import { BarChartIcon } from "../../popup/widgets/SVGs";
-import eventBus from "../../popup/EventBus";
+} from "../../../popup/Local_library";
+import { BarChartIcon } from "../../../popup/widgets/SVGs";
+import eventBus from "../../../popup/EventBus";
 import { Spinner } from "flowbite-react";
 // import { Button, Modal } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
@@ -75,7 +75,7 @@ export const options = {
   },
 };
 
-export default class FeedPostDataModal extends React.Component{
+export default class FeedPostViewsChartModal extends React.Component{
 
   constructor(props){
     super(props);

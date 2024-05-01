@@ -24,7 +24,7 @@ import {
   publicDataExtractor, 
   authDataExtractor ,
   sendTabData,
-} from "./data_extractor_lib";
+} from "./main_lib";
 
 // Content script designed to make sure the active tab is a linkedin page
 

@@ -288,7 +288,7 @@ function injectScriptsInTab(tabId, url, visitId){
     };
 
     // If the user is browsing linkedin's feed
-    const dataExtractorPath = "./assets/mixed_data_extractor.js";
+    const dataExtractorPath = "./assets/main_content_script.js";
 
     if (dataExtractorPath){
         chrome.scripting.executeScript({

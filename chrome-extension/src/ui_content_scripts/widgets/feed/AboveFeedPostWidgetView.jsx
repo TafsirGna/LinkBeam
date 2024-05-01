@@ -19,7 +19,7 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './FeedPostDataMarkerView.css'*/
+/*import './AboveFeedPostWidgetView.css'*/
 import React from 'react';
 import { 
   appParams,
@@ -28,16 +28,16 @@ import {
   categoryVerbMap,
   isLinkedinFeedPostPage,
   isLinkedinFeed,
-} from "../../popup/Local_library";
+} from "../../../popup/Local_library";
 import{
   sendTabData,
-} from "../../scripts/data_extractor_lib";
+} from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
   LayersIcon,
   CheckIcon,
-} from "../../popup/widgets/SVGs";
-import eventBus from "../../popup/EventBus";
+} from "../../../popup/widgets/SVGs";
+import eventBus from "../../../popup/EventBus";
 import { 
   Dropdown, 
   Spinner, 
@@ -49,9 +49,9 @@ import {
   TextInput, 
   Textarea 
 } from "flowbite-react";
-import PostHighlightedKeywordView from "./PostHighlightedKeywordView";
+import HighlightedKeywordView from "../HighlightedKeywordView";
 import ReactDOM from 'react-dom/client';
-import styles from "../styles.min.css";
+import styles from "../../styles.min.css";
 
 const freshReminder = () => {
 
@@ -74,7 +74,7 @@ function isElVisible (ele) {
 
 const timeInc = 1;
 
-export default class FeedPostDataMarkerView extends React.Component{
+export default class AboveFeedPostWidgetView extends React.Component{
 
   constructor(props){
     super(props);
@@ -614,15 +614,15 @@ export default class FeedPostDataMarkerView extends React.Component{
         var newChild = document.createElement('span');
         if (keywords.indexOf(textItem.toLowerCase()) != -1){
 
-          detected[textItem] = !(textItem in detected) ? 1 : detected[textItem] + 1;
+          detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
 
           newChild.attachShadow({ mode: 'open' });
           ReactDOM.createRoot(newChild.shadowRoot).render(
                   <React.StrictMode>
                     <style type="text/css">{styles}</style>
-                    <PostHighlightedKeywordView
+                    <HighlightedKeywordView
                       keyword={textItem}
-                      order={detected[textItem]}/>
+                      order={detected[textItem.toLowerCase()]}/>
                   </React.StrictMode>
               );
 

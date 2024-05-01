@@ -14,7 +14,7 @@ import {
 } from "flowbite-react";
 
 
-export default class TodayRemindersModalView extends React.Component{
+export default class TodayRemindersListModal extends React.Component{
 
     constructor(props){
         super(props);
