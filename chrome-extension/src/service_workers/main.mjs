@@ -33,6 +33,7 @@ import {
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
     deactivateTodayReminders,
+    checkOneKeyword,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
@@ -650,10 +651,9 @@ async function recordProfileVisit(tabData){
                            .keywords
                            .toArray();
 
-        var stringified = JSON.stringify(profile);
         var detectedKeywords = [];
         for (var keyword of keywords){
-            if (stringified.indexOf(keyword.name) != -1){
+            if (checkOneKeyword(keyword.name, profile)){
                 detectedKeywords.push(keyword);
             }
         }

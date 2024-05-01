@@ -1,11 +1,11 @@
-/*import './KeywordsModalView.css'*/
+/*import './DetectedKeywordsListModal.css'*/
 import React from 'react';
-import { appParams, dbDataSanitizer } from "../../popup/Local_library";
+import { appParams } from "../../popup/Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 import gaming_lock_audio from '../../assets/audio/gaming-lock.mp3';
 
-export default class KeywordsModalView extends React.Component{
+export default class DetectedKeywordsListModal extends React.Component{
 
   constructor(props){
     super(props);

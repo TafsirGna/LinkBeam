@@ -31,6 +31,7 @@ import {
   saveCanvas, 
   setGlobalDataKeywords,
   getProfileDataFrom,
+  checkOneKeyword,
 } from "../../Local_library";
 
 import {
@@ -154,7 +155,7 @@ export default class VisitsKeywordsBarChart extends React.Component{
       for (var profile of this.props.objects){
         if (profiles.map(e => e.url).indexOf(profile.url) == -1){
 
-          if (JSON.stringify(profile).toLowerCase().indexOf(keyword.name.toLowerCase()) != -1){
+          if (checkOneKeyword(keyword.name.toLowerCase(), profile)){
             profiles.push(profile);
           }
 

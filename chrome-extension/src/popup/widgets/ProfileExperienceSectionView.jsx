@@ -88,9 +88,6 @@ export default class ProfileExperienceSectionView extends React.Component{
     return (
       <>
 
-        {/*<span>{ typeof this.props.profile.experience}</span>
-        <span>{ JSON.stringify(this.props.profile.experience)}</span>*/}
-
         { !this.props.profile.experience && <div class="text-center m-5 mt-2">
                     <img 
                       src={sorry_icon} 

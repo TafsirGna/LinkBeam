@@ -534,6 +534,28 @@ export function notifyException(){
   
 }
 
+export function checkOneKeyword(keyword, object){
+
+  var result = 0;
+
+  // get all the values of this nest object "object" passed as a parameter
+  const values = (function flattenValues( obj ) {
+    return obj ? Object.values( obj ).reduce(
+                    ( values, value ) => values.concat( typeof value === "object" ? flattenValues( value ) : value )
+                  , [ ] )
+               : [];
+  })(object);
+
+  for (var value of values){
+    if (value){
+      result += value.toString().toLowerCase().split(keyword.toLowerCase()).length - 1;
+    }
+  }
+
+  return result;
+
+}
+
 export async function setLocalProfiles(db, eventBus/*, propertyList, callback = null*/){
 // export async function setLocalProfiles(component, db, eventBus, propertyList, callback = null){
 

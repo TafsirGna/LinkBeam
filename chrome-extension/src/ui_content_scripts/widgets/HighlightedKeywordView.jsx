@@ -21,7 +21,6 @@
 
 /*import './HighlightedKeywordView.css'*/
 import React from 'react';
-// import { Tooltip } from "flowbite-react";
 
 export default class HighlightedKeywordView extends React.Component{
 
@@ -38,19 +37,10 @@ export default class HighlightedKeywordView extends React.Component{
   render(){
     return (
         <span 
-            class="bg-yellow-100 text-yellow-800 text-lg font-medium me-1 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
+            class="bg-yellow-100 text-yellow-800 text-xl font-medium me-0.5 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300"
             title={`#${this.props.order}`}>
             {this.props.keyword}
         </span>
     );
   }
 }
-
-
-/*<span class="inline-flex">
-    <Tooltip content={`#${this.props.order}`} class="">
-        <span class="bg-yellow-100 text-yellow-800 text-lg font-medium me-1 px-1.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-            {this.props.keyword}
-        </span>
-    </Tooltip>
-</span>*/

@@ -36,6 +36,7 @@ import {
   BarChartIcon, 
   LayersIcon,
   CheckIcon,
+  KeyIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
 import { 
@@ -553,7 +554,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
             title={`${Object.keys(this.state.foundKeywords).length == "0" ? "No" : Object.keys(this.state.foundKeywords).length} keyword${Object.keys(this.state.foundKeywords).length > 1 ? "s" : ""} detected`}
             class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
             <span class="text-base me-2">({Object.keys(this.state.foundKeywords).length})</span>
-            <svg viewBox="0 0 24 24" width="10" height="10" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+            <KeyIcon 
+              size="10"/>
           </button>;
 
   }
@@ -649,6 +651,11 @@ export default class AboveFeedPostWidgetView extends React.Component{
     var pipe = [...htmlElement.childNodes];
     while (pipe.length){
       var node = pipe.shift();
+
+      if (node.display === "none"){
+        continue;
+      }
+
       var children = node.childNodes;
 
       if (children.length){

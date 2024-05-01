@@ -1,7 +1,11 @@
 /*import './ProfileViewHeader.css'*/
 import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
-import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
+import { 
+  OverlayTrigger, 
+  Tooltip as ReactTooltip, 
+  Popover, 
+} from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProfilesGeoMapChart from "./charts/ProfilesGeoMapChart";
@@ -10,6 +14,7 @@ import {
   appParams, 
   dbDataSanitizer,
   setLocalProfiles,
+  checkOneKeyword,
 } from "../Local_library";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import { 
@@ -19,6 +24,7 @@ import {
   BookmarkIcon, 
   DuplicateIcon,
   ReminderIcon,
+  KeyIcon,
 } from "./SVGs";
 import { db } from "../../db";
 
@@ -39,13 +45,17 @@ export default class ProfileViewHeader extends React.Component{
       followersCompData: null,
       connectionsCompData: null, 
       allProfilesReadiness: false,
+      keywords: null,
     };
 
     this.setConnectionModalData = this.setConnectionModalData.bind(this);
     this.handleConnectionModalShow = this.handleConnectionModalShow.bind(this);
+    this.setDetectedKeywords = this.setDetectedKeywords.bind(this);
   }
 
-  componentDidMount() {
+  componentDidMount(){
+
+    this.setDetectedKeywords();
 
   }
 
@@ -146,6 +156,28 @@ export default class ProfileViewHeader extends React.Component{
 
   }
 
+  async setDetectedKeywords(){
+
+    const keywords = await db.keywords
+                             .toArray();
+
+    var detected = {};
+
+    for (var keyword of keywords){
+      var result = checkOneKeyword(keyword.name, this.props.profile);
+      if (result){
+        detected[keyword.name.toLowerCase()] = result;
+      }
+    }
+
+    if (!Object.keys(detected).length){
+      return;
+    }
+
+    this.setState({keywords: detected});
+
+  }
+
   render(){
     return (
       <>
@@ -158,7 +190,7 @@ export default class ProfileViewHeader extends React.Component{
                 <AlertCircleIcon size="14" className="text-warning"/>
               </span>
             </OverlayTrigger>
-          <span>The data below are only the ones made publicly available by this user on its linkedin profile page</span>
+          <span>The approximative data below are only the ones made publicly available by this user on its linkedin profile page</span>
         </p>
         <div class="card mb-3 shadow mt-1">
           <div class="card-body text-center">
@@ -234,6 +266,27 @@ export default class ProfileViewHeader extends React.Component{
                   </a>
                 </OverlayTrigger>
               </span>
+              { this.state.keywords 
+                  && <span>
+                      ·
+                      <OverlayTrigger 
+                        trigger="click" 
+                        placement="top" 
+                        overlay={<Popover id="popover-basic">
+                                  {/*<Popover.Header as="h3">Keywords</Popover.Header>*/}
+                                  <Popover.Body className="p-1">
+                                    { Object.keys(this.state.keywords).map(keyword => (<span class="badge bg-primary-subtle text-primary-emphasis rounded-pill mx-1">{`${keyword} (${this.state.keywords[keyword]})`}</span>)) }
+                                  </Popover.Body>
+                                </Popover>}>
+                        <span 
+                          title="Detected keywords"
+                          class="handy-cursor">
+                          <KeyIcon 
+                            size="24" 
+                            className="mx-2" />
+                        </span>
+                      </OverlayTrigger>
+                    </span>}
             </p>
           </div>
         </div>
