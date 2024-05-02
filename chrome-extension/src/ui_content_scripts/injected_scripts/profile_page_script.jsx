@@ -20,41 +20,137 @@
 */
 
 import { 
-  DataExtractorBase, 
+  ScriptAgentBase, 
   publicDataExtractor, 
   authDataExtractor ,
   sendTabData,
+  getProfilePublicViewMainHtmlElements,
+  checkAndHighlightKeywordsInHtmlEl,
+  presetUiWithWidgets,
 } from "./main_lib";
+import styles from "../styles.min.css";
+import ReactDOM from 'react-dom/client';
+import AboutDataChartWidget from "../widgets/profile/AboutDataChartWidget";
+import EducationDataChartWidget from "../widgets/profile/EducationDataChartWidget";
+import ExperienceDataChartWidget from "../widgets/profile/ExperienceDataChartWidget";
+import React from 'react';
+// import { } from "../../popup/Local_library";
 
-// Content script designed to make sure the active tab is a linkedin page
-
-export default class ProfileDataExtractor extends DataExtractorBase {
+export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   static webPageData = null;
+  static detectedKeywords = {};
 
   constructor(){
     super();
+  }
 
-    // this.extractSendTimeOut = null;
+  static checkAndHighlightKeywords(mainHtmlElements, keywords, highlightedKeywordBadgeColors, appSettings){
+
+    for (var htmlElement of Object.values(mainHtmlElements)){
+      checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, this.detectedKeywords, highlightedKeywordBadgeColors);
+    }
+
+    if (!Object.keys(this.detectedKeywords).length){
+      return;
+    }
+
+    presetUiWithWidgets(Object.keys(this.detectedKeywords), "keywords");
+
+    if (appSettings.notifications){
+      chrome.runtime.sendMessage({header: "NOTIFY_USER", data: "keywords"}, (response) => {
+        console.log('notify user request sent', response);
+      });
+    }
 
   }
 
-  static setUpExtensionWidgets(){
-    // if i need to do something here for later ideas
+  static updateUi(props){
+
+    var mainHtmlElements = getProfilePublicViewMainHtmlElements();
+
+    this.checkAndHighlightKeywords(mainHtmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
+    
+    Object.keys(mainHtmlElements).forEach(htmlElementTitle => {
+
+      if (["about", "experience", "education"].indexOf(htmlElementTitle) != -1){
+
+        var htmlElement = mainHtmlElements[htmlElementTitle];
+
+        var newDivTag = document.createElement('div');
+        // newDivTag.classList.add(feedPostDataModalClassName);
+        htmlElement.prepend(newDivTag);
+        newDivTag.attachShadow({ mode: 'open' });
+
+        ReactDOM.createRoot(newDivTag.shadowRoot).render(
+                <React.StrictMode>
+                  <style type="text/css">{styles}</style>
+
+                  { htmlElementTitle == "about" 
+                      && <AboutDataChartWidget
+                          appSettings={props.appSettings}
+                          tabId={props.tabId}/>}
+
+                  { htmlElementTitle == "education" 
+                      && <EducationDataChartWidget
+                          appSettings={props.appSettings}
+                          tabId={props.tabId}/>}
+
+                  { htmlElementTitle == "experience" 
+                      && <ExperienceDataChartWidget
+                          appSettings={props.appSettings}
+                          tabId={props.tabId}/>}
+
+                </React.StrictMode>
+            );
+
+      }
+
+    });
+
   }
 
   static runTabDataExtractionProcess(props){
 
-    const webPageData = this.extractData();
+    var webPageData = null,
+        mainHtmlElements = getProfilePublicViewMainHtmlElements();
+    
+    if (!this.webPageData){
 
-    if (!webPageData
-          || (webPageData && webPageData == this.webPageData)){
+      webPageData = this.extractData();
+
+      this.webPageData = {};
+      for (var htmlElementTitle in mainHtmlElements){
+        this.webPageData[htmlElementTitle] = mainHtmlElements[htmlElementTitle] 
+                                                ? mainHtmlElements[htmlElementTitle].innerHTML
+                                                : null;
+      }
+
+    }
+    else{
+      
+      var same = true;
+      for (var htmlElementTitle in mainHtmlElements){
+        var innerHTML = mainHtmlElements[htmlElementTitle] 
+                          ? mainHtmlElements[htmlElementTitle].innerHTML
+                          : null;
+        if (this.webPageData[htmlElementTitle] != innerHTML){
+          same = false;
+        }
+        this.webPageData[htmlElementTitle] = innerHTML;
+      }
+
+      if (!same){
+        webPageData = this.extractData();
+      }
+
+    }
+
+    if (!webPageData){
       return;
     }
 
-    sendTabData(props.tabId, props.pageUrl, webPageData, () => {
-      this.webPageData = webPageData;
-    });  
+    sendTabData(props.tabId, webPageData);  
 
   }
 

@@ -30,7 +30,6 @@ import {
   saveCurrentPageTitle, 
   appParams,
 } from "./Local_library";
-import { Link } from 'react-router-dom';
 import eventBus from "./EventBus";
 import { 
   switchToView,  

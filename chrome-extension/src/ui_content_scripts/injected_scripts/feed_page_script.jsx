@@ -21,11 +21,11 @@
 
 
 import { 
-	DataExtractorBase,
+	ScriptAgentBase,
 } from "./main_lib";
 import React from 'react';
 import { 
-	appParams 
+	appParams,
 } from "../../popup/Local_library";
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
@@ -34,7 +34,7 @@ import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
 
 const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
-export default class FeedDataExtractor extends DataExtractorBase {
+export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static timerDisplay = false;
 
@@ -42,7 +42,7 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		super();
 	}
 
-	static setUpExtensionWidgets(props){
+	static updateUi(props){
 
 		if (document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 			return;
@@ -106,7 +106,8 @@ export default class FeedDataExtractor extends DataExtractorBase {
 		              	tabId={props.tabId}
 		              	// timerDisplay={this.timerDisplay}
 		              	allKeywords={props.allKeywords}
-		              	visitId={props.visitId}/>
+		              	visitId={props.visitId}
+		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}/>
 		            </React.StrictMode>
 		        );
 

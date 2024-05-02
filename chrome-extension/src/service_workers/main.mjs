@@ -33,7 +33,6 @@ import {
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
     deactivateTodayReminders,
-    checkOneKeyword,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
@@ -229,34 +228,32 @@ function injectScriptsInTab(tabId, url, visitId){
             postData = await getPostFromPostUrl(url);
         }
 
+        const keywords = (await db.keywords.toArray()).map(keyword => keyword.name.toLowerCase());
+        var payload = {
+            tabId: tabId, 
+            settings: {
+                lastDataResetDate: settings.lastDataResetDate,
+                notifications: settings.notifications,
+            },
+            visitId: visitId,
+            postData: postData,
+            allKeywords: keywords,
+        };
+
         chrome.tabs.sendMessage(tabId, {
                 header: messageMeta.header.CS_SETUP_DATA, 
-                data: {
-                    tabId: tabId, 
-                    settings: {lastDataResetDate: settings.lastDataResetDate},
-                    visitId: visitId,
-                    postData: postData,
-                }
+                data: payload,
             }, 
             (response) => {
-                console.log('tabId sent', response);
+                console.log('tabId sent', response, payload);
             }
         ); 
-
-        if (isLinkedinFeed(url)){
-            db.keywords.toArray().then((keywords) => {
-                keywords = keywords.map(keyword => keyword.name);
-                chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {allKeywords: keywords}}, (response) => {
-                    console.log('Keywords sent', keywords, response);
-                }); 
-            });
-        }
 
         if (settings.notifications){
             getTodayReminders(db, (reminders) => {
                 if (reminders.length){
 
-                    var uuid = uuidv4();
+                    const uuid = uuidv4();
                     chrome.notifications.create(uuid, {
                         title: 'Linkbeam',
                         message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
@@ -645,35 +642,6 @@ async function recordProfileVisit(tabData){
 
     }
 
-    async function checkKeywordOccurence(profile, tabId){
-
-        var keywords = await db
-                           .keywords
-                           .toArray();
-
-        var detectedKeywords = [];
-        for (var keyword of keywords){
-            if (checkOneKeyword(keyword.name, profile)){
-                detectedKeywords.push(keyword);
-            }
-        }
-
-        if (detectedKeywords.length){
-
-            chrome.notifications.create('', {
-              title: 'Linkbeam',
-              message: `${detectedKeywords.length}  keyword${reminders.length <= 1 ? "" : "s"} detected `,
-              iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
-              type: 'basic'
-            });
-
-            chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {detectedKeywords: detectedKeywords}}, (response) => {
-                console.log('detectedKeywords sent', response);
-            });  
-        }
-
-    }
-
     const dateTime = new Date().toISOString(),
           badgeText = "1";
     var profileData = null;
@@ -694,9 +662,8 @@ async function recordProfileVisit(tabData){
             sessionItem.myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl, profileData: profileData});
         }
         else{
-
-            const fullProfileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
-            const newProfileData = getNewProfileData(fullProfileData, tabData.extractedData);
+            profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
+            const newProfileData = getNewProfileData(profileData, tabData.extractedData);
 
             await db.visits
                     .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
@@ -715,6 +682,10 @@ async function recordProfileVisit(tabData){
             chrome.action.setBadgeText({text: badgeText});
         }
     });
+
+    chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData}, (response) => {
+        console.log('profile data response sent', response);
+    }); 
 
     async function processPrimeVisit(){
 
@@ -746,11 +717,6 @@ async function recordProfileVisit(tabData){
         var settings = await db.settings
                                .where({id: 1})
                                .first();
-
-        // checking the occurence of any predefined keyword in the profile
-        if (settings.notifications){
-            checkKeywordOccurence(tabData.extractedData, tabData.tabId);
-        }
 
         if (settings.autoTabOpening){
             openNewTab(tabData.tabUrl);
@@ -797,6 +763,36 @@ async function processMessageEvent(message, sender, sendResponse){
             // Saving the new notification setting state
             var tabData = message.data;
             await processTabData(tabData);
+            break;
+        }
+
+        case "NOTIFY_USER":{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            if (message.data == "keywords"){
+
+                const uuid = uuidv4();
+                chrome.notifications.create(uuid, {
+                  title: 'Linkbeam',
+                  message: `Keyword detected for this user`,
+                  iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                  type: 'basic',
+                });
+
+                chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+                    if (notificationId == uuid){
+                        if (buttonIndex == 0){
+                            chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {show: true, widget: "KeywordModal"}}, (response) => {
+                                console.log('Show keyword modal request sent', response);
+                            }); 
+                        }
+                    }
+                });
+
+            }
             break;
         }
 

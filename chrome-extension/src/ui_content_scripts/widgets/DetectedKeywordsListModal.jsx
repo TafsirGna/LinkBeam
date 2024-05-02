@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './DetectedKeywordsListModal.css'*/
 import React from 'react';
 import { appParams } from "../../popup/Local_library";
@@ -20,13 +41,19 @@ export default class DetectedKeywordsListModal extends React.Component{
   handleKeywordsModalShow = () => {
     this.setState({keywordsModalShow: true}); 
   }
-  handleKeywordsModalClose = () => { this.setState({keywordsModalShow: false}); }
+  handleKeywordsModalClose = () => { this.setState({keywordsModalShow: false}, () => {
+
+    var audioElement = new Audio(chrome.runtime.getURL("/assets/gaming-lock.mp3"));
+    audioElement.play();
+
+  }); }
   
 
   componentDidMount() {
 
-    var audioElement = new Audio(chrome.runtime.getURL("/assets/gaming-lock.mp3"));
-    audioElement.play();
+  }
+
+  componentDidUpdate(prevProps, prevState){
 
   }
 
@@ -64,7 +91,7 @@ export default class DetectedKeywordsListModal extends React.Component{
                                                 <div class="font-bold">Keywords: </div>
                                                 <div class="my-2.5">
                                                             { this.props.objects.map((keyword, index) => (<span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">
-                                                                                                                                                                        {keyword.name}
+                                                                                                                                                                        {keyword}
                                                                                                                                                                     </span>) ) }
                                                 </div>
                                                         </> } 

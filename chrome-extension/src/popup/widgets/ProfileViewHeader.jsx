@@ -15,6 +15,7 @@ import {
   dbDataSanitizer,
   setLocalProfiles,
   checkOneKeyword,
+  shuffle,
 } from "../Local_library";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import { 
@@ -30,6 +31,14 @@ import { db } from "../../db";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
+
+const highlightedKeywordColors = shuffle([
+  "bg-primary-subtle text-primary-emphasis",
+  "bg-secondary-subtle text-secondary-emphasis",
+  "bg-success-subtle text-success-emphasis",
+  "bg-warning-subtle text-warning-emphasis",
+  "bg-info-subtle text-info-emphasis",
+]);
 
 
 export default class ProfileViewHeader extends React.Component{
@@ -275,7 +284,7 @@ export default class ProfileViewHeader extends React.Component{
                         overlay={<Popover id="popover-basic">
                                   {/*<Popover.Header as="h3">Keywords</Popover.Header>*/}
                                   <Popover.Body className="p-1">
-                                    { Object.keys(this.state.keywords).map(keyword => (<span class="badge bg-primary-subtle text-primary-emphasis rounded-pill mx-1">{`${keyword} (${this.state.keywords[keyword]})`}</span>)) }
+                                    { Object.keys(this.state.keywords).map((keyword, index) => (<span class={`badge ${highlightedKeywordColors[index % highlightedKeywordColors.length]} rounded-pill mx-1`}>{`${keyword} (${this.state.keywords[keyword]})`}</span>)) }
                                   </Popover.Body>
                                 </Popover>}>
                         <span 

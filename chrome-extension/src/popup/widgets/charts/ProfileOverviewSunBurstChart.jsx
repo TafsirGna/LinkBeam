@@ -1,6 +1,5 @@
 /*import './ProfileOverviewSunBurstChart.css'*/
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCanvas, dbDataSanitizer } from "../../Local_library";
 import * as d3 from "d3";
@@ -40,6 +39,8 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     var expChildren = [];
     // Experience data
     if (this.props.profile.experience){
+
+      console.log("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°° : ", this.props.profile);
 
       for (var experience of this.props.profile.experience){
 

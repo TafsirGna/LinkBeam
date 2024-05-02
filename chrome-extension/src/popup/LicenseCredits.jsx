@@ -27,7 +27,6 @@ import {
   saveCurrentPageTitle, 
   appParams,
 } from "./Local_library";
-import { Link } from 'react-router-dom';
 /*import 'bootstrap/dist/css/bootstrap.min.css';*/
 
 export default class LicenseCreditsView extends React.Component{

@@ -21,7 +21,6 @@
 
 import React from 'react';
 import './App.css';
-// import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AboutView from "./popup/AboutView";
 import HomeView from "./popup/HomeView";
 import SettingsView from "./popup/SettingsView";

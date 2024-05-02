@@ -22,6 +22,7 @@
 import styles from "../styles.min.css";
 import TodayRemindersListModal from "../widgets/TodayRemindersListModal";
 import DetectedKeywordsListModal from "../widgets/DetectedKeywordsListModal";
+import HighlightedKeywordView from "../widgets/HighlightedKeywordView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {
@@ -29,9 +30,10 @@ import {
     isLinkedinProfilePage,
     messageMeta,
     appParams,
+    breakHtmlElTextContentByKeywords,
 } from "../../popup/Local_library";
 
-export class DataExtractorBase {
+export class ScriptAgentBase {
 
   static EXTRACTION_PROCESS_INTERVAL_TIME = 3000;
 
@@ -50,11 +52,30 @@ export class DataExtractorBase {
 
 	}
 
-	getTabId(messageData, sendResponse){
+	setInitData(messageData, sendResponse){
 
 	  this.tabId = messageData.tabId;
 
-    this.setUpExtensionWidgets();
+    if (Object.hasOwn(messageData, "settings")){
+      this.appSettings = messageData.settings;
+    }
+
+    if (Object.hasOwn(messageData, "visitId")){
+      if (messageData.visitId){
+        this.visitId = messageData.visitId;
+      }
+    }
+
+    if (Object.hasOwn(messageData, "postData")){
+        this.otherArgs.postData = messageData.postData;
+    }
+
+    if (Object.hasOwn(messageData, "allKeywords")){
+      this.allKeywords = messageData.allKeywords;
+      // console.log("Settiiiiiiiiiiiinnnnnnnnnnng keywords : ", this.allKeywords);
+    }
+
+    this.updateUi();
 
     this.runTabDataExtractionProcess();
 
@@ -63,45 +84,6 @@ export class DataExtractorBase {
   // runTabDataExtractionProcess(){
 
   // }
-
-	createModalWidgets(messageData, property, sendResponse){
-
-	  // Acknowledge the message
-	  sendResponse({
-	      status: "ACK"
-	  });
-
-    const LinkbeamKeywordReminderModalsWrapperId = `Linkbeam_${property}ModalWrapperId`;
-    if (document.body.querySelector(`#${LinkbeamKeywordReminderModalsWrapperId}`)){
-      return;
-    }
-
-	  var objects = messageData[property];
-
-	  var shadowHost = document.createElement('div');
-	  shadowHost.id = LinkbeamKeywordReminderModalsWrapperId;
-    // shadowHost.classList.add(LinkbeamKeywordReminderModalsWrapperClassName);
-	  shadowHost.style.cssText='all:initial';
-	  document.body.appendChild(shadowHost);
-
-	  shadowHost.attachShadow({ mode: 'open' });
-	  const shadowRoot = shadowHost.shadowRoot;
-
-	  ReactDOM.createRoot(shadowRoot).render(
-	    <React.StrictMode>
-	      <style type="text/css">{styles}</style>
-	      { property == "reminders" 
-            && <TodayRemindersListModal 
-                  objects={objects}
-                  /*className={}*/ />}
-	      { property == "detectedKeywords" 
-            && <KeywordsModalView 
-                  objects={objects}
-                  /*className={}*/ />}
-	    </React.StrictMode>
-	  );
-
-	}
 
 	startMessageListener(){
 
@@ -118,21 +100,7 @@ export class DataExtractorBase {
 	      if (Object.hasOwn(message.data, "tabId")){
           if (!this.tabId){
 
-            if (Object.hasOwn(message.data, "settings")){
-              this.appSettings = message.data.settings;
-            }
-
-            if (Object.hasOwn(message.data, "visitId")){
-              if (message.data.visitId){
-                this.visitId = message.data.visitId;
-              }
-            }
-
-            if (Object.hasOwn(message.data, "postData")){
-                this.otherArgs.postData = message.data.postData;
-            }
-
-            this.getTabId(message.data, sendResponse);
+            this.setInitData(message.data, sendResponse);
 
           }
           else{
@@ -140,14 +108,8 @@ export class DataExtractorBase {
           }
 	      }
 	      else if (Object.hasOwn(message.data, "reminders")){
-	        this.createModalWidgets(message.data, "reminders", sendResponse);
+	        presetUiWithWidgets(message.data, "reminders");
 	      }
-	      else if (Object.hasOwn(message.data, "detectedKeywords")){
-	        this.createModalWidgets(message.data, "detectedKeywords", sendResponse);
-	      }
-        else if (Object.hasOwn(message.data, "allKeywords")){
-          this.allKeywords = message.data.allKeywords;
-        }
 
 		  }
 
@@ -158,25 +120,153 @@ export class DataExtractorBase {
 };
 
 // Function for sending the page data
- export function sendTabData(tabId, pageUrl, data, callback = null){
+ export function sendTabData(tabId, data, callback = null){
 
-    pageUrl = pageUrl.split("?")[0];
-    pageUrl = isLinkedinFeed(pageUrl)
-                ? pageUrl 
-                : (isLinkedinProfilePage(pageUrl)
-                    ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
-                    : null);
+  var pageUrl = window.location.href.split("?")[0];
+  pageUrl = isLinkedinFeed(pageUrl)
+              ? pageUrl 
+              : (isLinkedinProfilePage(pageUrl)
+                  ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
+                  : null);
 
-    chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
-      
-      console.log('linkedin-data response sent', response, data);
+  chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
+    
+    console.log('linkedin-data response sent', response, data);
 
-      if (callback) { callback(); }
+    if (callback) { callback(); }
 
-    });
+  });
 
+}
+
+
+function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadgeColors, detected){
+
+  for (var textItem of textArray){
+    var newChild = document.createElement('span');
+    if (keywords.indexOf(textItem.toLowerCase()) != -1){
+
+      detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
+
+      newChild.attachShadow({ mode: 'open' });
+      ReactDOM.createRoot(newChild.shadowRoot).render(
+              <React.StrictMode>
+                <style type="text/css">{styles}</style>
+                <HighlightedKeywordView
+                  keyword={textItem}
+                  order={detected[textItem.toLowerCase()]}
+                  color={highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]}/>
+              </React.StrictMode>
+          );
+
+    }
+    else{
+      newChild.innerHTML = textItem;
+    }
+    node.appendChild(newChild);
   }
 
+  return node;
+
+}
+
+export function presetUiWithWidgets(messageData, property){
+
+  const LinkbeamKeywordReminderModalsWrapperId = `Linkbeam_${property}ModalWrapperId`;
+  if (document.body.querySelector(`#${LinkbeamKeywordReminderModalsWrapperId}`)){
+    return;
+  }
+
+  var objects = messageData[property];
+
+  var shadowHost = document.createElement('div');
+  shadowHost.id = LinkbeamKeywordReminderModalsWrapperId;
+  // shadowHost.classList.add(LinkbeamKeywordReminderModalsWrapperClassName);
+  shadowHost.style.cssText='all:initial';
+  document.body.appendChild(shadowHost);
+
+  shadowHost.attachShadow({ mode: 'open' });
+  const shadowRoot = shadowHost.shadowRoot;
+
+  ReactDOM.createRoot(shadowRoot).render(
+    <React.StrictMode>
+      <style type="text/css">{styles}</style>
+      { property == "reminders" 
+          && <TodayRemindersListModal 
+                objects={objects}/>}
+      { property == "keywords" 
+          && <DetectedKeywordsListModal 
+                objects={objects}/>}
+    </React.StrictMode>
+  );
+
+}
+
+export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detected, highlightedKeywordBadgeColors){
+
+  if (!htmlElement){
+    return;
+  }
+
+  var pipe = [...htmlElement.childNodes];
+  while (pipe.length){
+    var node = pipe.shift();
+
+    // focusing only on the visible part of the post
+    if (node.display === "none"){
+      continue;
+    }
+
+    var children = node.childNodes;
+
+    if (children.length){
+      pipe = [...children].concat(pipe);
+    }
+    else{ // leaf node
+      if (node.nodeType == Node.TEXT_NODE){
+
+        //
+        // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){
+
+        // }
+
+        var newNode = document.createElement('span');
+        newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
+        node.parentNode.replaceChild(newNode, node);
+      }
+    }
+
+  } 
+
+}
+
+
+export function getProfilePublicViewMainHtmlElements(){
+
+  var coreSectionContainerLabel = ".core-section-container.";
+
+  return {
+    full_name: document.querySelector(".top-card-layout__title"),
+    avatar: document.querySelector(".top-card__profile-image"),
+    cover_image: document.querySelector(".cover-img__image"),
+    location: document.querySelector('.top-card-layout__first-subline .not-first-middot:nth-child(1)'),
+    job_title: document.querySelector(".top-card-layout__headline"),
+    followers: (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[0],
+    connections: (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[1],
+    featured_experience_education: document.querySelector('.top-card__links-container'),
+    about: document.querySelector(`${coreSectionContainerLabel}summary`),
+    education: document.querySelector(`${coreSectionContainerLabel}education`),
+    experience: document.querySelector(`${coreSectionContainerLabel}experience`),
+    languages: document.querySelector(`${coreSectionContainerLabel}languages`),
+    certifications: document.querySelector(`${coreSectionContainerLabel}certifications`),
+    projects: document.querySelector(`${coreSectionContainerLabel}projects`),
+  }
+
+}
+
+export function getProfileAuthViewMainHtmlElements(){
+
+}
 
 
 export const publicDataExtractor = {
@@ -258,7 +348,7 @@ export const publicDataExtractor = {
 
   about: function(){
 
-    let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container__content");
+    let userAbout = null, userAboutTagContainer = document.querySelector(".core-section-container.summary");
     if (userAboutTagContainer){
       userAbout = userAboutTagContainer.textContent;
 
@@ -287,7 +377,7 @@ export const publicDataExtractor = {
 
       educationData = [];
 
-      Array.from(document.querySelectorAll(sectionName + " li")).forEach((educationLiTag) => {
+      Array.from(document.querySelectorAll(`${sectionName} li`)).forEach((educationLiTag) => {
         var education = {
           entity:{
             name: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").textContent : null),
@@ -338,7 +428,7 @@ export const publicDataExtractor = {
 
       experienceData = [];
 
-      Array.from((document.querySelector(sectionName + " .experience__list")).children).forEach((experienceLiTag) => {
+      Array.from((document.querySelector(`${sectionName} ul`)).querySelectorAll("li")).forEach((experienceLiTag) => {
         
         var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
         if (groupPositions){
@@ -377,6 +467,8 @@ export const publicDataExtractor = {
         }
 
       });
+
+      console.log("<<<<<<<<<<<<<<<<<< : ", experienceData, experienceSectionTag);
 
     }
 

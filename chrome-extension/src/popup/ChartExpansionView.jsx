@@ -29,7 +29,6 @@ import {
   getPeriodVisits,
   getProfileDataFrom,
 } from "./Local_library";
-import { Link } from 'react-router-dom';
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";

@@ -24,7 +24,6 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
-import { Link } from 'react-router-dom';
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import moment from 'moment';

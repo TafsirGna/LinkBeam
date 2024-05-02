@@ -31,6 +31,7 @@ import {
 } from "../../../popup/Local_library";
 import{
   sendTabData,
+  checkAndHighlightKeywordsInHtmlEl
 } from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
@@ -50,7 +51,6 @@ import {
   TextInput, 
   Textarea 
 } from "flowbite-react";
-import HighlightedKeywordView from "../HighlightedKeywordView";
 import ReactDOM from 'react-dom/client';
 import styles from "../../styles.min.css";
 
@@ -306,7 +306,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
       repostsCount: getPostReactionsValues("repost"),
     };
 
-    sendTabData(this.props.tabId, window.location.href, post);
+    sendTabData(this.props.tabId, post);
 
   }
 
@@ -576,100 +576,15 @@ export default class AboveFeedPostWidgetView extends React.Component{
   // We're gonna use Deep First Search to pull this off
   checkAndHighlightKeywordsInPost(){
 
-    function breakByKeywords(textContent, keywords/*, detected*/){
-
-      var indices = [];
-      for (var keyword of keywords){
-        for (var i = 0; i < textContent.length; i++){
-          if (textContent.slice(i).toLowerCase().indexOf(keyword) == 0){
-            indices.push({keyword: keyword, index: i});
-            // detected[keyword] = !(keyword in detected) ? 1 : detected[keyword] + 1;
-          }
-        }
-      }
-
-      if (!indices.length){
-        return [textContent];
-      }
-
-      indices.sort((a, b) => (a.index - b.index));
-      var start = 0, textArray = [];
-      for (var indexObject of indices){
-        if (start != indexObject.index){
-          textArray.push(textContent.slice(start, indexObject.index)); 
-        }
-        start = indexObject.index + indexObject.keyword.length;
-        textArray.push(textContent.slice(indexObject.index, start));
-      }
-
-      if (start < textContent.length){
-        textArray.push(textContent.slice(start));
-      }
-
-      return textArray;
-
-    }
-
-    function insertHtmlTags(node, textArray, keywords, detected){
-
-      for (var textItem of textArray){
-        var newChild = document.createElement('span');
-        if (keywords.indexOf(textItem.toLowerCase()) != -1){
-
-          detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
-
-          newChild.attachShadow({ mode: 'open' });
-          ReactDOM.createRoot(newChild.shadowRoot).render(
-                  <React.StrictMode>
-                    <style type="text/css">{styles}</style>
-                    <HighlightedKeywordView
-                      keyword={textItem}
-                      order={detected[textItem.toLowerCase()]}/>
-                  </React.StrictMode>
-              );
-
-        }
-        else{
-          newChild.innerHTML = textItem;
-        }
-        node.appendChild(newChild);
-      }
-
-      return node;
-
-    }
-
     var htmlElement = (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
                                                                        .querySelector("div[data-urn]")
                                                                      : this.state.postHtmlElement
                                                                                  .querySelector(".feed-shared-update-v2__description-wrapper")
                                                                                  .querySelector(".text-view-model");
 
-    var keywords = this.props.allKeywords.map(keyword => keyword.toLowerCase());
     var detected = {};
 
-    var pipe = [...htmlElement.childNodes];
-    while (pipe.length){
-      var node = pipe.shift();
-
-      if (node.display === "none"){
-        continue;
-      }
-
-      var children = node.childNodes;
-
-      if (children.length){
-        pipe = [...children].concat(pipe);
-      }
-      else{ // leaf node
-        if (node.nodeType == Node.TEXT_NODE){
-          var newNode = document.createElement('span');
-          newNode = insertHtmlTags(newNode, breakByKeywords(node.nodeValue, keywords/*, detected*/), keywords, detected);
-          node.parentNode.replaceChild(newNode, node);
-        }
-      }
-
-    } 
+    checkAndHighlightKeywordsInHtmlEl(htmlElement, this.props.allKeywords, detected, this.props.highlightedKeywordBadgeColors);
 
     this.setState({foundKeywords: detected});                                               
 
@@ -725,8 +640,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           </div>
                                           <div className="px-3 py-2">
                                             <p>
-                                              {Object.keys(this.state.foundKeywords).map(keyword => (
-                                                <span class="bg-blue-100 text-blue-800 text font-medium mx-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 text-base">{`${keyword} (${this.state.foundKeywords[keyword]})`}</span>
+                                              {Object.keys(this.state.foundKeywords).map((keyword, index) => (
+                                                <span class={`${this.props.highlightedKeywordBadgeColors[index % this.props.highlightedKeywordBadgeColors.length]} text-base font-medium mx-2 px-2.5 py-0.5 rounded`}>{`${keyword} (${this.state.foundKeywords[keyword]})`}</span>
                                               ))}
                                             </p>
                                           </div>

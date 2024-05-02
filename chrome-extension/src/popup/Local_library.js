@@ -556,6 +556,41 @@ export function checkOneKeyword(keyword, object){
 
 }
 
+export function breakHtmlElTextContentByKeywords(textContent, keywords){
+
+  var indices = [];
+  // console.log("keeeeeeeeeeyyyyyyyyywords : ", keywords);
+  for (var keyword of keywords){
+    for (var i = 0; i < textContent.length; i++){
+      if (textContent.slice(i).toLowerCase().indexOf(keyword) == 0){
+        indices.push({keyword: keyword, index: i});
+        // detected[keyword] = !(keyword in detected) ? 1 : detected[keyword] + 1;
+      }
+    }
+  }
+
+  if (!indices.length){
+    return [textContent];
+  }
+
+  indices.sort((a, b) => (a.index - b.index));
+  var start = 0, textArray = [];
+  for (var indexObject of indices){
+    if (start != indexObject.index){
+      textArray.push(textContent.slice(start, indexObject.index)); 
+    }
+    start = indexObject.index + indexObject.keyword.length;
+    textArray.push(textContent.slice(indexObject.index, start));
+  }
+
+  if (start < textContent.length){
+    textArray.push(textContent.slice(start));
+  }
+
+  return textArray;
+
+}
+
 export async function setLocalProfiles(db, eventBus/*, propertyList, callback = null*/){
 // export async function setLocalProfiles(component, db, eventBus, propertyList, callback = null){
 

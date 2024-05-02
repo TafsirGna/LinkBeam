@@ -19,16 +19,18 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './HighlightedKeywordView.css'*/
+/*import './ExtensionMarkerView.css'*/
 import React from 'react';
+import { Tooltip } from "flowbite-react";
 
-export default class HighlightedKeywordView extends React.Component{
+export default class ExtensionMarkerView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
     };
-  }
+
+  }  
 
   componentDidMount() {
 
@@ -36,12 +38,17 @@ export default class HighlightedKeywordView extends React.Component{
 
   render(){
     return (
-        <span 
-            // bg-green-100 dark:bg-green-900 dark:text-green-300 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded 
-            class= {`${this.props.color} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded`}
-            title={`#${this.props.order}`}>
-            {this.props.keyword}
-        </span>
+      <>
+        <div>
+              <img 
+                src={chrome.runtime.getURL("/assets/app_logo.png")} 
+                height="20" 
+                width="20"
+                onClick={this.props.onClick}
+                class="ms-auto handy-cursor"
+                title="Click to see analysis"/>
+        </div>
+      </>
     );
   }
 }

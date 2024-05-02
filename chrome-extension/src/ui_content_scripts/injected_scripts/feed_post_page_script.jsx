@@ -21,7 +21,7 @@
 
 
 import { 
-	DataExtractorBase,
+	ScriptAgentBase,
 } from "./main_lib";
 import React from 'react';
 import { 
@@ -34,13 +34,13 @@ import FeedPostDataModal from "../widgets/feed/FeedPostViewsChartModal";
 
 const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
-export default class FeedPostLayoutAgent extends DataExtractorBase {
+export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 	constructor(){
 		super();
 	}
 
-	static setUpExtensionWidgets(props){
+	static updateUi(props){
 
 		if (!document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 
@@ -48,18 +48,18 @@ export default class FeedPostLayoutAgent extends DataExtractorBase {
 			var newDivTag = document.createElement('div');
 			// newDivTag.classList.add(feedPostDataModalClassName);
 			newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
-	    document.body.appendChild(newDivTag);
-	    newDivTag.attachShadow({ mode: 'open' });
+		    document.body.appendChild(newDivTag);
+		    newDivTag.attachShadow({ mode: 'open' });
 
-			ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	            <React.StrictMode>
-	              <style type="text/css">{styles}</style>
-	              <FeedPostDataModal
-	              	appSettings={props.appSettings}
-	              	tabId={props.tabId}
-	              	/*visitId={props.visitId}*//>
-	            </React.StrictMode>
-	        );
+				ReactDOM.createRoot(newDivTag.shadowRoot).render(
+		            <React.StrictMode>
+		              <style type="text/css">{styles}</style>
+		              <FeedPostDataModal
+		              	appSettings={props.appSettings}
+		              	tabId={props.tabId}
+		              	/*visitId={props.visitId}*//>
+		            </React.StrictMode>
+		        );
 
 		}
 
