@@ -20,8 +20,6 @@
 */
 
 import styles from "../styles.min.css";
-import TodayRemindersListModal from "../widgets/TodayRemindersListModal";
-import DetectedKeywordsListModal from "../widgets/DetectedKeywordsListModal";
 import HighlightedKeywordView from "../widgets/HighlightedKeywordView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
@@ -107,9 +105,6 @@ export class ScriptAgentBase {
             this.isActiveTab = (this.tabId == message.data.tabId); 
           }
 	      }
-	      else if (Object.hasOwn(message.data, "reminders")){
-	        presetUiWithWidgets(message.data, "reminders");
-	      }
 
 		  }
 
@@ -154,8 +149,9 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
                 <style type="text/css">{styles}</style>
                 <HighlightedKeywordView
                   keyword={textItem}
-                  order={detected[textItem.toLowerCase()]}
-                  color={highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]}/>
+                  allDetected={detected}
+                  highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
+                  />
               </React.StrictMode>
           );
 
@@ -167,38 +163,6 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
   }
 
   return node;
-
-}
-
-export function presetUiWithWidgets(messageData, property){
-
-  const LinkbeamKeywordReminderModalsWrapperId = `Linkbeam_${property}ModalWrapperId`;
-  if (document.body.querySelector(`#${LinkbeamKeywordReminderModalsWrapperId}`)){
-    return;
-  }
-
-  var objects = messageData[property];
-
-  var shadowHost = document.createElement('div');
-  shadowHost.id = LinkbeamKeywordReminderModalsWrapperId;
-  // shadowHost.classList.add(LinkbeamKeywordReminderModalsWrapperClassName);
-  shadowHost.style.cssText='all:initial';
-  document.body.appendChild(shadowHost);
-
-  shadowHost.attachShadow({ mode: 'open' });
-  const shadowRoot = shadowHost.shadowRoot;
-
-  ReactDOM.createRoot(shadowRoot).render(
-    <React.StrictMode>
-      <style type="text/css">{styles}</style>
-      { property == "reminders" 
-          && <TodayRemindersListModal 
-                objects={objects}/>}
-      { property == "keywords" 
-          && <DetectedKeywordsListModal 
-                objects={objects}/>}
-    </React.StrictMode>
-  );
 
 }
 

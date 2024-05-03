@@ -21,7 +21,7 @@
 
 /*import './ExtensionMarkerView.css'*/
 import React from 'react';
-import { Tooltip } from "flowbite-react";
+import { Popover } from "flowbite-react";
 
 export default class ExtensionMarkerView extends React.Component{
 
@@ -40,13 +40,25 @@ export default class ExtensionMarkerView extends React.Component{
     return (
       <>
         <div>
-              <img 
-                src={chrome.runtime.getURL("/assets/app_logo.png")} 
-                height="20" 
-                width="20"
-                onClick={this.props.onClick}
-                class="ms-auto handy-cursor"
-                title="Click to see analysis"/>
+          <Popover
+            aria-labelledby="default-popover"
+            content={
+              <div className="w-64 text-base text-gray-500 dark:text-gray-400">
+                <div className="px-3 py-2">
+                  <p>Click to see all the analysis</p>
+                </div>
+              </div>
+            }
+            arrow={false}
+            trigger="hover">
+            <img 
+              src={chrome.runtime.getURL("/assets/app_logo.png")} 
+              height="20" 
+              width="20"
+              onClick={this.props.onClick}
+              class="ms-auto handy-cursor"
+              /*title="Click to see analysis"*//>
+          </Popover>
         </div>
       </>
     );

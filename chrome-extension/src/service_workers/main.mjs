@@ -268,10 +268,14 @@ function injectScriptsInTab(tabId, url, visitId){
                     chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
                         if (notificationId == uuid){
                             if (buttonIndex == 0){
-                                chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {show: true, widget: "ReminderModal"}}, (response) => {
-                                    console.log('Show reminder modal request sent', response);
-                                    deactivateTodayReminders(db);
-                                }); 
+
+                                chrome.tabs.create({
+                                  active: true,
+                                  url:  `/index.html?view=Calendar&dataType=Reminders`,
+                                }, () => {
+                                    // deactivateTodayReminders(db);
+                                });
+
                             }
                         }
                     });
@@ -780,16 +784,6 @@ async function processMessageEvent(message, sender, sendResponse){
                   message: `Keyword detected for this user`,
                   iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
                   type: 'basic',
-                });
-
-                chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
-                    if (notificationId == uuid){
-                        if (buttonIndex == 0){
-                            chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {show: true, widget: "KeywordModal"}}, (response) => {
-                                console.log('Show keyword modal request sent', response);
-                            }); 
-                        }
-                    }
                 });
 
             }

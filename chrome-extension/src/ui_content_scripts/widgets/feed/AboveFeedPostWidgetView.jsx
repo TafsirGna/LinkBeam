@@ -578,6 +578,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     var htmlElement = (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
                                                                        .querySelector("div[data-urn]")
+                                                                       .querySelector(".feed-shared-update-v2__description-wrapper")
                                                                      : this.state.postHtmlElement
                                                                                  .querySelector(".feed-shared-update-v2__description-wrapper")
                                                                                  .querySelector(".text-view-model");
@@ -647,6 +648,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           </div>
                                         </div>
                                       }
+                                      arrow={false}
+                                      // trigger="hover"
                                     >
                                     { this.getKeywordCountWidget() }
                                   </Popover>}
@@ -670,14 +673,22 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                   </span>
                                 }>
                                 { !isLinkedinFeedPostPage(window.location.href) 
-                                    && <Tooltip content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}>
-                                                          <Dropdown.Item 
-                                                            // onClick={this.toggleTimerDisplay}
-                                                            >
-                                                            {/*{ `${this.state.timerDisplay ? "Hide" : "Show"}` } */}
-                                                            Timer
-                                                          </Dropdown.Item>
-                                                        </Tooltip>}
+                                    && <Popover
+                                          aria-labelledby="default-popover"
+                                          content={
+                                            <div className="w-64 text-lg text-gray-500 dark:text-gray-400">
+                                              <div className="px-3 py-2 text-center">
+                                                <p>{secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}</p>
+                                              </div>
+                                            </div>
+                                          }
+                                          arrow={false}
+                                          trigger="hover"
+                                          placement="top">
+                                          <Dropdown.Item>
+                                            Timer
+                                          </Dropdown.Item>
+                                        </Popover>}
                                 { Object.hasOwn(this.state.reminder, "id") 
                                     && <Dropdown.Item 
                                           onClick={this.handleReminderModalShow}
@@ -691,27 +702,25 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                         </Dropdown.Item>}
                               </Dropdown>}
         
-        
-                      <Tooltip content={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}>
-                        <button 
-                          onClick={() => {if (this.state.impressionCount != null) {this.showFeedPostDataModal()}}} 
-                          type="button" 
-                          class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                          >
-        
-                          { this.state.impressionCount == null
-                              &&  <Spinner
-                                      aria-label="Extra small spinner example"
-                                      className="me-2"
-                                      size="xs"
-                                    />}
-        
-                          { this.state.impressionCount != null && <span class="text-base me-2">({this.state.impressionCount})</span>}
-                          <BarChartIcon 
-                              size="14"
-                              className=""/>
-                        </button>
-                      </Tooltip>
+                      <button 
+                        onClick={() => {if (this.state.impressionCount != null) {this.showFeedPostDataModal()}}} 
+                        type="button" 
+                        class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                        title={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}
+                        >
+      
+                        { this.state.impressionCount == null
+                            &&  <Spinner
+                                    aria-label="Extra small spinner example"
+                                    className="me-2"
+                                    size="xs"
+                                  />}
+      
+                        { this.state.impressionCount != null && <span class="text-base me-2">({this.state.impressionCount})</span>}
+                        <BarChartIcon 
+                            size="14"
+                            className=""/>
+                      </button>
                     </div>
                   </div>
         

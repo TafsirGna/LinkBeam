@@ -26,7 +26,6 @@ import {
   sendTabData,
   getProfilePublicViewMainHtmlElements,
   checkAndHighlightKeywordsInHtmlEl,
-  presetUiWithWidgets,
 } from "./main_lib";
 import styles from "../styles.min.css";
 import ReactDOM from 'react-dom/client';
@@ -54,8 +53,6 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
     if (!Object.keys(this.detectedKeywords).length){
       return;
     }
-
-    presetUiWithWidgets(Object.keys(this.detectedKeywords), "keywords");
 
     if (appSettings.notifications){
       chrome.runtime.sendMessage({header: "NOTIFY_USER", data: "keywords"}, (response) => {
