@@ -21,15 +21,12 @@ export default class ProfileAboutSectionView extends React.Component{
 		super(props);
 		this.state = {
 			collapseInfoOpen: false,
-			uniqueWordsCount: null,
-			oneUseWordCount: 0,
-			profileAbout: "",
+			wordsData: null,
 			donutChartModalShow: false,
 			donutChartModalItemData: null,
 			allProfilesReadiness: false,
 		};
 
-		this.setOneUseWordCount = this.setOneUseWordCount.bind(this);
 		this.setDonutChartData = this.setDonutChartData.bind(this);
 	}
 
@@ -37,16 +34,19 @@ export default class ProfileAboutSectionView extends React.Component{
 
     if (this.props.profile.info){
 
-      // setting profileAbout
-      var profileAbout = dbDataSanitizer.preSanitize(this.props.profile.info);
-      // Further sanitizing the string
-      ([".", "?", ",", ";", "!"]).forEach((item) => {
-      	profileAbout = profileAbout.replaceAll(item, "");
-      });
+      // setting sanitizedProfileAbout
+      const sanitizedProfileAbout = dbDataSanitizer.profileAbout(this.props.profile.info);
 
-      this.setState({profileAbout: profileAbout}, () => {
-        this.setOneUseWordCount();
-      });
+      var wordsData = {};
+      for (var word of sanitizedProfileAbout.split(" ")){
+          if (!word.length){
+              continue;
+          }
+
+          wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
+      }
+
+      this.setState({wordsData: wordsData});
       
     }
 
@@ -61,80 +61,6 @@ export default class ProfileAboutSectionView extends React.Component{
 				}
 			}
 		}
-
-	}
-
-	characterCount(){
-
-		return this.state.profileAbout.length;
-
-	}
-
-	averageWordLength(){
-
-		var words = this.state.profileAbout.split(" "), 
-				sum = 0;
-
-		for (var word of words){
-			sum += word.length;
-		}
-
-		return (sum / words.length).toFixed(2);
-
-	}
-
-	setOneUseWordCount(){
-
-		if (!this.state.uniqueWordsCount){
-		 
-			this.wordsFrequency(this.setOneUseWordCount);
-			return;
-
-		}
-
-		var count = 0;
-		for (var wordCount of this.state.uniqueWordsCount){
-			if (wordCount.count == 1){
-				count += 1;
-			}
-		}
-
-		count /= this.state.profileAbout.split(" ").length;
-		count = (count * 100).toFixed(2);
-		this.setState({oneUseWordCount: count});
-
-	}
-
-	wordsFrequency(callback = null){
-
-		if (this.state.uniqueWordsCount){
-			return;
-		}
-
-		var words = this.state.profileAbout.split(" "),
-				uniqueWordsCount = [];
-
-		for (var word of words){
-			var wordIndex = uniqueWordsCount.map(e => e.word).indexOf(word.toLowerCase());
-			if (wordIndex >= 0){
-				(uniqueWordsCount[wordIndex]).count += 1;
-			}
-			else{
-				uniqueWordsCount.push({word: word.toLowerCase(), count: 1});
-			}
-		}
-
-		this.setState({uniqueWordsCount: uniqueWordsCount}, () => {
-			if (callback){
-				callback();
-			}
-		});
-
-	}
-
-	wordCount(){
-
-		return this.state.profileAbout.split(" ").length;
 
 	}
 
@@ -191,33 +117,33 @@ export default class ProfileAboutSectionView extends React.Component{
 	render(){
 		return (
 			<>
-				{ !this.props.profile.info && <div class="text-center m-5 mt-2">
+				{ !this.state.wordsData && <div class="text-center m-5 mt-2">
 									 <AlertCircleIcon size="100" className="text-muted"/>
 									 <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No About data to show</span></p>
 								 </div> } 
 
-				{ this.props.profile.info && <div class="m-4">
+				{ this.state.wordsData && <div class="m-4">
 
 																			<div class="row">
 
 																				{[{
 																					cardText: "Word count",
-																					cardTitle: this.wordCount(),
+																					cardTitle: dbDataSanitizer.profileAbout(this.props.profile.info).split(" ").filter(word => word.length).length,
 																					onClickFunc: null,
 																				},
 																				{
 																					cardText: "Character count",
-																					cardTitle: this.characterCount(),
+																					cardTitle: dbDataSanitizer.preSanitize(this.props.profile.info).length,
 																					onClickFunc: null,
 																				},
 																				{
 																					cardText: "Average word length",
-																					cardTitle: this.averageWordLength(),
+																					cardTitle: (Object.keys(this.state.wordsData).map(word => word.length).reduce((acc, a) => acc + a, 0) / Object.keys(this.state.wordsData).length).toFixed(1),
 																					onClickFunc: null,
 																				},
 																				{
 																					cardText: "Unique words",
-																					cardTitle: `${this.state.oneUseWordCount}%`,
+																					cardTitle: `${(((Object.keys(this.state.wordsData).filter(word => this.state.wordsData[word] == 1).length * 100) / Object.keys(this.state.wordsData).length)).toFixed(1)}%`,
 																					onClickFunc: null,
 																				}].map(item => (<div class=/*handy-cursor*/" card mb-3 shadow small text-muted col mx-2 border border-1" /*onClick={() => {this.handleDonutChartModalShow({label: "WORD_COUNT", value: this.wordCount()})}}*/>
 																															<div class="card-body">
@@ -227,9 +153,9 @@ export default class ProfileAboutSectionView extends React.Component{
 																														</div>))}
 																			</div>
 
-																			{this.state.uniqueWordsCount && <div class="border border-1 mb-3 mt-2 shadow rounded">
+																			{this.state.wordsData && <div class="border border-1 mb-3 mt-2 shadow rounded">
 																																							<ProfileAboutBubbleChart 
-																																								objectData={this.state.uniqueWordsCount} />
+																																								objectData={this.state.wordsData} />
 																																						</div>}
 
 																			<div>

@@ -21,40 +21,45 @@
 
 /*import './AboutDataChartWidget.css'*/
 import React from 'react';
-import { appParams } from "../../../popup/Local_library";
+import { 
+    appParams,
+    dbDataSanitizer,
+} from "../../../popup/Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import ExtensionMarkerView from "./ExtensionMarkerView";
+import ProfileAboutBubbleChart from '../../../popup/widgets/charts/ProfileAboutBubbleChart';
 
 export default class AboutDataChartWidget extends React.Component{
 
-  constructor(props){
-    super(props);
-    this.state = {
-        modalShow: false,
-        profileData: null,
-    };
+    constructor(props){
+        super(props);
+        this.state = {
+            modalShow: false,
+            wordsData: null,
+        };
 
-    this.startMessageListener = this.startMessageListener.bind(this);
+        this.startMessageListener = this.startMessageListener.bind(this);
 
-  }
+    }
 
-  handleModalShow = () => {
-    this.setState({modalShow: true}); 
-  }
-  handleModalClose = () => { this.setState({modalShow: false}); }
-  
+    handleModalShow = () => {
+        this.setState({modalShow: true}); 
+    }
 
-  componentDidMount() {
+    handleModalClose = () => { this.setState({modalShow: false}); }
 
-    this.startMessageListener();
 
-  }
+    componentDidMount() {
 
-  componentDidUpdate(prevProps, prevState){
+        this.startMessageListener();
 
-  }
+    }
 
-  startMessageListener(){
+    componentDidUpdate(prevProps, prevState){
+
+    }
+
+    startMessageListener(){
 
         // Retrieving the tabId variable
         chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
@@ -66,8 +71,22 @@ export default class AboutDataChartWidget extends React.Component{
                     status: "ACK"
                 });
                       
-                if (!this.state.profileData){
-                    this.setState({profileData: message.data });
+                if (!this.state.wordsData){
+
+                    const profileData = message.data;
+                    const sanitizedProfileAbout = dbDataSanitizer.profileAbout(profileData.info);
+
+                    var wordsData = {};
+                    for (var word of sanitizedProfileAbout.split(" ")){
+                        if (!word.length){
+                            continue;
+                        }
+
+                        wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
+                    }
+
+                    this.setState({wordsData: wordsData});
+
                 }
             }
             
@@ -75,33 +94,39 @@ export default class AboutDataChartWidget extends React.Component{
 
     }
 
-  render(){
-    return (
-      <>
-        { this.state.profileData 
-            && <ExtensionMarkerView
-                onClick={this.handleModalShow} />}
+    render(){
+        return (
+          <>
+            { this.state.wordsData
+                && <ExtensionMarkerView
+                    onClick={this.handleModalShow} />}
 
 
-        { this.state.modalShow 
-              && <div class={"modal-container-ac84bbb3728 "}>
-                    <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-                      
-                      <div class="p-4">
-          
-                      </div>
-          
-                      <div class="p-4 text-lg">
-                        <div 
-                          onClick={this.handleModalClose} 
-                          class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                          <span>Dismiss</span>
+            { this.state.modalShow 
+                  && <div class={"modal-container-ac84bbb3728 "}>
+                        <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
+                          
+                          <div class="p-4">
+              
+                          {this.state.wordsData 
+                                && <div class="border border-1 mb-3 mt-2 shadow rounded">
+                                    <ProfileAboutBubbleChart 
+                                        objectData={this.state.wordsData} />
+                                </div>}
+
+                          </div>
+              
+                          <div class="p-4 text-lg">
+                            <div 
+                              onClick={this.handleModalClose} 
+                              class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                              <span>Dismiss</span>
+                            </div>
+                          </div>
+                          
                         </div>
-                      </div>
-                      
-                    </div>
-                  </div> }
-      </>
-    );
-  }
+                      </div> }
+          </>
+        );
+    }
 }

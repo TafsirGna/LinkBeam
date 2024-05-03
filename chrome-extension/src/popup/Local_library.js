@@ -187,6 +187,12 @@ export const dbDataSanitizer = {
   },
 
 
+  profileAbout: function(str){
+
+    return this.preSanitize(str).replace(/[^a-zA-Z ]/g, "");
+
+  },
+  
   periodDates: function(expPeriod, func){
 
     // handling date range

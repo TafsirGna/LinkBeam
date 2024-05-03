@@ -40,8 +40,6 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     // Experience data
     if (this.props.profile.experience){
 
-      console.log("°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°° : ", this.props.profile);
-
       for (var experience of this.props.profile.experience){
 
         var entityName = dbDataSanitizer.preSanitize(experience.entity.name), 

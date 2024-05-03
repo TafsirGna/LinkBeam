@@ -577,11 +577,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
   checkAndHighlightKeywordsInPost(){
 
     var htmlElement = (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
-                                                                       .querySelector("div[data-urn]")
-                                                                       .querySelector(".feed-shared-update-v2__description-wrapper")
-                                                                     : this.state.postHtmlElement
+                                                                         .querySelector("div[data-urn]")
+                                                                         .querySelector(".feed-shared-update-v2__description-wrapper")
+                                                                     : (this.state.postHtmlElement
                                                                                  .querySelector(".feed-shared-update-v2__description-wrapper")
-                                                                                 .querySelector(".text-view-model");
+                                                                        ? this.state.postHtmlElement
+                                                                                 .querySelector(".feed-shared-update-v2__description-wrapper")
+                                                                                 .querySelector(".text-view-model")
+                                                                        : null);
 
     var detected = {};
 
@@ -677,14 +680,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           aria-labelledby="default-popover"
                                           content={
                                             <div className="w-64 text-lg text-gray-500 dark:text-gray-400">
-                                              <div className="px-3 py-2 text-center">
+                                              <div className="px-3 py-2 text-center font-bold">
                                                 <p>{secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}</p>
                                               </div>
                                             </div>
                                           }
                                           arrow={false}
                                           trigger="hover"
-                                          placement="top">
+                                          placement="left">
                                           <Dropdown.Item>
                                             Timer
                                           </Dropdown.Item>

@@ -66,10 +66,10 @@ export default class HighlightedKeywordView extends React.Component{
                 </div>
               }
               arrow={false}
-              trigger="hover"
+              // trigger="hover"
             >
             <span 
-              class= {`${this.props.highlightedKeywordBadgeColors[(Object.keys(this.props.allDetected).indexOf(this.props.keyword.toLowerCase()) % this.props.highlightedKeywordBadgeColors.length)]} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded`}
+              class= {`${this.props.highlightedKeywordBadgeColors[(Object.keys(this.props.allDetected).indexOf(this.props.keyword.toLowerCase()) % this.props.highlightedKeywordBadgeColors.length)]} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded handy-cursor`}
               title={`#${this.props.allDetected[this.props.keyword.toLowerCase()]}`}>
               {this.props.keyword}
             </span>

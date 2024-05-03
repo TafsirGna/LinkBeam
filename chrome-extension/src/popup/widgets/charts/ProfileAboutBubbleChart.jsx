@@ -54,7 +54,7 @@ export default class ProfileAboutBubbleChart extends React.Component{
 
     // Compute the hierarchy from the (flat) data; expose the values
     // for each node; lastly apply the pack layout.
-    const root = pack(d3.hierarchy({children: this.props.objectData})
+    const root = pack(d3.hierarchy({children: Object.keys(this.props.objectData).map(word => ({word: word, count: this.props.objectData[word]}))})
         .sum(d => d.count));
 
     // Create the SVG container.
