@@ -237,12 +237,7 @@ export default class SearchInputView extends React.Component{
               
               try{
 
-                const profileVisits = await db.visits
-                                            .where("url")
-                                            .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
-                                            .sortBy("date");
-
-                profile = getProfileDataFrom(profileVisits);
+                profile = await getProfileDataFrom(db, visit.url);
                 profile.url = visit.url;
 
               }
@@ -342,12 +337,7 @@ export default class SearchInputView extends React.Component{
 
       for (var url of urls){
 
-        var profileVisits = await db.visits
-                                      .where("url")
-                                      .anyOf([url, encodeURI(url), decodeURI(url)])
-                                      .sortBy("date");
-
-        var profile = getProfileDataFrom(profileVisits);
+        var profile = await getProfileDataFrom(db, url);
 
         if (dbDataSanitizer.preSanitize(profile.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
 

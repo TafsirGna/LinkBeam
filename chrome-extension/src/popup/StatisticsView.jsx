@@ -132,12 +132,7 @@ export default class StatisticsView extends React.Component{
         
         try{
 
-          const profileVisits = await db.visits
-                                        .where("url")
-                                        .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
-                                        .sortBy("date");
-
-          profile = getProfileDataFrom(profileVisits);
+          profile = await getProfileDataFrom(db, visit.url);
           profile.url = visit.url;
           profile.date = profileVisits[0].date;
 

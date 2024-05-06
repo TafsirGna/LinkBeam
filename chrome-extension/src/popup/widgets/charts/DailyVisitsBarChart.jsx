@@ -86,14 +86,7 @@ export default class DailyVisitsBarChart extends React.Component{
 
         var profile = null;
         try{
-
-          const profileVisits = await db.visits
-                                        .where('url')
-                                        .equals(visit.url)
-                                        .sortBy("date");
-
-          profile = getProfileDataFrom(profileVisits);
-
+          profile = await getProfileDataFrom(db, visit.url);
         }
         catch(error){
           console.error("Error : ", error);
@@ -105,7 +98,7 @@ export default class DailyVisitsBarChart extends React.Component{
 
         const object = {
           url: visit.url,
-          label: dbDataSanitizer.preSanitize(profile.fullName),
+          label: dbDataSanitizer.preSanitize(profile.fullName).split(" ")[0],
           time: time,
         };
         results.push(object);

@@ -466,6 +466,21 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Folders <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="Add new folder"
+                    onClick={() => {switchToView(eventBus, "Keywords")}}>
+                      Add
+                  </a>
+                </div>
+                {/*<span class="d-block">@username</span>*/}
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">My identity</strong>
                   <a 
                     href="#" 

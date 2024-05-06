@@ -23,6 +23,7 @@ import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
 import VisitListView from "./widgets/VisitListView";
 import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
+import ProfileListItemView from "./widgets/ProfileListItemView";
 import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
@@ -112,36 +113,36 @@ export default class HomeView extends React.Component{
 
     }
 
+    console.log("!!!!!!!!!!!!!!!! 1 : tipping point : ", tippingPoint);
+
     const visits = await db.visits
                            .filter(visit => new Date(visit.date) < tippingPoint
                                             && Object.hasOwn(visit, "profileData"))
                            .sortBy("date");
 
+    console.log("!!!!!!!!!!!!!!!! 2 : tipping point : ", visits);
     var profiles = [];
     for (var visit of visits){
 
       const index = profiles.map(p => p.url).indexOf(visit.url);
       if (index == -1){
 
-        const profileVisits = await db.visits
-                                      .where({url: visit.url})
-                                      .sortBy("date");
-
-        var profile = getProfileDataFrom(profileVisits);
-        profile.url = visit.url;
-
+        var profile = await getProfileDataFrom(db, visit.url);
         profiles.push(profile);
 
       }
 
     }
 
+    console.log("!!!!!!!!!!!!!!!! 3 : tipping point : ", visits);
+
     this.setState({outdatedProfiles: profiles});
-    await chrome.storage.local.set({ outdatedProfileReminderMoment: new Date().toISOString() });
 
   }
 
   async checkPreviousDaySavedTime(){
+
+    await chrome.storage.local.set({ previousDaySavedTimeMoment: "" });
 
     const settings = await db.settings
                              .where({id: 1})
@@ -152,7 +153,7 @@ export default class HomeView extends React.Component{
     }
 
     const localItems = await chrome.storage.local.get(["previousDaySavedTimeMoment"]);
-    if (localItems.previousDaySavedTimeMoment && localItems.previousDaySavedTimeMoment == new Date().toISOString()){
+    if (localItems.previousDaySavedTimeMoment && localItems.previousDaySavedTimeMoment.split("T")[0] == new Date().toISOString().split("T")[0]){
       return;
     }
 
@@ -161,15 +162,15 @@ export default class HomeView extends React.Component{
                           .startsWith(LuxonDateTime.now().minus({days:1}).toJSDate().toISOString().split("T")[0])
                           .toArray();
 
-    const totalTime = getVisitsTotalTime(visits); // in minutes
-    if (totalTime == 0){
+    if (!visits.length){
       return;
     }
 
+    const totalTime = getVisitsTotalTime(visits); // in minutes
     const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
+
     if (totalTime < maxTimeValue){
       this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
-      await chrome.storage.local.set({ previousDaySavedTimeMoment: new Date().toISOString() });
     }
 
   }
@@ -184,9 +185,22 @@ export default class HomeView extends React.Component{
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false}, 
       () => {
-        if (this.state.offCanvasTitle == "Reminders"){
-          deactivateTodayReminders(db);
-          eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
+        switch(this.state.offCanvasTitle){
+          case "Reminders":{
+            deactivateTodayReminders(db);
+            eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "todayReminderList", value: null});
+            break;
+          }
+          case "Saved time":{
+            this.setState({previousDaySavedTime: null});
+            chrome.storage.local.set({ previousDaySavedTimeMoment: new Date().toISOString() });
+            break;
+          }
+          case "Outdated profiles":{
+            this.setState({outdatedProfiles: null});
+            chrome.storage.local.set({ outdatedProfileReminderMoment: new Date().toISOString() });
+            break;
+          }
         }
 
         this.setState({offCanvasTitle: null});
@@ -259,13 +273,7 @@ export default class HomeView extends React.Component{
               const index = profiles.map(p => p.url).indexOf(visit.url);
               if (index == -1){
 
-                const profileVisits = await db.visits
-                                          .where('url')
-                                          .equals(visit.url)
-                                          .sortBy("date");
-
-
-                visit.profileData = getProfileDataFrom(profileVisits);
+                visit.profileData = await getProfileDataFrom(db, visit.url);
                 visit.profileData.url = visit.url;
                 profiles.push(visit.profileData);
 
@@ -368,6 +376,9 @@ export default class HomeView extends React.Component{
                       </span>
                     </p>
                 </div>}
+
+            { this.state.offCanvasTitle == "Outdated profiles"
+                && this.state.outdatedProfiles.map(profile => <ProfileListItemView profile={profile}/>)}
 
           </Offcanvas.Body>
         </Offcanvas>

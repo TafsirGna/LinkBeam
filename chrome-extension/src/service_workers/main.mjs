@@ -706,7 +706,7 @@ async function recordProfileVisit(tabData){
 
         if (profileVisits.length){
 
-            const fullProfileData = getProfileDataFrom(profileVisits);
+            const fullProfileData = await getProfileDataFrom(db, tabData.tabUrl);
             profileData = fullProfileData;
             const newProfileData = getNewProfileData(fullProfileData, tabData.extractedData);
 

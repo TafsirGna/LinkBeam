@@ -30,7 +30,6 @@ import {
   appParams, 
   saveCanvas, 
   setGlobalDataKeywords,
-  getProfileDataFrom,
   checkOneKeyword,
 } from "../../Local_library";
 

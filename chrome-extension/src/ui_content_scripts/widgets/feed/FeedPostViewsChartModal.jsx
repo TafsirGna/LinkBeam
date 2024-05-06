@@ -195,7 +195,7 @@ export default class FeedPostViewsChartModal extends React.Component{
 
     this.checkPostFreshness(objects);
 
-    const data = await getFeedLineChartsData(objects, rangeDates, getPostMetricValue, titles, {luxon: LuxonDateTime});
+    const data = await getFeedLineChartsData(objects, rangeDates, getPostMetricValue, titles, LuxonDateTime);
 
     const datasets = titles.map((title, index) => 
       ({

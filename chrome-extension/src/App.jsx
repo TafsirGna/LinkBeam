@@ -31,6 +31,7 @@ import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
 import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
+import FolderView from "./popup/FolderView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
@@ -206,6 +207,10 @@ export default class App extends React.Component{
         {/*Keywords Page */}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS 
             && <KeywordView globalData={this.state.globalData} />}
+
+        {/*Folders Page */}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FOLDERS 
+            && <FolderView globalData={this.state.globalData} />}
 
         {/*MyAccount Page */}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT 

@@ -28,8 +28,8 @@ import {
   setGlobalDataSettings,
   dbData,
   isLinkedinProfilePage,
-  getProfileDataFrom,
   setReminderObject,
+  getProfileDataFrom,
 } from "./Local_library";
 import { Calendar as Cal } from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -61,6 +61,7 @@ export default class CalendarView extends React.Component{
       toastMessage: "",
       toastShow: false,
       dataType: null,
+      processing: false,
     };
 
     this.onClickDay = this.onClickDay.bind(this);
@@ -105,72 +106,73 @@ export default class CalendarView extends React.Component{
 
   getDayObjectList(monthObjectList){
 
-    var list = null;
     var dateString = LuxonDateTime.fromJSDate(this.state.selectedDate).toFormat("yyyy-MM-dd");
 
     if (monthObjectList){
-      if (dateString in monthObjectList){
-        list = monthObjectList[dateString];
-      }
-      else{
-        list = [];
-      }
-    }
-    else{
-      list = null;
+      return dateString in monthObjectList ? monthObjectList[dateString] : [];
     }
 
-    return list;
+    return null;
 
   }
 
-  async getMonthObjectList(date, objectStoreName){
+  getMonthObjectList(date, objectStoreName){
 
-    const startOfMonth = LuxonDateTime.fromJSDate(date).startOf('month').toJSDate();
-    const endOfMonth   = LuxonDateTime.fromJSDate(date).endOf('month').toJSDate();
+    this.setState({processing: true}, async () => {
 
-    var props = null;
-    switch(objectStoreName){
+      const startOfMonth = LuxonDateTime.fromJSDate(date).startOf('month').toJSDate();
+      const endOfMonth   = LuxonDateTime.fromJSDate(date).endOf('month').toJSDate();
 
-      case dbData.objectStoreNames.REMINDERS: {
+      var monthList = null;
+      switch(objectStoreName){
 
-        var monthReminderList = await db.reminders
-                                         .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
-                                         .toArray();
+        case dbData.objectStoreNames.REMINDERS: {
 
-        await Promise.all (monthReminderList.map (async reminder => {
+          monthList = await db.reminders
+                                           .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
+                                           .toArray();
 
-          await setReminderObject(db, reminder);
+          await Promise.all (monthList.map (async reminder => {
 
-        }));
+            await setReminderObject(db, reminder);
 
-        // Grouping the reminders by date
-        var results = groupObjectsByDate(monthReminderList);
+          }));
 
-        this.setState({monthReminderList: results});
+          this.setState({monthReminderList: groupObjectsByDate(monthList), processing: false});
 
-        break;
-      }
+          break;
+        }
 
-      case dbData.objectStoreNames.VISITS: {
+        case dbData.objectStoreNames.VISITS: {
 
-        var monthVisitsList = await db.visits
-                             .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth)
-                                                && Object.hasOwn(visit, "profileData"))
-                             .toArray();
+          monthList = await db.visits
+                               .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth)
+                                                  && Object.hasOwn(visit, "profileData"))
+                               .toArray();
 
-        // Grouping the visits by date
-        var results = groupObjectsByDate(monthVisitsList);
+          var profiles = [];
+          for (var visit of monthList){
 
-        this.setState({monthVisitsList: results});
+            const index = profiles.map(p => p.url).indexOf(visit.url);
+            if (index != -1){
+              visit.profileData = profiles[index];
+            }
+            else{
+              visit.profileData = await getProfileDataFrom(db, visit.url);
+              profiles.push(visit.profileData);
+            }
 
-        break;
-      }
+          }
 
-    };
+          this.setState({monthVisitsList: groupObjectsByDate(monthList), processing: false});
+
+          break;
+        }
+
+      };
+
+    });
   
-
-
   }
 
   tileDisabled({ activeStartDate, date, view }){
@@ -192,18 +194,13 @@ export default class CalendarView extends React.Component{
     
     if (view === "month"){
 
-      var month = activeStartDate.getMonth() + 1;
-      month = (month >= 10 ? "" : "0") + month;
-
-      var activeDate = activeStartDate.getFullYear()+"-"+month+"-01";
-
-      this.setState({activeStartDate: activeDate}, () => {
+      this.setState({activeStartDate: activeStartDate}, () => {
 
         if (this.state.dataType == "Reminders"){
-          this.getMonthObjectList(activeDate, dbData.objectStoreNames.REMINDERS);
+          this.getMonthObjectList(activeStartDate, dbData.objectStoreNames.REMINDERS);
         }
         else if (this.state.dataType == "ProfileVisits"){
-          this.getMonthObjectList(activeDate, dbData.objectStoreNames.VISITS);
+          this.getMonthObjectList(activeStartDate, dbData.objectStoreNames.VISITS);
         }
 
       });
@@ -266,6 +263,12 @@ export default class CalendarView extends React.Component{
 
   				<div class="offset-1 col-10 mt-4 row">
             <div class="col-4">
+              { this.state.processing
+                  && <div>
+                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>}
               { this.props.globalData.settings && <Cal onClickDay={this.onClickDay} 
                             tileDisabled={this.tileDisabled} 
                             onActiveStartDateChange={this.onActiveStartDateChange} 
@@ -275,7 +278,7 @@ export default class CalendarView extends React.Component{
             </div>
             <div class="col-7 ps-3">
               <div>
-                <span class="badge shadow text-muted border border-warning mb-2">{LuxonDateTime.fromJSDate(this.state.selectedDate).toFormat('dddd, MMMM Do YYYY')}</span>
+                <span class="badge shadow text-muted border border-warning mb-2">{LuxonDateTime.fromJSDate(this.state.selectedDate).toLocaleString(LuxonDateTime.DATE_FULL)}</span>
               </div>
               <div class="small shadow-sm mb-3 mt-2 p-1 fst-italic border-start border-info ps-2 border-4 bg-info-subtle text-muted">
                 Explore 

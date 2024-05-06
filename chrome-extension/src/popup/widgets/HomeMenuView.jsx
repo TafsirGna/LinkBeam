@@ -45,7 +45,8 @@ export default class HomeMenu extends React.Component{
 
         { ((this.props.globalData.todayReminderList && this.props.globalData.todayReminderList.length > 0)
             /*|| (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false)*/
-            || this.props.args.previousDaySavedTime != null)
+            || this.props.args.previousDaySavedTime != null
+            || this.props.args.outdatedProfiles != null)
               && <div class="dropdown">
                             <div 
                               data-bs-toggle="dropdown" 
@@ -71,7 +72,10 @@ export default class HomeMenu extends React.Component{
                                   && this.props.globalData.todayReminderList.length > 0) && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
                               
                               { this.props.args.previousDaySavedTime 
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}}>Time saved yesterday</a></li>}
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}}>Time saved notification</a></li>}
+
+                              { this.props.args.outdatedProfiles 
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Outdated profiles")}}>Some outdated profiles</a></li>}
 
                             </ul>
                           </div>}
@@ -126,6 +130,14 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, "Reminders")}}>
                 Reminders
+              </a>
+            </li>
+            <li>
+              <a 
+                class="dropdown-item small" 
+                href="#" 
+                onClick={() => {switchToView(eventBus, "Folders")}}>
+                Folders
               </a>
             </li>
             <li>

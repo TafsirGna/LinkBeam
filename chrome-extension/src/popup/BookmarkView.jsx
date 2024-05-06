@@ -64,12 +64,7 @@ export default class BookmarkView extends React.Component{
 
             try{
 
-              const visits = await db.visits
-                                     .where("url")
-                                     .anyOf([bookmark.url, encodeURI(bookmark.url), decodeURI(bookmark.url)])
-                                     .sortBy("date");
-
-              const profile = getProfileDataFrom(visits);
+              const profile = await getProfileDataFrom(db, bookmark.url);
               bookmark.profile = profile;
 
             }

@@ -4,7 +4,6 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dbDataSanitizer,
-  getProfileDataFrom,
 } from "../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { db } from "../../db";

@@ -18,7 +18,6 @@ import {
   dbDataSanitizer,
   saveCanvas,
   computePeriodTimeSpan,
-  getProfileDataFrom,
 } from "../../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import { db } from "../../../db";

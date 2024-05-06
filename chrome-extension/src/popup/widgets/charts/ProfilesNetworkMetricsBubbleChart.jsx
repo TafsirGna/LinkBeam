@@ -6,7 +6,6 @@ import {
 	getChartColors, 	
 	dbDataSanitizer,
 	saveCanvas,
-	getProfileDataFrom
 } from "../../Local_library";
 import {
   Chart as ChartJS,

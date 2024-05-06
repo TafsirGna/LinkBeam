@@ -46,12 +46,7 @@ export default class LoadingprofileView extends React.Component{
 
       try {
 
-        const visits = await db.visits
-                                .where("url")
-                                .anyOf([profileUrl, encodeURI(profileUrl), decodeURI(profileUrl)])
-                                .sortBy("date");
-
-        var profile = getProfileDataFrom(visits);
+        var profile = await getProfileDataFrom(db, profileUrl);
         profile.url = profileUrl;
         profile.date = visits[0].date;
 
