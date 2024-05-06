@@ -47,8 +47,6 @@ export default class LoadingprofileView extends React.Component{
       try {
 
         var profile = await getProfileDataFrom(db, profileUrl);
-        profile.url = profileUrl;
-        profile.date = visits[0].date;
 
         await Promise.all ([profile].map (async profile => {
           [profile.bookmark] = await Promise.all([

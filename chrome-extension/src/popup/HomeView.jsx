@@ -142,8 +142,6 @@ export default class HomeView extends React.Component{
 
   async checkPreviousDaySavedTime(){
 
-    await chrome.storage.local.set({ previousDaySavedTimeMoment: "" });
-
     const settings = await db.settings
                              .where({id: 1})
                              .first();

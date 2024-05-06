@@ -134,7 +134,7 @@ export default class ProfileGanttChart extends React.Component{
       // Setting the minDate object
       if (object.period.startDateRange < minDate){ minDate = object.period.startDateRange; }
       
-      data.push({x: [object.period.startDateRange.toFormat("YYYY-MM-DD"), object.period.endDateRange.toFormat("YYYY-MM-DD")], y: label});
+      data.push({x: [object.period.startDateRange.toFormat("yyyy-MM-dd"), object.period.endDateRange.toFormat("yyyy-MM-dd")], y: label});
 
     }
 
@@ -150,8 +150,8 @@ export default class ProfileGanttChart extends React.Component{
             time:{
                 unit: 'month'
             },
-            min: minDate.toFormat("YYYY-MM-DD"),
-            max: LuxonDateTime.now().toFormat('YYYY-MM-DD'),
+            min: minDate.toFormat("yyyy-MM-dd"),
+            max: LuxonDateTime.now().toFormat('yyyy-MM-dd'),
           },
         },
         plugins: {
@@ -168,7 +168,7 @@ export default class ProfileGanttChart extends React.Component{
             callbacks: {
               label: ((tooltipItem, data) => {
                 // console.log(tooltipItem);
-                return `[${LuxonDateTime.fromFormat(tooltipItem.raw.x[0], 'YYYY-MM-DD').toFormat("MMM YYYY")} - ${LuxonDateTime.fromFormat(tooltipItem.raw.x[1], 'YYYY-MM-DD').toFormat("MMM YYYY")}]`;
+                return `[${LuxonDateTime.fromFormat(tooltipItem.raw.x[0], 'yyyy-MM-dd').toFormat("MMM yyyy")} - ${LuxonDateTime.fromFormat(tooltipItem.raw.x[1], 'yyyy-MM-dd').toFormat("MMM yyyy")}]`;
               })
             }
           }

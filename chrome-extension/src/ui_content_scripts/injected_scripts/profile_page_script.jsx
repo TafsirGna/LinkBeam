@@ -74,6 +74,10 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
         var htmlElement = mainHtmlElements[htmlElementTitle];
 
+        if (!htmlElement){
+          return;
+        }
+
         var newDivTag = document.createElement('div');
         // newDivTag.classList.add(feedPostDataModalClassName);
         htmlElement.prepend(newDivTag);

@@ -69,13 +69,14 @@ export default class HomeMenu extends React.Component{
                               {/*{ (this.props.globalData.currentTabWebPageData != null && this.props.globalData.currentTabWebPageData.codeInjected == false) && <li><a class="dropdown-item small" onClick={() => {activateInCurrentTab({productID: this.props.globalData.settings.productID})}}>Show ui in tab</a></li>}*/}
                               
                               { (this.props.globalData.todayReminderList 
-                                  && this.props.globalData.todayReminderList.length > 0) && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
+                                    && this.props.globalData.todayReminderList.length > 0) 
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
                               
                               { this.props.args.previousDaySavedTime 
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}}>Time saved notification</a></li>}
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}} href="#">Time saved notification</a></li>}
 
                               { this.props.args.outdatedProfiles 
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Outdated profiles")}}>Some outdated profiles</a></li>}
+                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Outdated profiles")}} href="#">Some outdated profiles</a></li>}
 
                             </ul>
                           </div>}

@@ -208,6 +208,11 @@ export const dbDataSanitizer = {
     }
     dateRange = dateRange.split(appParams.DATE_RANGE_SEPARATOR);
 
+    if (!dateRange[0] || !dateRange[1]){
+      console.log("1 - Not compatible date time locale : ", dateRange[0], dateRange[1]);
+      return null;
+    }
+
     var startDateRange = this.preSanitize(dateRange[0]), 
         endDateRange = this.preSanitize(dateRange[1]);
 
@@ -226,7 +231,7 @@ export const dbDataSanitizer = {
 
     }
 
-    alert("Not compatible date time locale!");
+    console.log("Not compatible date time locale!");
     return null;  
 
   }
@@ -1356,6 +1361,10 @@ async function getReminders(db, criteria){
 }
 
 export async function setReminderObject(db, reminder){
+
+  // if (reminder.object){
+  //   return;
+  // }
 
   if (isLinkedinProfilePage(reminder.objectId)){
 

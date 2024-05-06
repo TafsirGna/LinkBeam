@@ -33,6 +33,7 @@ import {
   getProfileDataFrom,
   dbDataSanitizer,
   setReminderObject,
+  isLinkedinProfilePage,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -152,45 +153,41 @@ export default class SearchInputView extends React.Component{
 
     try{
 
-      reminders = await db.reminders
-                              .filter(reminder => (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
-                              .toArray();
+      reminders = [];
 
-      // or 
+      for (var reminder of (await db.reminders.toArray())){
 
-      var uids = [];
-      await db.feedPosts
-              .filter(post => (post.initiator && post.initiator.name && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1 )
-                                || post.content.author && post.content.author.name && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
-              .each(post => {
-                if (uids.indexOf(post.uid) == -1){
-                  uids.push(post.uid);
-                }
-              });
+        if (reminders.map(r => r.id).indexOf(reminder.id) != -1){
+          continue;
+        }
 
-      await db.reminders
-              .where("objectId")
-              .anyOf(uids)
-              .each(reminder => {
-                if (reminders.map(r => r.id).indexOf(reminder.id) == -1){
-                  reminders.push(reminder);
-                }
-              });   
-
-      for (var reminder of reminders){
-
-        try{
-
+        // first condition
+        if (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
           await setReminderObject(db, reminder);
+          reminders.push(reminder);
+          continue;  
+        }
 
-          // reminder.text = this.highlightSearchText(reminder.text);
+        // second condition
+        await setReminderObject(db, reminder);
+        if (isLinkedinProfilePage(reminder.objectId)){
+
+          if (dbDataSanitizer.preSanitize(reminder.object.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
+            reminders.push(reminder);
+          }
 
         }
-        catch(error){
-          console.log("Error : ", error);
+        else{
+
+          const post = reminder.object;
+          if ((post.initiator && post.initiator.name && post.initiator.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1 )
+                                || (post.content.author && post.content.author.name && post.content.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)){
+            reminders.push(reminder);
+          }
+
         }
-        
-      };
+
+      }
 
     }
     catch(error){

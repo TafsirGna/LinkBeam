@@ -61,9 +61,9 @@ export default class FolderView extends React.Component{
 
           <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.FOLDERS}/>
 
-          <div class="mt-2">
+          <div class="mt-3">
 
-            <Accordion defaultActiveKey="0">
+            <Accordion /*defaultActiveKey="0"*/>
               <Accordion.Item eventKey="0">
                 <Accordion.Header>Folder #1</Accordion.Header>
                 <Accordion.Body>

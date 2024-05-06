@@ -131,11 +131,7 @@ export default class StatisticsView extends React.Component{
         var profile = null;
         
         try{
-
           profile = await getProfileDataFrom(db, visit.url);
-          profile.url = visit.url;
-          profile.date = profileVisits[0].date;
-
         }
         catch(error){
           console.error("Error : ", error);
