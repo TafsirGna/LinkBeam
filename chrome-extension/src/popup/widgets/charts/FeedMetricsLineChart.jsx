@@ -1,7 +1,28 @@
-/*import './About.css'*/
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
+/*import './FeedMetricsLineChart.css'*/
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { 
 	getChartColors,
 	getFeedLineChartsData,
@@ -87,7 +108,7 @@ export default class FeedMetricsLineChart extends React.Component{
 			return;
 		}
 
-		var data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.props.metricValueFunction, [this.props.metric], {moment: moment})
+		var data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.props.metricValueFunction, [this.props.metric], LuxonDateTime);
 
 		const colors = getChartColors(1);
 		this.setState({
@@ -96,7 +117,7 @@ export default class FeedMetricsLineChart extends React.Component{
 				datasets: [
 				  {
 				    label: this.props.metric,
-				    fill: true,
+				    // fill: true,
 				    data: data.values[this.props.metric],
 				    borderColor: colors.borders,
 				    backgroundColor: colors.borders,

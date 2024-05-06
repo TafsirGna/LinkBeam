@@ -11,7 +11,7 @@ import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "../SVGs";
 
 const length = (path) => d3.create("svg:path").attr("d", path).node().getTotalLength();
@@ -77,7 +77,7 @@ export default class ProfileVisitsConnectedScatterPlot extends React.Component{
   				side: shuffle(sides)[0],
   				url: visit.url,
   				label: dbDataSanitizer.preSanitize(profile.fullName).split(" ")[0],
-  				experience: computePeriodTimeSpan(profile.experience, "experience", {moment: moment}),
+  				experience: computePeriodTimeSpan(profile.experience, "experience", LuxonDateTime),
   				time: visit.timeCount,
   			});
   		}

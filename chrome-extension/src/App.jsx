@@ -35,9 +35,6 @@ import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
 import FeedDashView from "./popup/FeedDashView";
-import moment from 'moment';
-import 'moment/dist/locale/fr';
-import 'moment/dist/locale/en-gb';
 import Dexie from 'dexie';
 import { db } from "./db";
 import { 

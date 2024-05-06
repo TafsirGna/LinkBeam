@@ -1,7 +1,6 @@
 /*import './VisitsTimelineChart.css'*/
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import moment from 'moment';
 import { 
 	getChartColors,
 	groupObjectsByDate, 
@@ -23,6 +22,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
+import { DateTime as LuxonDateTime } from "luxon";
 
 ChartJS.register(
   CategoryScale,
@@ -92,7 +92,7 @@ export default class VisitsTimelineChart extends React.Component{
 		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
 		var visits = groupObjectsByDate(this.props.objects);
 
-		const periodRange = (start, stop, step) => Array.from({ length: (moment(stop).diff(moment(start), "days")) / step + 1 }, (_, i) => moment(start).add(i * step, "days"));
+		const periodRange = (start, stop, step) => Array.from({ length: (LuxonDateTime.fromJSDate(stop).diff(LuxonDateTime.fromJSDate(start), "days")).days / step + 1 }, (_, i) => LuxonDateTime.fromJSDate(start).plus({days: i * step}));
 
 		var startDate = null, endDate = null;
 		if (view == 3){
@@ -100,17 +100,17 @@ export default class VisitsTimelineChart extends React.Component{
 			endDate = new Date(this.props.periodRangeLimits.end);
 		}
 		else{
-			startDate = moment().subtract((view == 0 ? 6 : 30), 'days').toDate();
+			startDate = LuxonDateTime.now().minus({days:(view == 0 ? 6 : 30)}).toJSDate();
 			endDate = new Date();
 		}
 
 		for (var date of periodRange(startDate, endDate, 1)){
-			results.titles.push((view == 0) ? date.format('dddd') : date.format("DD-MM"));
-			results.valuesDataset1.push((date.toISOString().split("T")[0] in visits) ? visits[date.toISOString().split("T")[0]].length : 0);
+			results.titles.push((view == 0) ? date.toLocaleString({weekday: 'long'}) : date.toFormat("dd-MM"));
+			results.valuesDataset1.push((date.toISO().split("T")[0] in visits) ? visits[date.toISO().split("T")[0]].length : 0);
 
 			var valueDataset2 = 0;
-			if (date.toISOString().split("T")[0] in visits){
-				for (var visit of visits[date.toISOString().split("T")[0]]){
+			if (date.toISO().split("T")[0] in visits){
+				for (var visit of visits[date.toISO().split("T")[0]]){
 					valueDataset2 += (visit.timeCount / 60);
 				}
 				
@@ -129,7 +129,7 @@ export default class VisitsTimelineChart extends React.Component{
 		const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 		for (var i=0; i < 12; i++){
-			var month = moment().subtract(i, 'months').toDate().getMonth();
+			var month = LuxonDateTime.now().minus({months: i}).toLocaleString({month: 'numeric'}) - 1;
 			results.titles.push(months[month]);
 			results.valuesDataset1.push((month in visits) ? visits[month].length : 0);
 
@@ -194,14 +194,14 @@ export default class VisitsTimelineChart extends React.Component{
 				datasets: [
 				  {
 				    label: '# of Visits',
-				    fill: true,
+				    // fill: true,
 				    data: results.valuesDataset1,
 				    borderColor: colorDataset1.borders,
 				    backgroundColor: colorDataset1.borders,
 				  },
 				  {
 				    label: 'Time spent (minutes)',
-				    fill: true,
+				    // fill: true,
 				    data: results.valuesDataset2,
 				    borderColor: colorDataset2.borders,
 				    backgroundColor: colorDataset2.borders,

@@ -23,12 +23,12 @@
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import moment from 'moment';
 import { 
   appParams,
   getPeriodVisits,
   getProfileDataFrom,
 } from "./Local_library";
+import { DateTime as LuxonDateTime } from "luxon";
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
@@ -63,7 +63,7 @@ export default class ChartExpansionView extends React.Component{
 
     (async () => {
 
-      var visits = await getPeriodVisits(carrouselChartView, {moment: moment}, db, "profiles"),
+      var visits = await getPeriodVisits(carrouselChartView, LuxonDateTime, db, "profiles"),
           profiles = [];
 
       for (var visit of visits){

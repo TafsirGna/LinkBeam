@@ -39,7 +39,7 @@ import {
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class HomeView extends React.Component{
 
@@ -89,24 +89,24 @@ export default class HomeView extends React.Component{
     }
 
     const localItems = await chrome.storage.local.get(["outdatedProfileReminderMoment"]);
-    if (localItems.outdatedProfileReminderMoment && moment().diff(moment(localItems.outdatedProfileReminderMoment), "days") < 7){
+    if (localItems.outdatedProfileReminderMoment && LuxonDateTime.now().diff(LuxonDateTime.fromISO(localItems.outdatedProfileReminderMoment), "days").days < 7){
       return;
     }
 
     switch(settings.outdatedProfileReminder){
 
       case "> 1 month":{
-        tippingPoint = moment().subtract(1, 'months').toDate();
+        tippingPoint = LuxonDateTime.now().minus({months:1}).toJSDate();
         break;
       }
 
       case "> 6 months":{
-        tippingPoint = moment().subtract(6, 'months').toDate();
+        tippingPoint = LuxonDateTime.now().minus({months:1}).toJSDate();
         break;
       }
 
       case "> 1 year":{
-        tippingPoint = moment().subtract(1, 'years').toDate();
+        tippingPoint = LuxonDateTime.now().minus({years:1}).toJSDate();
         break;
       }
 
@@ -158,7 +158,7 @@ export default class HomeView extends React.Component{
 
     const visits = await db.visits
                           .where("date")
-                          .startsWith(moment().subtract(1, 'days').toDate().toISOString().split("T")[0])
+                          .startsWith(LuxonDateTime.now().minus({days:1}).toJSDate().toISOString().split("T")[0])
                           .toArray();
 
     const totalTime = getVisitsTotalTime(visits); // in minutes

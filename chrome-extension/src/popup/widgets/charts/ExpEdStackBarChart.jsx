@@ -20,7 +20,7 @@ import {
   computePeriodTimeSpan,
   getProfileDataFrom,
 } from "../../Local_library";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { db } from "../../../db";
 
 ChartJS.register(
@@ -111,8 +111,8 @@ export default class ExpEdStackBarChart extends React.Component{
         labels.push({url: profile.url, fullName: fullName});
 
         // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", profile);
-        var experienceTime = computePeriodTimeSpan(profile.experience, "experience", {moment: moment}),
-            educationTime = computePeriodTimeSpan(profile.education, "education", {moment: moment});
+        var experienceTime = computePeriodTimeSpan(profile.experience, "experience", LuxonDateTime),
+            educationTime = computePeriodTimeSpan(profile.education, "education", LuxonDateTime);
         
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);

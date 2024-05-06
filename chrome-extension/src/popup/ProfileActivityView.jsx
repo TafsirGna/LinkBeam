@@ -31,7 +31,7 @@ import heart_icon from '../assets/heart_icon.png';
 import share_icon from '../assets/share_icon.png';
 import newspaper_icon from '../assets/newspaper_icon.png';
 import default_user_icon from '../assets/user_icons/default.png';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { db } from "../db";
 
 export default class ProfileActivityView extends React.Component{
@@ -113,7 +113,7 @@ export default class ProfileActivityView extends React.Component{
 															      </div>
 															      <div class="card-footer">
 															        <small class="text-body-secondary">
-															        	Added on {moment(this.state.selectedPost.date, moment.ISO_8601).format('lll')}
+															        	Added on {LuxonDateTime.fromISO(this.state.selectedPost.date).toFormat('MMMM dd, yyyy hh:mm a')}
 															        	<a class="border shadow-sm rounded p-1 mx-2" href={this.state.selectedPost.link}>
                                           <span title="See post on linkedin">
                                             <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>

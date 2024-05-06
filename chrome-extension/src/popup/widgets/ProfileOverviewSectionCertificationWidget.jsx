@@ -23,7 +23,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dbDataSanitizer,  
   appParams, 
@@ -161,7 +161,7 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
                                                                                                   % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
                                                                                                 </p>}
                                               </div>
-                                              { certification.period && <small class="opacity-50 text-nowrap">{moment(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM YYYY").fromNow()}</small>}
+                                              { certification.period && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromFormat(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM yyyy").toRelative()}</small>}
                                             </div>
                                           </a>))}
               </div>}

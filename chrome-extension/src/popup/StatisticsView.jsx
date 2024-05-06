@@ -21,7 +21,7 @@
 
 /*import './StatisticsView.css'*/
 import React from 'react'
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
@@ -122,7 +122,7 @@ export default class StatisticsView extends React.Component{
       };
     }
       
-    var visits = await getPeriodVisits(periodValue, {moment: moment}, db, "profiles");
+    var visits = await getPeriodVisits(periodValue, LuxonDateTime, db, "profiles");
     
     var profiles = [];
     for (var visit of visits){
@@ -258,7 +258,7 @@ export default class StatisticsView extends React.Component{
                     class={`dropdown-item small ${this.state.view == 3 ? "active" : ""}`}
                     onClick={() => {this.onViewChange(3)}}
                     href="#"
-                    title={this.state.view == 3 ? `${moment(this.state.offCanvasFormStartDate, moment.ISO_8601).format('ll')} - ${moment(this.state.offCanvasFormEndDate, moment.ISO_8601).format('ll')}` : null}>
+                    title={this.state.view == 3 ? `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat('MMMM dd, yyyy')} - ${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat('MMMM dd, yyyy')}` : null}>
                     Specific dates
                     {this.state.view == 3 && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                   </a>
@@ -374,7 +374,7 @@ export default class StatisticsView extends React.Component{
             <span class="text-muted small float-end fst-italic mt-2 badge">
               {"Data recorded since "}
               {this.props.globalData.settings 
-                ? moment(this.props.globalData.settings.lastDataResetDate, moment.ISO_8601).format('MMMM Do YYYY, h:mm:ss a') 
+                ? LuxonDateTime.fromISO(this.props.globalData.settings.lastDataResetDate).toFormat('MMMM dd yyyy, hh:mm a') 
                 : ""}
             </span>
           </div>

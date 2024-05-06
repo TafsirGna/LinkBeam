@@ -1,7 +1,7 @@
 /*import './ProfileListItemView.css'*/
 import React from 'react';
 import linkedin_icon from '../../assets/linkedin_icon.png';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { dbDataSanitizer } from "../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -52,14 +52,14 @@ export default class ProfileListItemView extends React.Component{
                   <a class="text-decoration-none text-black" href={`/index.html?view=FeedDash&data=${JSON.stringify({from: this.props.object.date, to: this.props.object.date})}`} target="_blank">Linkedin feed</a> 
                   { this.props.parentList == "aggregated" && <OverlayTrigger
                                           placement="top"
-                                          overlay={<Tooltip id="tooltip1">{this.props.object.count} visit{this.props.object.count > 1 ? "s" : ""} { this.props.context == "all" ? " | " + moment(this.props.object.date, moment.ISO_8601).fromNow() : " in total"}</Tooltip>}
+                                          overlay={<Tooltip id="tooltip1">{this.props.object.count} visit{this.props.object.count > 1 ? "s" : ""} { this.props.context == "all" ? " | " + LuxonDateTime.fromISO(this.props.object.date).toRelative() : " in total"}</Tooltip>}
                                         >
                                           <span class="text-muted badge text-bg-light shadow-sm border">{this.props.object.count}</span>
                                         </OverlayTrigger> }
                 </h6>
                 
-                { this.props.parentList == "ordinary" && <small class={ this.props.object.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{moment(this.props.object.date, moment.ISO_8601).fromNow()}</small> }
-                { this.props.parentList == "aggregated" && <small class="opacity-50 text-nowrap ms-auto">{moment(this.props.object.date, moment.ISO_8601).format("L")}</small>}
+                { this.props.parentList == "ordinary" && <small class={ this.props.object.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{LuxonDateTime.fromISO(this.props.object.date).toRelative()}</small> }
+                { this.props.parentList == "aggregated" && <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.object.date).toFormat("MM-dd-yyyy")}</small>}
               </div>
               <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.getPostCount()} viewed posts</p>
             </div>

@@ -22,7 +22,6 @@
 
 /*import './SearchInputView.css'*/
 import React from 'react';
-import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
 import { SearchIcon } from './SVGs';
 import eventBus from "../EventBus";

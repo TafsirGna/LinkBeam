@@ -26,7 +26,7 @@ import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import JSZip from "jszip";
 import { liveQuery } from "dexie"; 
 import { 
@@ -299,7 +299,7 @@ export default class SettingsView extends React.Component{
       
           const jsonData = JSON.stringify(dbData),
                 jsonDataBlob = new Blob([jsonData]);
-          var fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${moment(new Date()).format("DD_MMM_YY")}` : `${moment(this.state.offCanvasFormStartDate).format("DD_MMM_YY")}_to_${moment(this.state.offCanvasFormEndDate).format("DD_MMM_YY")}`) + ".json";
+          var fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
           procExtractedData(jsonDataBlob, fileName, action, new JSZip());
 
         } catch (error) {

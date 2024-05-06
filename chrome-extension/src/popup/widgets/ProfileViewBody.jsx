@@ -30,7 +30,7 @@ import ProfileActivitySectionView from "./ProfileActivitySectionView";
 import ProfileOverviewSectionView from "./ProfileOverviewSectionView";
 import ProfileNetworkSectionView from "./ProfileNetworkSectionView";
 import eventBus from "../EventBus";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { appParams, computePeriodTimeSpan } from "../Local_library";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -62,8 +62,8 @@ export default class ProfileViewBody extends React.Component{
 
   componentDidMount() {
 
-    var experienceTime = computePeriodTimeSpan(this.props.profile.experience, "experience", {moment: moment});
-    var educationTime = computePeriodTimeSpan(this.props.profile.education, "education", {moment: moment});
+    var experienceTime = computePeriodTimeSpan(this.props.profile.experience, "experience", LuxonDateTime);
+    var educationTime = computePeriodTimeSpan(this.props.profile.education, "education", LuxonDateTime);
 
     this.setState(prevState => {
       let profileComputedData = Object.assign({}, prevState.profileComputedData);

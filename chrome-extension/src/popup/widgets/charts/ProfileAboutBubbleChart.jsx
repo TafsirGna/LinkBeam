@@ -1,16 +1,14 @@
 /*import './ProfileAboutBubbleChart.css'*/
 import React from 'react';
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
 // import {  } from "../../Local_library";
 import * as d3 from "d3";
-import { v4 as uuidv4 } from 'uuid';
 
 export default class ProfileAboutBubbleChart extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      uuid: uuidv4(),
+      chartRef: React.createRef(),
     };
   }
 
@@ -34,11 +32,9 @@ export default class ProfileAboutBubbleChart extends React.Component{
       return;
     }
 
-    // console.log("¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ : ", this.props.objectData);
-
     // Specify the dimensions of the chart.
-    const width = 928;
-    const height = width;
+    const width = /*window.innerWidth*/928;
+    const height = /*window.innerHeight*/width;
     const margin = 1; // to avoid clipping the root circle stroke
 
     // Specify the number format for values.
@@ -58,7 +54,7 @@ export default class ProfileAboutBubbleChart extends React.Component{
         .sum(d => d.count));
 
     // Create the SVG container.
-    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+    const svg = d3.select(this.state.chartRef.current).append("svg")
         .attr("width", width)
         .attr("height", height)
         .attr("viewBox", [-margin, -margin, width, height])
@@ -108,16 +104,11 @@ export default class ProfileAboutBubbleChart extends React.Component{
   render(){
     return (
       <>
-
-        { !this.props.objectData && <div class="text-center"><div class="mt-4"><div class="spinner-border text-primary" role="status">
-                      {/*<span class="visually-hidden">Loading...</span>*/}
-                    </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                  </div>
-                </div>}
-
-        <div id={"chartTag_"+this.state.uuid} class="p-3">
-        </div>
+        <div 
+          ref={this.state.chartRef}
+          class="p-3">
+            
+          </div>
       </>
     );
   }

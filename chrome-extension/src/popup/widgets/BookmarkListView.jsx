@@ -1,7 +1,7 @@
 /*import './BookmarkListView.css'*/
 import React from 'react';
-import moment from 'moment';
 import default_user_icon from '../../assets/user_icons/default.png';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class BookmarkListView extends React.Component{
 
@@ -55,7 +55,7 @@ export default class BookmarkListView extends React.Component{
                                           </OverlayTrigger>
                                         </p>*/}
                                       </div>
-                                      <small class="opacity-50 text-nowrap">{moment(bookmark.createdOn, moment.ISO_8601).fromNow()}</small>
+                                      <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(bookmark.createdOn).toRelative()}</small>
                                     </div>
                                   </a>))
                   }

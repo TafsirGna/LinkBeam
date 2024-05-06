@@ -1,7 +1,7 @@
 /*import './ProfileListItemView.css'*/
 import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class ProfileListItemView extends React.Component{
 
@@ -36,7 +36,7 @@ export default class ProfileListItemView extends React.Component{
                   <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + this.props.profile.url} target="_blank">{this.props.profile.fullName}</a> 
                 </h6>
                 
-                <small class="opacity-50 text-nowrap ms-auto">{moment(this.props.profile.date, moment.ISO_8601).format("L")}</small>
+                <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.profile.date).toFormat("MM-dd-yyyy")}</small>
               </div>
               <p class="mb-0 opacity-75 small">{this.props.profile.title}</p>
               <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.props.profile.nFollowers} · {this.props.profile.nConnections}</p>

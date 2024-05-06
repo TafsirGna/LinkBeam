@@ -1,7 +1,6 @@
 /*import './FeedPostTrendLineChart.css'*/
 import React from 'react';
 import { Line } from 'react-chartjs-2';
-import moment from 'moment';
 import { 
 	getChartColors,
 	getFeedLineChartsData,
@@ -21,6 +20,7 @@ import {
 } from 'chart.js';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
+import { DateTime as LuxonDateTime } from "luxon";
 
 ChartJS.register(
   CategoryScale,
@@ -93,12 +93,12 @@ export default class FeedPostTrendLineChart extends React.Component{
 			end: new Date().toISOString().split("T")[0],
 		}
 
-		const data = await getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, {moment: moment});
+		const data = await getFeedLineChartsData(this.props.objects, rangeDates, getPostMetricValue, titles, LuxonDateTime);
 
 		const datasets = titles.map((title, index) => 
 			({
 						    label: `# of ${title}`,
-						    fill: true,
+						    // fill: true,
 						    data: data.values[title],
 						    borderColor: [colors.borders[index]],
 						    backgroundColor: [colors.borders[index]],

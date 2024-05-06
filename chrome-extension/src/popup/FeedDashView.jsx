@@ -37,9 +37,9 @@ import {
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
-import moment from 'moment';
 import { db } from "../db";
 import eventBus from "./EventBus";
+import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
@@ -158,7 +158,7 @@ export default class FeedDashView extends React.Component{
     const visits = await getPeriodVisits({
                               start: this.state.startDate,
                               end: this.state.endDate,
-                            }, {moment: moment}, db, "feed");
+                            }, LuxonDateTime, db, "feed");
 
     this.setState({ visits: visits });
 

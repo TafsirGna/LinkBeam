@@ -1,6 +1,5 @@
 /*import './StatIndicatorsView.css'*/
 import React from 'react';
-import moment from 'moment';
 import hourglass_icon from '../../assets/hourglass_icon.png';
 import search_icon from '../../assets/search_icon.png';
 import news_icon from '../../assets/newspaper_icon.png';

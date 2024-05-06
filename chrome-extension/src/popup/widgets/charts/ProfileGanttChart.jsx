@@ -1,7 +1,26 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './ProfileGanttChart.css'*/
 import React from 'react';
-import Card from 'react-bootstrap/Card';
-import Nav from 'react-bootstrap/Nav';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,15 +35,14 @@ import {
   Colors,
 } from 'chart.js';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
-import { faker } from '@faker-js/faker';
+// import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar, getElementAtEvent } from 'react-chartjs-2';
-import { 
-  appParams, 
-  getChartColors ,
+import {  
+  getChartColors,
   dbDataSanitizer,
 } from "../../Local_library";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "../SVGs";
 
 ChartJS.register(
@@ -87,7 +105,7 @@ export default class ProfileGanttChart extends React.Component{
   setBarData(){
 
     var data = [], 
-        minDate = moment(),
+        minDate = LuxonDateTime.now(),
         objects = null,
         missingDataObjects = [];
 
@@ -116,7 +134,7 @@ export default class ProfileGanttChart extends React.Component{
       // Setting the minDate object
       if (object.period.startDateRange < minDate){ minDate = object.period.startDateRange; }
       
-      data.push({x: [object.period.startDateRange.format("YYYY-MM-DD"), object.period.endDateRange.format("YYYY-MM-DD")], y: label});
+      data.push({x: [object.period.startDateRange.toFormat("YYYY-MM-DD"), object.period.endDateRange.toFormat("YYYY-MM-DD")], y: label});
 
     }
 
@@ -132,8 +150,8 @@ export default class ProfileGanttChart extends React.Component{
             time:{
                 unit: 'month'
             },
-            min: minDate.format("YYYY-MM-DD"),
-            max: moment().format("YYYY-MM-DD"),
+            min: minDate.toFormat("YYYY-MM-DD"),
+            max: LuxonDateTime.now().toFormat('YYYY-MM-DD'),
           },
         },
         plugins: {
@@ -150,7 +168,7 @@ export default class ProfileGanttChart extends React.Component{
             callbacks: {
               label: ((tooltipItem, data) => {
                 // console.log(tooltipItem);
-                return `[${moment(tooltipItem.raw.x[0], 'YYYY-MM-DD').format("MMM YYYY")} - ${moment(tooltipItem.raw.x[1], 'YYYY-MM-DD').format("MMM YYYY")}]`;
+                return `[${LuxonDateTime.fromFormat(tooltipItem.raw.x[0], 'YYYY-MM-DD').toFormat("MMM YYYY")} - ${LuxonDateTime.fromFormat(tooltipItem.raw.x[1], 'YYYY-MM-DD').toFormat("MMM YYYY")}]`;
               })
             }
           }
@@ -189,7 +207,9 @@ export default class ProfileGanttChart extends React.Component{
     console.log(elements, (elements[0]).index);
 
     if (elements.length != 0){
-      this.props.onClick(this.state.chartData[(elements[0]).index].y);
+      if (this.props.onClick){
+        this.props.onClick(this.state.chartData[(elements[0]).index].y);
+      }
     }
 
   }
@@ -206,18 +226,20 @@ export default class ProfileGanttChart extends React.Component{
                                       plugins={[todayLinePlugin]}
                                       onClick={this.onChartClick}
                                       />
-                                      { this.state.missingDataObjects && this.state.missingDataObjects.length != 0 && <div class="rounded border shadow mt-2 p-2">
-                                                                              { this.state.missingDataObjects.map((object) => (<span class="mx-1 handy-cursor badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                                                <OverlayTrigger
-                                                                                  placement="top"
-                                                                                  overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}
-                                                                                >
-                                                                                  <span><AlertCircleIcon size="16" className="text-warning rounded-circle me-1"/></span>
-                                                                                </OverlayTrigger>
-                                                                                {dbDataSanitizer.preSanitize(object.entity.name)}
-                                                                              </span>
-                                                                            ))}
-                                                                          </div>}
+                                      { this.state.missingDataObjects 
+                                          && this.state.missingDataObjects.length != 0 
+                                          && <div class="rounded border shadow mt-2 p-2">
+                                                  { this.state.missingDataObjects.map((object) => (<span class="mx-1 handy-cursor badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                    <OverlayTrigger
+                                                      placement="top"
+                                                      overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}
+                                                    >
+                                                      <span><AlertCircleIcon size="16" className="text-warning rounded-circle me-1"/></span>
+                                                    </OverlayTrigger>
+                                                    {dbDataSanitizer.preSanitize(object.entity.name)}
+                                                  </span>
+                                                ))}
+                                              </div>}
                                   </div>
                                   <p class="small badge text-muted fst-italic p-0">
                                     <span>

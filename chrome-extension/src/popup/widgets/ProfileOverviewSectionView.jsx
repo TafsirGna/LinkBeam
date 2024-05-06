@@ -31,7 +31,7 @@ import Button from 'react-bootstrap/Button';
 import ProfileOverviewSectionCertificationWidget from "./ProfileOverviewSectionCertificationWidget";
 import ProfileOverviewSectionProjectWidget from "./ProfileOverviewSectionProjectWidget";
 import ProfileOverviewSectionLanguageWidget from "./ProfileOverviewSectionLanguageWidget";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { BarChartIcon } from "./SVGs";
 import eventBus from "../EventBus";
 import { db } from "../../db";
@@ -88,14 +88,14 @@ export default class ProfileOverviewSectionView extends React.Component{
     var percentage = 0;
     for (var profile of this.props.localDataObject.profiles){
       if (this.state.donutChartModalTitle == "experience"){
-        var timeLength = computePeriodTimeSpan(profile.experience, "experience", {moment: moment});
+        var timeLength = computePeriodTimeSpan(profile.experience, "experience", LuxonDateTime);
         if (profile.url != this.props.profile.url && timeLength <= this.props.localDataObject.profileComputedData.experienceTime){
           percentage += 1;
         }
       }
 
       if (this.state.donutChartModalTitle == "education"){
-        var timeLength = computePeriodTimeSpan(profile.education, "education", {moment: moment});
+        var timeLength = computePeriodTimeSpan(profile.education, "education", LuxonDateTime);
         if (profile.url != this.props.profile.url &&  timeLength <= this.props.localDataObject.profileComputedData.educationTime){
           percentage += 1;
         }

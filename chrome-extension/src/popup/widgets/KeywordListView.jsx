@@ -4,7 +4,7 @@ import eventBus from "../EventBus";
 import { 
   appParams,
 } from "../Local_library";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon, DeletionIcon } from "./SVGs";
 
 export default class KeywordListView extends React.Component{
@@ -72,7 +72,7 @@ export default class KeywordListView extends React.Component{
                                                   <DeletionIcon size="20"/>
                                                 </span>
                                               </strong>
-                                              <span class="d-block small opacity-75">Created {moment(keyword.createdOn, moment.ISO_8601).fromNow()}</span>
+                                              <span class="d-block small opacity-75">Created {LuxonDateTime.fromISO(keyword.createdOn).toRelative()}</span>
                                             </label>
                                           </div>))}
 

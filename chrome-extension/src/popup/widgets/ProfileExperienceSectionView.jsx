@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './HomeMenu.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -6,7 +27,6 @@ import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
-import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import EdExpInfoModal from "./modals/EdExpInfoModal";
 import sorry_icon from '../../assets/sorry_icon.png';
@@ -36,7 +56,7 @@ export default class ProfileExperienceSectionView extends React.Component{
 
       var featuredExperienceEntityName = dbDataSanitizer.preSanitize(experience.entity.name),
           title = dbDataSanitizer.preSanitize(experience.title),
-          expTime = ((experience.period.endDateRange.toDate() - experience.period.startDateRange.toDate()) / this.props.localDataObject.profileComputedData.experienceTime) * 100;
+          expTime = ((experience.period.endDateRange.toJSDate() - experience.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.experienceTime) * 100;
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(featuredExperienceEntityName.toLowerCase());
       if (index == -1){
@@ -126,9 +146,10 @@ export default class ProfileExperienceSectionView extends React.Component{
                   </OverlayTrigger> 
                   <div class="mt-3">
                      <ProfileGanttChart 
-                        profile={this.props.profile} 
-                        periodLabel="experience" 
-                        onClick={(label) => {this.handleJobModalShow(label)}}/>
+                         profile={this.props.profile} 
+                         periodLabel="experience" 
+                         onClick={(label) => {this.handleJobModalShow(label)}}
+                         /*context="backend"*//>
                   </div>
                 </div>
         

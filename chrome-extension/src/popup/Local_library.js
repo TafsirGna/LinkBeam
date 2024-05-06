@@ -40,6 +40,8 @@ export const appParams = {
   LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "core-section-container",
   // LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
+
+  supportedTimeLocales: ["fr", "en-US"],
   
   WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
   TAB_TIME_INC_VALUE: 5,
@@ -193,7 +195,7 @@ export const dbDataSanitizer = {
 
   },
   
-  periodDates: function(expPeriod, func){
+  periodDates: function(expPeriod, LuxonDateTime){
 
     // handling date range
     var dateRange = this.preSanitize(expPeriod); 
@@ -208,66 +210,23 @@ export const dbDataSanitizer = {
     var startDateRange = this.preSanitize(dateRange[0]), 
         endDateRange = this.preSanitize(dateRange[1]);
 
-    if (func.moment(startDateRange, "MMM YYYY").isValid()){
+    for (var locale of appParams.supportedTimeLocales){
+      var start = LuxonDateTime.fromFormat(startDateRange, `${isNaN(startDateRange) ? "MMM yyyy" : "yyyy"}`, { locale: locale }),
+          end = ["aujourd’hui", "Present"].indexOf(endDateRange) != -1
+                  ? LuxonDateTime.now()
+                  : LuxonDateTime.fromFormat(endDateRange, `${isNaN(endDateRange) ? "MMM yyyy" : "yyyy"}`, { locale: locale });
 
-      // if ()
-
-      startDateRange = func.moment(startDateRange, "MMM YYYY");
-    }
-    else{
-      if (func.moment.locale() == "en-gb"){
-        func.moment.locale("fr");
-        startDateRange = func.moment(startDateRange, "MMM YYYY");
-        func.moment.locale("en-gb");
-      }
-      else if (func.moment.locale() == "fr"){
-        func.moment.locale("en-gb");
-        startDateRange = func.moment(startDateRange, "MMM YYYY");
-        func.moment.locale("fr");
-      }
-
-      if (!startDateRange.isValid()){
-        alert("An error occured when converting some dates.");
-        startDateRange = null;
+      if (start.isValid && end.isValid){
+        return {
+          startDateRange: start, 
+          endDateRange: end,
+        };
       }
 
     }
 
-    // then the end date
-    if (["aujourd’hui", "Present"].indexOf(endDateRange) != -1){
-      endDateRange = func.moment();
-    }
-    else{
-      if (func.moment(endDateRange, "MMM YYYY").isValid()){
-        endDateRange = func.moment(endDateRange, "MMM YYYY");
-      }
-      else{
-
-        if (func.moment.locale() == "en-gb"){
-          func.moment.locale("fr");
-          endDateRange = func.moment(endDateRange, "MMM YYYY");
-          func.moment.locale("en-gb");
-        }
-        else if (func.moment.locale() == "fr"){
-          func.moment.locale("en-gb");
-          endDateRange = func.moment(endDateRange, "MMM YYYY");
-          func.moment.locale("fr");
-        }
-
-        if (!endDateRange.isValid()){
-          alert("An error occured when converting some dates.");
-          endDateRange = null;
-        }
-
-
-      }
-    }
-
-    if (!startDateRange || !endDateRange){
-      return null;
-    }
-
-    return {startDateRange: startDateRange, endDateRange: endDateRange};
+    alert("Not compatible date time locale!");
+    return null;  
 
   }
 
@@ -427,10 +386,10 @@ export const performLanguageComparison = function(theProfile, langName, profileL
 
 }
 
-export const computePeriodTimeSpan = function(objects, periodLabel, func){
+export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTime){
 
   var expTime = 0;
-  var refTime = func.moment();
+  var refTime = LuxonDateTime.now();
 
   if (!objects){
     return 0;
@@ -444,7 +403,7 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
     }
 
     if (typeof object.period == "string"){
-      var period = dbDataSanitizer.periodDates(object.period, func);
+      var period = dbDataSanitizer.periodDates(object.period, LuxonDateTime);
       if (!period){
         continue;
       }
@@ -452,11 +411,11 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
     }
     else{
       if (typeof object.period.startDateRange == "string"){
-        object.period.startDateRange = func.moment(object.period.startDateRange, func.moment.ISO_8601);
+        object.period.startDateRange = LuxonDateTime.fromISO(object.period.startDateRange);
       }
 
       if (typeof object.period.endDateRange == "string"){
-        object.period.endDateRange = func.moment(object.period.endDateRange, func.moment.ISO_8601);
+        object.period.endDateRange = LuxonDateTime.fromISO(object.period.endDateRange);
       }
     }
 
@@ -485,16 +444,16 @@ export const computePeriodTimeSpan = function(objects, periodLabel, func){
     }
 
     if (currentObjects.length > 0){
-      currentObjects.sort(function(a, b){ return (refTime.toDate() - a.period.endDateRange.toDate()) - (refTime.toDate() - b.period.endDateRange.toDate()); });
+      currentObjects.sort(function(a, b){ return (refTime.toJSDate() - a.period.endDateRange.toJSDate()) - (refTime.toJSDate() - b.period.endDateRange.toJSDate()); });
       var object = currentObjects[0];
-      expTime += (object.period.endDateRange.toDate() - refTime.toDate());
+      expTime += (object.period.endDateRange.toJSDate() - refTime.toJSDate());
       return recursiveCompute(object.period.endDateRange);
     }
     else{
       if (futureObjects.length > 0){
         futureObjects.sort(function(a, b){return a.period.startDateRange - b.period.startDateRange});
         var object = futureObjects[0];
-        expTime += (object.period.endDateRange.toDate() - object.period.startDateRange.toDate());
+        expTime += (object.period.endDateRange.toJSDate() - object.period.startDateRange.toJSDate());
         return recursiveCompute(object.period.endDateRange);
       }
       else{
@@ -565,7 +524,7 @@ export function checkOneKeyword(keyword, object){
 export function breakHtmlElTextContentByKeywords(textContent, keywords){
 
   var indices = [];
-  // console.log("keeeeeeeeeeyyyyyyyyywords : ", keywords);
+  console.log("keeeeeeeeeeyyyyyyyyywords : ", keywords);
   for (var keyword of keywords){
     for (var i = 0; i < textContent.length; i++){
       if (textContent.slice(i).toLowerCase().indexOf(keyword) == 0){
@@ -1003,26 +962,21 @@ export async function getPostMetricValue(postViews, metric){
 
   }
 
-export async function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, func){
+export async function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, LuxonDateTime){
 
   const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
 
   const incDate = (date) => {
-
-    if (func.moment){
-      return func.moment(date).add(1, 'd').toDate();
-    }
-    else if (func.luxon){
-      return func.luxon.fromJSDate(date).plus({ days: 1 }).toJSDate();
-    }
-
+    return LuxonDateTime.fromJSDate(date).plus({ days: 1 }).toJSDate();
   }
 
   var data = {};
 
+  console.log("xxxxxxxxxxxxxxxx 1 : ", objects);
+
   for (var visit of objects){
     const dateString = visit.date.split("T")[0],
-          hourString = Number(func.moment ? func.moment(visit.date).format("HH") : func.luxon.fromISO(visit.date).toLocaleString({ hour: 'numeric' })); /*visit.date.slice(11, 13)*/;
+          hourString = Number(LuxonDateTime.fromISO(visit.date).toFormat("HH"));
     if (dateString in data){
       if (hourString in data[dateString]){
         data[dateString][hourString].push(visit);
@@ -1037,6 +991,8 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
     }
   }
 
+  console.log("xxxxxxxxxxxxxxxx 2 : ", data);
+
   var labels = null,
       resData = {};
 
@@ -1049,7 +1005,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
       // initializing the labels
       const limit = new Date().toISOString().split("T")[0] == dateString 
-                      ? Number(func.moment ? func.moment().format("HH") : func.luxon.toLocaleString({ hour: 'numeric' })) /*Number(new Date().toISOString().slice(11, 13))*/
+                      ? Number(LuxonDateTime.now().toFormat("HH"))
                       : 23;
 
       if (!labels){
@@ -1061,6 +1017,8 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
                                       ? (await getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric))
                                       : 0);
       }
+
+      console.log("xxxxxxxxxxxxxxxx 3 : ", metric, resData);
 
     }
     else{
@@ -1130,7 +1088,7 @@ export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_F
 export const isLinkedinProfilePage = (url) => url.indexOf("/in/") != -1;
 export const isLinkedinFeedPostPage = (url) => url.indexOf("linkedin.com/feed/update/") != -1;
 
-export async function getPeriodVisits(dateValue, func, db, category, profileUrl = null){
+export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, profileUrl = null){
 
   var startDate = null,
       endDate = null;
@@ -1146,17 +1104,17 @@ export async function getPeriodVisits(dateValue, func, db, category, profileUrl 
     endDate = new Date();
     switch(dateValue){
       case 0: {
-        startDate = func.moment().subtract(6, 'days').toDate();
+        startDate = LuxonDateTime.now().minus({days:6}).toJSDate(); /*func.moment().subtract(6, 'days').toDate()*/;
         break;
       }
 
       case 1: {
-        startDate = func.moment().subtract(30, 'days').toDate();
+        startDate = LuxonDateTime.now().minus({days:30}).toJSDate();
         break;
       }
 
       case 2: {
-        startDate = func.moment().subtract(12, 'months').toDate();
+        startDate = LuxonDateTime.now().minus({months:12}).toJSDate();
         break;
       }
     }

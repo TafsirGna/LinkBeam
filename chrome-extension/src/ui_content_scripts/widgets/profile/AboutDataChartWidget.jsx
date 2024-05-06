@@ -74,16 +74,18 @@ export default class AboutDataChartWidget extends React.Component{
                 if (!this.state.wordsData){
 
                     const profileData = message.data;
-                    const sanitizedProfileAbout = dbDataSanitizer.profileAbout(profileData.info);
+                    console.log("[[[[[[[[[[[[[[[[[ : ", profileData, profileData.info, dbDataSanitizer.profileAbout(profileData.info));
 
                     var wordsData = {};
-                    for (var word of sanitizedProfileAbout.split(" ")){
+                    for (var word of dbDataSanitizer.profileAbout(profileData.info).split(" ")){
                         if (!word.length){
                             continue;
                         }
 
                         wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
                     }
+
+                    console.log("[[[[[[[[[[[[[[[[[ : ", wordsData);
 
                     this.setState({wordsData: wordsData});
 
@@ -109,10 +111,10 @@ export default class AboutDataChartWidget extends React.Component{
                           <div class="p-4">
               
                           {this.state.wordsData 
-                                && <div class="border border-1 mb-3 mt-2 shadow rounded">
+                                && /*<div class="border border-1 mb-3 mt-2 shadow rounded">*/
                                     <ProfileAboutBubbleChart 
-                                        objectData={this.state.wordsData} />
-                                </div>}
+                                        objectData={this.state.wordsData}/>
+                                /*</div>*/}
 
                           </div>
               

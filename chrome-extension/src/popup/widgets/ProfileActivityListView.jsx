@@ -1,7 +1,7 @@
 import '../assets/css/ProfileActivityListView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
 import share_icon from '../../assets/share_icon.png';
@@ -184,7 +184,7 @@ export default class ProfileActivityListView extends React.Component{
                                       </p>
                                       <p class="mb-0 opacity-75 border p-2 rounded shadow">{this.getListItemData(object, "textContent")}</p>
                                     </div>
-                                    <small class="opacity-50 text-nowrap">{moment(object.date, moment.ISO_8601).fromNow()}</small>
+                                    <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>
                                   </div>
                                 </a>))} 
                               </div>
@@ -221,7 +221,7 @@ export default class ProfileActivityListView extends React.Component{
                                     </h5>
                                     <p class="text-muted mb-2 fw-bold">
                                       <span>
-                                        Added {moment(object.date, moment.ISO_8601).fromNow()}
+                                        Added {LuxonDateTime.fromISO(object.date).toRelative()}
                                       </span>
                                       <span class="border shadow-sm rounded p-1 mx-2">
                                         <a 

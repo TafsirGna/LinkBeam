@@ -29,7 +29,7 @@ import man_user_icon from '../assets/user_icons/man.png';
 import mom_user_icon from '../assets/user_icons/mom.png';
 import lady_user_icon from '../assets/user_icons/lady.png';
 import woman_user_icon from '../assets/user_icons/woman.png';
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import { OverlayTrigger, Tooltip, Offcanvas } from "react-bootstrap";
 import { 
 	saveCurrentPageTitle, 
@@ -143,7 +143,7 @@ export default class MyAccount extends React.Component{
 								</div>
               </OverlayTrigger>
             	<hr/>
-            	{ this.props.globalData.settings && <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {moment(this.props.globalData.settings.installedOn).format('MMMM Do YYYY, h:mm:ss a')}</p> }
+            	{ this.props.globalData.settings && <p class="fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info-subtle">Installed since {LuxonDateTime.fromISO(this.props.globalData.settings.installedOn).toFormat('MMMM dd yyyy, hh:mm a')}</p> }
 
               {/*<div class="text-center">
                 <button type="button" class="btn btn-primary badge mt-3" onClick={() => {this.verifyAccount()}} >

@@ -22,16 +22,16 @@
 /*import './ExperienceDataChartWidget.css'*/
 import React from 'react';
 import { appParams } from "../../../popup/Local_library";
-import { DateTime as LuxonDateTime } from "luxon";
 import ExtensionMarkerView from "./ExtensionMarkerView";
+import ProfileGanttChart from "../../../popup/widgets/charts/ProfileGanttChart";
 
 export default class ExperienceDataChartWidget extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-        modalShow: false,
-        profileData: null,
+      modalShow: false,
+      profileData: null,
     };
 
     this.startMessageListener = this.startMessageListener.bind(this);
@@ -88,7 +88,10 @@ export default class ExperienceDataChartWidget extends React.Component{
                     <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                       
                       <div class="p-4">
-          
+                        <ProfileGanttChart 
+                          profile={this.props.profileData} 
+                          periodLabel="experience"
+                          /*context="frontend"*//>
                       </div>
           
                       <div class="p-4 text-lg">

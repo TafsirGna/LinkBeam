@@ -62,8 +62,6 @@ class MainScriptAgent extends ScriptAgentBase {
             allKeywords: this.allKeywords,
             highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
         }
-
-        // console.log("prooooooooooooooops : ", props, this.pageUrl);
         
         if (isLinkedinFeed(this.pageUrl)){
             FeedPageScriptAgent.updateUi(props);

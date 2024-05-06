@@ -36,7 +36,7 @@ import 'react-calendar/dist/Calendar.css';
 import Card from 'react-bootstrap/Card';
 import Nav from 'react-bootstrap/Nav';
 import VisitListView from "./widgets/VisitListView";
-import moment from 'moment';
+import { DateTime as LuxonDateTime } from "luxon";
 import ReminderListView from "./widgets/ReminderListView";
 import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
@@ -81,7 +81,7 @@ export default class CalendarView extends React.Component{
     // Setting the nav default active key
     this.setState({
       tabActiveKey: dataType == "Reminders" ? dataType : this.state.tabTitles[0], 
-      activeStartDate: moment(this.state.selectedDate).startOf('month').format("YYYY-MM-DD"),
+      activeStartDate: LuxonDateTime.fromJSDate(this.state.selectedDate).startOf('month').toFormat("yyyy-MM-dd"),
       dataType: dataType,
     });
 
@@ -106,7 +106,7 @@ export default class CalendarView extends React.Component{
   getDayObjectList(monthObjectList){
 
     var list = null;
-    var dateString = moment(this.state.selectedDate).format("YYYY-MM-DD");
+    var dateString = LuxonDateTime.fromJSDate(this.state.selectedDate).toFormat("yyyy-MM-dd");
 
     if (monthObjectList){
       if (dateString in monthObjectList){
@@ -126,8 +126,8 @@ export default class CalendarView extends React.Component{
 
   async getMonthObjectList(date, objectStoreName){
 
-    const startOfMonth = moment(date).startOf('month').toDate();
-    const endOfMonth   = moment(date).endOf('month').toDate();
+    const startOfMonth = LuxonDateTime.fromJSDate(date).startOf('month').toJSDate();
+    const endOfMonth   = LuxonDateTime.fromJSDate(date).endOf('month').toJSDate();
 
     var props = null;
     switch(objectStoreName){
@@ -180,7 +180,7 @@ export default class CalendarView extends React.Component{
     }
     
     date = date.toLocaleDateString();
-    date = new Date(moment(new Date(date)).format("YYYY-MM-DD"));
+    date = new Date(LuxonDateTime.fromJSDate(new Date(date)).toFormat("yyyy-MM-dd"));
 
     return date < (new Date(this.props.globalData.settings.lastDataResetDate.split('T')[0])); 
 
@@ -223,7 +223,7 @@ export default class CalendarView extends React.Component{
     }
 
     var date = date.toLocaleDateString();
-    date = moment(new Date(date)).format("YYYY-MM-DD");
+    date = LuxonDateTime.fromJSDate(new Date(date)).toFormat("yyyy-MM-dd");
 
     // month reminder list
     if (this.state.monthReminderList && date in this.state.monthReminderList){
@@ -275,12 +275,12 @@ export default class CalendarView extends React.Component{
             </div>
             <div class="col-7 ps-3">
               <div>
-                <span class="badge shadow text-muted border border-warning mb-2">{moment(this.state.selectedDate).format('dddd, MMMM Do YYYY')}</span>
+                <span class="badge shadow text-muted border border-warning mb-2">{LuxonDateTime.fromJSDate(this.state.selectedDate).toFormat('dddd, MMMM Do YYYY')}</span>
               </div>
               <div class="small shadow-sm mb-3 mt-2 p-1 fst-italic border-start border-info ps-2 border-4 bg-info-subtle text-muted">
                 Explore 
-                <a href={`/index.html?view=FeedDash&data=${JSON.stringify({from: moment(this.state.selectedDate).toISOString(), to: moment(this.state.selectedDate).toISOString()})}`} target="_blank" class="mx-1">feed</a> 
-                data as well for that {moment(this.state.selectedDate).format('dddd, MMMM Do YYYY').split(",")[0].toLowerCase()}
+                <a href={`/index.html?view=FeedDash&data=${JSON.stringify({from: LuxonDateTime.fromJSDate(this.state.selectedDate).toISO(), to: LuxonDateTime.fromJSDate(this.state.selectedDate).toISO()})}`} target="_blank" class="mx-1">feed</a> 
+                data as well for that {LuxonDateTime.fromJSDate(this.state.selectedDate).toLocaleString({weekday: 'long'})}
               </div>
               <Card className="shadow">
                 <Card.Header>

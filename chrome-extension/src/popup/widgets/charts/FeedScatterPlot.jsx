@@ -2,6 +2,7 @@
 import React from 'react'
 import * as ChartGeo from "chartjs-chart-geo";
 import { Scatter } from 'react-chartjs-2';
+import { DateTime as LuxonDateTime } from "luxon";
 import {
   Chart as ChartJS,
   LinearScale,
@@ -17,7 +18,6 @@ import {
   getVisitPostCount,
 } from "../../Local_library";
 // import { faker } from '@faker-js/faker';
-import moment from 'moment';
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -42,7 +42,7 @@ export const options = {
       callbacks: {
         label: ((tooltipItem, data) => {
           // console.log(tooltipItem);
-          return `${moment(tooltipItem.raw.dateString).format('LLLL')}`;
+          return `${LuxonDateTime.fromISO(tooltipItem.raw.dateString).toFormat('MMMM dd yyyy, hh:mm a')}`;
         })
       }
     }

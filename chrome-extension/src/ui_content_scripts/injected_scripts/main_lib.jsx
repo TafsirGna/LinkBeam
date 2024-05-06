@@ -143,8 +143,14 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
 
       detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
 
-      newChild.attachShadow({ mode: 'open' });
-      ReactDOM.createRoot(newChild.shadowRoot).render(
+      var newDivTag_A = document.createElement('span');
+      var newDivTag_B = document.createElement('span');
+
+      newDivTag_A.style.cssText = "display: none;";
+      newDivTag_A.innerHTML = textItem;
+
+      newDivTag_B.attachShadow({ mode: 'open' });
+      ReactDOM.createRoot(newDivTag_B.shadowRoot).render(
               <React.StrictMode>
                 <style type="text/css">{styles}</style>
                 <HighlightedKeywordView
@@ -154,6 +160,9 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
                   />
               </React.StrictMode>
           );
+
+      newChild.appendChild(newDivTag_A);
+      newChild.appendChild(newDivTag_B);
 
     }
     else{

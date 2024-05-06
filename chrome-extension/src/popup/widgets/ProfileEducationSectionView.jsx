@@ -5,7 +5,6 @@ import { dbDataSanitizer } from "../Local_library";
 import ProfileGanttChart from "./charts/ProfileGanttChart";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import eventBus from "../EventBus";
-import moment from 'moment';
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import EdExpInfoModal from "./modals/EdExpInfoModal";
 import sorry_icon from '../../assets/sorry_icon.png';
@@ -37,7 +36,7 @@ export default class ProfileEducationSectionView extends React.Component{
       var edTime = 0;
 
       if (education.period){
-        edTime = ((education.period.endDateRange.toDate() - education.period.startDateRange.toDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;
+        edTime = ((education.period.endDateRange.toJSDate() - education.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;
       }
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(entityName.toLowerCase());

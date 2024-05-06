@@ -21,13 +21,13 @@
 
 /*import './ReminderListItemView.css'*/
 import React from 'react';
-import moment from 'moment';
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { 
   DuplicateIcon, 
   ClockIcon,
 } from "./SVGs";
 import { db } from "../../db";
+import { DateTime as LuxonDateTime } from "luxon";
 import { 
   isLinkedinProfilePage,
 } from "../Local_library";
@@ -114,10 +114,10 @@ export default class ReminderListItemView extends React.Component{
               <div class={`small mt-1 ${new Date(this.props.object.date) >= new Date() ? "text-warning" : "text-muted"}`}>
                 <ClockIcon
                   size="14"/>
-                <span class="ms-2">{moment(this.props.object.date, moment.ISO_8601).format('ll')}</span>
+                <span class="ms-2">{LuxonDateTime.fromISO(this.props.object.date).toFormat('MMMM dd, yyyy')}</span>
               </div>
             </div>
-            <small class="opacity-50 text-nowrap">{moment(this.props.object.createdOn, moment.ISO_8601).fromNow()}</small>
+            <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(this.props.object.createdOn).toRelative()}</small>
           </div>
         </a>
 

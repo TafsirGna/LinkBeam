@@ -24,12 +24,12 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import { DateTime as LuxonDateTime } from "luxon";
 import VisitsTimelineChart from "../charts/VisitsTimelineChart";
 import { 
   getPeriodVisits,
   appParams
 } from "../../Local_library";
-import moment from 'moment';
 import { db } from "../../../db";
 
 export default class ProfileVisitsChartModal extends React.Component{
@@ -62,7 +62,7 @@ export default class ProfileVisitsChartModal extends React.Component{
 
   async setPeriodVisits(){
 
-    var periodVisits = await getPeriodVisits(this.state.view, {moment: moment}, db, "profiles", this.props.profile.url);
+    var periodVisits = await getPeriodVisits(this.state.view, LuxonDateTime, db, "profiles", this.props.profile.url);
     this.setState({periodVisits: periodVisits});
 
   }

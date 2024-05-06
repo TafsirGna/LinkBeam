@@ -155,7 +155,7 @@ export default class ProfileAboutSectionView extends React.Component{
 
 																			{this.state.wordsData && <div class="border border-1 mb-3 mt-2 shadow rounded">
 																																							<ProfileAboutBubbleChart 
-																																								objectData={this.state.wordsData} />
+																																								objectData={this.state.wordsData}/>
 																																						</div>}
 
 																			<div>
