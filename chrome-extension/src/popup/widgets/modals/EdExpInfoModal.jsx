@@ -63,7 +63,7 @@ export default class EdExpInfoModal extends React.Component{
                                                   { this.props.labelName == "title" ? dbDataSanitizer.preSanitize(object.entity.name) : dbDataSanitizer.preSanitize(object.title)}
                                                 </span>
                                               </h6>
-                                              { object.period && <p class="text-muted mb-2 fw-light">{object.period.startDateRange.format("MMMM YYYY")} - {object.period.endDateRange.format("MMMM YYYY")}</p>}
+                                              { object.period && <p class="text-muted mb-2 fw-light">{object.period.startDateRange.toFormat("MMM yyyy")} - {object.period.endDateRange.toFormat("MMM yyyy")}</p>}
                                               { object.description && <p class="text-muted border rounded p-2 shadow-sm" dangerouslySetInnerHTML={{__html: object.description}}>
                                                                                               { /*object.description*/ }
                                                                                             </p>}

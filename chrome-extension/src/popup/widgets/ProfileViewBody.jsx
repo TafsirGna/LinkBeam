@@ -22,7 +22,7 @@
 /*import './ProfileViewBody.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import ProfileGanttChart from "./charts/ProfileGanttChart";
+import ProfileGanttChartWidget from "./ProfileGanttChartWidget";
 import ProfileAboutSectionView from "./ProfileAboutSectionView";
 import ProfileExperienceSectionView from "./ProfileExperienceSectionView";
 import ProfileEducationSectionView from "./ProfileEducationSectionView";
@@ -217,7 +217,7 @@ export default class ProfileViewBody extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            <ProfileGanttChart 
+            <ProfileGanttChartWidget
               profile={this.props.profile} 
               periodLabel="all" />
 

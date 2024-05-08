@@ -32,9 +32,11 @@ export default class ExperienceDataChartWidget extends React.Component{
     this.state = {
       modalShow: false,
       profileData: null,
+      missingDataObjects: null,
     };
 
     this.startMessageListener = this.startMessageListener.bind(this);
+    this.setMissingDataObjects = this.setMissingDataObjects.bind(this);
 
   }
 
@@ -75,6 +77,10 @@ export default class ExperienceDataChartWidget extends React.Component{
 
     }
 
+  setMissingDataObjects(objects){
+    this.setState({missingDataObjects: objects})
+  }
+
   render(){
     return (
       <>
@@ -88,10 +94,10 @@ export default class ExperienceDataChartWidget extends React.Component{
                     <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                       
                       <div class="p-4">
-                        <ProfileGanttChart 
-                          profile={this.props.profileData} 
+                        <ProfileGanttChart
+                          profile={this.state.profileData} 
                           periodLabel="experience"
-                          /*context="frontend"*//>
+                          setMissingDataObjects={this.setMissingDataObjects}/>
                       </div>
           
                       <div class="p-4 text-lg">

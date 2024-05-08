@@ -199,15 +199,23 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
     }
     else{ // leaf node
       if (node.nodeType == Node.TEXT_NODE){
+        // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){}
 
-        //
-        // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){
+        // checking first if this text node contains any keywords before proceding
+        var containsKeyword = false;
+        for (var keyword of keywords){
+          if (node.nodeValue.toLowerCase().indexOf(keyword) != -1){
+            containsKeyword = true;
+            break;
+          }
+        }
 
-        // }
+        if (containsKeyword){
+          var newNode = document.createElement('span');
+          newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
+          node.parentNode.replaceChild(newNode, node);
+        }
 
-        var newNode = document.createElement('span');
-        newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
-        node.parentNode.replaceChild(newNode, node);
       }
     }
 

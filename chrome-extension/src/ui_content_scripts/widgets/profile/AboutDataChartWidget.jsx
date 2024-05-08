@@ -36,6 +36,7 @@ export default class AboutDataChartWidget extends React.Component{
         this.state = {
             modalShow: false,
             wordsData: null,
+            profileData: null,
         };
 
         this.startMessageListener = this.startMessageListener.bind(this);
@@ -74,7 +75,6 @@ export default class AboutDataChartWidget extends React.Component{
                 if (!this.state.wordsData){
 
                     const profileData = message.data;
-                    console.log("[[[[[[[[[[[[[[[[[ : ", profileData, profileData.info, dbDataSanitizer.profileAbout(profileData.info));
 
                     var wordsData = {};
                     for (var word of dbDataSanitizer.profileAbout(profileData.info).split(" ")){
@@ -85,9 +85,7 @@ export default class AboutDataChartWidget extends React.Component{
                         wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
                     }
 
-                    console.log("[[[[[[[[[[[[[[[[[ : ", wordsData);
-
-                    this.setState({wordsData: wordsData});
+                    this.setState({wordsData: wordsData, profileData: profileData});
 
                 }
             }
@@ -108,15 +106,45 @@ export default class AboutDataChartWidget extends React.Component{
                   && <div class={"modal-container-ac84bbb3728 "}>
                         <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                           
-                          <div class="p-4">
-              
-                          {this.state.wordsData 
-                                && /*<div class="border border-1 mb-3 mt-2 shadow rounded">*/
-                                    <ProfileAboutBubbleChart 
-                                        objectData={this.state.wordsData}/>
-                                /*</div>*/}
+                            <div class="p-4">
+                                <div class="grid grid-cols-4 gap-4">
+                                    {[{
+                                        cardText: "Word count",
+                                        cardTitle: dbDataSanitizer.profileAbout(this.state.profileData.info).split(" ").filter(word => word.length).length,
+                                        onClickFunc: null,
+                                    },
+                                    {
+                                        cardText: "Character count",
+                                        cardTitle: dbDataSanitizer.preSanitize(this.state.profileData.info).length,
+                                        onClickFunc: null,
+                                    },
+                                    {
+                                        cardText: "Average word length",
+                                        cardTitle: (Object.keys(this.state.wordsData).map(word => word.length).reduce((acc, a) => acc + a, 0) / Object.keys(this.state.wordsData).length).toFixed(1),
+                                        onClickFunc: null,
+                                    },
+                                    {
+                                        cardText: "Unique words",
+                                        cardTitle: `${(((Object.keys(this.state.wordsData).filter(word => this.state.wordsData[word] == 1).length * 100) / Object.keys(this.state.wordsData).length)).toFixed(1)}%`,
+                                        onClickFunc: null,
+                                    }].map(item => (<a href="#" class="block max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                                    
+                                                                        <h6 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                                                            {item.cardTitle}
+                                                                        </h6>
+                                                                        <p class="font-normal text-gray-700 dark:text-gray-400">
+                                                                            {item.cardText}
+                                                                        </p>
+                                                                    </a>))}
+                                </div>
+                  
+                                {this.state.wordsData 
+                                    && /*<div class="border border-1 mb-3 mt-2 shadow rounded">*/
+                                        <ProfileAboutBubbleChart 
+                                            objectData={this.state.wordsData}/>
+                                    /*</div>*/}
 
-                          </div>
+                            </div>
               
                           <div class="p-4 text-lg">
                             <div 

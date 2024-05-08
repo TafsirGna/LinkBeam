@@ -555,7 +555,6 @@ export function checkOneKeyword(keyword, object){
 export function breakHtmlElTextContentByKeywords(textContent, keywords){
 
   var indices = [];
-  console.log("keeeeeeeeeeyyyyyyyyywords : ", keywords);
   for (var keyword of keywords){
     for (var i = 0; i < textContent.length; i++){
       if (textContent.slice(i).toLowerCase().indexOf(keyword) == 0){

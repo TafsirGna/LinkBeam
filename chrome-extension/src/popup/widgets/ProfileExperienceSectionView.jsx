@@ -23,7 +23,7 @@
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { dbDataSanitizer } from "../Local_library";
-import ProfileGanttChart from "./charts/ProfileGanttChart";
+import ProfileGanttChartWidget from "./ProfileGanttChartWidget";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import JobTitlesBarChart from "./charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
@@ -54,6 +54,10 @@ export default class ProfileExperienceSectionView extends React.Component{
         jobTitlesBarData = [];
     for (var experience of this.props.profile.experience){
 
+      if (!experience.period){
+        continue;
+      }
+
       var featuredExperienceEntityName = dbDataSanitizer.preSanitize(experience.entity.name),
           title = dbDataSanitizer.preSanitize(experience.title),
           expTime = ((experience.period.endDateRange.toJSDate() - experience.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.experienceTime) * 100;
@@ -80,6 +84,7 @@ export default class ProfileExperienceSectionView extends React.Component{
         jobTitlesBarData[index].value += expTime;
       }
     }
+
     this.setState({
       doughnutChartsData: doughnutChartsData, 
       jobTitlesBarData: jobTitlesBarData,
@@ -107,31 +112,38 @@ export default class ProfileExperienceSectionView extends React.Component{
     return (
       <>
 
-        { !this.props.profile.experience && <div class="text-center m-5 mt-2">
+        { (!this.props.profile.experience
+              || (this.props.profile.experience 
+                    && this.state.doughnutChartsData
+                    && this.state.doughnutChartsData.length == 0)) 
+            && <div class="text-center m-5 mt-2">
                     <img 
                       src={sorry_icon} 
                       width="80" />
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No experience data here</span></p>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Unable to retrieve experience data for this user</span></p>
                   </div> }
 
-        { this.props.profile.experience && <div>
+        { this.props.profile.experience 
+            && this.state.doughnutChartsData
+            && this.state.doughnutChartsData.length != 0
+            && <div>
 
-                    { this.state.doughnutChartsData &&  <div>
-                                                        <div class="container-fluid horizontal-scrollable">
-                                                          <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
-                                                            { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                              <ProfileSingleItemDonutChart 
-                                                                                                                                data={experienceItem} 
-                                                                                                                                variant={"primary"} 
-                                                                                                                                className="handy-cursor" 
-                                                                                                                                onClick={() => {this.handleJobModalShow(experienceItem.label)}}/>
-                                                                                                                            </div>) }
-                                                          </div>
-                                                        </div>
-                                                        <p class="small badge text-muted fst-italic p-0 ps-2">
-                                                          <span>Share of each job experience</span>
-                                                        </p>
-                                                      </div>}
+                <div>
+                  <div class="container-fluid horizontal-scrollable">
+                    <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
+                      { this.state.doughnutChartsData.map((experienceItem, index) =>  <div class="col-4 shadow rounded py-3 border">
+                                                                                        <ProfileSingleItemDonutChart 
+                                                                                          data={experienceItem} 
+                                                                                          variant={"primary"} 
+                                                                                          className="handy-cursor" 
+                                                                                          onClick={() => {this.handleJobModalShow(experienceItem.label)}}/>
+                                                                                      </div>) }
+                    </div>
+                  </div>
+                  <p class="small badge text-muted fst-italic p-0 ps-2">
+                    <span>Share of each job experience</span>
+                  </p>
+                </div>
         
                 <div class="mt-2 mx-2">
                   <OverlayTrigger
@@ -145,11 +157,10 @@ export default class ProfileExperienceSectionView extends React.Component{
                     </span>
                   </OverlayTrigger> 
                   <div class="mt-3">
-                     <ProfileGanttChart 
-                         profile={this.props.profile} 
-                         periodLabel="experience" 
-                         onClick={(label) => {this.handleJobModalShow(label)}}
-                         /*context="backend"*//>
+                    <ProfileGanttChartWidget
+                      profile={this.props.profile} 
+                      periodLabel="experience" 
+                      onChartClick={(label) => {this.handleJobModalShow(label)}}/>
                   </div>
                 </div>
         

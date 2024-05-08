@@ -34,7 +34,6 @@ import {
   TimeScale,
   Colors,
 } from 'chart.js';
-import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 // import { faker } from '@faker-js/faker';
 import 'chartjs-adapter-date-fns';
 import { Line, Bar, getElementAtEvent } from 'react-chartjs-2';
@@ -43,7 +42,6 @@ import {
   dbDataSanitizer,
 } from "../../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
-import { AlertCircleIcon } from "../SVGs";
 
 ChartJS.register(
   CategoryScale,
@@ -88,7 +86,6 @@ export default class ProfileGanttChart extends React.Component{
       barData: null,
       chartData: null,
       chartRef: React.createRef(),
-      missingDataObjects: null,
     };
 
     this.onChartClick = this.onChartClick.bind(this);
@@ -194,8 +191,9 @@ export default class ProfileGanttChart extends React.Component{
             },
           ],
         },
-        missingDataObjects: missingDataObjects,
       });
+
+      this.props.setMissingDataObjects(missingDataObjects);
 
     });
 
@@ -218,39 +216,13 @@ export default class ProfileGanttChart extends React.Component{
     return (
       <>
         { this.state.barData && <div> 
-                                  <div class="shadow border rounded border-1 p-2">
-                                    <Bar 
+                                  <Bar 
                                       ref={this.state.chartRef}
                                       options={this.state.barOptions} 
                                       data={this.state.barData} 
                                       plugins={[todayLinePlugin]}
                                       onClick={this.onChartClick}
                                       />
-                                      { this.state.missingDataObjects 
-                                          && this.state.missingDataObjects.length != 0 
-                                          && <div class="rounded border shadow mt-2 p-2">
-                                                  { this.state.missingDataObjects.map((object) => (<span class="mx-1 handy-cursor badge align-items-center p-1 pe-2 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                    <OverlayTrigger
-                                                      placement="top"
-                                                      overlay={<ReactTooltip id="tooltip1">Missing period data</ReactTooltip>}
-                                                    >
-                                                      <span><AlertCircleIcon size="16" className="text-warning rounded-circle me-1"/></span>
-                                                    </OverlayTrigger>
-                                                    {dbDataSanitizer.preSanitize(object.entity.name)}
-                                                  </span>
-                                                ))}
-                                              </div>}
-                                  </div>
-                                  <p class="small badge text-muted fst-italic p-0">
-                                    <span>
-                                      Time chart of 
-                                      {this.props.periodLabel == "experience" 
-                                        ? " job experiences"
-                                        : this.props.periodLabel == "education"
-                                          ? " institutions attended"
-                                          : " job experiences and institutions attended" }
-                                    </span>
-                                  </p>
                                 </div>}
       </>
     );

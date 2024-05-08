@@ -2,7 +2,7 @@
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { dbDataSanitizer } from "../Local_library";
-import ProfileGanttChart from "./charts/ProfileGanttChart";
+import ProfileGanttChartWidget from "./ProfileGanttChartWidget";
 import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
 import eventBus from "../EventBus";
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
@@ -31,13 +31,12 @@ export default class ProfileEducationSectionView extends React.Component{
         wordCloudData = []*/;
     for (var education of this.props.profile.education){
 
-      var entityName = dbDataSanitizer.preSanitize(education.entity.name);
-          // title = dbDataSanitizer.preSanitize(education.title),
-      var edTime = 0;
-
-      if (education.period){
-        edTime = ((education.period.endDateRange.toJSDate() - education.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;
+      if (!education.period){
+        continue
       }
+
+      var entityName = dbDataSanitizer.preSanitize(education.entity.name),
+          edTime = ((education.period.endDateRange.toJSDate() - education.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;
 
       var index = doughnutChartsData.map(e => e.label.toLowerCase()).indexOf(entityName.toLowerCase());
       if (index == -1){
@@ -51,21 +50,9 @@ export default class ProfileEducationSectionView extends React.Component{
         doughnutChartsData[index].value += edTime;
       }
 
-      // index = wordCloudData.map(e => e.title).indexOf(title);
-      // if (index == -1){
-      //   wordCloudData.push({
-      //     label: title,
-      //     value: edTime,
-      //   });
-      // }
-      // else{
-      //   wordCloudData[index].value += edTime;
-      // }
-
     }
     this.setState({
       doughnutChartsData: doughnutChartsData, 
-      // wordCloudData: wordCloudData,
     });
 
   }
@@ -90,27 +77,34 @@ export default class ProfileEducationSectionView extends React.Component{
     return (
       <>
 
-        { !this.props.profile.education && <div class="text-center m-5 mt-2">
+        { (!this.props.profile.education
+              || (this.props.profile.education
+                  && this.state.doughnutChartsData
+                  && this.state.doughnutChartsData.length == 0)) 
+            && <div class="text-center m-5 mt-2">
                     <img 
                       src={sorry_icon} 
                       width="80" />
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No education data here</span></p>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Unable to retrieve education data for this user</span></p>
                   </div> }
 
-        { this.props.profile.education && <div>
+        { this.props.profile.education 
+            && this.state.doughnutChartsData
+            && this.state.doughnutChartsData.length != 0
+            && <div>
                 
-                  { this.state.doughnutChartsData &&  <div>
-                                                          <div class="container-fluid horizontal-scrollable">
-                                                            <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
-                                                              { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
-                                                                                                                                <ProfileSingleItemDonutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
-                                                                                                                              </div>) }
-                                                            </div>
-                                                          </div>
-                                                          <p class="small badge text-muted fst-italic p-0 ps-2">
-                                                            <span>Share of each education institution</span>
-                                                          </p>
-                                                        </div>}
+                    <div>
+                      <div class="container-fluid horizontal-scrollable">
+                        <div class="rounded p-2 mt-2 mx-0 d-flex flex-row flex-nowrap row gap-3">
+                          { this.state.doughnutChartsData.map((educationItem, index) =>  <div class="col-4 shadow rounded py-3 border">
+                                                                                            <ProfileSingleItemDonutChart data={educationItem} className="handy-cursor" variant={"primary"} onClick={() => {this.handleEdModalShow(educationItem.label)}}/>
+                                                                                          </div>) }
+                        </div>
+                      </div>
+                      <p class="small badge text-muted fst-italic p-0 ps-2">
+                        <span>Share of each education institution</span>
+                      </p>
+                    </div>
         
                   <div class="mt-2 mx-2">
                     <OverlayTrigger
@@ -124,10 +118,10 @@ export default class ProfileEducationSectionView extends React.Component{
                       </span>
                     </OverlayTrigger> 
                     <div class="mt-3">
-                       <ProfileGanttChart 
+                       <ProfileGanttChartWidget 
                           profile={this.props.profile} 
                           periodLabel="education"
-                          onClick={(label) => {this.handleEdModalShow(label)}} />
+                          onChartClick={(label) => {this.handleEdModalShow(label)}} />
                     </div>
                   </div>
         

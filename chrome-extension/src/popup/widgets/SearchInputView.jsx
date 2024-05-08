@@ -326,6 +326,11 @@ export default class SearchInputView extends React.Component{
           profile.fullName = this.highlightSearchText(profile.fullName);
           visits = visits ? visits : [];
 
+          var profileVisits = await db.visits
+                                  .where("url")
+                                  .anyOf([url, encodeURI(url), decodeURI(url)])
+                                  .sortBy("date");
+
           profileVisits = profileVisits.map(visit => {
             visit.profileData = profile;
             return visit;
