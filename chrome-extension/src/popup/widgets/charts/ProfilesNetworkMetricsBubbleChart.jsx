@@ -6,6 +6,7 @@ import {
 	getChartColors, 	
 	dbDataSanitizer,
 	saveCanvas,
+	getPeriodLabel,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -18,6 +19,7 @@ import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { db } from "../../../db";
+import { DateTime as LuxonDateTime } from "luxon";
 
 ChartJS.register(LinearScale, PointElement, Tooltip, Legend);
 
@@ -163,7 +165,11 @@ export default class ProfilesNetworkMetricsBubbleChart extends React.Component{
 					{ this.state.bubbleData && 
 												<div>
 													<Bubble id={"chartTag_"+this.state.uuid} options={options} data={this.state.bubbleData} /> 
-													{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small">Chart of profiles by number of visits and time</p> }
+													{ this.props.displayLegend 
+															&& this.props.displayLegend == true 
+															&& <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small">
+																	Chart of profiles by number of visits and time ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+															</p> }
 												</div>}
 
 				</div>

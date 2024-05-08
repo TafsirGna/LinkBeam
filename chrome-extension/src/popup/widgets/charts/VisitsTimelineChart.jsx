@@ -6,6 +6,7 @@ import {
 	groupObjectsByDate, 
 	groupObjectsByMonth, 
 	saveCanvas,
+	getPeriodLabel,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -222,7 +223,11 @@ export default class VisitsTimelineChart extends React.Component{
 
 					{ this.state.lineData && <div>
 																		<Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} />
-																		{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits over a period of time</p> }
+																		{ this.props.displayLegend 
+																				&& this.props.displayLegend == true 
+																				&& <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+																						Chart of visits over a period of time ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+																					</p> }
 																	</div>}
 
 				</div>

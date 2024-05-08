@@ -55,15 +55,23 @@ export default class ChartExpansionView extends React.Component{
 
   componentDidMount() {
 
-    var carrouselActiveItemIndex = /*localStorage*/sessionStorage.getItem('carrouselActiveItemIndex'),
-        carrouselChartView = /*localStorage*/sessionStorage.getItem('carrouselChartView'),
-        relChartDisplayCrit = /*localStorage*/sessionStorage.getItem('relChartDisplayCrit'),
+    var carrouselActiveItemIndex = parseInt(sessionStorage.getItem('carrouselActiveItemIndex')),
+        carrouselChartView = parseInt(sessionStorage.getItem('carrouselChartView')),
+        relChartDisplayCrit = sessionStorage.getItem('relChartDisplayCrit'),
         offCanvasFormStartDate = sessionStorage.getItem('offCanvasFormStartDate'),
         offCanvasFormEndDate = sessionStorage.getItem('offCanvasFormEndDate');
 
     (async () => {
 
-      var visits = await getPeriodVisits(carrouselChartView, LuxonDateTime, db, "profiles"),
+      var periodValue = carrouselChartView;
+      if (periodValue == 3){
+        periodValue = {
+          start: offCanvasFormStartDate,
+          end: offCanvasFormEndDate,      
+        };
+      }
+
+      var visits = await getPeriodVisits(periodValue, LuxonDateTime, db, "profiles"),
           profiles = [];
 
       for (var visit of visits){
@@ -89,8 +97,8 @@ export default class ChartExpansionView extends React.Component{
     }).bind(this)();
 
     this.setState({
-      carrouselActiveItemIndex: parseInt(carrouselActiveItemIndex),
-      carrouselChartView: parseInt(carrouselChartView),
+      carrouselActiveItemIndex: carrouselActiveItemIndex,
+      carrouselChartView: carrouselChartView,
       relChartDisplayCrit: relChartDisplayCrit,
       offCanvasFormStartDate: offCanvasFormStartDate,
       offCanvasFormEndDate: offCanvasFormEndDate,
@@ -127,29 +135,49 @@ export default class ChartExpansionView extends React.Component{
               { this.state.carrouselActiveItemIndex == 2 && 
                       <VisitsKeywordsBarChart 
                         globalData={this.props.globalData} 
-                        objects={this.state.periodProfiles} 
+                        objects={this.state.periodProfiles}
+                        view={this.state.carrouselChartView}  
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true} 
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }}/>}
 
               { this.state.carrouselActiveItemIndex == 3 && 
                       <ProfilesNetworkMetricsBubbleChart 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
                         profiles={this.state.periodProfiles}
-                        displayLegend={true} />}
+                        displayLegend={true}
+                        view={this.state.carrouselChartView}  
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }} />}
 
               { this.state.carrouselActiveItemIndex == 4 && 
                       <ProfilesGeoMapChart 
                         context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
                         objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true}
+                        view={this.state.carrouselChartView}  
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }} />}
 
               { this.state.carrouselActiveItemIndex == 5 && 
                       <ExpEdStackBarChart 
                         objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true}
+                        view={this.state.carrouselChartView}  
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }} />}
 
               { this.state.carrouselActiveItemIndex == 6 && 
                       <ProfilesGraphChart 
@@ -157,14 +185,24 @@ export default class ChartExpansionView extends React.Component{
                         displayCriteria={this.state.relChartDisplayCrit} 
                         profiles={this.state.periodProfiles}
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true}
+                        view={this.state.carrouselChartView}  
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }} />}
 
               { this.state.carrouselActiveItemIndex == 7 && 
                       <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         profiles={this.state.periodProfiles}
                         carrouselIndex={this.state.carrouselActiveItemIndex}
-                        displayLegend={true} />}
+                        displayLegend={true} 
+                        view={this.state.carrouselChartView}  
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }}/>}
     
             </div>
           </div>

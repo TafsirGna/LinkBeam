@@ -34,7 +34,11 @@ import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
 import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
-import { MaximizeIcon, DownloadIcon } from "./widgets/SVGs";
+import { 
+  MaximizeIcon, 
+  DownloadIcon,
+  CheckIcon,
+} from "./widgets/SVGs";
 import { db } from "../db";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Form from 'react-bootstrap/Form';
@@ -44,6 +48,8 @@ import {
   getPeriodVisits,
   setGlobalDataSettings,
   getProfileDataFrom,
+  getPeriodLabel,
+  nRange,
 } from "./Local_library";
 import { liveQuery } from "dexie"; 
 
@@ -86,7 +92,17 @@ export default class StatisticsView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasFormSelectValue: "1"})};
+  handleOffCanvasClose = (data) => {
+    this.setState({
+      offCanvasShow: false, 
+      offCanvasFormSelectValue: "1"
+    }, () => {
+      if (!data){
+        this.onViewChange(0);
+      }
+    });
+  };
+
   handleOffCanvasShow = () => {this.setState({offCanvasShow: true})};
 
   onViewChange(index){
@@ -111,7 +127,7 @@ export default class StatisticsView extends React.Component{
   async setObjects(){
 
     if (this.state.offCanvasShow){
-      this.handleOffCanvasClose();
+      this.handleOffCanvasClose({});
     }
 
     var periodValue = this.state.view;
@@ -165,9 +181,9 @@ export default class StatisticsView extends React.Component{
 
   onChartExpansion(){
 
-    /*localStorage*/sessionStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
-    /*localStorage*/sessionStorage.setItem('carrouselChartView', this.state.view);
-    /*localStorage*/sessionStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
+    sessionStorage.setItem('carrouselActiveItemIndex', this.state.carrouselActiveItemIndex);
+    sessionStorage.setItem('carrouselChartView', this.state.view);
+    sessionStorage.setItem('relChartDisplayCrit', this.state.relChartDisplayCrit);
     sessionStorage.setItem('offCanvasFormStartDate', this.state.offCanvasFormStartDate);
     sessionStorage.setItem('offCanvasFormEndDate', this.state.offCanvasFormEndDate);
 
@@ -233,25 +249,30 @@ export default class StatisticsView extends React.Component{
               </button>
               <ul class="dropdown-menu shadow">
 
-                { ["days", "month", "year"].map((item, index) => (<li>
-                                                                    <a 
-                                                                      class={`dropdown-item small ${this.state.view == index ? "active" : ""}`} 
-                                                                      href="#" 
-                                                                      onClick={() => {this.onViewChange(index)}}>
-                                                                      Last {item}
-                                                                      { this.state.view == index 
-                                                                          && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                                                                    </a>
-                                                                  </li>)) }
+                { nRange(0, 2, 1).map(item => (<li>
+                                                  <a 
+                                                    class={`dropdown-item small ${this.state.view == item ? "active" : ""}`} 
+                                                    href="#" 
+                                                    onClick={() => {this.onViewChange(item)}}>
+                                                    {getPeriodLabel(item)}
+                                                    { this.state.view == item 
+                                                        && <CheckIcon 
+                                                            size="20" 
+                                                            className="float-end"/>}
+                                                  </a>
+                                                </li>)) }
 
                 <li>
                   <a 
                     class={`dropdown-item small ${this.state.view == 3 ? "active" : ""}`}
                     onClick={() => {this.onViewChange(3)}}
                     href="#"
-                    title={this.state.view == 3 ? `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat('MMMM dd, yyyy')} - ${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat('MMMM dd, yyyy')}` : null}>
+                    title={this.state.view == 3 ? getPeriodLabel(this.state.view, {start: this.state.offCanvasFormStartDate, end: this.state.offCanvasFormEndDate}, LuxonDateTime) : null}>
                     Specific dates
-                    {this.state.view == 3 && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                    {this.state.view == 3 
+                        && <CheckIcon 
+                            size="20" 
+                            className="float-end"/>}
                   </a>
                 </li>
                 <li>
@@ -295,27 +316,47 @@ export default class StatisticsView extends React.Component{
                   && <VisitsKeywordsBarChart 
                               globalData={this.props.globalData} 
                               objects={this.state.periodProfiles} 
-                              carrouselIndex={2}/>}
+                              view={this.state.view} 
+                              carrouselIndex={2}
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }}/>}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 3 
                   && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
                               profiles={this.state.periodProfiles}
-                              carrouselIndex={3} />}
+                              carrouselIndex={3}
+                              view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 4 
                   && <ProfilesGeoMapChart 
                               context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
                               objects={this.state.periodProfiles} 
-                              carrouselIndex={4} />}
+                              carrouselIndex={4}
+                              view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 5 
                   && <ExpEdStackBarChart 
                               objects={this.state.periodProfiles} 
-                              carrouselIndex={5} />}
+                              carrouselIndex={5}
+                              view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }} />}
             </Carousel.Item>
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 6 
@@ -324,7 +365,12 @@ export default class StatisticsView extends React.Component{
                                 objects={this.state.periodProfiles} 
                                 displayCriteria={ this.state.relChartDisplayCrit } 
                                 profiles={this.state.periodProfiles}
-                                carrouselIndex={6} />
+                                carrouselIndex={6} 
+                                view={this.state.view} 
+                                periodRangeLimits={{
+                                  start: this.state.offCanvasFormStartDate,
+                                  end: this.state.offCanvasFormEndDate,
+                                }}/>
 
                               { this.state.periodProfiles 
                                   && this.state.periodProfiles.length != 0 
@@ -357,7 +403,12 @@ export default class StatisticsView extends React.Component{
                   && <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         profiles={this.state.periodProfiles}
-                        carrouselIndex={7} />}
+                        carrouselIndex={7} 
+                        view={this.state.view} 
+                        periodRangeLimits={{
+                          start: this.state.offCanvasFormStartDate,
+                          end: this.state.offCanvasFormEndDate,
+                        }}/>}
             </Carousel.Item>
           </Carousel>
 
@@ -371,7 +422,7 @@ export default class StatisticsView extends React.Component{
           </div>
         </div>
 
-        <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+        <Offcanvas show={this.state.offCanvasShow} onHide={() => {this.handleOffCanvasClose(null);}}>
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>Specific dates</Offcanvas.Title>
           </Offcanvas.Header>

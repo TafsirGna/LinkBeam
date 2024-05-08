@@ -215,44 +215,8 @@ export default class SearchInputView extends React.Component{
 
   async searchPosts(){
 
+    // in order to show the spinner 
     eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, null);
-
-    async function getMatchingActivity(visit, searchText, matchingPosts){
-
-      if (visit.profileData.activity){
-        for (var activity of visit.profileData.activity){
-
-          if (dbDataSanitizer.preSanitize(activity.title).toLowerCase().indexOf(searchText.toLowerCase()) != -1
-                && matchingPosts.filter(p => p.title.indexOf(dbDataSanitizer.preSanitize(activity.title)) != -1).length == 0){
-
-            var index = matchingPosts.map(p => p.profile.url).indexOf(visit.url),
-                profile = null;
-            if (index != -1){
-              profile = matchingPosts[index].profile;
-            }
-            else{
-              
-              try{
-
-                profile = await getProfileDataFrom(db, visit.url);
-                profile.url = visit.url;
-
-              }
-              catch(error){
-                console.error("Error : ", error);
-              }
-
-            }
-
-            activity.profile = profile;
-            activity.date = visit.date;
-            matchingPosts.push(activity);
-          }
-        }
-      }
-
-    }
-
 
     var posts = [];
 
@@ -269,7 +233,7 @@ export default class SearchInputView extends React.Component{
 
       for (var post of matchingPosts){
 
-        var views = await db.feedPostViews
+        const views = await db.feedPostViews
                 .where({uid: post.uid})
                 .reverse()
                 .sortBy("date");
@@ -278,39 +242,60 @@ export default class SearchInputView extends React.Component{
           post.date = views[0].date;
         }
 
-      }
+        posts.push(post);
 
-      if (matchingPosts){
-        posts = posts.concat(matchingPosts);
       }
 
       matchingPosts = [];
       await db.visits
               .filter(visit => Object.hasOwn(visit, "profileData"))
               .each(visit => {
-                getMatchingActivity(visit, this.state.text, matchingPosts);
+                if (visit.profileData.activity){
+                  for (var activity of visit.profileData.activity){
+                    if (dbDataSanitizer.preSanitize(activity.title).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1
+                          && !(matchingPosts.filter(p => dbDataSanitizer.preSanitize(p.title) == dbDataSanitizer.preSanitize(activity.title)).length)){
+                      activity.date = visit.date;
+                      activity.profile = { url: visit.url };
+                      matchingPosts.push(activity);
+                    }
+
+                  }
+
+                }
               });
 
-      if (matchingPosts){
-        posts = posts.concat(matchingPosts);
-      }        
-
-      posts.sort((a, b) => {
-        if (new Date(a.date) < new Date(b.date)){
-          return 1;
-        }
-        else if (new Date(a.date) > new Date(b.date)){
-          return -1;
+      var profiles = [];
+      for (var post of matchingPosts){
+        
+        // checking in the activities already saved, to retrieve a similar profile to match
+        const index = profiles.map(p => p.url).indexOf(post.profile.url);
+        if (index != -1){
+          post.profile = profiles[index];
         }
         else{
-          return 0;
+          post.profile = await getProfileDataFrom(db, post.profile.url);
+          profiles.push(post.profile);
         }
-      });   
+
+        posts.push(post);
+      }       
 
     }
     catch(error){
       console.error("Error : ", error);
     }
+
+    posts.sort((a, b) => {
+      if (new Date(a.date) < new Date(b.date)){
+        return 1;
+      }
+      else if (new Date(a.date) > new Date(b.date)){
+        return -1;
+      }
+      else{
+        return 0;
+      }
+    });   
 
     eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, posts);
 

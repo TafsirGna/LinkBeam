@@ -409,11 +409,10 @@ export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTim
     }
 
     if (typeof object.period == "string"){
-      var period = dbDataSanitizer.periodDates(object.period, LuxonDateTime);
-      if (!period){
+      object.period = dbDataSanitizer.periodDates(object.period, LuxonDateTime);
+      if (!object.period){
         continue;
       }
-      object.period = period;
     }
     else{
       if (typeof object.period.startDateRange == "string"){
@@ -503,6 +502,32 @@ export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTim
 
 export function notifyException(){
   
+}
+
+export function getPeriodLabel(viewIndex, periodRangeLimits = null, LuxonDateTime = null){
+
+  var result = null;
+  switch(viewIndex){
+    case 0:{
+      result = "Last days";
+      break;
+    }
+    case 1:{
+      result = "Last month";
+      break;
+    }
+    case 2:{
+      result = "Last year";
+      break;
+    }
+    case 3:{
+      result = `${LuxonDateTime.fromISO(periodRangeLimits.start).toFormat('MMMM dd, yyyy')} - ${LuxonDateTime.fromISO(periodRangeLimits.end).toFormat('MMMM dd, yyyy')}`;
+      break;
+    }
+  }
+
+  return result;
+
 }
 
 export function checkOneKeyword(keyword, object){
@@ -963,9 +988,9 @@ export async function getPostMetricValue(postViews, metric){
 
   }
 
-export async function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, LuxonDateTime){
+export const nRange = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
 
-  const range = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
+export async function getFeedLineChartsData(objects, rangeDates, getMetricValue, metrics, LuxonDateTime){
 
   const incDate = (date) => {
     return LuxonDateTime.fromJSDate(date).plus({ days: 1 }).toJSDate();
@@ -1010,7 +1035,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
                       : 23;
 
       if (!labels){
-        labels = range(0, limit, 1).map(label => `${label}h`);
+        labels = nRange(0, limit, 1).map(label => `${label}h`);
       }
 
       for (const label of labels){

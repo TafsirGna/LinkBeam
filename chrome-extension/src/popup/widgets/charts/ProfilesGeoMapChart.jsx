@@ -15,6 +15,7 @@ import {
   saveCanvas,
   dbDataSanitizer,
   appParams,
+  getPeriodLabel,
 } from "../../Local_library";
 
 import { v4 as uuidv4 } from 'uuid';
@@ -23,6 +24,7 @@ import { saveAs } from 'file-saver';
 import { Offcanvas } from "react-bootstrap";
 import ProfileListItemView from "../ProfileListItemView";
 import sorry_icon from '../../../assets/sorry_icon.png';
+import { DateTime as LuxonDateTime } from "luxon";
 
 ChartJS.register(
   Title,
@@ -264,13 +266,18 @@ export default class ProfilesGeoMapChart extends React.Component{
                   }}
                   onClick={this.onChartClick}
                 /> 
-                { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE && <p class="shadow-sm mt-3 border p-2 rounded">
-                                  { Object.keys(this.state.locationsData).map((key) => 
-                                    (this.state.locationsData[key].length > 0 && <span class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{key}</span>)
-                                  )}
-                                </p>}
+                { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE 
+                    && <p class="shadow-sm mt-3 border p-2 rounded">
+                        { Object.keys(this.state.locationsData).map((key) => 
+                          (this.state.locationsData[key].length > 0 && <span class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{key}</span>)
+                        )}
+                      </p>}
 
-                { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits mapped by country</p> }
+                { this.props.displayLegend 
+                    && this.props.displayLegend == true 
+                    && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                        Chart of visits mapped by country ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                      </p> }
 
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.STATISTICS && <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
                                   <Offcanvas.Header closeButton>
@@ -280,11 +287,17 @@ export default class ProfilesGeoMapChart extends React.Component{
                                   </Offcanvas.Header>
                                   <Offcanvas.Body>
                 
-                                    { this.state.selectedChartElementIndex == null && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
-                                          </div>
-                                          <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                                        </div>
-                                      </div>}
+                                    { this.state.selectedChartElementIndex == null 
+                                        && <div class="text-center">
+                                              <div class="mb-5 mt-3">
+                                                <div class="spinner-border text-primary" role="status"></div>
+                                                <p>
+                                                  <span class="badge text-bg-primary fst-italic shadow">
+                                                    Loading...
+                                                  </span>
+                                                </p>
+                                              </div>
+                                            </div>}
                 
                                     { this.state.selectedChartElementIndex != null 
                                         && <div>

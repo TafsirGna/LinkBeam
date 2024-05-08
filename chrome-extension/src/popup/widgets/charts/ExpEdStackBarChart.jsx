@@ -18,8 +18,10 @@ import {
   dbDataSanitizer,
   saveCanvas,
   computePeriodTimeSpan,
+  getPeriodLabel,
 } from "../../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
+import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { db } from "../../../db";
 
 ChartJS.register(
@@ -60,6 +62,7 @@ export default class ExpEdStackBarChart extends React.Component{
     this.state = {
       stackData: null,
       uuid: uuidv4(),
+      incompleteProfiles: null,
     };
   }
 
@@ -100,18 +103,22 @@ export default class ExpEdStackBarChart extends React.Component{
       return;
     }
 
-    var labels = [], expTimeData = [], edTimeData = [];
+    var labels = [], expTimeData = [], edTimeData = [], incompleteProfiles = [];
     for (var profile of this.props.objects){
 
       var index = labels.map(e => e.url).indexOf(profile.url);
       if (index == -1){
 
         const fullName = dbDataSanitizer.preSanitize(profile.fullName);
-        labels.push({url: profile.url, fullName: fullName});
-
-        // console.log("%%%%%%%%%%%%%%%%%%%%%%%%% 1 : ", profile);
         var experienceTime = computePeriodTimeSpan(profile.experience, "experience", LuxonDateTime),
             educationTime = computePeriodTimeSpan(profile.education, "education", LuxonDateTime);
+
+        if (!experienceTime && !educationTime){
+          incompleteProfiles.push(profile);
+          continue;
+        }
+
+        labels.push({url: profile.url, fullName: fullName});
         
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
         var y = Math.floor(experienceTime / 365);
@@ -120,10 +127,11 @@ export default class ExpEdStackBarChart extends React.Component{
         educationTime = Math.ceil(educationTime / (1000 * 60 * 60 * 24)) // diff days
         y = Math.floor(educationTime / 365);
         edTimeData.push(-(y.toFixed(2)));
-        // expTimeData.push(Number(y));
       }
 
     }
+
+    this.setState({incompleteProfiles: incompleteProfiles});
 
     this.setState({stackData: {
         labels: labels.map(label => label.fullName),
@@ -147,7 +155,7 @@ export default class ExpEdStackBarChart extends React.Component{
   render(){
     return (
       <>
-        <div class="text-center">
+        <div class="">
 
           { !this.state.stackData && <div class="spinner-border spinner-border-sm" role="status">
                                             <span class="visually-hidden">Loading...</span>
@@ -155,8 +163,30 @@ export default class ExpEdStackBarChart extends React.Component{
 
           { this.state.stackData && 
                               <div>
-                                <Bar id={"chartTag_"+this.state.uuid} options={options} data={this.state.stackData} />
-                                { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles by experience and education time lengths</p> }
+                                <div class="text-center">
+                                  <Bar 
+                                    id={"chartTag_"+this.state.uuid} 
+                                    options={options} 
+                                    data={this.state.stackData} />
+                                </div>
+                                { this.props.displayLegend 
+                                    && this.props.displayLegend == true 
+                                    && <div>
+                                          { this.state.incompleteProfiles
+                                              && this.state.incompleteProfiles.length != 0
+                                              && <p class="shadow-sm mt-3 border p-2 rounded">
+                                            { this.state.incompleteProfiles.map((profile) => (<OverlayTrigger
+                                                                                              placement="top"
+                                                                                              overlay={<ReactTooltip id="tooltip1">Incomplete profile</ReactTooltip>}
+                                                                                            >
+                                                                                              <span class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{dbDataSanitizer.preSanitize(profile.fullName)}</span>
+                                                                                            </OverlayTrigger>)
+                                            )}
+                                          </p>}
+                                          <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                                            Chart of profiles by experience and education time lengths ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                                          </p>
+                                      </div> }
                               </div>}
           
         </div>

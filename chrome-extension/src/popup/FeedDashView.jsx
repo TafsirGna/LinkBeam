@@ -24,7 +24,6 @@ import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
 import PostListItemView from "./widgets/PostListItemView";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   appParams,
   setGlobalDataSettings,

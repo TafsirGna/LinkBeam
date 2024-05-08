@@ -24,7 +24,7 @@ import HomeMenuView from "./widgets/HomeMenuView";
 import VisitListView from "./widgets/VisitListView";
 import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
 import ProfileListItemView from "./widgets/ProfileListItemView";
-import { OverlayTrigger, Tooltip as ReactTooltip, Offcanvas } from "react-bootstrap";
+import { Offcanvas } from "react-bootstrap";
 import ReminderListView from "./widgets/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import SearchPostFormView from "./widgets/SearchPostFormView";

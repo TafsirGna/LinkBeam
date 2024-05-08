@@ -6,6 +6,7 @@ import {
 	dbDataSanitizer,
 	computePeriodTimeSpan,
 	shuffle,
+	getPeriodLabel,
 } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
@@ -255,7 +256,11 @@ export default class ProfileVisitsConnectedScatterPlot extends React.Component{
         { this.state.chartData && this.state.chartData.length != 0 && 
         		<div>
         			<div id={"chartTag_"+this.state.uuid} class=""></div>
-        			{ this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles by their experience and time spent</p> }
+        			{ this.props.displayLegend 
+        					&& this.props.displayLegend == true 
+        					&& <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+        							Chart of profiles by their experience and time spent ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+        						</p> }
         		</div> }
       </>
     );

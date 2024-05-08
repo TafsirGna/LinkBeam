@@ -155,8 +155,10 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
                 <style type="text/css">{styles}</style>
                 <HighlightedKeywordView
                   keyword={textItem}
-                  allDetected={detected}
-                  highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
+                  // allDetected={detected}
+                  // highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
+                  order={detected[textItem.toLowerCase()]}
+                  color={highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]}
                   />
               </React.StrictMode>
           );

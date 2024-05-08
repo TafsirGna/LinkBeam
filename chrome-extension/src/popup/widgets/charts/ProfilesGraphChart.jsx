@@ -6,6 +6,7 @@ import {
 	dbDataSanitizer,
 	performLanguageComparison, 
 	performProfileSubPartComparison,
+  getPeriodLabel,
 } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
@@ -14,6 +15,7 @@ import { saveAs } from 'file-saver';
 import { AlertCircleIcon, LocationIcon } from "../SVGs";
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import default_user_icon from '../../../assets/user_icons/default.png';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class ProfilesGraphChart extends React.Component{
 
@@ -777,7 +779,11 @@ export default class ProfilesGraphChart extends React.Component{
 
                     <div id={"chartTag_"+this.state.uuid} class=""></div> 
 
-                    { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of profiles with their relationships ({this.props.displayCriteria})</p> }
+                    { this.props.displayLegend 
+                        && this.props.displayLegend == true 
+                        && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                            Chart of profiles with their relationships ({this.props.displayCriteria} | {getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                          </p> }
 
                   </div> }
 

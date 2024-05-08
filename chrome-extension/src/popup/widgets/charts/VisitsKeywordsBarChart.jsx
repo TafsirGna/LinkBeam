@@ -31,6 +31,7 @@ import {
   saveCanvas, 
   setGlobalDataKeywords,
   checkOneKeyword,
+  getPeriodLabel,
 } from "../../Local_library";
 
 import {
@@ -52,6 +53,7 @@ import { AlertCircleIcon } from "../SVGs";
 import ProfileListItemView from "../ProfileListItemView";
 import { liveQuery } from "dexie";
 import sorry_icon from '../../../assets/sorry_icon.png';
+import { DateTime as LuxonDateTime } from "luxon";
 
 ChartJS.register(
   CategoryScale,
@@ -227,7 +229,11 @@ export default class VisitsKeywordsBarChart extends React.Component{
                                     options={barOptions} 
                                     data={this.state.barData}
                                     onClick={this.onChartClick} />
-                                  { this.props.displayLegend && this.props.displayLegend == true && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">Chart of visits distributed by keywords</p> }
+                                  { this.props.displayLegend 
+                                      && this.props.displayLegend == true 
+                                      && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                                          Chart of visits distributed by keywords ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                                        </p> }
                                 </div> }
 
         </div>

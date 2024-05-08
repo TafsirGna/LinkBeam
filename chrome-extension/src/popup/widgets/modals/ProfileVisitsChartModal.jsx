@@ -28,9 +28,12 @@ import { DateTime as LuxonDateTime } from "luxon";
 import VisitsTimelineChart from "../charts/VisitsTimelineChart";
 import { 
   getPeriodVisits,
-  appParams
+  appParams,
+  nRange,
+  getPeriodLabel,
 } from "../../Local_library";
 import { db } from "../../../db";
+import { CheckIcon } from "../SVGs";
 
 export default class ProfileVisitsChartModal extends React.Component{
 
@@ -94,12 +97,18 @@ export default class ProfileVisitsChartModal extends React.Component{
                 </button>
                 <ul class="dropdown-menu shadow">
 
-                  { ["days", "month", "year"].map((item, index) => (<li>
-                                                                      <a class={`dropdown-item small ${this.state.view == index ? "active" : ""}`} href="#" onClick={() => {this.onViewChange(index)}}>
-                                                                        Last {item}
-                                                                        { this.state.view == index && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                                                                      </a>
-                                                                    </li>)) }
+                  { nRange(0, 2, 1).map(item => (<li>
+                                                  <a 
+                                                    class={`dropdown-item small ${this.state.view == item ? "active" : ""}`} 
+                                                    href="#" 
+                                                    onClick={() => {this.onViewChange(item)}}>
+                                                    {getPeriodLabel(item)}
+                                                    { this.state.view == item 
+                                                        && <CheckIcon 
+                                                            size="20" 
+                                                            className="float-end"/>}
+                                                  </a>
+                                                </li>)) }
 
                 </ul>
               </div>

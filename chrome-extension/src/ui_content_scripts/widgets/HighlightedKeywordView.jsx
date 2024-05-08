@@ -44,7 +44,7 @@ export default class HighlightedKeywordView extends React.Component{
 
   }
 
-  popoverBody(allDetected, highlightedKeywordBadgeColors){
+  /*popoverBody(allDetected, highlightedKeywordBadgeColors){
 
     var sum = Object.values(allDetected).reduce((acc, a) => acc + a, 0);
 
@@ -59,13 +59,13 @@ export default class HighlightedKeywordView extends React.Component{
       { data.map(object => (<div class={`${progressBarColors[object.colorLabelIndex]} h-2.5 rounded-full`} style={{width: `${object.share}%`}} title={object.label}></div>)) }
     </div>
 
-  }
+  }*/
 
   render(){
     return (
         <span 
-          class= {`${this.props.highlightedKeywordBadgeColors[(Object.keys(this.props.allDetected).indexOf(this.props.keyword.toLowerCase()) % this.props.highlightedKeywordBadgeColors.length)]} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded` /*handy-cursor*/}
-          title={`#${this.props.allDetected[this.props.keyword.toLowerCase()]}`}>
+          class= {`${this.props.color /*this.props.highlightedKeywordBadgeColors[(Object.keys(this.props.allDetected).indexOf(this.props.keyword.toLowerCase()) % this.props.highlightedKeywordBadgeColors.length)]*/} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded` /*handy-cursor*/}
+          title={`#${ this.props.order /*this.props.allDetected[this.props.keyword.toLowerCase()]*/}`}>
           {this.props.keyword}
         </span>
 
