@@ -21,9 +21,13 @@
 
 /*import './ExperienceDataChartWidget.css'*/
 import React from 'react';
-import { appParams } from "../../../popup/Local_library";
+import { 
+  appParams,
+  dbDataSanitizer,
+} from "../../../popup/Local_library";
 import ExtensionMarkerView from "./ExtensionMarkerView";
 import ProfileGanttChart from "../../../popup/widgets/charts/ProfileGanttChart";
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class ExperienceDataChartWidget extends React.Component{
 
@@ -58,27 +62,39 @@ export default class ExperienceDataChartWidget extends React.Component{
 
   startMessageListener(){
 
-        // Retrieving the tabId variable
-        chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
-        
-            if (message.header == "SAVED_PROFILE_OBJECT") {
+      // Retrieving the tabId variable
+      chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
+      
+          if (message.header == "SAVED_PROFILE_OBJECT") {
 
-                // Acknowledge the message
-                sendResponse({
-                    status: "ACK"
-                });
-                      
-                if (!this.state.profileData){
-                    this.setState({profileData: message.data });
-                }
-            }
-            
-        }).bind(this));
+              // Acknowledge the message
+              sendResponse({
+                  status: "ACK"
+              });
+                    
+              if (!this.state.profileData){
 
-    }
+                  this.setState({profileData: this.procProfileData(message.data) });
+              }
+          }
+          
+      }).bind(this));
+
+  }
 
   setMissingDataObjects(objects){
     this.setState({missingDataObjects: objects})
+  }
+
+  procProfileData(profileData){
+
+    // experience
+    for (var experience of profileData.experience){
+      experience.period = dbDataSanitizer.periodDates(experience.period, LuxonDateTime);
+    }
+
+    return profileData;
+
   }
 
   render(){

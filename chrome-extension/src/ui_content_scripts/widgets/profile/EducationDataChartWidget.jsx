@@ -21,20 +21,26 @@
 
 /*import './EducationDataChartWidget.css'*/
 import React from 'react';
-import { appParams } from "../../../popup/Local_library";
-import { DateTime as LuxonDateTime } from "luxon";
+import { 
+  appParams,
+  dbDataSanitizer,
+} from "../../../popup/Local_library";
 import ExtensionMarkerView from "./ExtensionMarkerView";
+import ProfileGanttChart from "../../../popup/widgets/charts/ProfileGanttChart";
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class EducationDataChartWidget extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-        modalShow: false,
-        profileData: null,
+      modalShow: false,
+      profileData: null,
+      missingDataObjects: null,
     };
 
     this.startMessageListener = this.startMessageListener.bind(this);
+    this.setMissingDataObjects = this.setMissingDataObjects.bind(this);
 
   }
 
@@ -67,13 +73,29 @@ export default class EducationDataChartWidget extends React.Component{
                 });
                       
                 if (!this.state.profileData){
-                    this.setState({profileData: message.data });
+
+                    this.setState({profileData: this.procProfileData(message.data) });
                 }
             }
             
         }).bind(this));
 
     }
+
+  setMissingDataObjects(objects){
+    this.setState({missingDataObjects: objects})
+  }
+
+  procProfileData(profileData){
+
+    // education
+    for (var education of profileData.education){
+      education.period = dbDataSanitizer.periodDates(education.period, LuxonDateTime);
+    }
+
+    return profileData;
+
+  }
 
   render(){
     return (
@@ -88,7 +110,10 @@ export default class EducationDataChartWidget extends React.Component{
                     <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                       
                       <div class="p-4">
-          
+                        <ProfileGanttChart
+                          profile={this.state.profileData} 
+                          periodLabel="education"
+                          setMissingDataObjects={this.setMissingDataObjects}/>
                       </div>
           
                       <div class="p-4 text-lg">

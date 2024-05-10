@@ -234,7 +234,7 @@ export default class PostListItemView extends React.Component{
             <div class="w-100 p-1 py-3 rounded shadow-sm border">
               <OverlayTrigger
                 placement="top"
-                overlay={<Tooltip id="tooltip1">{this.props.object.category ? categoryVerbMap[this.props.object.category] : "shared"}</Tooltip>}
+                overlay={<Tooltip id="tooltip1">{this.props.object.category ? categoryVerbMap[this.props.object.category]["en"] : "shared"}</Tooltip>}
               >
                 <span class="mx-1">
                   <img class="mx-1" width="16" height="16" src={this.props.object.category ? categoryIconMap[this.props.object.category] : share_icon} alt=""/>

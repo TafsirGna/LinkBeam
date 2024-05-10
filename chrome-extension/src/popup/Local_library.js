@@ -70,15 +70,42 @@ export const appParams = {
 }
 
 export const categoryVerbMap = {
-  likes: "likes",
-  loves: "loves",
-  contributions: "contributed",
-  supports: "supports",
-  celebrations: "celebrates",
-  comments: "commented",
-  reposts: "reposted",
-  suggestions: "suggested",
-  insights: "finds this insightful",
+  likes: {
+    fr: "adore",
+    en: "likes",
+  },
+  loves: {
+    fr: "aime",
+    en: "loves",
+  },
+  contributions: {
+    fr: "contribué",
+    en: "contributed",
+  },
+  supports: {
+    fr: "soutient",
+    en: "supports",
+  },
+  celebrations: {
+    fr: "salue",
+    en: "celebrates",
+  },
+  comments: {
+    fr: "commenté",
+    en: "commented",
+  },
+  reposts: {
+    fr: "republié",
+    en: "reposted",
+  },
+  suggestions: {
+    fr: "suggestions",
+    en: "suggested",
+  },
+  insights: {
+    fr: "intructif",
+    en: "finds this insightful",
+  },
 }
 
 export const dbData = {

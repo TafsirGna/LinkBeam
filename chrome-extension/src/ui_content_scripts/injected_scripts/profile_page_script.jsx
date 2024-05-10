@@ -21,10 +21,9 @@
 
 import { 
   ScriptAgentBase, 
-  publicDataExtractor, 
-  authDataExtractor ,
+  DataExtractor, 
   sendTabData,
-  getProfilePublicViewMainHtmlElements,
+  getProfileViewMainHtmlElements,
   checkAndHighlightKeywordsInHtmlEl,
 } from "./main_lib";
 import styles from "../styles.min.css";
@@ -64,7 +63,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   static updateUi(props){
 
-    var mainHtmlElements = getProfilePublicViewMainHtmlElements();
+    var mainHtmlElements = (getProfileViewMainHtmlElements()).htmlElements;
 
     this.checkAndHighlightKeywords(mainHtmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
     
@@ -113,12 +112,14 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   static runTabDataExtractionProcess(props){
 
-    var webPageData = null,
-        mainHtmlElements = getProfilePublicViewMainHtmlElements();
+    var webPageData = null;
+
+    const result = getProfileViewMainHtmlElements();
+    const mainHtmlElements = result.htmlElements;
     
     if (!this.webPageData){
 
-      webPageData = this.extractData();
+      webPageData = this.extractData(mainHtmlElements, result.context);
 
       this.webPageData = {};
       for (var htmlElementTitle in mainHtmlElements){
@@ -142,7 +143,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
       }
 
       if (!same){
-        webPageData = this.extractData();
+        webPageData = this.extractData(mainHtmlElements, result.context);
       }
 
     }
@@ -155,84 +156,31 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   }
 
-  static extractData(){
+  static extractData(mainHtmlElements, context){
 
-    let pageData = null;
-    
-    var publicHeaderData = null;
+    return {
 
-    try {
-      publicHeaderData = publicDataExtractor.header();
-    }
-    catch (e) {
-      console.log("An error occured when parsing as public profile :", e);
-    }
+      fullName: DataExtractor.fullName(mainHtmlElements, context),
+      title: DataExtractor.title(mainHtmlElements, context),
+      info: DataExtractor.about(mainHtmlElements, context),
+      avatar: DataExtractor.avatar(mainHtmlElements, context),
+      coverImage: DataExtractor.coverImage(mainHtmlElements, context),
+      nFollowers: DataExtractor.nFollowers(mainHtmlElements, context),
+      nConnections: DataExtractor.nConnections(mainHtmlElements, context), 
+      location: DataExtractor.location(mainHtmlElements, context),
+      featuredEducationEntity: DataExtractor.featuredEducationEntity(mainHtmlElements, context),
+      featuredExperienceEntity: DataExtractor.featuredExperienceEntity(mainHtmlElements, context),
+      education: DataExtractor.education(mainHtmlElements, context),
+      experience: DataExtractor.experience(mainHtmlElements, context),
+      certifications: DataExtractor.certifications(mainHtmlElements, context),
+      activity: DataExtractor.activity(mainHtmlElements, context),
+      languages: DataExtractor.languages(mainHtmlElements, context),
+      projects: DataExtractor.projects(mainHtmlElements, context),
+      profileSuggestions: DataExtractor.suggestions(mainHtmlElements, context),
+      viewedAuthenticated: (context == "auth"),
 
-    if (publicHeaderData && publicHeaderData.fullName){
-      
-      pageData = {
+    };
 
-        fullName: publicHeaderData.fullName,
-        title: publicHeaderData.title,
-        info: publicDataExtractor.about(),
-        avatar: publicHeaderData.avatar,
-        coverImage: publicHeaderData.coverImage,
-        nFollowers: publicHeaderData.nFollowers,
-        nConnections: publicHeaderData.nConnections, 
-        location: publicHeaderData.location,
-        featuredEducationEntity: publicHeaderData.featuredEducationEntity,
-        featuredExperienceEntity: publicHeaderData.featuredExperienceEntity,
-        education: publicDataExtractor.education(),
-        experience: publicDataExtractor.experience(),
-        certifications: publicDataExtractor.certification(),
-        activity: publicDataExtractor.activity(),
-        languages: publicDataExtractor.language(),
-        projects: publicDataExtractor.project(),
-        profileSuggestions: publicDataExtractor.suggestions(),
-        viewedAuthenticated: true,
-
-      };
-      
-    }
-    else{
-      var authHeaderData = null;
-
-      try {
-        authHeaderData = authDataExtractor.header();
-      }
-      catch (e) {
-        console.log("An error occured when parsing as private profile : ", e);
-      }
-
-      if (authHeaderData && authHeaderData.fullName){
-
-        pageData = {
-
-          fullName: authHeaderData.fullName,
-          title: authHeaderData.title,
-          info: authDataExtractor.about(),
-          avatar: authHeaderData.avatar,
-          coverImage: authHeaderData.coverImage,
-          nFollowers: authHeaderData.nFollowers,
-          nConnections: authHeaderData.nConnections, 
-          location: authHeaderData.location,
-          featuredEducationEntity: authHeaderData.featuredEducationEntity,
-          featuredExperienceEntity: authHeaderData.featuredExperienceEntity,
-          education: authDataExtractor.education(),
-          experience: authDataExtractor.experience(),
-          certifications: authDataExtractor.certification(),
-          activity: authDataExtractor.activity(),
-          languages: authDataExtractor.language(),
-          projects: authDataExtractor.project(),
-          profileSuggestions: authDataExtractor.suggestions(),
-          viewAuthenticated: false,
-
-        };
-
-      } 
-    }
-
-    return pageData;
   }
 
 }

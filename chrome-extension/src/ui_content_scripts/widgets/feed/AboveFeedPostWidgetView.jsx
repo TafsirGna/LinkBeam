@@ -63,6 +63,27 @@ const freshReminder = () => {
 
 }
 
+const termLanguageVariants = {
+
+  comment: {
+    fr: "commentaire",
+    en: "comment",
+  },
+  repost: {
+    fr: "republication",
+    en: "repost",
+  },
+  other: {
+    fr: "autres",
+    en: "other",
+  },
+  and: {
+    fr: "et",
+    en: "and",
+  },
+
+}
+
 function isElVisible (ele) {
   const { top, bottom } = ele.getBoundingClientRect();
   const vHeight = (window.innerHeight || document.documentElement.clientHeight);
@@ -131,13 +152,19 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     // check if it's a suggested post
     var isSuggestedPost = false;
-    if (postHtmlElement.querySelector(".update-components-header") 
-         && postHtmlElement.querySelector(".update-components-header")
+    if (postHtmlElement.querySelector(".update-components-header")){
+
+      for (var variant of Object.values(categoryVerbMap["suggestions"])){
+        if (postHtmlElement.querySelector(".update-components-header")
                                  .textContent
                                  .toLowerCase()
-                                 .indexOf(categoryVerbMap['suggestions']) != -1){
-      isSuggestedPost = true;
-      this.setState({isSuggestedPost: isSuggestedPost});
+                                 .indexOf(variant) != -1){
+          isSuggestedPost = true;
+          this.setState({isSuggestedPost: isSuggestedPost});
+          break;
+        }
+      }
+
     }
 
     if (isElVisible(postHtmlElement)){
@@ -206,11 +233,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
       const headerText = postContainerHeaderElement.textContent.toLowerCase();
       for (var category in categoryVerbMap){
 
-        if (headerText.indexOf(categoryVerbMap[category]) != -1){
-          post.category = category;
+        for (var lang in categoryVerbMap[category]){
+          if (headerText.indexOf(categoryVerbMap[category][lang]) != -1){
+            post.category = category;
+            break;
+          }
         }
 
-      };
+      }
 
       post.initiator = {
         name: postContainerHeaderElement.querySelector("a.update-components-text-view__mention") 
@@ -240,13 +270,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       if (["comment", "repost"].indexOf(metric) != -1){
 
-        if (reactionsTagContent.indexOf(metric) != -1){
-          for (var arrayItem of reactionsTagContent.split("\n")){
-            var index = arrayItem.indexOf(metric);
-            if (index != -1){
-              value = Number(arrayItem.slice(0, index).replaceAll(",", ""));
-              break;
+        for (var variant of Object.values(termLanguageVariants[metric])){
+          if (reactionsTagContent.indexOf(variant) != -1){
+            
+            for (var arrayItem of reactionsTagContent.split("\n")){
+              var index = arrayItem.indexOf(variant);
+              if (index != -1){
+                value = Number(arrayItem.slice(0, index).replaceAll(",", "").replaceAll(/\s/g,""));
+                break;
+              }
             }
+
+            break;
           }
         }
 
@@ -254,29 +289,54 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       if (metric == "reaction"){
 
-        var otherTermIndex = reactionsTagContent.indexOf("other");
-        if (otherTermIndex != -1){
-          value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf("and") + ("and").length), otherTermIndex).replaceAll(",", ""));
+        var lang = null, otherTermIndex = null;
+        for (var language of Object.keys(termLanguageVariants["other"])){
+          otherTermIndex = reactionsTagContent.indexOf(termLanguageVariants["other"][language]);
+          if (otherTermIndex != -1){
+            lang = language;
+            break;
+          }
+        }
+
+        if (lang){
+          value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf(` ${termLanguageVariants["and"][lang]} `) + (` ${termLanguageVariants["and"][lang]} `).length), otherTermIndex).replaceAll(",", "").replaceAll(/\s/g,""));
           value++;
         }
         else{
-          var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
-          arrayItems.forEach((arrayItem, index) => {
-            index1 = arrayItem.indexOf("comment") != -1 ? index : index1;
-            index2 = arrayItem.indexOf("repost") != -1 ? index : index2;
-          });
 
-          if (index1 != -1){
-            arrayItems.splice(index1, 1);
+          var count = reactionsTagContent.replaceAll("\n", "").replaceAll(",", "").replaceAll(/\s/g,"");
+          if (!isNaN(count)){
+            value = count;
           }
+          else{
 
-          if (index2 != -1){
-            arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
-          }
+            for (var language of Object.keys(termLanguageVariants["comment"])){
+              if (reactionsTagContent.indexOf(termLanguageVariants["repost"][language]) != -1
+                    || reactionsTagContent.indexOf(termLanguageVariants["comment"][language]) != -1){
 
-          const val = Number(arrayItems.join("").replaceAll(",", "")); 
-          if (!isNaN(val)){
-            value = val;
+                var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
+                arrayItems.forEach((arrayItem, index) => {
+                  index1 = arrayItem.indexOf(termLanguageVariants["comment"][language]) != -1 ? index : index1;
+                  index2 = arrayItem.indexOf(termLanguageVariants["repost"][language]) != -1 ? index : index2;
+                });
+
+                if (index1 != -1){
+                  arrayItems.splice(index1, 1);
+                }
+
+                if (index2 != -1){
+                  arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
+                }
+
+                const val = Number(arrayItems.join("").replaceAll(",", "").replaceAll(/\s/g,"")); 
+                if (!isNaN(val)){
+                  value = val;
+                }
+
+                break;
+              }
+            }
+
           }
 
         }
