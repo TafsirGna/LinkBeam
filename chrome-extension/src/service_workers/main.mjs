@@ -110,9 +110,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     if (exists) {
 
                         chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-
                             handleNewInterestingTab(tabId, url, tabs[0].id == tabId);
-
                         });
                         
                     }
@@ -127,12 +125,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         else{
 
             chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+                console.log("################### : ", tabs, tabs[0]);
                 if (tabs[0].id == tabId){
                     resetTabTimer();
+                    chrome.action.setBadgeText({text: null});
                 }
             });
 
-            chrome.action.setBadgeText({text: null});
         }
 
     }
@@ -214,80 +213,7 @@ function injectScriptsInTab(tabId, url, visitId){
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
     
-    async function injectDataExtractorParams(tabId, url){
-
-        // Inject tab id
-        const settings = await db
-                               .settings
-                               .where('id')
-                               .equals(1)
-                               .first();
-
-        var postData = null;
-        if (isLinkedinFeedPostPage(url)){
-            postData = await getPostFromPostUrl(url);
-        }
-
-        const keywords = (await db.keywords.toArray()).map(keyword => keyword.name.toLowerCase());
-        var payload = {
-            tabId: tabId, 
-            settings: {
-                lastDataResetDate: settings.lastDataResetDate,
-                notifications: settings.notifications,
-            },
-            visitId: visitId,
-            postData: postData,
-            allKeywords: keywords,
-        };
-
-        chrome.tabs.sendMessage(tabId, {
-                header: messageMeta.header.CS_SETUP_DATA, 
-                data: payload,
-            }, 
-            (response) => {
-                console.log('tabId sent', response, payload);
-            }
-        ); 
-
-        if (settings.notifications){
-            getTodayReminders(db, (reminders) => {
-                if (reminders.length){
-
-                    const uuid = uuidv4();
-                    chrome.notifications.create(uuid, {
-                        title: 'Linkbeam',
-                        message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
-                        iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
-                        type: 'basic',
-                        buttons: [{
-                            title: "Show",
-                            // iconUrl: "/path/to/yesIcon.png",
-                        }]
-                    });
-
-                    chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
-                        if (notificationId == uuid){
-                            if (buttonIndex == 0){
-
-                                chrome.tabs.create({
-                                  active: true,
-                                  url:  `/index.html?view=Calendar&dataType=Reminders`,
-                                }, () => {
-                                    // deactivateTodayReminders(db);
-                                });
-
-                            }
-                        }
-                    });
-
-                    chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {reminders: reminders}}, (response) => {
-                        console.log('Reminders sent', response);
-                    }); 
-                }
-            });
-        }     
-
-    };
+    
 
     // If the user is browsing linkedin's feed
     const dataExtractorPath = "./assets/main_content_script.js";
@@ -298,10 +224,84 @@ function injectScriptsInTab(tabId, url, visitId){
                 files: [dataExtractorPath],
             }, 
             () => {
-                injectDataExtractorParams(tabId, url);
+                injectDataExtractorParams(tabId, url, visitId);
             }
         );
     }
+
+};
+
+async function injectDataExtractorParams(tabId, url, visitId){
+
+    // Inject tab id
+    const settings = await db
+                           .settings
+                           .where({id: 1})
+                           .first();
+
+    var postData = null;
+    if (isLinkedinFeedPostPage(url)){
+        postData = await getPostFromPostUrl(url);
+    }
+
+    const keywords = (await db.keywords.toArray()).map(keyword => keyword.name.toLowerCase());
+    var payload = {
+        tabId: tabId, 
+        settings: {
+            lastDataResetDate: settings.lastDataResetDate,
+            notifications: settings.notifications,
+        },
+        visitId: visitId,
+        postData: postData,
+        allKeywords: keywords,
+    };
+
+    chrome.tabs.sendMessage(tabId, {
+            header: messageMeta.header.CS_SETUP_DATA, 
+            data: payload,
+        }, 
+        (response) => {
+            console.log('tabId sent', response, payload);
+        }
+    ); 
+
+    if (settings.notifications){
+        getTodayReminders(db, (reminders) => {
+            if (reminders.length){
+
+                const uuid = uuidv4();
+                chrome.notifications.create(uuid, {
+                    title: 'Linkbeam',
+                    message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
+                    iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                    type: 'basic',
+                    buttons: [{
+                        title: "Show",
+                        // iconUrl: "/path/to/yesIcon.png",
+                    }]
+                });
+
+                chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+                    if (notificationId == uuid){
+                        if (buttonIndex == 0){
+
+                            chrome.tabs.create({
+                              active: true,
+                              url:  `/index.html?view=Calendar&dataType=Reminders`,
+                            }, () => {
+                                deactivateTodayReminders(db);
+                            });
+
+                        }
+                    }
+                });
+
+                chrome.tabs.sendMessage(tabId, {header: messageMeta.header.CS_SETUP_DATA, data: {reminders: reminders}}, (response) => {
+                    console.log('Reminders sent', response);
+                }); 
+            }
+        });
+    }     
 
 };
 
@@ -315,8 +315,9 @@ async function resetTabTimer(){
 
     if (sessionItem.tabTimer){
         clearInterval(sessionItem.tabTimer);
-        await chrome.storage.session.set({ tabTimer: null })
+        await chrome.storage.session.set({ tabTimer: null });
     }
+
 }
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
@@ -353,6 +354,9 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
             myTabs[tabId].visits = [{id: visitId, url: url}];
         }
 
+        chrome.storage.session.set({ myTabs: myTabs });
+        injectScriptsInTab(tabId, url, visitId);
+
     }
     else{
 
@@ -371,6 +375,9 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
                     myTabs[tabId].visits = [{id: visitId, url: url}];
                 }
 
+                chrome.storage.session.set({ myTabs: myTabs });
+                injectScriptsInTab(tabId, url, visitId);
+
             }
             else{
 
@@ -381,6 +388,9 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
                         visitId = await addFreshFeedVisit();
                         myTabs[tabId].visits.push({id: visitId, url: url});
                     }
+
+                    chrome.storage.session.set({ myTabs: myTabs });
+                    injectScriptsInTab(tabId, url, visitId);
 
                 }
                 else{
@@ -406,11 +416,15 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
                 }
             }
 
+            chrome.storage.session.set({ myTabs: myTabs });
+            injectScriptsInTab(tabId, url, visitId);
+
         }
     }
 
-    chrome.storage.session.set({ myTabs: myTabs });
-    injectScriptsInTab(tabId, url, visitId);
+    // chrome.storage.session.set({ myTabs: myTabs });
+    // injectScriptsInTab(tabId, url, visitId);
+
 
     // if (isLinkedinFeed(url)){ 
     //     createBrowsingOnBehalfMenu();
@@ -425,6 +439,7 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
     //     });
 
     // }
+
 
     async function addFreshFeedVisit(){
 

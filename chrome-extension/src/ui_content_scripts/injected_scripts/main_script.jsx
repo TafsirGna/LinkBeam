@@ -40,7 +40,7 @@ class MainScriptAgent extends ScriptAgentBase {
     constructor(){
 
         super();
-        this.timer = null;
+        this.timerInterval = null;
         this.highlightedKeywordBadgeColors = shuffle([
             "bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 text-yellow-800",
             "bg-green-100 dark:bg-green-900 dark:text-green-300 text-green-800",
@@ -77,10 +77,10 @@ class MainScriptAgent extends ScriptAgentBase {
 
     runTabDataExtractionProcess(){
 
-        this.timer = setTimeout(() => {
+        this.timerInterval = setInterval(() => {
 
             if (!this.isActiveTab){
-                this.runTabDataExtractionProcess();
+                // this.runTabDataExtractionProcess();
                 return;
             }
 
@@ -99,26 +99,26 @@ class MainScriptAgent extends ScriptAgentBase {
                     visitId: this.visitId,
                 }
 
-                // if (this.pageUrl != pageUrl){
-                //     FeedPageScriptAgent.updateUi(props);
-                //     this.pageUrl = pageUrl;
-                // }
+                if (this.pageUrl != pageUrl){
+                    FeedPageScriptAgent.updateUi(props);
+                    this.pageUrl = pageUrl;
+                }
 
                 FeedPageScriptAgent.runTabDataExtractionProcess(props);
-                this.runTabDataExtractionProcess();
+                // this.runTabDataExtractionProcess();
 
             }
             else if (isLinkedinProfilePage(pageUrl)){
 
-                // if (this.pageUrl != pageUrl){
-                //     ProfilePageScriptAgent.webPageData = null;
-                //     ProfilePageScriptAgent.detectedKeywords = null;
-                //     ProfilePageScriptAgent.updateUi(props);
-                //     this.pageUrl = pageUrl;
-                // }
+                if (this.pageUrl != pageUrl){
+                    ProfilePageScriptAgent.webPageData = null;
+                    ProfilePageScriptAgent.detectedKeywords = {};
+                    ProfilePageScriptAgent.updateUi(props);
+                    this.pageUrl = pageUrl;
+                }
 
                 ProfilePageScriptAgent.runTabDataExtractionProcess(props);
-                this.runTabDataExtractionProcess();
+                // this.runTabDataExtractionProcess();
 
             }
 

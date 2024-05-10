@@ -36,8 +36,6 @@ const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
 export default class FeedPageScriptAgent extends ScriptAgentBase {
 
-	static timerDisplay = false;
-
 	constructor(){
 		super();
 	}
@@ -104,7 +102,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		              <AboveFeedPostWidgetView 
 		              	postUid={postContainerElement.getAttribute("data-id")}
 		              	tabId={props.tabId}
-		              	// timerDisplay={this.timerDisplay}
 		              	allKeywords={props.allKeywords}
 		              	visitId={props.visitId}
 		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}/>

@@ -372,9 +372,16 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   runTimer(){
 
-    // var value = 0;
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
+
+          if (window.location.href != appParams.LINKEDIN_FEED_URL){
+            if (this.state.timerInterval){
+              this.clearTimer();
+            }
+            return;
+          }
+
           if (!(this.state.timeCount % 3)){
             if (this.state.impressionCount == null 
                   || this.state.isSuggestedPost){
@@ -395,6 +402,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
   componentWillUnmount(){
 
     eventBus.remove(eventBus.TIMER_DISPLAY_UPDATED);
+
+    if (this.state.timerInterval){
+      this.clearTimer();
+    }
 
   }
 
@@ -508,7 +519,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
                 }
               }
               else{
-                this.clearTimer();
+                if (this.state.timerInterval){
+                  this.clearTimer();
+                }
               }
             }
           }
