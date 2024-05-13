@@ -165,10 +165,10 @@ async function runTabTimer(tabId, url){
         await db.visits
                 .where({id: sessionItem.myTabs[tabId].visits[index].id})
                 .modify(visit => {
-                    visit.timeCount += appParams.TIMER_VALUE;
+                    visit.timeCount += (appParams.TIMER_VALUE / 1000);
                 });
 
-    }, (appParams.TIMER_VALUE * 1000));
+    }, (appParams.TIMER_VALUE));
 
     await chrome.storage.session.set({ tabTimer: interval });
 

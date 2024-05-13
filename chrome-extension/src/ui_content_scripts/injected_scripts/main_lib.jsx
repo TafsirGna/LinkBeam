@@ -70,7 +70,6 @@ export class ScriptAgentBase {
 
     if (Object.hasOwn(messageData, "allKeywords")){
       this.allKeywords = messageData.allKeywords;
-      // console.log("Settiiiiiiiiiiiinnnnnnnnnnng keywords : ", this.allKeywords);
     }
 
     this.updateUi();
@@ -286,11 +285,16 @@ export const DataExtractor = {
 
   fullName: function(htmlElements, context){
 
-    if (htmlElements.full_name){
-      if (context == "not_auth"){
-        return htmlElements.full_name.firstChild.textContent;
-      }
+    function extractNotAuthData(){
+      return htmlElements.full_name.firstChild.textContent;
+    }
+
+    function extractAuthData(){
       return htmlElements.full_name.textContent;
+    }
+
+    if (htmlElements.full_name){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -319,11 +323,16 @@ export const DataExtractor = {
 
   location: function(htmlElements, context){
 
-    if (htmlElements.location){
-      if (context == "not_auth"){
-        return htmlElements.location.firstElementChild.textContent;
-      }
+    function extractNotAuthData(){
+      return htmlElements.location.firstElementChild.textContent;
+    }
+
+    function extractAuthData(){
       return htmlElements.location.textContent;
+    }
+
+    if (htmlElements.location){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -362,40 +371,45 @@ export const DataExtractor = {
 
   featuredExperienceEntity: function(htmlElements, context){
 
-    if (htmlElements.featured_experience_education){
+    function extractNotAuthData(){
+
+      var featuredExperienceEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="currentPositionsDetails"]');
+      if (featuredExperienceEntityTagContainer){
+        return {
+          name: (featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
+          logo: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
+          link: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
+        };
+      }
+
+      return null;
+
+    }
+
+    function extractAuthData(){
 
       var featuredExperienceEntityTagContainer = null;
 
-      if (context == "not_auth"){
-
-        featuredExperienceEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="currentPositionsDetails"]');
-        if (featuredExperienceEntityTagContainer){
-          return {
-            name: (featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
-            logo: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
-            link: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
-          };
+      for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){ 
+        if (tag.getAttribute("aria-label").indexOf("Current company:") != -1){
+          featuredExperienceEntityTagContainer = tag;
         }
-
-      }
-      else if (context == "auth"){
-
-        for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){ 
-          if (tag.getAttribute("aria-label").indexOf("Current company:") != -1){
-            featuredExperienceEntityTagContainer = tag;
-          }
-        }
-
-        if (featuredExperienceEntityTagContainer){
-          return {
-            name: (featuredExperienceEntityTagContainer.querySelector("span") ? featuredExperienceEntityTagContainer.querySelector("span").textContent : null),
-            logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
-            link: null,
-          };
-        }
-
       }
 
+      if (featuredExperienceEntityTagContainer){
+        return {
+          name: (featuredExperienceEntityTagContainer.querySelector("span") ? featuredExperienceEntityTagContainer.querySelector("span").textContent : null),
+          logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
+          link: null,
+        };
+      }
+
+      return null;
+
+    }
+
+    if (htmlElements.featured_experience_education){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -403,40 +417,45 @@ export const DataExtractor = {
 
   featuredEducationEntity: function(htmlElements, context){
 
-    if (htmlElements.featured_experience_education){
+    function extractNotAuthData(){
+
+      var featuredEducationEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="educationsDetails"]');
+      if (featuredEducationEntityTagContainer){
+        return {
+          name: (featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
+          logo: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
+          link: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
+        };
+      }
+
+      return null;
+
+    }
+
+    function extractAuthData(){
 
       var featuredEducationEntityTagContainer = null;
 
-      if (context == "not_auth"){
-
-        featuredEducationEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="educationsDetails"]');
-        if (featuredEducationEntityTagContainer){
-          return {
-            name: (featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
-            logo: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
-            link: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
-          };
+      for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){
+        if (tag.getAttribute("aria-label").indexOf("Education:") != -1){
+          featuredEducationEntityTagContainer = tag;
         }
-
-      }
-      else if (context == "auth"){
-
-        for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){
-          if (tag.getAttribute("aria-label").indexOf("Education:") != -1){
-            featuredEducationEntityTagContainer = tag;
-          }
-        }
-
-        if (featuredEducationEntityTagContainer){
-          featuredEducationEntity = {
-            name: (featuredEducationEntityTagContainer.querySelector("span") ? featuredEducationEntityTagContainer.querySelector("span").textContent : null),
-            logo: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
-            link: null,
-          };
-        }
-
       }
 
+      if (featuredEducationEntityTagContainer){
+        return {
+          name: (featuredEducationEntityTagContainer.querySelector("span") ? featuredEducationEntityTagContainer.querySelector("span").textContent : null),
+          logo: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
+          link: null,
+        };
+      }
+
+      return null;
+
+    }
+
+    if (htmlElements.featured_experience_education){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -445,30 +464,28 @@ export const DataExtractor = {
 
   about: function(htmlElements, context){
 
-    if (htmlElements.about){
+    function extractNotAuthData(){
 
-      var userAbout = null;
-      if (context == "not_auth"){
+      var userAbout = htmlElements.about.textContent;
 
-        userAbout = htmlElements.about.textContent;
-
-        for (const term of ["see more", "voir plus"]){
-          const index = userAbout.toLowerCase().indexOf(term);
-          if (index != -1){
-            userAbout = userAbout.slice(0, index);
-            break;
-          }
+      for (const term of ["see more", "voir plus"]){
+        const index = userAbout.toLowerCase().indexOf(term);
+        if (index != -1){
+          userAbout = userAbout.slice(0, index);
+          break;
         }
-
-      }
-      else if (context == "auth"){
-
-        userAbout = htmlElements.about.querySelector(".visually-hidden").previousElementSibling.textContent;
-
       }
 
       return userAbout;
 
+    }
+
+    function extractAuthData(){
+      return htmlElements.about.querySelector(".visually-hidden").previousElementSibling.textContent;
+    }
+
+    if (htmlElements.about){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -477,46 +494,55 @@ export const DataExtractor = {
 
   education: function(htmlElements, context){
 
-    if (htmlElements.education){
+    function extractNotAuthData(){
 
       var educationData = [];
 
-      if (context == "not_auth"){
+      Array.from(htmlElements.education.querySelectorAll("li")).forEach((educationLiTag) => {
+        var education = {
+          entity:{
+            name: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").textContent : null),
+            url: (educationLiTag.querySelector("h3 a") ? educationLiTag.querySelector("h3 a").href : null), 
+          },
+          title: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
+          description: (educationLiTag.querySelector(".show-more-less-text__text--less") ? educationLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
+        };
 
-        Array.from(htmlElements.education.querySelectorAll("li")).forEach((educationLiTag) => {
-          var education = {
-            entity:{
-              name: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").textContent : null),
-              url: (educationLiTag.querySelector("h3 a") ? educationLiTag.querySelector("h3 a").href : null), 
-            },
-            title: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-            period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
-            description: (educationLiTag.querySelector(".show-more-less-text__text--less") ? educationLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
-          };
-          educationData.push(education);
-        });
+        educationData.push(education);
 
-      }
-      else if (context == "auth"){
-
-        Array.from(htmlElements.education.querySelectorAll("li.artdeco-list__item")).forEach((educationLiTag) => {
-
-          var education = {
-            entity:{
-              name: (educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-              url: null,
-            }, 
-            title: (educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
-            period: (educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
-            description: (educationLiTag.querySelectorAll(".visually-hidden")[3] ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
-          };
-          educationData.push(education);
-        });
-
-      }
+      });
 
       return educationData;
 
+    }
+
+    function extractAuthData(){
+
+      var educationData = [];
+
+      Array.from(htmlElements.education.querySelectorAll("li.artdeco-list__item")).forEach((educationLiTag) => {
+
+        var education = {
+          entity:{
+            name: (educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+            url: null,
+          }, 
+          title: (educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+          period: (educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          description: (educationLiTag.querySelectorAll(".visually-hidden")[3] ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
+        };
+
+        educationData.push(education);
+
+      });
+
+      return educationData;
+
+    }
+
+    if (htmlElements.education){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -525,35 +551,40 @@ export const DataExtractor = {
 
   languages: function(htmlElements, context){
 
-    if (htmlElements.languages){
+    function extractNotAuthData(){
 
       var languageData = [];
 
-      if (context == "not_auth"){
-
-        Array.from(htmlElements.languages.querySelectorAll("li")).forEach((languageLiTag) => {
-          var language = {
-            name: (languageLiTag.querySelector("h3") ? languageLiTag.querySelector("h3").innerHTML : null),
-            proficiency: (languageLiTag.querySelector("h4") ? languageLiTag.querySelector("h4").innerHTML : null),
-          };
-          languageData.push(language);
-        });
-
-      }
-      else if (context == "auth"){
-
-        Array.from(htmlElements.languages.querySelectorAll("li.artdeco-list__item")).forEach((languageLiTag) => {
-          var language = {
-            name: (languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-            proficiency: (languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
-          };
-          languageData.push(language);
-        });
-
-      }
+      Array.from(htmlElements.languages.querySelectorAll("li")).forEach((languageLiTag) => {
+        var language = {
+          name: (languageLiTag.querySelector("h3") ? languageLiTag.querySelector("h3").innerHTML : null),
+          proficiency: (languageLiTag.querySelector("h4") ? languageLiTag.querySelector("h4").innerHTML : null),
+        };
+        languageData.push(language);
+      });
 
       return languageData;
 
+    }
+
+    function extractAuthData(){
+
+      var languageData = [];
+
+      Array.from(htmlElements.languages.querySelectorAll("li.artdeco-list__item")).forEach((languageLiTag) => {
+        var language = {
+          name: (languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          proficiency: (languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+        };
+        languageData.push(language);
+      });
+
+      return languageData;
+
+    }
+
+    if (htmlElements.languages){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -562,100 +593,105 @@ export const DataExtractor = {
 
   experience: function(htmlElements, context){
 
-    if (htmlElements.experience){
+    function extractNotAuthData(){
 
       var experienceData = [];
 
-      if (context == "not_auth"){
-
-        Array.from((htmlElements.experience.querySelector("ul")).querySelectorAll("li")).forEach((experienceLiTag) => {
+      Array.from((htmlElements.experience.querySelector("ul")).querySelectorAll("li")).forEach((experienceLiTag) => {
         
-          var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
-          if (groupPositions){
+        var experienceItem = {}, groupPositions = experienceLiTag.querySelector(".experience-group__positions");
+        if (groupPositions){
 
-            var featuredExperienceEntityName = (experienceLiTag.querySelector(".experience-group-header__company") ? experienceLiTag.querySelector(".experience-group-header__company").textContent : null);
+          var featuredExperienceEntityName = (experienceLiTag.querySelector(".experience-group-header__company") ? experienceLiTag.querySelector(".experience-group-header__company").textContent : null);
 
-            Array.from(groupPositions.querySelectorAll(".profile-section-card")).forEach((positionLiTag) => {
-              var experienceItem = {
-                title: (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null),
-                entity: {
-                  name: featuredExperienceEntityName,
-                  url: null,
-                },
-                period: (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null),
-                location: (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-                description: (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
-              };
-              experienceData.push(experienceItem);
-            });
-
-          }
-          else{
-
-            experienceItem = {
-              title: (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null),
+          Array.from(groupPositions.querySelectorAll(".profile-section-card")).forEach((positionLiTag) => {
+            var experienceItem = {
+              title: (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null),
               entity: {
-                name: (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null),
+                name: featuredExperienceEntityName,
                 url: null,
               },
-              period: (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null),
-              location: (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-              description: (experienceLiTag.querySelector(".show-more-less-text__text--less") ? experienceLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
+              period: (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null),
+              location: (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
+              description: (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
             };
             experienceData.push(experienceItem);
+          });
 
-          }
+        }
+        else{
 
-        });
+          experienceItem = {
+            title: (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null),
+            entity: {
+              name: (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null),
+              url: null,
+            },
+            period: (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null),
+            location: (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
+            description: (experienceLiTag.querySelector(".show-more-less-text__text--less") ? experienceLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
+          };
+          experienceData.push(experienceItem);
 
-      }
-      else if (context == "auth"){
+        }
 
-        Array.from(experienceSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
-          
-          var experienceItem = {};
-          if (experienceLiTag.querySelector("ul")){
+      });
 
-            var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
+      return experienceData;
 
-            Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
-              positionLiTag = positionLiTag.parentElement;
-              var experienceItem = {
-                title: (positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-                entity: {
-                  name: featuredExperienceEntityName,
-                  url: null,
-                },
-                period: (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
-                location: null, // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-                description: null, // (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
-              };
-              experienceData.push(experienceItem);
-            });
+    }
 
-          }
-          else{
+    function extractAuthData(){
 
-            experienceItem = {
-              title: (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+      var experienceData = [];
+
+      Array.from(experienceSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
+        
+        var experienceItem = {};
+        if (experienceLiTag.querySelector("ul")){
+
+          var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
+
+          Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
+            positionLiTag = positionLiTag.parentElement;
+            var experienceItem = {
+              title: (positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
               entity: {
-                name: (experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+                name: featuredExperienceEntityName,
                 url: null,
               },
-              period: (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
-              location: null, // (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-              description: (experienceLiTag.querySelectorAll(".visually-hidden")[3] ? experienceLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
+              period: (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
+              location: null, // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
+              description: null, // (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
             };
             experienceData.push(experienceItem);
+          });
 
-          }
+        }
+        else{
 
-        });
+          experienceItem = {
+            title: (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+            entity: {
+              name: (experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+              url: null,
+            },
+            period: (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
+            location: null, // (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
+            description: (experienceLiTag.querySelectorAll(".visually-hidden")[3] ? experienceLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
+          };
+          experienceData.push(experienceItem);
 
-      }
+        }
 
-      return experienceData
+      });
 
+      return experienceData;
+
+    }
+
+    if (htmlElements.experience){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -664,31 +700,33 @@ export const DataExtractor = {
 
   activity: function(htmlElements, context){
 
-    if (htmlElements.activity){
+    function extractNotAuthData(){
 
       var activityData = [];
 
-      if (context == "not_auth"){
-
-        Array.from(htmlElements.activity.querySelectorAll("li")).forEach((activityLiTag) => {
-          var article = {
-            link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
-            picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
-            title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
-            action: (activityLiTag.querySelector(".base-main-card__subtitle") ? activityLiTag.querySelector(".base-main-card__subtitle").textContent : null),
-          };
-          activityData.push(article);
-        });
-
-      }
-      else if (context == "auth"){
-
-
-
-      }
+      Array.from(htmlElements.activity.querySelectorAll("li")).forEach((activityLiTag) => {
+        var article = {
+          link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
+          picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
+          title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
+          action: (activityLiTag.querySelector(".base-main-card__subtitle") ? activityLiTag.querySelector(".base-main-card__subtitle").textContent : null),
+        };
+        activityData.push(article);
+      });
 
       return activityData;
 
+    }
+
+    function extractAuthData(){
+
+      var activityData = [];
+      return activityData;
+
+    }
+
+    if (htmlElements.activity){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -697,47 +735,52 @@ export const DataExtractor = {
 
   certifications: function(htmlElements, context){
 
-    if (htmlElements.certifications){
+    function extractNotAuthData(){
 
       var certificationData = [];
 
-      if (context == "not_auth"){
-
-        Array.from(htmlElements.certifications.querySelectorAll("li")).forEach((certificationLiTag) => {
-          var certification = {
-            title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
-            entity: {
-              name: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
-              url: null,
-            },
-            period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
-            // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-            // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-          };
-          certificationData.push(certification);
-        });
-
-      }
-      else if (context == "auth"){
-
-        Array.from(certificationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
-          var certification = {
-            title: (certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-            entity: {
-              name: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
-              url: null,
-            }, 
-            period: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
-            // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-            // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-          };
-          certificationData.push(certification);
-        });
-
-      }
+      Array.from(htmlElements.certifications.querySelectorAll("li")).forEach((certificationLiTag) => {
+        var certification = {
+          title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
+          entity: {
+            name: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
+            url: null,
+          },
+          period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
+          // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        };
+        certificationData.push(certification);
+      });
 
       return certificationData;
 
+    }
+
+    function extractAuthData(){
+
+      var certificationData = [];
+
+      Array.from(certificationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
+        var certification = {
+          title: (certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          entity: {
+            name: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+            url: null,
+          }, 
+          period: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        };
+        certificationData.push(certification);
+      });
+
+      return certificationData;
+
+    }
+
+    if (htmlElements.certifications){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -746,30 +789,34 @@ export const DataExtractor = {
 
   projects: function(htmlElements, context){
 
-    if (htmlElements.projects){
+    function extractNotAuthData(){
 
       var projectData = [];
 
-      if (context == "not_auth"){
-
-        Array.from(htmlElements.projects.querySelectorAll("li")).forEach((projectLiTag) => {
-          var project = {
-            name: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").textContent : null),
-            period: (projectLiTag.querySelector("h4 span") ? projectLiTag.querySelector("h4 span").textContent : null),
-            // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-            link: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").href : null),
-            // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-          };
-          projectData.push(project);
-        });
-
-      }
-      else if (context == "auth"){
-
-      }
+      Array.from(htmlElements.projects.querySelectorAll("li")).forEach((projectLiTag) => {
+        var project = {
+          name: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").textContent : null),
+          period: (projectLiTag.querySelector("h4 span") ? projectLiTag.querySelector("h4 span").textContent : null),
+          // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          link: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").href : null),
+          // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+        };
+        projectData.push(project);
+      });
 
       return projectData;
 
+    }
+
+    function extractAuthData(){
+
+      var projectData = [];
+      return projectData;
+
+    }
+
+    if (htmlElements.projects){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
@@ -778,41 +825,46 @@ export const DataExtractor = {
 
   suggestions: function(htmlElements, context){
 
-    if (htmlElements.suggestions){
+    function extractNotAuthData(){
 
       var profileSuggestions = [];
 
-      if (context == "not_auth"){
-
-        Array.from(htmlElements.suggestions.querySelectorAll("li")).forEach((suggestionLiTag) => {
-          var profileSuggestion = {
-            name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
-            location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-            link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
-            picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
-            title: (suggestionLiTag.querySelector(".base-aside-card__subtitle") ? suggestionLiTag.querySelector(".base-aside-card__subtitle").textContent : null),
-          };
-          profileSuggestions.push(profileSuggestion);
-        });
-
-      }
-      else if (context == "auth"){
-
-        Array.from(htmlElements.suggestions.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
-          var profileSuggestion = {
-            name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-            location: null, // (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-            link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href : null),        
-            picture: (suggestionLiTag.querySelector("img") ? suggestionLiTag.querySelector("img").src : null),
-            title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
-          };
-          profileSuggestions.push(profileSuggestion);
-        });
-
-      }
+      Array.from(htmlElements.suggestions.querySelectorAll("li")).forEach((suggestionLiTag) => {
+        var profileSuggestion = {
+          name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
+          location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
+          link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
+          picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
+          title: (suggestionLiTag.querySelector(".base-aside-card__subtitle") ? suggestionLiTag.querySelector(".base-aside-card__subtitle").textContent : null),
+        };
+        profileSuggestions.push(profileSuggestion);
+      });
 
       return profileSuggestions;
 
+    }
+
+    function extractAuthData(){
+
+      var profileSuggestions = [];
+
+      Array.from(htmlElements.suggestions.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
+        var profileSuggestion = {
+          name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          location: null, // (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
+          link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href : null),        
+          picture: (suggestionLiTag.querySelector("img") ? suggestionLiTag.querySelector("img").src : null),
+          title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+        };
+        profileSuggestions.push(profileSuggestion);
+      });
+
+      return profileSuggestions
+
+    }
+
+    if (htmlElements.suggestions){
+      return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
     return null;
