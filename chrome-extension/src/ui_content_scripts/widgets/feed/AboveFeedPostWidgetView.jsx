@@ -375,7 +375,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 
-          if (window.location.href != appParams.LINKEDIN_FEED_URL){
+          if (window.location.href != appParams.LINKEDIN_FEED_URL()){
             if (this.state.timerInterval){
               this.clearTimer();
             }

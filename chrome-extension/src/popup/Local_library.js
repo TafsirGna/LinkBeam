@@ -26,29 +26,22 @@ export const appParams = {
   appDbName: "LinkBeamDB",
   appDbVersion: 1,
   keywordCountLimit: 5, 
-  bookmarkCountLimit: 5,
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE: 3000,
   appAuthor: "Stoic Beaver",
 
   extShadowHostId: "linkBeamExtensionMainRoot",
-  sectionMarkerID: "linkbeam-extension-section-marker",
-  commentModalContainerID: "web-ui-comment-modal",
-  commentListModalContainerID: "web-ui-comment-list-modal",
-  commentRepliesListModalContainerID: "web-ui-comment-replies-list-modal",
-  GITHUB_SECTION_MARKER_CONTAINER_CLASS_NAME: "js-pinned-items-reorder-container",
-  LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "core-section-container",
-  // LINKEDIN_SECTION_MARKER_CONTAINER_CLASS_NAME: "pvs-header__container",
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
 
   supportedTimeLocales: ["fr", "en-US"],
-  
-  WEB_PAGE_URL_PATTERNS: ["github.com", "linkedin.com"],
-  TAB_TIME_INC_VALUE: 5,
-  WEB_APP_ITEM_LIMIT_NUM: 3,
+
+  LINKEDIN_ROOT_URL: "linkedin.com",
+  LINKEDIN_FEED_URL: function(){ return `https://www.${this.LINKEDIN_ROOT_URL}/feed/`; },
+  LINKEDIN_FEED_POST_ROOT_URL: function(){ return `https://www.${this.LINKEDIN_ROOT_URL}/feed/update/`; },
+  WEB_PAGE_URL_PATTERNS: function(){ return [/*"github.com",*/ this.LINKEDIN_ROOT_URL] ;},
+
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
-  LINKEDIN_FEED_URL: "https://www.linkedin.com/feed/",
   COMPONENT_CONTEXT_NAMES: {
     ABOUT: "About",
     HOME: "Home",
@@ -959,8 +952,12 @@ export async function getProfileDataFrom(db, url, properties = null){
 
 export function getNewProfileData(oldProfileData, extractedProfileData){
 
-  var newProfileData = {};
+  if (!oldProfileData){
+    return extractedProfileData;
+  }
 
+  var newProfileData = {};
+  
   for (var property in extractedProfileData){
     newProfileData[property] = (JSON.stringify(oldProfileData[property]) == JSON.stringify(extractedProfileData[property]))  
                                 ? null
@@ -1024,8 +1021,6 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
   var data = {};
 
-  console.log("xxxxxxxxxxxxxxxx 1 : ", objects);
-
   for (var visit of objects){
     const dateString = visit.date.split("T")[0],
           hourString = Number(LuxonDateTime.fromISO(visit.date).toFormat("HH"));
@@ -1042,8 +1037,6 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
       data[dateString][hourString] = [visit];
     }
   }
-
-  console.log("xxxxxxxxxxxxxxxx 2 : ", data);
 
   var labels = null,
       resData = {};
@@ -1069,8 +1062,6 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
                                       ? (await getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric))
                                       : 0);
       }
-
-      console.log("xxxxxxxxxxxxxxxx 3 : ", metric, resData);
 
     }
     else{
@@ -1136,9 +1127,9 @@ export function getVisitsPostCount(visits){
 
 }
 
-export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL;
+export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
 export const isLinkedinProfilePage = (url) => url.indexOf("/in/") != -1;
-export const isLinkedinFeedPostPage = (url) => url.indexOf("linkedin.com/feed/update/") != -1;
+export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
 
 export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, profileUrl = null){
 
@@ -1277,7 +1268,7 @@ export async function deactivateTodayReminders(db){
 
 export const testTabBaseUrl = (url) => {
 
-  return (new RegExp(appParams.WEB_PAGE_URL_PATTERNS.join("|"))).test(url);
+  return (new RegExp(appParams.WEB_PAGE_URL_PATTERNS().join("|"))).test(url);
 
 }
 
@@ -1302,8 +1293,6 @@ export const groupVisitsByProfile = (visits) => {
   }
 
   results.sort((a,b) => new Date(b.date.split("T")[0]) - new Date(a.date.split("T")[0]));
-
-  console.log("$$$$$$$$$$$$$$$$$$$$$$$$ : ", results);
 
   return results;
 

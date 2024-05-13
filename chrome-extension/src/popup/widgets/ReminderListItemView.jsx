@@ -30,6 +30,7 @@ import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   isLinkedinProfilePage,
+  appParams,
 } from "../Local_library";
 
 export default class ReminderListItemView extends React.Component{
@@ -53,7 +54,7 @@ export default class ReminderListItemView extends React.Component{
 
     return isLinkedinProfilePage(this.props.object.objectId)
               ?  `/index.html?view=Profile&data=${this.props.object.objectId}`
-              : `https://www.linkedin.com/feed/update/${this.props.object.objectId}`;
+              : `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.objectId}`;
 
   }
 

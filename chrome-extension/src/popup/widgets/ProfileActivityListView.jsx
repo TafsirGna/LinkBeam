@@ -102,7 +102,7 @@ export default class ProfileActivityListView extends React.Component{
           result = object.link; 
         }
         else if (object.content){            
-          result = `https://www.linkedin.com/feed/update/${object.uid}`;
+          result = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${object.uid}`;
         }
         break;
       }

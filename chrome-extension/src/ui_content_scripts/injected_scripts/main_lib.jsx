@@ -121,7 +121,7 @@ export class ScriptAgentBase {
   pageUrl = isLinkedinFeed(pageUrl)
               ? pageUrl 
               : (isLinkedinProfilePage(pageUrl)
-                  ? pageUrl.slice(pageUrl.indexOf("linkedin.com"))
+                  ? pageUrl.slice(pageUrl.indexOf(appParams.LINKEDIN_ROOT_URL))
                   : null);
 
   chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {

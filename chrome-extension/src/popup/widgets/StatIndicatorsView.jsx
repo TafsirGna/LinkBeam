@@ -57,18 +57,6 @@ export default class StatIndicatorsView extends React.Component{
           color: "text-success",
           icon: search_icon,
         },
-        timeSpentData: {
-          label: TIME_SPENT_LABEL,
-          value: 0,
-          color: "text-secondary",
-          icon: hourglass_icon,
-        },
-        profileActivityData: {
-          label: PROFILES_ACTIVITY_LABEL,
-          value: 0,
-          color: "text-primary",
-          icon: news_icon,
-        },
       },
       // indicatorStyles: [
 
@@ -138,20 +126,6 @@ export default class StatIndicatorsView extends React.Component{
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
       indicatorData.visitData.value = this.props.objects.length;
-      return { indicatorData };
-    });
-
-    // Setting activity data
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.profileActivityData.value = activityList.length;
-      return { indicatorData };
-    });
-
-    // Setting time spent data
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
-      indicatorData.timeSpentData.value = secondsToHms(time);
       return { indicatorData };
     });
 

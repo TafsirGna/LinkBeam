@@ -98,7 +98,8 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Statistics")}}>
+                onClick={() => {switchToView(eventBus, "Statistics")}}
+                title="See profile visits statistics">
                 Profile visits stats
               </a>
             </li>
@@ -106,7 +107,8 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="/index.html?view=FeedDash" 
-                target="_blank">
+                target="_blank"
+                title="See feed visits statistics">
                 Feed visits stats
               </a>
             </li>
@@ -114,7 +116,8 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Bookmarks")}}>
+                onClick={() => {switchToView(eventBus, "Bookmarks")}}
+                title="List bookmarked profiles">
                 Bookmarked Profiles
               </a>
             </li>
@@ -122,7 +125,8 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {this.props.handleOffCanvasShow("Posts")}}>
+                onClick={() => {this.props.handleOffCanvasShow("Posts")}}
+                title="Search a post">
                 Search Posts
               </a>
             </li>
@@ -130,23 +134,26 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Reminders")}}>
+                onClick={() => {switchToView(eventBus, "Reminders")}}
+                title="List reminders">
                 Reminders
               </a>
             </li>
-            <li>
+            {/*<li>
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Folders")}}>
+                onClick={() => {switchToView(eventBus, "Folders")}}
+                title="List folders">
                 Folders
               </a>
-            </li>
+            </li>*/}
             <li>
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Settings")}}>
+                onClick={() => {switchToView(eventBus, "Settings")}}
+                title="See app settings">
                 Settings
               </a>
             </li>
@@ -154,7 +161,8 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "About")}}>
+                onClick={() => {switchToView(eventBus, "About")}}
+                title="About the app">
                 About
               </a>
             </li>

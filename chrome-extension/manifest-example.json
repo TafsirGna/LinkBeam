@@ -22,7 +22,7 @@
     "512": "app_logo.png"
   },
   "web_accessible_resources": [{
-     "matches": ["*://*/*"],
+     "matches": ["https://*.linkedin.com/*"],
      "resources": [
                     "/assets/web_ui.js",
                     "/assets/gaming-lock.mp3",

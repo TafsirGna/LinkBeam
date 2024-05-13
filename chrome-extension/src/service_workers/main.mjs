@@ -146,7 +146,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 async function runTabTimer(tabId, url){
 
-    url = isLinkedinProfilePage(url) ? url.slice(url.indexOf("linkedin.com")) : url;
+    url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
 
     const interval = setInterval(async () => {       
 
@@ -165,10 +165,10 @@ async function runTabTimer(tabId, url){
         await db.visits
                 .where({id: sessionItem.myTabs[tabId].visits[index].id})
                 .modify(visit => {
-                    visit.timeCount += appParams.TAB_TIME_INC_VALUE;
+                    visit.timeCount += appParams.TIMER_VALUE;
                 });
 
-    }, (appParams.TAB_TIME_INC_VALUE * 1000));
+    }, (appParams.TIMER_VALUE * 1000));
 
     await chrome.storage.session.set({ tabTimer: interval });
 
@@ -422,10 +422,6 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
         }
     }
 
-    // chrome.storage.session.set({ myTabs: myTabs });
-    // injectScriptsInTab(tabId, url, visitId);
-
-
     // if (isLinkedinFeed(url)){ 
     //     createBrowsingOnBehalfMenu();
     // }
@@ -449,7 +445,7 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 
         var visit = {
             date: dateTime,
-            url: appParams.LINKEDIN_FEED_URL,
+            url: appParams.LINKEDIN_FEED_URL(),
             timeCount: 1, 
             feedItemsMetrics: feedItemsMetrics,
         };
@@ -671,28 +667,33 @@ async function recordProfileVisit(tabData){
     }
 
     if (!sessionItem.myTabs[tabData.tabId].visits){
-        const visitId = await processPrimeVisit();
-        sessionItem.myTabs[tabData.tabId].visits = [{id: visitId, url: tabData.tabUrl, profileData: profileData}];
+        sessionItem.myTabs[tabData.tabId].visits = [{
+            id: await processPrimeVisit(), 
+            url: tabData.tabUrl, 
+            profileData: profileData,
+        }];
     }
     else{
         const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
         if (index == -1){
-            const visitId = await processPrimeVisit();
-            sessionItem.myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl, profileData: profileData});
+            sessionItem.myTabs[tabData.tabId].visits.push({
+                id: await processPrimeVisit(), 
+                url: tabData.tabUrl, 
+                profileData: profileData,
+            });
         }
         else{
             profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
-            const newProfileData = getNewProfileData(profileData, tabData.extractedData);
 
             await db.visits
                     .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
                     .modify(visit => {
-                        visit.profileData = newProfileData;
+                        visit.profileData = getNewProfileData(profileData, tabData.extractedData);
                     });
+
         }
     }
 
-    // console.log("TTTTTTTTTTTTTT : ", sessionItem.myTabs);
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
     // checking first that the user is on the linkedin tab before setting the badge text
@@ -702,8 +703,8 @@ async function recordProfileVisit(tabData){
         }
     });
 
-    chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData}, (response) => {
-        console.log('profile data response sent', response);
+    chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData ? profileData : tabData.extractedData}, (response) => {
+        console.log('profile data response sent', response, profileData ? profileData : tabData.extractedData);
     }); 
 
     async function processPrimeVisit(){
@@ -720,12 +721,8 @@ async function recordProfileVisit(tabData){
             };
 
         if (profileVisits.length){
-
-            const fullProfileData = await getProfileDataFrom(db, tabData.tabUrl);
-            profileData = fullProfileData;
-            const newProfileData = getNewProfileData(fullProfileData, tabData.extractedData);
-
-            visit.profileData = newProfileData;
+            profileData = await getProfileDataFrom(db, tabData.tabUrl);
+            visit.profileData = getNewProfileData(profileData, tabData.extractedData);
         }
         else{
             visit.profileData = tabData.extractedData;
@@ -796,7 +793,7 @@ async function processMessageEvent(message, sender, sendResponse){
                 const uuid = uuidv4();
                 chrome.notifications.create(uuid, {
                   title: 'Linkbeam',
-                  message: `Keyword detected for this user`,
+                  message: `Keyword detected !`,
                   iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
                   type: 'basic',
                 });

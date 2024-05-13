@@ -46,6 +46,7 @@ export default class About extends React.Component{
     };
 
     this.resetDb = this.resetDb.bind(this);
+    this.handleAlertViewShow = this.handleAlertViewShow.bind(this);
 
   }
 
@@ -74,15 +75,13 @@ export default class About extends React.Component{
             } catch (error) {
 
               this.setState({processing: false}, () => {
-
-                const message = "Something wrong happent with the uploaded file. Check the file and try again! ";
                 console.error(`${message} : `, error);
                 
-                this.setState({alertMessage: message, alertTagShow: true, alertVariant: "warning"}, () => {
+                this.handleAlertViewShow("Something wrong happent with the uploaded file. Check the file and try again! ", "warning", () => {
                     setTimeout(() => {
                       this.setState({alertMessage: "", alertTagShow: false});
                     }, appParams.TIMER_VALUE);
-                });
+                })
 
               });
 
@@ -94,6 +93,11 @@ export default class About extends React.Component{
             (async () => {
 
               try{
+
+                if (content.dbVersion > appParams.appDbVersion){
+                  this.handleAlertViewShow(`The imported file version is ${content.dbVersion} and superior than this app database version (${appParams.appDbVersion})!`, "danger");
+                  return;
+                }
 
                 // initialize the db with the received data
                 for (var objectStoreName in content.objectStores){
@@ -111,10 +115,7 @@ export default class About extends React.Component{
               }
               catch(error){
                 console.error("Error : ", error);
-
-                const message = "An error occured when setting up the extension! ";
-                this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
-
+                this.handleAlertViewShow("An error occured when setting up the extension! ", "danger");
                 this.resetDb();
               }
 
@@ -125,10 +126,7 @@ export default class About extends React.Component{
         }
         catch(error){
           console.error("Error : ", error);
-
-          const message = "An error occured when setting up the extension! ";
-          this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
-          
+          this.handleAlertViewShow("An error occured when setting up the extension! ", "danger");
           this.setState({opDone: false, processing: false});
         }
 
@@ -147,6 +145,16 @@ export default class About extends React.Component{
     }).finally(() => {
         // Do what should be done next...
         this.setState({opDone: false, processing: false});
+    });
+
+  }
+
+  handleAlertViewShow(message, alertVariant, callback = null){
+
+    this.setState({alertMessage: message, alertTagShow: true, alertVariant: alertVariant}, () => {
+      if (callback){
+        callback();
+      }
     });
 
   }
@@ -179,8 +187,7 @@ export default class About extends React.Component{
 
         // Error occurred
         this.setState({processing: false});
-        var message = "Failed to initialized the app. Try again later!";
-        this.setState({alertMessage: message, alertTagShow: true, alertVariant: "danger"});
+        this.handleAlertViewShow("Failed to initialized the app. Try again later!", "danger");
       
       }).bind(this));
 
