@@ -560,27 +560,17 @@ async function recordFeedVisit(tabData){
                 },
             };
 
-            // await db.transaction('rw', [db.feedPosts, db.feedPostViews], function() {
-            //     // saving the post
-            //     db.feedPosts.add(newPost);
-            // }).then(function() {
-            //     console.log("Transaction committed");
-            // }).catch(function(err) {
-            //     console.error(err);
-            // });
-
-
-            var dbPost = await db.feedPosts
-                                .where("uid")
-                                .equals(post.id)
-                                .first();
+            const dbPost = await db.feedPosts
+                                    .where({uid: post.id})
+                                    .first();
 
             if (dbPost){
                 await db.feedPosts
                         .update(dbPost.id, newPost);
             }
             else{
-                await db.feedPosts.add(newPost);
+                await db.feedPosts
+                        .add(newPost);
             }
 
             var postView = await db.feedPostViews

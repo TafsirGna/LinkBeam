@@ -48,9 +48,10 @@ export default class About extends React.Component{
 
     this.resetDb = this.resetDb.bind(this);
     this.handleAlertViewShow = this.handleAlertViewShow.bind(this);
-    this.setFormFileElement = this.setFormFileElement.bind(this);
+    this.setFileInputChangeAction = this.setFileInputChangeAction.bind(this);
     this.onImportDataClicked = this.onImportDataClicked.bind(this);
     this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
+    this.clearFileInput = this.clearFileInput.bind(this);
 
   }
 
@@ -62,12 +63,26 @@ export default class About extends React.Component{
             this.setState({opDone: true, processing: false});
             return;
         }
-        this.setFormFileElement();
+        this.setFileInputChangeAction();
     }).bind(this));
 
   }
 
-  setFormFileElement(){
+  clearFileInput(){
+
+    var oldInput = document.getElementById("formFile"); 
+
+    var newInput = document.createElement("input"); 
+    newInput.type = "file";  
+    newInput.id = oldInput.id;
+    newInput.className = oldInput.className; 
+
+    oldInput.parentNode.replaceChild(newInput, oldInput); 
+    this.setFileInputChangeAction();
+
+  }
+
+  setFileInputChangeAction(){
 
     // listening for an input change event
     const formFileElement = document.getElementById("formFile");
@@ -112,7 +127,10 @@ export default class About extends React.Component{
               try{
 
                 if (content.dbVersion > appParams.appDbVersion){
-                  this.handleAlertViewShow(`The imported file version is ${content.dbVersion} and superior than this app database version (${appParams.appDbVersion})!`, "danger");
+                  this.handleAlertViewShow(`The imported file version (${content.dbVersion}) is superior than this app database version (${appParams.appDbVersion})!`, "danger", () => {
+                    this.setState({opDone: false, processing: false});
+                    this.clearFileInput();
+                  });
                   return;
                 }
 
@@ -168,10 +186,14 @@ export default class About extends React.Component{
 
   handleAlertViewShow(message, alertVariant, callback = null){
 
-    this.setState({alertMessage: message, alertTagShow: true, alertVariant: alertVariant}, () => {
-      if (callback){
-        callback();
-      }
+    this.setState({alertMessage: null, alertTagShow: null, alertVariant: null}, () => {
+
+      this.setState({alertMessage: message, alertTagShow: true, alertVariant: alertVariant}, () => {
+        if (callback){
+          callback();
+        }
+      });
+
     });
 
   }
@@ -284,7 +306,6 @@ export default class About extends React.Component{
           </div>
 
           <div class="mb-3 d-none">
-            <label for="formFile" class="form-label">Default file input example</label>
             <input class="form-control" type="file" id="formFile"/>
           </div>
 

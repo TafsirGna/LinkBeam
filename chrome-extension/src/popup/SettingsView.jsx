@@ -251,7 +251,7 @@ export default class SettingsView extends React.Component{
           if (table.name == "settings"){
             tableData = await table.toArray();
           }
-          else if (["feedPosts"].indexOf(table.name) != -1){
+          else if (["feedPosts"/*, */].indexOf(table.name) != -1){
             continue;
           }
           else{
@@ -279,7 +279,7 @@ export default class SettingsView extends React.Component{
                 [feedPost] = await Promise.all([
                   db.feedPosts.where('uid').equals(feedPostView.uid).first()
                 ]);
-                if (feedPost){
+                if (feedPost && feedPosts.map(p => p.uid).indexOf(feedPost.uid) == -1){
                   feedPosts.push(feedPost);
                 }
               }));
@@ -299,7 +299,7 @@ export default class SettingsView extends React.Component{
       
           const jsonData = JSON.stringify(dbData),
                 jsonDataBlob = new Blob([jsonData]);
-          var fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
+          const fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
           procExtractedData(jsonDataBlob, fileName, action, new JSZip());
 
         } catch (error) {

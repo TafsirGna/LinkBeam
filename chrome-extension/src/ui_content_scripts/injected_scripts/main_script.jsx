@@ -80,7 +80,6 @@ class MainScriptAgent extends ScriptAgentBase {
         this.timerInterval = setInterval(() => {
 
             if (!this.isActiveTab){
-                // this.runTabDataExtractionProcess();
                 return;
             }
 
@@ -105,7 +104,6 @@ class MainScriptAgent extends ScriptAgentBase {
                 }
 
                 FeedPageScriptAgent.runTabDataExtractionProcess(props);
-                // this.runTabDataExtractionProcess();
 
             }
             else if (isLinkedinProfilePage(pageUrl)){
@@ -118,7 +116,6 @@ class MainScriptAgent extends ScriptAgentBase {
                 }
 
                 ProfilePageScriptAgent.runTabDataExtractionProcess(props);
-                // this.runTabDataExtractionProcess();
 
             }
 
