@@ -28,6 +28,7 @@ import {
 import ExtensionMarkerView from "./ExtensionMarkerView";
 import ProfileGanttChart from "../../../popup/widgets/charts/ProfileGanttChart";
 import { DateTime as LuxonDateTime } from "luxon";
+import { DataApproximationAlert } from "../../injected_scripts/main_lib";
 
 export default class ExperienceDataChartWidget extends React.Component{
 
@@ -110,6 +111,9 @@ export default class ExperienceDataChartWidget extends React.Component{
                     <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                       
                       <div class="p-4">
+
+                        <DataApproximationAlert/>
+
                         <ProfileGanttChart
                           profile={this.state.profileData} 
                           periodLabel="experience"

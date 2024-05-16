@@ -193,6 +193,40 @@ export const dbDataSanitizer = {
 
   },
 
+  location: function(str){
+
+    if (!str){
+      return null;
+    }
+    
+    str = this.preSanitize(str);
+
+    if (str.indexOf(",") != -1){
+      str = str.split(",").toReversed()[0];
+      str = this.preSanitize(str);
+    }
+    
+    // stripping unecessary text
+    str = str.replace("Republic of the ", "")
+                     .replace("Republic of ", "")
+                     .replace("Republic ", "") 
+                     .replace("République du ", "")
+                     .replace("République ", ""); 
+
+    switch(str.toLowerCase()){
+      case "états-unis":{
+        str += " d'Amérique";
+        break;
+      }
+      case "united states": {
+        str += " of America";
+      }
+    }
+
+    return str;
+
+  },
+
   preSanitize: function(str){
 
     // clean the front

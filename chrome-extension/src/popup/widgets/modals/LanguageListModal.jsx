@@ -38,6 +38,50 @@ import sorry_icon from '../../../assets/sorry_icon.png';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const proficiencyLanguageKeywordsVariants = {
+
+  native: {
+    lang: {
+      fr: "natale",
+      en: "native",
+    },
+    value: 5,
+  },
+
+  full_professional: {
+    lang: {
+      fr: "professionnelle complète",
+      en: "full professional",
+    },
+    value: 4,
+  },
+
+  professional_working: {
+    lang: {
+      fr: "professionnelle générale",
+      en: "professional working",
+    },
+    value: 3,
+  },
+
+  limited_working: {
+    lang: {
+      fr: "limité",
+      en: "limited working",
+    },
+    value: 2,
+  },
+
+  elementary: {
+    lang: {
+      fr: "elementary",
+      en: "notions",
+    },
+    value: 1,
+  },
+
+};
+
 
 export default class LanguageListModal extends React.Component{
 
@@ -108,14 +152,25 @@ export default class LanguageListModal extends React.Component{
 
     for (var languageObject of this.props.profile.languages){
 
-      var value = null, proficiency = languageObject.proficiency.toLowerCase();
+      var value = null, proficiency = languageObject.proficiency ? languageObject.proficiency.toLowerCase() : null;
 
-      if (proficiency.indexOf("native") != -1 || proficiency.indexOf("natale") != -1){ value = 5; }
-      if (proficiency.indexOf("full professional") != -1 || proficiency.indexOf("professionnelle complète") != -1){ value = 4; }
-      if (proficiency.indexOf("professional working") != -1 || proficiency.indexOf("professionnelle générale") != -1){ value = 3; }
-      if (proficiency.indexOf("limited working") != -1 || proficiency.indexOf("limité") != -1){ value = 2; }
-      if (proficiency.indexOf("elementary") != -1 || proficiency.indexOf("notions") != -1){ value = 1; }
-      if (value == null){ value = 0.5; }
+      if (proficiency){
+
+        for (var keyword in proficiencyLanguageKeywordsVariants){
+          for (var language in (proficiencyLanguageKeywordsVariants[keyword]).lang){
+            if (proficiency.indexOf((proficiencyLanguageKeywordsVariants[keyword]).lang[language]) != -1){
+              value = (proficiencyLanguageKeywordsVariants[keyword]).value;
+              break;
+            }
+          }
+        }
+
+        if (value == null){ value = 0.5; }
+
+      }
+      else{
+        value = 5; // native by default
+      }
 
       languages.push({
         label: dbDataSanitizer.preSanitize(languageObject.name),

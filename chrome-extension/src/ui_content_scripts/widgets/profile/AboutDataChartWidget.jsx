@@ -28,6 +28,7 @@ import {
 import { DateTime as LuxonDateTime } from "luxon";
 import ExtensionMarkerView from "./ExtensionMarkerView";
 import ProfileAboutBubbleChart from '../../../popup/widgets/charts/ProfileAboutBubbleChart';
+import { DataApproximationAlert } from "../../injected_scripts/main_lib";
 
 export default class AboutDataChartWidget extends React.Component{
 
@@ -107,6 +108,9 @@ export default class AboutDataChartWidget extends React.Component{
                         <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
                           
                             <div class="p-4">
+
+                                <DataApproximationAlert/>
+
                                 <div class="grid grid-cols-4 gap-4">
                                     {[{
                                         cardText: "Word count",

@@ -822,7 +822,11 @@ export default class ProfilesGraphChart extends React.Component{
                                                                                                                             </p>*/}
                                                                   <a href={object.link ? object.link : "#"}>
                                                                     <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                                      <img class="rounded-circle me-1" width="24" height="24" src={object.picture ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) : default_user_icon} alt=""/>
+                                                                      <img class="rounded-circle me-1" width="24" height="24" src={object.picture 
+                                                                                                                                    ? (object.picture.backgroundImage
+                                                                                                                                        ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) 
+                                                                                                                                        : object.picture) 
+                                                                                                                                    : default_user_icon} alt=""/>
                                                                       {dbDataSanitizer.preSanitize(object.name)}
                                                                     </span>
                                                                   </a>

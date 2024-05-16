@@ -176,6 +176,17 @@ function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadge
 
 }
 
+export function DataApproximationAlert(props) {
+  return <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
+            <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+            </svg>
+            <div class="ms-3 text-sm font-medium">
+              The statistics and charts shown here are an approximation of the profile's real data.
+            </div>
+        </div>;
+}
+
 export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detected, highlightedKeywordBadgeColors){
 
   if (!htmlElement){
@@ -200,19 +211,26 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
       if (node.nodeType == Node.TEXT_NODE){
         // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){}
 
-        // checking first if this text node contains any keywords before proceding
-        var containsKeyword = false;
-        for (var keyword of keywords){
-          if (node.nodeValue.toLowerCase().indexOf(keyword) != -1){
-            containsKeyword = true;
-            break;
-          }
-        }
+        try{
 
-        if (containsKeyword){
-          var newNode = document.createElement('span');
-          newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
-          node.parentNode.replaceChild(newNode, node);
+          // checking first if this text node contains any keywords before proceding
+          var containsKeyword = false;
+          for (var keyword of keywords){
+            if (node.nodeValue.toLowerCase().indexOf(keyword) != -1){
+              containsKeyword = true;
+              break;
+            }
+          }
+
+          if (containsKeyword){
+            var newNode = document.createElement('span');
+            newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
+            node.parentNode.replaceChild(newNode, node);
+          }
+
+        }
+        catch(error){
+          console.log("Error : ", error);
         }
 
       }
@@ -250,11 +268,10 @@ function getProfilePublicViewMainHtmlElements(){
 
 export function getProfileViewMainHtmlElements(){
 
-  const mainHtmlElements = getProfilePublicViewMainHtmlElements();
-  if (mainHtmlElements.full_name){
-    return {htmlElements: mainHtmlElements, context: "not_auth"};
+  if (document.querySelector("main.scaffold-layout__main")){
+    return {htmlElements: getProfileAuthViewMainHtmlElements(), context: "auth"};
   }
-  return {htmlElements: getProfileAuthViewMainHtmlElements(), context: "auth"};
+  return {htmlElements: getProfilePublicViewMainHtmlElements(), context: "not_auth"};
 
 }
 
@@ -262,20 +279,20 @@ function getProfileAuthViewMainHtmlElements(){
 
   return {
     full_name: document.querySelector(".text-heading-xlarge"),
-    avatar: (document.querySelector(".pv-top-card-profile-picture__image")),
+    avatar: document.querySelector(".pv-top-card-profile-picture__image--show"),
     cover_image: document.querySelector(".cover-img__image"),
     location: document.querySelectorAll(".text-body-small")[3],
-    job_title: document.querySelector(".text-body-medium"),
-    followers: (document.querySelectorAll(".pv-top-card--list-bullet li")[0]).querySelector("span"),
-    connections: (document.querySelectorAll(".pv-top-card--list-bullet li")[1]).querySelector("span"),
-    featured_experience_education: document.querySelector('.pv-text-details__right-panel'),
-    about: document.getElementById('about').nextElementSibling.nextElementSibling,
-    education: document.getElementById('education').nextElementSibling.nextElementSibling.querySelector("ul"),
-    experience: document.getElementById('experience').nextElementSibling.nextElementSibling.querySelector("ul"),
-    languages: document.getElementById('languages').nextElementSibling.nextElementSibling,
-    certifications: document.getElementById('licenses_and_certifications').nextElementSibling.nextElementSibling,
+    job_title: document.querySelector("section .text-body-medium"),
+    followers: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[0]) : null,
+    connections: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[1]) : null,
+    featured_experience_education: document.querySelector("section.artdeco-card").querySelectorAll("ul")[0] /*document.querySelector('.pv-text-details__right-panel')*/,
+    about: document.getElementById('about'),
+    education: document.getElementById('education'),
+    experience: document.getElementById('experience'),
+    languages: document.getElementById('languages'),
+    certifications: document.getElementById('licenses_and_certifications'),
     projects: null,
-    suggestions: document.getElementById('browsemap_recommendation').nextElementSibling.nextElementSibling,
+    suggestions: document.getElementById('browsemap_recommendation'),
     activity: null,
   };
 
@@ -398,7 +415,7 @@ export const DataExtractor = {
 
       if (featuredExperienceEntityTagContainer){
         return {
-          name: (featuredExperienceEntityTagContainer.querySelector("span") ? featuredExperienceEntityTagContainer.querySelector("span").textContent : null),
+          name: featuredExperienceEntityTagContainer.textContent,
           logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
           link: null,
         };
@@ -444,7 +461,7 @@ export const DataExtractor = {
 
       if (featuredEducationEntityTagContainer){
         return {
-          name: (featuredEducationEntityTagContainer.querySelector("span") ? featuredEducationEntityTagContainer.querySelector("span").textContent : null),
+          name: featuredEducationEntityTagContainer.textContent,
           logo: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
           link: null,
         };
@@ -481,6 +498,7 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
+      htmlElements.about = htmlElements.about.nextElementSibling.nextElementSibling;
       return htmlElements.about.querySelector(".visually-hidden").previousElementSibling.textContent;
     }
 
@@ -519,17 +537,25 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
+      htmlElements.education = htmlElements.education.nextElementSibling.nextElementSibling;
+
       var educationData = [];
 
       Array.from(htmlElements.education.querySelectorAll("li.artdeco-list__item")).forEach((educationLiTag) => {
 
         var education = {
           entity:{
-            name: (educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+            name: (educationLiTag.querySelectorAll(".visually-hidden")[0] && educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                    ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                    : null),
             url: null,
           }, 
-          title: (educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
-          period: (educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          title: (educationLiTag.querySelectorAll(".visually-hidden")[1] && educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
+                    ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
+                    : null),
+          period: (educationLiTag.querySelectorAll(".visually-hidden")[2] && educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
+                    ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
+                    : null),
           description: (educationLiTag.querySelectorAll(".visually-hidden")[3] ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
         };
 
@@ -569,12 +595,18 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
+      htmlElements.languages = htmlElements.languages.nextElementSibling.nextElementSibling;
+
       var languageData = [];
 
       Array.from(htmlElements.languages.querySelectorAll("li.artdeco-list__item")).forEach((languageLiTag) => {
         var language = {
-          name: (languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
-          proficiency: (languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+          name: (languageLiTag.querySelectorAll(".visually-hidden")[0] && languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                  ? languageLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                  : null),
+          proficiency: (languageLiTag.querySelectorAll(".visually-hidden")[1] && languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
+                          ? languageLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
+                          : null),
         };
         languageData.push(language);
       });
@@ -643,19 +675,25 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
+      htmlElements.experience = htmlElements.experience.nextElementSibling.nextElementSibling;
+
       var experienceData = [];
 
-      Array.from(experienceSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
+      Array.from(htmlElements.experience.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
         
         var experienceItem = {};
         if (experienceLiTag.querySelector("ul")){
 
-          var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null);
+          var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                                                ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                                                : null);
 
           Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
             positionLiTag = positionLiTag.parentElement;
             var experienceItem = {
-              title: (positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+              title: (positionLiTag.querySelectorAll(".visually-hidden")[0] && positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                        ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                        : null),
               entity: {
                 name: featuredExperienceEntityName,
                 url: null,
@@ -671,9 +709,13 @@ export const DataExtractor = {
         else{
 
           experienceItem = {
-            title: (experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+            title: (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                      ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                      : null),
             entity: {
-              name: (experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+              name: (experienceLiTag.querySelectorAll(".visually-hidden")[1] && experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
+                      ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
+                      : null),
               url: null,
             },
             period: (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
@@ -759,16 +801,24 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
+      htmlElements.certifications = htmlElements.certifications.nextElementSibling.nextElementSibling;
+
       var certificationData = [];
 
-      Array.from(certificationSectionTag.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
+      Array.from(htmlElements.certifications.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
         var certification = {
-          title: (certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          title: (certificationLiTag.querySelectorAll(".visually-hidden")[0] && certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                    ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                    : null),
           entity: {
-            name: (certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent : null),
+            name: (certificationLiTag.querySelectorAll(".visually-hidden")[1] && certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
+                    ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
+                    : null),
             url: null,
           }, 
-          period: (certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          period: (certificationLiTag.querySelectorAll(".visually-hidden")[2] && certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
+                    ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
+                    : null),
           // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
@@ -846,15 +896,21 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
+      htmlElements.suggestions = htmlElements.suggestions.nextElementSibling.nextElementSibling;
+
       var profileSuggestions = [];
 
       Array.from(htmlElements.suggestions.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
         var profileSuggestion = {
-          name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent : null),
+          name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0] && suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+                  ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
+                  : null),
           location: null, // (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-          link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href : null),        
+          link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href.split("?")[0] : null),        
           picture: (suggestionLiTag.querySelector("img") ? suggestionLiTag.querySelector("img").src : null),
-          title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent : null),
+          title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2] && suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
+                    ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
+                    : null),
         };
         profileSuggestions.push(profileSuggestion);
       });

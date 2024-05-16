@@ -32,6 +32,7 @@ import {
   appParams, 
   removeObjectsId,
 } from "./Local_library";
+import Dexie from 'dexie';
 
 export default class About extends React.Component{
 
@@ -47,10 +48,26 @@ export default class About extends React.Component{
 
     this.resetDb = this.resetDb.bind(this);
     this.handleAlertViewShow = this.handleAlertViewShow.bind(this);
+    this.setFormFileElement = this.setFormFileElement.bind(this);
+    this.onImportDataClicked = this.onImportDataClicked.bind(this);
+    this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
 
   }
 
   componentDidMount() {
+
+    // checking first if a database already exists
+    Dexie.exists(appParams.appDbName).then((function (exists) {
+        if (exists) {
+            this.setState({opDone: true, processing: false});
+            return;
+        }
+        this.setFormFileElement();
+    }).bind(this));
+
+  }
+
+  setFormFileElement(){
 
     // listening for an input change event
     const formFileElement = document.getElementById("formFile");
@@ -161,44 +178,68 @@ export default class About extends React.Component{
 
   onNewInstanceClicked(){
 
-    // Send message to the background
-    this.setState({processing: true}, () => {
+    Dexie.exists(appParams.appDbName).then((function (exists) {
+        if (exists) {
+            this.handleAlertViewShow("A previous database already exists!", "danger");
+            return;
+        }
 
-      db.open().then((async function (db) {
-      
-        // Database opened successfully
-        // Initializing the db with settings data
-        const id = await db.settings.add({
-            notifications: true,
-            lastDataResetDate: new Date().toISOString(),
-            installedOn: new Date().toISOString(),
-            productID: uuidv4(), 
-            userIcon: "default",
-            outdatedProfileReminder: "> 1 year",
-            maxTimeAlarm: "1 hour",
-            autoTabOpening: true,
-        });
+        openNewDb();
 
-        localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
+    }).bind(this));
 
-        this.setState({opDone: true, processing: false});
+    function openNewDb(){
 
-      }).bind(this)).catch ((function (err) {
+      // Send message to the background
+      this.setState({processing: true}, () => {
 
-        // Error occurred
-        this.setState({processing: false});
-        this.handleAlertViewShow("Failed to initialized the app. Try again later!", "danger");
-      
-      }).bind(this));
+        db.open().then((async function (db) {
+        
+          // Database opened successfully
+          // Initializing the db with settings data
+          const id = await db.settings.add({
+              notifications: true,
+              lastDataResetDate: new Date().toISOString(),
+              installedOn: new Date().toISOString(),
+              productID: uuidv4(), 
+              userIcon: "default",
+              outdatedProfileReminder: "> 1 year",
+              maxTimeAlarm: "1 hour",
+              autoTabOpening: true,
+          });
 
-    });
+          localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
+
+          this.setState({opDone: true, processing: false});
+
+        }).bind(this)).catch ((function (err) {
+
+          // Error occurred
+          this.setState({processing: false});
+          this.handleAlertViewShow("Failed to initialized the app. Try again later!", "danger");
+        
+        }).bind(this));
+
+      });
+
+    }
+
+    openNewDb = openNewDb.bind(this);
 
   }
 
   onImportDataClicked(){
 
-    const formFileElement = document.getElementById("formFile");
-    formFileElement.click();
+    Dexie.exists(appParams.appDbName).then((function (exists) {
+        if (exists) {
+            this.handleAlertViewShow("A previous database already exists!", "danger");
+            return;
+        }
+
+        const formFileElement = document.getElementById("formFile");
+        formFileElement.click();
+
+    }).bind(this));
 
   }
 

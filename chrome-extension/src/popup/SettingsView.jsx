@@ -514,9 +514,8 @@ export default class SettingsView extends React.Component{
                                     </OverlayTrigger>}
                   { this.state.usageQuota && <OverlayTrigger
                                       placement="top"
-                                      overlay={<Tooltip id="tooltip2">{this.state.usageQuota.percentage}%({this.state.usageQuota.size}Mb) used</Tooltip>}
+                                      overlay={<Tooltip id="tooltip2">{this.state.usageQuota.size}Mb | {this.state.usageQuota.percentage}% used</Tooltip>}
                                     >
-                                      {/*<ProgressBar now={60} class="me-2" style={{width:"30px", height:"7px"}}/>*/}
                                       <div style={{width:"30px", height:"7px"}} class="progress me-2 shadow" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
                                         <div class="progress-bar rounded" style={{width: this.state.usageQuota.percentage+"%"}}></div>
                                       </div>

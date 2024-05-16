@@ -111,7 +111,7 @@ export default class ProfilesGeoMapChart extends React.Component{
     }
 
     // processing all the passed profiles' locations
-    var locations = {};
+    var locations = [];
     for (var profile of this.props.objects){
 
       var location = profile.location ? profile.location : "", 
@@ -122,47 +122,31 @@ export default class ProfilesGeoMapChart extends React.Component{
 
         if (location){
 
-          location = dbDataSanitizer.preSanitize(location);
+          location = dbDataSanitizer.location(location);
 
-          if (location.indexOf(",") != -1){
-            location = location.split(",");
-            location = dbDataSanitizer.preSanitize(location[location.length - 1]);
-          }
-          location = location.replace("Republic of the ", "")
-                             .replace("Republic of ", "")
-                             .replace("Republic", "") 
-                             .replace("République", ""); 
-
-          switch(location.toLowerCase()){
-            case "états-unis":{
-              location += " d'Amérique";
-              break;
-            }
-          }
-
+          // if the term for the country is in french instead of english, then I look for the corresponding english term
           for (var countryObject of countriesNaming){
-            if (countryObject.frenchShortName.toLowerCase().indexOf(location.toLowerCase()) != -1){
-              location = countryObject.englishShortName.replace(" (the)", "");
+
+            if (countryObject.frenchShortName
+                             .slice(0, countryObject.frenchShortName.indexOf(" ("))
+                             .toLowerCase() == location.toLowerCase()){
+              location = countryObject.englishShortName.indexOf(" (the") != -1 
+                          ? countryObject.englishShortName.slice(0, countryObject.englishShortName.indexOf(" (the"))
+                          : countryObject.englishShortName;
               break;
             }
           }
 
-          // var idx = countriesNaming.map(e => e.frenchShortName.slice(0, e.frenchShortName.indexOf(" (")).toLowerCase()).indexOf(location.toLowerCase());
-          // if (idx != -1){
-          //   location = countriesNaming[idx].englishShortName.replace(" (the)", "");
-          // }
-
-          var keys = Object.keys(locations);
-          var index = keys.indexOf(location);
-
-          // console.log("eeeeeeeeeeeeeeeeeeeee 3 :", location, index);
-
+          const index = locations.map(i => i.label).indexOf(location);
           if (index == -1){
-            locations[location] = [profile];
+            locations.push({
+              label: location,
+              profiles: [profile],
+            });
           }
           else{
-            if (locations[location].map(e => e.url).indexOf(profile.url) == -1){
-              locations[location].push(profile);
+            if (locations[index].profiles.map(e => e.url).indexOf(profile.url) == -1){
+              locations[index].profiles.push(profile);
             }
           }
 
@@ -196,10 +180,11 @@ export default class ProfilesGeoMapChart extends React.Component{
     }
 
     // definitively set the value of the locationsData variable
+    const labels = locations.map(i => i.label);
     for (var object of chartCountries){
-      var index = Object.keys(locations).indexOf(object.properties.name);
+      const index = labels.indexOf(object.properties.name);
       if (index != -1){
-        locationsData[object.properties.name] = locations[object.properties.name];
+        locationsData[object.properties.name] = locations[index].profiles;
       }
     }
 
