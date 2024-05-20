@@ -22,87 +22,76 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import KeywordListView from "./widgets/KeywordListView";
+import TagListView from "./widgets/TagListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
-  setGlobalDataKeywords,
+  setGlobalDataTags,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
 import { CheckIcon } from  "./widgets/SVGs";
 
-export default class KeywordView extends React.Component{
+export default class TagView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      keyword: "",
+      tag: "",
       processing: false,
       alertBadgeContent: "",
     };
 
-    this.handleKeywordInputChange = this.handleKeywordInputChange.bind(this);
-    this.addKeyword = this.addKeyword.bind(this);
-    this.deleteKeyword = this.deleteKeyword.bind(this);
-    this.checkInputKeyword = this.checkInputKeyword.bind(this);
+    this.handleTagInputChange = this.handleTagInputChange.bind(this);
+    this.addTag = this.addTag.bind(this);
+    this.deleteTag = this.deleteTag.bind(this);
+    this.checkInputTag = this.checkInputTag.bind(this);
   }
 
   componentDidMount() {
 
-    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS);
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.TAGS);
 
-    if (!this.props.globalData.keywordList){
+    if (!this.props.globalData.tagList){
 
-      setGlobalDataKeywords(db, eventBus, liveQuery);
+      setGlobalDataTags(db, eventBus, liveQuery);
 
     }
 
   }
 
-  // Function for initiating the insertion of a keyword
-  addKeyword(){
+  // Function for initiating the insertion of a tag
+  addTag(){
 
     var message = null;
 
-    if (this.state.keyword == ""){
+    if (this.state.tag == ""){
       return;
     }
 
-    message = "The keyword should consist of only one word !";
-    if (this.state.keyword.indexOf(" ") != -1){
+    message = "The tag should consist of only one word !";
+    if (this.state.tag.indexOf(" ") != -1){
       alert(message);
       return;
     }
 
-    // is it contained in an already-saved keyword
-    message = "The given keyword is contained in or contains a keyword you've already saved !";
-    for (var keywordObject of this.props.globalData.keywordList){
-      if (keywordObject.name.toLowerCase().indexOf(this.state.keyword.toLowerCase()) != -1
-          || this.state.keyword.toLowerCase().indexOf(keywordObject.name.toLowerCase()) != -1){
-        alert(message);
-        return;
-      }
-
-    }
-
-    if (!this.checkInputKeyword()){
+    if (!this.checkInputTag()){
       console.log("Check of input returned false");
       return;
     }
 
-    // Displaying the spinner and cleaning the keyword input
+    // Displaying the spinner and cleaning the tag input
     this.setState({processing: true}, () => {
       
       (async () => {
 
-        await db.keywords.add({
-                                name: this.state.keyword,
+        await db.tags.add({
+                                name: this.state.tag,
                                 createdOn: (new Date()).toISOString(),
                               });
 
-        this.setState({processing: false, keyword: "", alertBadgeContent: "Added !"}, () => {
+        this.setState({processing: false, tag: "", alertBadgeContent: "Added !"}, () => {
 
           // Setting a timeout for the alertBadge to disappear
           setTimeout(() => {
@@ -120,23 +109,17 @@ export default class KeywordView extends React.Component{
 
   handleKeyDown = (e) => {
     if (e.key === 'Enter') {
-      this.addKeyword();
+      this.addTag();
     }
   }
 
-  checkInputKeyword(){
-
-    // Enforcing the limit constraint on the list length
-    if (this.props.globalData.keywordList.length == appParams.keywordCountLimit){
-      alert("You can not add more than " + appParams.keywordCountLimit + " keywords !");
-      return false;
-    }
+  checkInputTag(){
 
     // Making sure that there's no duplicates
-    for (let keyword of this.props.globalData.keywordList){
+    for (let tag of this.props.globalData.tagList){
       
-      if (keyword.name === this.state.keyword){
-        alert("Duplicated keywords are not allowed !");
+      if (tag.name === this.state.tag){
+        alert("Duplicated tags are not allowed !");
         return false;
       }
 
@@ -145,15 +128,15 @@ export default class KeywordView extends React.Component{
     return true;
   }
 
-  deleteKeyword(keyword){
+  deleteTag(tag){
 
     this.setState({processing: true}, () => {
 
       (async () => {
 
-        await db.keywords.delete(keyword.id);
+        await db.tags.delete(tag.id);
 
-        this.setState({processing: false, keyword: "", alertBadgeContent: "Deleted !"}, () => {
+        this.setState({processing: false, tag: "", alertBadgeContent: "Deleted !"}, () => {
 
           // Setting a timeout for the alertBadge to disappear
           setTimeout(() => {
@@ -169,8 +152,8 @@ export default class KeywordView extends React.Component{
 
   }
 
-  handleKeywordInputChange(event) {
-    this.setState({keyword: event.target.value});
+  handleTagInputChange(event) {
+    this.setState({tag: event.target.value});
   }
 
   render(){
@@ -180,7 +163,7 @@ export default class KeywordView extends React.Component{
         <div class="p-3">
           <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
 
-          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS}/>
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.TAGS}/>
 
           <div class="clearfix">
             <div class={"spinner-grow float-end spinner-grow-sm text-secondary " + (this.state.processing ? "" : "d-none")} role="status">
@@ -195,17 +178,17 @@ export default class KeywordView extends React.Component{
           </div>
           <div class="mt-3">
             <div class="input-group mb-3 shadow">
-              <input onKeyDown={this.handleKeyDown} type="text" class="form-control" placeholder="New keyword" aria-describedby="basic-addon2" value={this.state.keyword} onChange={this.handleKeywordInputChange}/>
-              <span class="input-group-text handy-cursor" id="basic-addon2" onClick={this.addKeyword}>
+              <input onKeyDown={this.handleKeyDown} type="text" class="form-control" placeholder="New tag" aria-describedby="basic-addon2" value={this.state.tag} onChange={this.handleTagInputChange}/>
+              <span class="input-group-text handy-cursor" id="basic-addon2" onClick={this.addTag}>
                 <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-muted"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
               </span>
             </div>
             
-            {/* Keyword list view */}
+            {/* tag list view */}
 
-            <KeywordListView 
-              objects={this.props.globalData.keywordList} 
-              deleteKeyword={this.deleteKeyword} />
+            <TagListView 
+              objects={this.props.globalData.tagList} 
+              deleteTag={this.deleteTag} />
 
           </div>
         </div>

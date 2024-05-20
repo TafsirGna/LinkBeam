@@ -56,7 +56,7 @@ export default class ExtensionMarkerView extends React.Component{
                 height="20" 
                 width="20"
                 onClick={this.props.onClick}
-                class="ms-auto handy-cursor"
+                class="ms-auto handy-cursor me-3"
                 /*title="Click to see analysis"*//>
           </Popover>
         </div>

@@ -31,6 +31,8 @@ import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
 import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
+import TagView from "./popup/TagView";
+import FoldersSettingsView from "./popup/FoldersSettingsView";
 import FolderView from "./popup/FolderView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
@@ -53,6 +55,8 @@ export default class App extends React.Component{
       currentPageTitle: null,
       globalData: {
         keywordList: null,
+        folderList: null,
+        tagList: null,
         bookmarkList: null,
         reminderList: null,
         todayReminderList: null,
@@ -150,6 +154,30 @@ export default class App extends React.Component{
           break;
         }
 
+        case "folderList":{
+          this.foldersSubscription = subscription.subscribe(
+            result => this.setState(prevState => {
+                                      let globalData = Object.assign({}, prevState.globalData);
+                                      globalData[data.property] = result;
+                                      return { globalData };
+                                    }),
+            error => this.setState({error})
+          );
+          break;
+        }
+
+        case "tagList":{
+          this.tagsSubscription = subscription.subscribe(
+            result => this.setState(prevState => {
+                                      let globalData = Object.assign({}, prevState.globalData);
+                                      globalData[data.property] = result;
+                                      return { globalData };
+                                    }),
+            error => this.setState({error})
+          );
+          break;
+        }
+
       }
 
     })
@@ -172,6 +200,16 @@ export default class App extends React.Component{
     if (this.keywordsSubscription) {
       this.keywordsSubscription.unsubscribe();
       this.keywordsSubscription = null;
+    }
+
+    if (this.tagsSubscription) {
+      this.tagsSubscription.unsubscribe();
+      this.tagsSubscription = null;
+    }
+
+    if (this.foldersSubscription) {
+      this.foldersSubscription.unsubscribe();
+      this.foldersSubscription = null;
     }
 
   }
@@ -207,6 +245,14 @@ export default class App extends React.Component{
         {/*Keywords Page */}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS 
             && <KeywordView globalData={this.state.globalData} />}
+
+        {/*Tags Page */}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.TAGS
+            && <TagView globalData={this.state.globalData} />}
+
+        {/*Folders Settings Page */}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FOLDERS_SETTINGS
+            && <FoldersSettingsView globalData={this.state.globalData} />}
 
         {/*Folders Page */}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FOLDERS 

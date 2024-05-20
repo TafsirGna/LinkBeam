@@ -107,12 +107,12 @@ export default class AggregatedVisitListView extends React.Component{
                                         groupVisitsByProfile(this.props.object.list).map((visit) => (<>
                                             { Object.hasOwn(visit, "feedItemsMetrics") 
                                               && <FeedVisitListItemView 
-                                                object={visit} 
-                                                parentList="aggregated" />}
+                                                    object={visit} 
+                                                    parentList="aggregated" />}
                                             { Object.hasOwn(visit, "profileData")
                                               && <ProfileVisitListItemView 
-                                                object={visit} 
-                                                parentList="aggregated"/> }
+                                                    object={visit} 
+                                                    parentList="aggregated"/> }
                                           </>))
                                       }
                                   </div>}

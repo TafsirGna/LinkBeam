@@ -27,6 +27,7 @@ import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
 import ReminderModal from "./modals/ReminderModal";
 import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
+import FolderPickModal from "./modals/FolderPickModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
@@ -43,6 +44,7 @@ export default class ProfileView extends React.Component{
       visitsChartModalShow: false,
       toastMessage: "",
       allProfiles: null,
+      folderPickModalShow: false,
     };
 
     this.toggleBookmarkStatus = this.toggleBookmarkStatus.bind(this);
@@ -88,6 +90,9 @@ export default class ProfileView extends React.Component{
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
+
+  handleFolderPickModalClose = () => this.setState({folderPickModalShow: false});
+  handleFolderPickModalShow = () => this.setState({folderPickModalShow: true});
 
   handleVisitsChartModalClose = () => this.setState({visitsChartModalShow: false});
   handleVisitsChartModalShow = () => this.setState({visitsChartModalShow: true});
@@ -172,12 +177,14 @@ export default class ProfileView extends React.Component{
               <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }</a></li>
               <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
               <li><a class="dropdown-item small" href="#" onClick={this.handleVisitsChartModalShow}>Chart visits</a></li>
+              <li><a class="dropdown-item small" href="#" onClick={this.handleFolderPickModalShow}>Move to folder</a></li>
             </ul>
           </div>
         </div>          
 
         <ProfileViewHeader 
           profile={this.props.profile} 
+          globalData={this.props.globalData}
           localDataObject={{profiles: this.state.allProfiles}}/>
 
         <ProfileViewBody 
@@ -199,6 +206,12 @@ export default class ProfileView extends React.Component{
           message={this.state.toastMessage} 
           show={this.state.toastShow} 
           onClose={this.toggleToastShow} />
+
+
+        <FolderPickModal
+          globalData={this.props.globalData}
+          show={this.state.folderPickModalShow} 
+          onHide={this.handleFolderPickModalClose}/>
 
       </>
     );  

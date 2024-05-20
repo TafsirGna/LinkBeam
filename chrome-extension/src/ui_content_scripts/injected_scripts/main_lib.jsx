@@ -31,6 +31,20 @@ import {
     breakHtmlElTextContentByKeywords,
 } from "../../popup/Local_library";
 
+const termLanguageVariants = {
+
+  followers: {
+    // fr: "",
+    en: "followers",
+  },
+
+  connections: {
+    // fr: "",
+    en: "connections",
+  },
+
+};
+
 export class ScriptAgentBase {
 
   static EXTRACTION_PROCESS_INTERVAL_TIME = 3000;
@@ -47,6 +61,10 @@ export class ScriptAgentBase {
 
 		// Starting listening to different messages
 		this.startMessageListener();
+
+    // window.onload = (function () { 
+
+    // }).bind(this);
 
 	}
 
@@ -193,6 +211,45 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
     return;
   }
 
+  passThroughHtmlElement(htmlElement, processNode);
+
+  function processNode(node){
+
+    if (node.nodeType == Node.TEXT_NODE){
+      // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){}
+
+      try{
+
+        // checking first if this text node contains any keywords before proceding
+        var containsKeyword = false;
+        for (var keyword of keywords){
+          if (node.nodeValue.toLowerCase().indexOf(keyword) != -1){
+            containsKeyword = true;
+            break;
+          }
+        }
+
+        if (containsKeyword){
+          var newNode = document.createElement('span');
+          newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
+          node.parentNode.replaceChild(newNode, node);
+        }
+
+      }
+      catch(error){
+        console.log("Error : ", error);
+      }
+
+    }
+
+    return null;
+
+  }
+
+}
+
+function passThroughHtmlElement(htmlElement, callback){
+
   var pipe = [...htmlElement.childNodes];
   while (pipe.length){
     var node = pipe.shift();
@@ -208,35 +265,45 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
       pipe = [...children].concat(pipe);
     }
     else{ // leaf node
-      if (node.nodeType == Node.TEXT_NODE){
-        // if (keywords.indexOf(node.nodeValue.toLowerCase()) != -1 && node.parentNode){}
-
-        try{
-
-          // checking first if this text node contains any keywords before proceding
-          var containsKeyword = false;
-          for (var keyword of keywords){
-            if (node.nodeValue.toLowerCase().indexOf(keyword) != -1){
-              containsKeyword = true;
-              break;
-            }
-          }
-
-          if (containsKeyword){
-            var newNode = document.createElement('span');
-            newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
-            node.parentNode.replaceChild(newNode, node);
-          }
-
-        }
-        catch(error){
-          console.log("Error : ", error);
-        }
-
+      if (callback(node)){
+        break;
       }
     }
 
   } 
+
+}
+
+function retrieveHtmlElement(parentHtml, object){
+
+  passThroughHtmlElement(parentHtml, processNode);
+
+  function processNode(node){
+
+    if (["followers", "connections"].indexOf(object.title) != -1){
+
+      if (node.nodeType == Node.TEXT_NODE){
+
+        if (node.nodeValue.indexOf(object.title) != -1){
+          object.htmlEl = node.parentNode;
+          return object.htmlEl;
+        }
+
+      }
+
+    }
+
+    // switch(title){
+
+    //   case "followers":{
+    //     break;
+    //   }
+
+    // }
+
+    return null;
+
+  }
 
 }
 
@@ -266,12 +333,22 @@ function getProfilePublicViewMainHtmlElements(){
 
 }
 
-export function getProfileViewMainHtmlElements(){
+export async function getProfileViewMainHtmlElements(){
 
-  if (document.querySelector("main.scaffold-layout__main")){
-    return {htmlElements: getProfileAuthViewMainHtmlElements(), context: "auth"};
+  var result = null;
+  while (!result){
+
+    await new Promise(r => setTimeout(r, 3000));
+
+    result = document.querySelector("main.scaffold-layout__main") 
+              ? {htmlElements: getProfileAuthViewMainHtmlElements(), context: "auth"}
+              : document.querySelector("section.profile")
+                ? {htmlElements: getProfilePublicViewMainHtmlElements(), context: "not_auth"}
+                : null;
+
   }
-  return {htmlElements: getProfilePublicViewMainHtmlElements(), context: "not_auth"};
+
+  return result;
 
 }
 
@@ -286,13 +363,13 @@ function getProfileAuthViewMainHtmlElements(){
     followers: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[0]) : null,
     connections: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[1]) : null,
     featured_experience_education: document.querySelector("section.artdeco-card").querySelectorAll("ul")[0] /*document.querySelector('.pv-text-details__right-panel')*/,
-    about: document.getElementById('about'),
-    education: document.getElementById('education'),
-    experience: document.getElementById('experience'),
-    languages: document.getElementById('languages'),
-    certifications: document.getElementById('licenses_and_certifications'),
+    about: document.getElementById('about') ? document.getElementById('about').nextElementSibling.nextElementSibling : null,
+    education: document.getElementById('education') ? document.getElementById('education').nextElementSibling.nextElementSibling : null,
+    experience: document.getElementById('experience') ? document.getElementById('experience').nextElementSibling.nextElementSibling : null,
+    languages: document.getElementById('languages') ? document.getElementById('languages').nextElementSibling.nextElementSibling : null,
+    certifications: document.getElementById('licenses_and_certifications') ? document.getElementById('licenses_and_certifications').nextElementSibling.nextElementSibling : null,
     projects: null,
-    suggestions: document.getElementById('browsemap_recommendation'),
+    suggestions: document.getElementById('browsemap_recommendation') ? document.getElementById('browsemap_recommendation').nextElementSibling.nextElementSibling : null,
     activity: null,
   };
 
@@ -498,7 +575,6 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-      htmlElements.about = htmlElements.about.nextElementSibling.nextElementSibling;
       return htmlElements.about.querySelector(".visually-hidden").previousElementSibling.textContent;
     }
 
@@ -536,8 +612,6 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-
-      htmlElements.education = htmlElements.education.nextElementSibling.nextElementSibling;
 
       var educationData = [];
 
@@ -594,8 +668,6 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-
-      htmlElements.languages = htmlElements.languages.nextElementSibling.nextElementSibling;
 
       var languageData = [];
 
@@ -675,8 +747,6 @@ export const DataExtractor = {
 
     function extractAuthData(){
 
-      htmlElements.experience = htmlElements.experience.nextElementSibling.nextElementSibling;
-
       var experienceData = [];
 
       Array.from(htmlElements.experience.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
@@ -750,7 +820,7 @@ export const DataExtractor = {
         var article = {
           link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
           picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
-          title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").innerHTML : null),        
+          title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").textContent : null),        
           action: (activityLiTag.querySelector(".base-main-card__subtitle") ? activityLiTag.querySelector(".base-main-card__subtitle").textContent : null),
         };
         activityData.push(article);
@@ -800,8 +870,6 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-
-      htmlElements.certifications = htmlElements.certifications.nextElementSibling.nextElementSibling;
 
       var certificationData = [];
 
@@ -895,8 +963,6 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-
-      htmlElements.suggestions = htmlElements.suggestions.nextElementSibling.nextElementSibling;
 
       var profileSuggestions = [];
 

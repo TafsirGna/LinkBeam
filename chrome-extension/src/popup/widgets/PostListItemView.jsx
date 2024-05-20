@@ -114,7 +114,7 @@ export default class PostListItemView extends React.Component{
     this.setState({updated: true}, () => {
       setTimeout(() => {
         this.setState({updated: false});
-      }, appParams.TIMER_VALUE)
+      }, appParams.TIMER_VALUE_1)
     });
   }
 

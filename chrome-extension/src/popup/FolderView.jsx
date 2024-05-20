@@ -23,19 +23,25 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
+import ProfileListItemView from "./widgets/ProfileListItemView";
 import { 
   saveCurrentPageTitle, 
   appParams,
+  setGlobalDataFolders,
+  setFolderProfiles,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
 import Accordion from 'react-bootstrap/Accordion';
+import { AlertCircleIcon } from "./widgets/SVGs";
+import { liveQuery } from "dexie";
 
 export default class FolderView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      folderList: null,
     };
     
   }
@@ -45,11 +51,26 @@ export default class FolderView extends React.Component{
     // Saving the current page title
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.FOLDERS);
 
-    // if (!this.props.globalData.reminderList){
+    if (!this.props.globalData.folderList){
+      setGlobalDataFolders(db, eventBus, liveQuery);
+    }
+    else{
+      (async () => {
+        this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList)});
+      }).bind(this)();
+    }
 
-    //   setGlobalDataReminders(db, eventBus);
+  }
 
-    // }
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.folderList != this.props.globalData.folderList){
+        (async () => {
+          this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList)});
+        }).bind(this)();
+      }
+    }
 
   }
 
@@ -63,20 +84,41 @@ export default class FolderView extends React.Component{
 
           <div class="mt-3">
 
-            <Accordion /*defaultActiveKey="0"*/>
-              <Accordion.Item eventKey="0">
-                <Accordion.Header>Folder #1</Accordion.Header>
-                <Accordion.Body>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-                  minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                  aliquip ex ea commodo consequat. Duis aute irure dolor in
-                  reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum.
-                </Accordion.Body>
-              </Accordion.Item>
-              <Accordion.Item eventKey="1">
+            { (!this.state.folderList 
+                  || (this.state.folderList && this.state.folderList.length == 0))
+                && <div class="text-center m-5 mt-4">
+                      <AlertCircleIcon size="100" className="text-muted"/>
+                      <p><span class="badge text-bg-primary fst-italic shadow">No folders yet</span></p>
+                    </div> }
+
+              { this.state.folderList 
+                && this.state.folderList.length != 0
+                && <Accordion/*defaultActiveKey="0"*/ className="shadow">
+                    { this.state.folderList.map(folder => (<Accordion.Item eventKey={folder.id}>
+                                                              <Accordion.Header>
+                                                                {folder.name}
+                                                                <span 
+                                                                  class="badge text-bg-primary ms-2 shadow py-1"
+                                                                  title={`${!folder.profiles ? 0 : folder.profiles.length} profiles`}>
+                                                                  {!folder.profiles ? 0 : folder.profiles.length}
+                                                                </span>
+                                                              </Accordion.Header>
+                                                              <Accordion.Body>
+                                                                
+                                                                { !folder.profiles 
+                                                                    && <div class="text-center m-5 mt-4">
+                                                                        <AlertCircleIcon size="100" className="text-muted"/>
+                                                                        <p><span class="badge text-bg-primary fst-italic shadow">No profiles in '{folder.name}' folder yet</span></p>
+                                                                      </div> }
+
+                                                                { folder.profiles
+                                                                    && folder.profiles.map(profile => (<ProfileListItemView profile={profile}/>)) }
+
+                                                              </Accordion.Body>
+                                                            </Accordion.Item>))}
+                </Accordion>}
+
+              {/*<Accordion.Item eventKey="1">
                 <Accordion.Header>Folder #2</Accordion.Header>
                 <Accordion.Body>
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
@@ -87,8 +129,7 @@ export default class FolderView extends React.Component{
                   pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
                   culpa qui officia deserunt mollit anim id est laborum.
                 </Accordion.Body>
-              </Accordion.Item>
-            </Accordion>
+              </Accordion.Item>*/}
 
           </div>
         </div>

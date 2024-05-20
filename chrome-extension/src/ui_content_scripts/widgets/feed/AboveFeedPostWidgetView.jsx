@@ -53,6 +53,7 @@ import {
 } from "flowbite-react";
 import ReactDOM from 'react-dom/client';
 import styles from "../../styles.min.css";
+import FeedPostViewsChartModal from "./FeedPostViewsChartModal";
 
 const freshReminder = () => {
 
@@ -445,7 +446,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   }, () => {
                     setTimeout(() => {
                       this.setState({updated: false});
-                    }, appParams.TIMER_VALUE);
+                    }, appParams.TIMER_VALUE_1);
                   });
                 }
 
@@ -467,7 +468,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   }, () => {
                     setTimeout(() => {
                       this.setState({updated: false});
-                    }, appParams.TIMER_VALUE);
+                    }, appParams.TIMER_VALUE_1);
                   });
                 }
 
@@ -684,13 +685,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     </div>
                     
                     <div class="flex ml-auto">
-                      {/*<button onClick={() => {}} type="button" class="text-white bg-blue-800 hover:bg-blue-900 focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        <svg class="-ml-0.5 mr-2 h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 14">
-                          <path d="M10 0C4.612 0 0 5.336 0 7c0 1.742 3.546 7 10 7 6.454 0 10-5.258 10-7 0-1.664-4.612-7-10-7Zm0 10a3 3 0 1 1 0-6 3 3 0 0 1 0 6Z"></path>
-                        </svg>
-                        
-                        {this.state.commentsCount != null && <span class="ml-1">{"("+this.state.commentsCount+")"}</span>}
-                      </button>*/}
         
                       {/*{ this.state.timerDisplay 
                           && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
@@ -749,7 +743,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                   </span>
                                 }>
                                 { !isLinkedinFeedPostPage(window.location.href) 
-                                    && <Popover
+                                    && /*<Popover
                                           aria-labelledby="default-popover"
                                           content={
                                             <div className="w-64 text-lg text-gray-500 dark:text-gray-400">
@@ -760,11 +754,16 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           }
                                           arrow={false}
                                           trigger="hover"
+                                          placement="left">*/
+                                        <Tooltip 
+                                          content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
                                           placement="left">
                                           <Dropdown.Item>
                                             Timer
                                           </Dropdown.Item>
-                                        </Popover>}
+                                        </Tooltip>
+                                        /*</Popover> */
+                                      }
                                 { Object.hasOwn(this.state.reminder, "id") 
                                     && <Dropdown.Item 
                                           onClick={this.handleReminderModalShow}
@@ -887,6 +886,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
                             </div>
                           </div> }
                 </div>}
+
+        { this.props.index == 0 
+            && <FeedPostViewsChartModal
+                  appSettings={this.props.appSettings}
+                  tabId={this.props.tabId}/> }
+
       </>
     );
   }

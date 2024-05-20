@@ -44,6 +44,8 @@ import { db } from "../db";
 const datePropertyNames = {
             bookmarks: "createdOn",
             keywords: "createdOn",
+            tags: "createdOn",
+            folders: "createdOn",
             reminders: "createdOn",
             visits: "date",
             feedPostViews: "date",
@@ -54,6 +56,8 @@ const betweenRange = (lower, upper, date) => {
 }
 
 const keywordCountObservable = liveQuery(() => db.keywords.count());
+const tagCountObservable = liveQuery(() => db.tags.count());
+const folderCountObservable = liveQuery(() => db.folders.count());
 
 export default class SettingsView extends React.Component{
   
@@ -61,7 +65,8 @@ export default class SettingsView extends React.Component{
     super(props);
     this.state = {
       keywordCount: 0,
-      reminderCount: 0,
+      tagCount: 0,
+      folderCount: 0,
       darkThemeCheckBoxValue: false,
       processingState: {
         status: "NO",
@@ -96,6 +101,16 @@ export default class SettingsView extends React.Component{
 
     this.keywordSubscription = keywordCountObservable.subscribe(
       result => this.setState({keywordCount: result}),
+      error => this.setState({error})
+    );
+
+    this.tagSubscription = tagCountObservable.subscribe(
+      result => this.setState({tagCount: result}),
+      error => this.setState({error})
+    );
+
+    this.folderSubscription = folderCountObservable.subscribe(
+      result => this.setState({folderCount: result}),
       error => this.setState({error})
     );
 
@@ -134,6 +149,16 @@ export default class SettingsView extends React.Component{
     if (this.keywordSubscription) {
       this.keywordSubscription.unsubscribe();
       this.keywordSubscription = null;
+    }
+
+    if (this.tagSubscription) {
+      this.tagSubscription.unsubscribe();
+      this.tagSubscription = null;
+    }
+
+    if (this.folderSubscription) {
+      this.folderSubscription.unsubscribe();
+      this.folderSubscription = null;
     }
 
   }
@@ -226,7 +251,7 @@ export default class SettingsView extends React.Component{
         // Setting a timer to reset all of this
         setTimeout(() => {
           this.setState({processingState: {status: "NO", info: ""}});
-        }, appParams.TIMER_VALUE);
+        }, appParams.TIMER_VALUE_1);
 
       }).bind(this)();
 
@@ -456,27 +481,41 @@ export default class SettingsView extends React.Component{
                     href="#" 
                     class="text-primary badge" 
                     title="Add new keyword"
-                    onClick={() => {switchToView(eventBus, "Keywords")}}>
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS)}}>
                       Add
                   </a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
-            {/*<div class="d-flex text-body-secondary pt-3">
+            <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Folders <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <strong class="text-gray-dark">Folders <span class="badge text-bg-primary ms-1 shadow">{this.state.folderCount}</span></strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 
                     title="Add new folder"
-                    onClick={() => {switchToView(eventBus, "Keywords")}}>
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.FOLDERS_SETTINGS)}}>
                       Add
                   </a>
                 </div>
               </div>
-            </div>*/}
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">Tags <span class="badge text-bg-primary ms-1 shadow">{this.state.tagCount}</span></strong>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="Add new tag"
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.TAGS)}}>
+                      Add
+                  </a>
+                </div>
+              </div>
+            </div>
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
@@ -485,7 +524,7 @@ export default class SettingsView extends React.Component{
                     href="#" 
                     class="text-primary badge" 
                     title="View My ID"
-                    onClick={() => {switchToView(eventBus, "MyAccount")}}>
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT)}}>
                       View
                   </a>
                 </div>
@@ -495,7 +534,7 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Export my data (csv)</strong>
+                  <strong class="text-gray-dark">Export my data {/*(csv)*/}</strong>
                   <a href="#" onClick={() => {this.handleOffCanvasShow("Data export")}} class="text-primary badge" title="Export all my data">Export</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}

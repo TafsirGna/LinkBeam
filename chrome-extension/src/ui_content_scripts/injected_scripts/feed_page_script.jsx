@@ -30,9 +30,6 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 import AboveFeedPostWidgetView from "../widgets/feed/AboveFeedPostWidgetView";
-import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
-
-const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
 export default class FeedPageScriptAgent extends ScriptAgentBase {
 
@@ -41,38 +38,20 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	}
 
 	static updateUi(props){
-
-		if (document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
-			return;
-		}
-
-		// adding the post stats modal
-		var newDivTag = document.createElement('div');
-		// newDivTag.classList.add(feedPostDataModalClassName);
-		newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
-    document.body.appendChild(newDivTag);
-    newDivTag.attachShadow({ mode: 'open' });
-
-		ReactDOM.createRoot(newDivTag.shadowRoot).render(
-            <React.StrictMode>
-              <style type="text/css">{styles}</style>
-              <FeedPostViewsChartModal
-              	appSettings={props.appSettings}
-              	tabId={props.tabId}
-              	/*visitId={props.visitId}*//>
-            </React.StrictMode>
-        );
 		
 	}
 
 	static runTabDataExtractionProcess(props){
 
-		console.log("vvvvvvvvvvvvvvvvvvvvvvv");
+		const mainSectionHtmlEl = document.querySelector(".scaffold-finite-scroll__content");
 
-		const postContainerElements = document.querySelector(".scaffold-finite-scroll__content")
-																					.querySelectorAll("div[data-id]");
+		if (!mainSectionHtmlEl){
+			return;
+		}
 
-		Array.from(postContainerElements).forEach(postContainerElement => {
+		const postContainerElements = mainSectionHtmlEl.querySelectorAll("div[data-id]");
+
+		Array.from(postContainerElements).forEach((postContainerElement, index) => {
 
 			if (postContainerElement.querySelector(".feed-shared-update-v2")){
 				if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
@@ -104,7 +83,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		              	tabId={props.tabId}
 		              	allKeywords={props.allKeywords}
 		              	visitId={props.visitId}
-		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}/>
+		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
+		              	index={index}
+		              	appSettings={props.appSettings}/>
 		            </React.StrictMode>
 		        );
 

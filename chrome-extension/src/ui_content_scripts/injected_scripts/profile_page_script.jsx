@@ -34,10 +34,14 @@ import ExperienceDataChartWidget from "../widgets/profile/ExperienceDataChartWid
 import React from 'react';
 // import { } from "../../popup/Local_library";
 
+const aboveProfileSectionWidgetClassName = "LinkbeamAboveProfileSectionWidgetClassName";
+const keywordHighlightMark= "linkbeam-extension-keyword-highlight";
+
 export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   static webPageData = null;
   static detectedKeywords = {};
+  static keywordDetected = false;
 
   constructor(){
     super();
@@ -46,6 +50,16 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
   static checkAndHighlightKeywords(mainHtmlElements, keywords, highlightedKeywordBadgeColors, appSettings){
 
     for (var htmlElement of Object.values(mainHtmlElements)){
+
+      if (!htmlElement){
+        continue;
+      }
+
+      if (htmlElement.getAttribute(keywordHighlightMark)){
+        continue;
+      }
+      htmlElement.setAttribute(keywordHighlightMark, true);
+
       checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, this.detectedKeywords, highlightedKeywordBadgeColors);
     }
 
@@ -53,7 +67,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
       return;
     }
 
-    if (appSettings.notifications){
+    if (appSettings.notifications && !this.keywordDetected){
+      this.keywordDetected = true;
       chrome.runtime.sendMessage({header: "NOTIFY_USER", data: "keywords"}, (response) => {
         console.log('notify user request sent', response);
       });
@@ -61,24 +76,32 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   }
 
-  static updateUi(props){
+  static async updateUi(props){
 
-    var mainHtmlElements = (getProfileViewMainHtmlElements()).htmlElements;
+    var result = await getProfileViewMainHtmlElements();
 
-    this.checkAndHighlightKeywords(mainHtmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
+    this.checkAndHighlightKeywords(result.htmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
     
-    Object.keys(mainHtmlElements).forEach(htmlElementTitle => {
+    Object.keys(result.htmlElements).forEach(htmlElementTitle => {
 
       if (["about", "experience", "education"].indexOf(htmlElementTitle) != -1){
 
-        var htmlElement = mainHtmlElements[htmlElementTitle];
+        var htmlElement = result.htmlElements[htmlElementTitle];
 
         if (!htmlElement){
           return;
         }
 
+        if (result.context == "auth"){
+          htmlElement = htmlElement.previousElementSibling;
+        }
+
+        if (htmlElement.querySelector(`.${aboveProfileSectionWidgetClassName}`)){
+          return;
+        }
+
         var newDivTag = document.createElement('div');
-        // newDivTag.classList.add(feedPostDataModalClassName);
+        newDivTag.classList.add(aboveProfileSectionWidgetClassName);
         htmlElement.prepend(newDivTag);
         newDivTag.attachShadow({ mode: 'open' });
 
@@ -110,11 +133,11 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   }
 
-  static runTabDataExtractionProcess(props){
+  static async runTabDataExtractionProcess(props){
 
     var webPageData = null;
 
-    const result = getProfileViewMainHtmlElements();
+    const result = await getProfileViewMainHtmlElements();
     const mainHtmlElements = result.htmlElements;
     
     if (!this.webPageData){
@@ -151,6 +174,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
     if (!webPageData){
       return;
     }
+
+    this.updateUi(props);
 
     sendTabData(props.tabId, webPageData);  
 

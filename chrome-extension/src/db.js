@@ -33,4 +33,6 @@ db.version(appParams.appDbVersion).stores({
   bookmarks: '++id, &url, createdOn',
   feedPosts: '++id, &uid',
   feedPostViews: '++id, uid, date, tabId',
+  tags: '++id, &name, createdOn',
+  folders: '++id, &name, createdOn',
 });

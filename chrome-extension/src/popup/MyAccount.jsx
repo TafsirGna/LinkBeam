@@ -112,7 +112,7 @@ export default class MyAccount extends React.Component{
       this.setState({productIdOverlayText: "Copied!"}, () => {
           setTimeout(() => {
               this.setState({productIdOverlayText: productIdOverlayText});
-            }, appParams.TIMER_VALUE
+            }, appParams.TIMER_VALUE_1
           );
         });
       }).bind(this), 

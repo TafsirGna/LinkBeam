@@ -34,7 +34,7 @@ export default class CustomToast extends React.Component{
         >
 
           { this.props.show 
-              && <Toast show={true} onClose={this.props.onClose} delay={appParams.TIMER_VALUE} autohide>
+              && <Toast show={true} onClose={this.props.onClose} delay={appParams.TIMER_VALUE_1} autohide>
                     <Toast.Header>
                       <img
                         src={bell_icon}

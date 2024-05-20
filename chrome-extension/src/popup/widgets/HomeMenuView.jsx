@@ -22,7 +22,10 @@
 /*import './HomeMenu.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { switchToView } from "../Local_library";
+import { 
+  switchToView,
+  appParams,
+} from "../Local_library";
 import bell_icon from '../../assets/bell_icon.png';
 import { LayersIcon } from "./SVGs";
 import eventBus from "../EventBus";
@@ -98,7 +101,7 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Statistics")}}
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.STATISTICS)}}
                 title="See profile visits statistics">
                 Profile visits stats
               </a>
@@ -116,7 +119,7 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Bookmarks")}}
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS)}}
                 title="List bookmarked profiles">
                 Bookmarked Profiles
               </a>
@@ -134,9 +137,18 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Reminders")}}
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.REMINDERS)}}
                 title="List reminders">
                 Reminders
+              </a>
+            </li>
+            <li>
+              <a 
+                class="dropdown-item small" 
+                href="#" 
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.FOLDERS)}}
+                title="List folders">
+                Folders
               </a>
             </li>
             {/*<li>
@@ -144,15 +156,15 @@ export default class HomeMenu extends React.Component{
                 class="dropdown-item small" 
                 href="#" 
                 onClick={() => {switchToView(eventBus, "Folders")}}
-                title="List folders">
-                Folders
+                title="Display all media">
+                Medias
               </a>
             </li>*/}
             <li>
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "Settings")}}
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.SETTINGS)}}
                 title="See app settings">
                 Settings
               </a>
@@ -161,7 +173,7 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href="#" 
-                onClick={() => {switchToView(eventBus, "About")}}
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.ABOUT)}}
                 title="About the app">
                 About
               </a>

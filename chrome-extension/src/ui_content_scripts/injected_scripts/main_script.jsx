@@ -111,6 +111,7 @@ class MainScriptAgent extends ScriptAgentBase {
                 if (this.pageUrl != pageUrl){
                     ProfilePageScriptAgent.webPageData = null;
                     ProfilePageScriptAgent.detectedKeywords = {};
+                    ProfilePageScriptAgent.keywordDetected = false;
                     ProfilePageScriptAgent.updateUi(props);
                     this.pageUrl = pageUrl;
                 }

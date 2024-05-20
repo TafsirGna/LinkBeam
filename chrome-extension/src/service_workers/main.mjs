@@ -36,6 +36,7 @@ import {
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
+// import { DateTime as LuxonDateTime } from "luxon";
 
 /** The following code is executed on installation
  * and check if the required database already exists.
@@ -165,10 +166,84 @@ async function runTabTimer(tabId, url){
         await db.visits
                 .where({id: sessionItem.myTabs[tabId].visits[index].id})
                 .modify(visit => {
-                    visit.timeCount += (appParams.TIMER_VALUE / 1000);
+                    visit.timeCount += (appParams.TIMER_VALUE_2 / 1000);
                 });
 
-    }, (appParams.TIMER_VALUE));
+        // finally, checking periodically if the user's reaching or crossed the time threshold
+        sessionItem = await chrome.storage.session.get(["totalDayTime"]);
+        const today = (new Date()).toISOString().split("T")[0];
+
+        async function getSessionTotalDayTime(){
+
+            const settings = await db.settings
+                                 .where({id: 1})
+                                 .first();
+
+            if (!settings.notifications || settings["maxTimeAlarm"] == "Never"){
+                return "N/A";
+            }
+
+            var totalTime = 0;
+            await db.visits
+                    .where("date")
+                    .startsWith((new Date()).toISOString().split("T")[0])
+                    .each(visit => {
+                        totalTime += visit.timeCount;
+                    });
+
+            return {
+                date: today, 
+                time: totalTime,
+                max: settings["maxTimeAlarm"] == "1 hour" ? 60 : Number(settings["maxTimeAlarm"].slice(0, 2)),
+                lastCheckedAt: totalTime,
+            };
+        }
+
+        if (!sessionItem.totalDayTime){
+            sessionItem.totalDayTime = await getSessionTotalDayTime();
+        }
+        else{
+
+            if (sessionItem.totalDayTime == "N/A"){
+                return;
+            }
+
+            if (sessionItem.totalDayTime.date != today){
+                sessionItem.totalDayTime = await getSessionTotalDayTime();
+            }
+            else{
+                sessionItem.totalDayTime.time += (appParams.TIMER_VALUE_2 / 1000);
+            }
+        }
+
+        if (sessionItem.totalDayTime == "N/A"){
+            await chrome.storage.session.set({ totalDayTime: sessionItem.totalDayTime });
+            return;
+        }
+
+        const mins = (sessionItem.totalDayTime.time / 60).toFixed(0); 
+
+        if (!(mins % 5) /*every 5 minutes*/ && mins != sessionItem.totalDayTime.lastCheckedAt){
+
+            sessionItem.totalDayTime.lastCheckedAt = mins;
+
+            if (mins >= (sessionItem.totalDayTime.max * (3/4))){
+
+                const uuid = uuidv4();
+                chrome.notifications.create(uuid, {
+                  title: 'Linkbeam',
+                  message: `Time limit ${mins >= sessionItem.totalDayTime.max ? "" : "almost"} reached`,
+                  iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                  type: 'basic',
+                });
+
+            }
+
+        }
+
+        await chrome.storage.session.set({ totalDayTime: sessionItem.totalDayTime });
+
+    }, (appParams.TIMER_VALUE_2));
 
     await chrome.storage.session.set({ tabTimer: interval });
 

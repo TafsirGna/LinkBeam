@@ -9,6 +9,7 @@ import {
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProfilesGeoMapChart from "./charts/ProfilesGeoMapChart";
+import TagPickModal from "./modals/TagPickModal";
 import eventBus from "../EventBus";
 import { 
   appParams, 
@@ -26,6 +27,7 @@ import {
   DuplicateIcon,
   ReminderIcon,
   KeyIcon,
+  TagIcon,
 } from "./SVGs";
 import { db } from "../../db";
 
@@ -55,6 +57,7 @@ export default class ProfileViewHeader extends React.Component{
       connectionsCompData: null, 
       allProfilesReadiness: false,
       keywords: null,
+      tagPickModalShow: false,
     };
 
     this.setConnectionModalData = this.setConnectionModalData.bind(this);
@@ -82,6 +85,9 @@ export default class ProfileViewHeader extends React.Component{
 
   handleImageModalClose = () => this.setState({imageModalShow: false, imageModalTitle: "", imageLoaded: false});
   handleImageModalShow = (modalTitle) => this.setState({imageModalShow: true, imageModalTitle: modalTitle});
+
+  handleTagPickModalClose = () => this.setState({tagPickModalShow: false});
+  handleTagPickModalShow = () => this.setState({tagPickModalShow: true});
 
   handleGeoMapModalClose = () => this.setState({geoMapModalShow: false});
   handleGeoMapModalShow = () => this.setState({geoMapModalShow: true});
@@ -275,6 +281,18 @@ export default class ProfileViewHeader extends React.Component{
                   </a>
                 </OverlayTrigger>
               </span>
+              <span>
+                ·
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={<ReactTooltip id="tooltip1">Click to update the profile's tags</ReactTooltip>}
+                >
+                  <span
+                    onClick={this.handleTagPickModalShow}>
+                    <TagIcon size="24" className="mx-2" />
+                  </span>
+                </OverlayTrigger>
+              </span>
               { this.state.keywords 
                   && <span>
                       ·
@@ -383,6 +401,13 @@ export default class ProfileViewHeader extends React.Component{
             </Button>
           </Modal.Footer>
         </Modal>
+
+
+        <TagPickModal
+          globalData={this.props.globalData}
+          show={this.state.tagPickModalShow} 
+          profile={this.props.profile}
+          onHide={this.handleTagPickModalClose}/>
 
       </>
     );

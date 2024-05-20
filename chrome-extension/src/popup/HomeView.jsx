@@ -113,14 +113,11 @@ export default class HomeView extends React.Component{
 
     }
 
-    console.log("!!!!!!!!!!!!!!!! 1 : tipping point : ", tippingPoint);
-
     const visits = await db.visits
                            .filter(visit => new Date(visit.date) < tippingPoint
                                             && Object.hasOwn(visit, "profileData"))
                            .sortBy("date");
 
-    console.log("!!!!!!!!!!!!!!!! 2 : tipping point : ", visits);
     var profiles = [];
     for (var visit of visits){
 
@@ -133,8 +130,6 @@ export default class HomeView extends React.Component{
       }
 
     }
-
-    console.log("!!!!!!!!!!!!!!!! 3 : tipping point : ", visits);
 
     this.setState({outdatedProfiles: profiles});
 

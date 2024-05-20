@@ -112,7 +112,7 @@ export default class About extends React.Component{
                 this.handleAlertViewShow("Something wrong happent with the uploaded file. Check the file and try again! ", "warning", () => {
                     setTimeout(() => {
                       this.setState({alertMessage: "", alertTagShow: false});
-                    }, appParams.TIMER_VALUE);
+                    }, appParams.TIMER_VALUE_1);
                 })
 
               });

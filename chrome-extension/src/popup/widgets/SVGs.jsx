@@ -11,7 +11,7 @@ export const SendIcon = (props) => {
 };
 
 export const TagIcon = (props) => {
-  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="#6c757d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className ? props.className : ""}`}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>;
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="#6c757d" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className ? props.className : ""}`}><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>;
 };
 
 export const SearchIcon = (props) => {
