@@ -276,7 +276,7 @@ export default class SettingsView extends React.Component{
           if (table.name == "settings"){
             tableData = await table.toArray();
           }
-          else if (["feedPosts"/*, */].indexOf(table.name) != -1){
+          else if (["feedPosts", "reminders", "tags", "folders", "bookmarks"].indexOf(table.name) != -1){
             continue;
           }
           else{
@@ -297,25 +297,144 @@ export default class SettingsView extends React.Component{
 
             case "feedPostViews":{
 
-              // Retrieving all the feedPosts linked to the visits 
-              var feedPosts = [];
+              // Retrieving all the other db objects linked to the feed visits 
+              var feedPosts = [],
+                  reminders = [];
               await Promise.all (tableData.map (async feedPostView => {
-                var feedPost = null;
-                [feedPost] = await Promise.all([
-                  db.feedPosts.where('uid').equals(feedPostView.uid).first()
-                ]);
-                if (feedPost && feedPosts.map(p => p.uid).indexOf(feedPost.uid) == -1){
-                  feedPosts.push(feedPost);
+
+                if (feedPosts.map(p => p.id).indexOf(feedPostView.feedPostId) != -1){
+                  return;
                 }
+
+                // linked feedpost
+                var feedPost = null, reminder = null;
+                [feedPost] = await Promise.all([
+                  db.feedPosts.where({id: feedPostView.feedPostId}).first()
+                ]);
+
+                // if (!feedPost){
+                //   return;
+                // }
+                feedPosts.push(feedPost);
+
+                // linked reminder if exists
+                [reminder] = await Promise.all([
+                  db.reminders.where({objectId: feedPost.id}).first()
+                ]);
+
+                if (reminder){
+                  reminders.push(reminder);
+                }
+
               }));
 
-              feedPosts = removeObjectsId(feedPosts);
-
-              dbData.objectStores["feedPosts"] = feedPosts;
+              if (!dbData.objectStores["reminders"]){
+                dbData.objectStores["reminders"] = removeObjectsId(reminders);
+              }
+              else{
+                dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
+              }
+              dbData.objectStores["feedPosts"] = removeObjectsId(feedPosts);
 
               break;
               
             }
+
+            // Retrieving all the other db objects linked to the profile visits 
+            case "visits":{
+
+              var profileUrls = [], 
+                  reminders = [],
+                  bookmarks = [],
+                  folders = [],
+                  tags = [];
+
+              await Promise.all (tableData.map (async visit => {
+
+                if (!Object.hasOwn(visit, 'profileData')){
+                  return;
+                }
+
+                if (profileUrls.indexOf(visit.url) != -1){
+                  return;
+                }
+
+                // linked reminder & bookmark
+                var reminder = null,
+                    bookmark = null;
+                [reminder, bookmark] = await Promise.all([
+                  db.reminders.where({objectId: visit.url}).first(),
+                  db.bookmarks.where({url: visit.url}).first()
+                ]);
+
+                if (reminder){
+                  reminders.push(reminder);
+                }
+
+                if (bookmark){
+                  bookmarks.push(bookmark);
+                }
+
+                // linked folders
+                await db.folders
+                        .each(folder => {
+
+                          if (!folder.profiles){
+                            return;
+                          }
+
+                          const profileIndex = folder.profiles.map(p => p.url).indexOf(visit.url);
+                          if (profileIndex != -1){
+                            const folderIndex = folders.map(f => f.id).indexOf(folder.id);
+                            if (folderIndex != -1){
+                              folders[folderIndex].profiles.push(folder.profiles[profileIndex]);
+                            }
+                            else{
+                              folder.profiles = [folder.profiles[profileIndex]];
+                              folders.push(folder);
+                            }
+                          }
+
+                        });
+
+                // linked tags
+                await db.tags
+                        .each(tag => {
+
+                          if (!tag.profiles){
+                            return;
+                          }
+
+                          const profileIndex = tag.profiles.map(p => p.url).indexOf(visit.url);
+                          if (profileIndex != -1){
+                            const tagIndex = tags.map(t => t.id).indexOf(tag.id);
+                            if (tagIndex != -1){
+                              tags[tagIndex].profiles.push(tag.profiles[profileIndex]);
+                            }
+                            else{
+                              tag.profiles = [tag.profiles[profileIndex]];
+                              tags.push(tag);
+                            }
+                          }
+
+                        });
+
+              }));
+
+              if (!dbData.objectStores["reminders"]){
+                dbData.objectStores["reminders"] = removeObjectsId(reminders);
+              }
+              else{
+                dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
+              }
+
+              dbData.objectStores["bookmarks"] = removeObjectsId(bookmarks);
+              dbData.objectStores["folders"] = removeObjectsId(folders);
+              dbData.objectStores["tags"] = removeObjectsId(tags);
+
+              break;
+            }
+
           }
 
         }

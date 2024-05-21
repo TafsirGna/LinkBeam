@@ -38,6 +38,9 @@ export default class FolderPickModal extends React.Component{
     this.state = {
       folders: null,
     };
+
+    this.handleFolderChange = this.handleFolderChange.bind(this);
+
   }
 
   componentDidMount() {
@@ -65,6 +68,37 @@ export default class FolderPickModal extends React.Component{
 
   }
 
+  async handleFolderChange(folder){
+
+    var index = this.state.folders.findIndex(f => f.profiles && f.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1);
+    if (index != -1){
+      index = this.state.folders[index].profiles.map(p => p.url).indexOf(this.props.profile.url);
+      this.state.folders[index].profiles.splice(index, 1);
+
+      await db.folders.update(this.state.folders[index].id, this.state.folders[index]);
+
+    }
+
+    if (folder){
+      if (!folder.profiles){
+        folder.profiles = [{
+          url: this.props.profile.url,
+          addedOn: (new Date()).toISOString(),
+        }];
+      }
+      else{
+        folder.profiles.push({
+          url: this.props.profile.url,
+          addedOn: (new Date()).toISOString(),
+        });
+      }
+
+      await db.folders.update(folder.id, folder);
+
+    }
+
+  }
+
   render(){
     return (
       <>
@@ -86,18 +120,32 @@ export default class FolderPickModal extends React.Component{
                 && <div class="list-group shadow-sm">
 
                     <label class="list-group-item d-flex gap-2">
-                      <input class="form-check-input flex-shrink-0" type="radio" name="listGroupRadios" id="listGroupRadios1" value="" checked=""/>
+                      <input 
+                        class="form-check-input flex-shrink-0" 
+                        type="radio" 
+                        name="listGroupRadios" 
+                        id="listGroupRadios_0" 
+                        value="" 
+                        checked={(this.state.folders && this.state.folders.findIndex(f => f.profiles && f.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) == -1) ? true : false}
+                        onChange={() => {this.handleFolderChange(null)}}/>
                       <span>
                         None
                         <small class="d-block text-body-secondary fst-italic">The default folder when the profile is assigned to no folder</small>
                       </span>
                     </label>
 
-                    { this.state.folders.map(folder => (<label class="list-group-item d-flex gap-2">
-                                                                          <input class="form-check-input flex-shrink-0" type="radio" name="listGroupRadios" id="listGroupRadios1" value="" checked=""/>
+                    { this.state.folders.map((folder, index) => (<label class="list-group-item d-flex gap-2">
+                                                                          <input 
+                                                                            class="form-check-input flex-shrink-0" 
+                                                                            type="radio"
+                                                                            name="listGroupRadios" 
+                                                                            id={`listGroupRadios${index}`} 
+                                                                            value="" 
+                                                                            checked={(folder.profiles && folder.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) ? true : false}
+                                                                            onChange={() => {this.handleFolderChange(folder)}}/>
                                                                           <span>
                                                                             {folder.name}
-                                                                            <small class="d-block text-body-secondary fst-italic">With {folder.profiles ? folder.profiles.length : 0} profiles</small>
+                                                                            <small class="d-block text-body-secondary fst-italic">{`With ${folder.profiles ? folder.profiles.length : 0} profile${!folder.profiles || (folder.profiles && [0, 1].indexOf(folder.profiles.length) != -1) ? "" : "s"}`}</small>
                                                                           </span>
                                                                         </label>)) }
 

@@ -209,6 +209,7 @@ export default class ProfileView extends React.Component{
 
 
         <FolderPickModal
+          profile={this.props.profile} 
           globalData={this.props.globalData}
           show={this.state.folderPickModalShow} 
           onHide={this.handleFolderPickModalClose}/>

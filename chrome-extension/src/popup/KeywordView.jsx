@@ -135,7 +135,7 @@ export default class KeywordView extends React.Component{
     // Making sure that there's no duplicates
     for (let keyword of this.props.globalData.keywordList){
       
-      if (keyword.name === this.state.keyword){
+      if (keyword.name.toLowerCase() === this.state.keyword.toLowerCase()){
         alert("Duplicated keywords are not allowed !");
         return false;
       }

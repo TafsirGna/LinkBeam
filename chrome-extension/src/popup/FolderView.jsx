@@ -56,7 +56,7 @@ export default class FolderView extends React.Component{
     }
     else{
       (async () => {
-        this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList)});
+        this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList, db)});
       }).bind(this)();
     }
 
@@ -67,7 +67,7 @@ export default class FolderView extends React.Component{
     if (prevProps.globalData != this.props.globalData){
       if (prevProps.globalData.folderList != this.props.globalData.folderList){
         (async () => {
-          this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList)});
+          this.setState({folderList: await setFolderProfiles(this.props.globalData.folderList, db)});
         }).bind(this)();
       }
     }

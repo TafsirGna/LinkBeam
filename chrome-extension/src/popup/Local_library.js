@@ -934,25 +934,35 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 
 }
 
-export async function setFolderProfiles(folderList){
+export async function setFolderProfiles(folderList, db){
 
+  var folderIndex = 0;
   for (var folder of folderList){
 
     if (folder.profiles){
 
+      var profileIndex = 0;
       for (var object of folder.profiles){
 
         object = {
-          ...object,
+          date: object.addedOn,
           ...(await getProfileDataFrom(db, object.url)),
         }
+
+        console.log("eeeeeeeeeeeeeeeeeee 1 : ", object.url, object);
+        folderList[folderIndex].profiles[profileIndex] = object;
+
+        profileIndex++;
 
       }
 
     }
 
+    folderIndex++;
+
   }
 
+  console.log("eeeeeeeeeeeeeeeeeee 2 : ", folderList);
   return folderList;
 
 }

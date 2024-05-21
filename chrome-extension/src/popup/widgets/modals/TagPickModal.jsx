@@ -30,6 +30,11 @@ import { db } from "../../../db";
 import { AlertCircleIcon } from "../SVGs";
 import { liveQuery } from "dexie"; 
 import eventBus from "../../EventBus";
+import { 
+  OverlayTrigger, 
+  Tooltip as ReactTooltip, 
+  // Popover, 
+} from "react-bootstrap";
 
 export default class TagPickModal extends React.Component{
 
@@ -108,11 +113,16 @@ export default class TagPickModal extends React.Component{
             { this.state.tags 
                 && this.state.tags.length != 0
                 && <div class="">
-                    { this.state.tags.map(tag => (<span 
-                                                    class={`handy-cursor mx-2 badge ${(tag.profiles && tag.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) ?  "bg-primary-subtle border-primary-subtle text-primary-emphasis" : "bg-secondary-subtle border-secondary-subtle text-secondary-emphasis"} border rounded-pill`}
+                    { this.state.tags.map(tag => (<OverlayTrigger
+                                                    placement="top"
+                                                    overlay={<ReactTooltip id="tooltip1">{`${tag.profiles ? tag.profiles.length : 0} profile${!tag.profiles || (tag.profiles && [0, 1].indexOf(tag.profiles.length) != -1) ? "" : "s"} associated`}</ReactTooltip>}
+                                                  >
+                                                  <span 
+                                                    class={`handy-cursor mx-2 badge ${(tag.profiles && tag.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) ?  "bg-success-subtle border-success-subtle text-success-emphasis shadow" : "bg-light-subtle border-light-subtle text-light-emphasis shadow-sm"} border rounded-pill`}
                                                     onClick={() => {this.onTagClicked(tag)}}>
                                                     {`${tag.name} (${tag.profiles ? tag.profiles.length : 0})`}
-                                                  </span>)) }
+                                                  </span>
+                                                  </OverlayTrigger>)) }
                 </div> }
 
 

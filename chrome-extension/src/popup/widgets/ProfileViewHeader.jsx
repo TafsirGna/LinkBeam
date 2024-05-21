@@ -288,7 +288,8 @@ export default class ProfileViewHeader extends React.Component{
                   overlay={<ReactTooltip id="tooltip1">Click to update the profile's tags</ReactTooltip>}
                 >
                   <span
-                    onClick={this.handleTagPickModalShow}>
+                    onClick={this.handleTagPickModalShow}
+                    class="handy-cursor">
                     <TagIcon size="24" className="mx-2" />
                   </span>
                 </OverlayTrigger>

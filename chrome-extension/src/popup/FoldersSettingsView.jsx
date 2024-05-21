@@ -70,12 +70,6 @@ export default class FolderView extends React.Component{
       return;
     }
 
-    message = "The folder should consist of only one word !";
-    if (this.state.folder.indexOf(" ") != -1){
-      alert(message);
-      return;
-    }
-
     if (!this.checkInputFolder()){
       console.log("Check of input returned false");
       return;
@@ -118,7 +112,7 @@ export default class FolderView extends React.Component{
     // Making sure that there's no duplicates
     for (let folder of this.props.globalData.folderList){
       
-      if (folder.name === this.state.folder){
+      if (folder.name.toLowerCase() === this.state.folder.toLowerCase()){
         alert("Duplicated folders are not allowed !");
         return false;
       }

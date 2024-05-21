@@ -145,6 +145,10 @@ export default class AllPostsModal extends React.Component{
           posts.sort(function(a, b){return b.timeCount - a.timeCount});
           break;
         }
+        case 2:{
+          
+          break;
+        }
       }
       this.setState({posts: null}, () => {
         this.setState({posts: posts});
@@ -175,7 +179,7 @@ export default class AllPostsModal extends React.Component{
                     <span class="rounded shadow-sm badge border text-primary">Sort by</span>
                   </div>
                   <ul class="dropdown-menu shadow-lg border">
-                    {["date (desc)", "duration (desc)"].map((value, index) => (
+                    {["date (desc)", "duration (desc)", "popularity (desc)"].map((value, index) => (
                           <li>
                             <a class={`dropdown-item small ${this.state.sortByValueIndex == index ? "active" : ""}`} href="#" onClick={() => {this.setSortByValue(index)}}>
                               {value}

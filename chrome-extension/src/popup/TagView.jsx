@@ -118,7 +118,7 @@ export default class TagView extends React.Component{
     // Making sure that there's no duplicates
     for (let tag of this.props.globalData.tagList){
       
-      if (tag.name === this.state.tag){
+      if (tag.name.toLowerCase() === this.state.tag.toLowerCase()){
         alert("Duplicated tags are not allowed !");
         return false;
       }
