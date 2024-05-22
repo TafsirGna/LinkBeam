@@ -107,10 +107,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             url = url.split("?")[0];
             try{
 
-                Dexie.exists(appParams.appDbName).then(async function (exists) {
+                Dexie.exists(appParams.appDbName).then(function (exists) {
                     if (exists) {
 
-                        chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+                        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                            console.log(",,,,,,,,,,,,,,,, onUpdated | tabs : ", tabs);
                             handleNewInterestingTab(tabId, url, tabs[0].id == tabId);
                         });
                         
@@ -620,70 +621,79 @@ async function recordFeedVisit(tabData){
 
         var post = tabData.extractedData;
 
-        if (post.category == "suggestions"){
-            visit.feedItemsMetrics[post.category]++;
+        const newFeedPost = {
+            uid: !post.category ? post.id : null,
+            author: post.content.author,
+            text: post.content.text,
+            media: post.content.media,
+            date: null,
+        };
+
+
+        function sameFeedPostCondition(entry, newFeedPost){
+            return (newFeedPost.uid && entry.uid && newFeedPost.uid == entry.uid)
+                                                        || ((!newFeedPost.uid || !entry.uid) 
+                                                                && entry.author.url == newFeedPost.author.url
+                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20));
+        }
+
+        var dbFeedPost = await db.feedPosts
+                                   .filter(entry => sameFeedPostCondition(entry, newFeedPost))
+                                   .first();
+
+        if (dbFeedPost){
+
+            newFeedPost.uid = dbFeedPost.uid ? dbFeedPost.uid : newFeedPost.uid; // avoid overwritting a previous valid uid
+            await db.feedPosts
+                    .update(dbFeedPost.id, newFeedPost);
+
         }
         else{
 
-            const newPost = {
-                uid: post.id,
-                category: post.category,
-                initiator: post.initiator,
-                content: {
-                    author: post.content.author,
-                    text: post.content.text,
-                },
-            };
-
-            const dbPost = await db.feedPosts
-                                    .where({uid: post.id})
-                                    .first();
-
-            if (dbPost){
-                await db.feedPosts
-                        .update(dbPost.id, newPost);
-            }
-            else{
-                await db.feedPosts
-                        .add(newPost);
-            }
-
-            var postView = await db.feedPostViews
-                                   .where({uid: post.id, visitId: visitId})
-                                   .first(); 
-
-            if (!postView){
-
-                postView = {
-                    uid: post.id,
-                    date: dateTime,
-                    visitId: visitId, 
-                    reactions: post.content.reactions,
-                    commentsCount: post.content.commentsCount,
-                    repostsCount: post.content.repostsCount,
-                    timeCount: 1,
-                };
-
-                // saving the post view
-                await db.feedPostViews.add(postView);
-
-                visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
-                
-            }
+            await db.feedPosts
+                    .add(newFeedPost).then(function(id){
+                        newFeedPost.id = id;
+                        dbFeedPost = newFeedPost;
+                    });
 
         }
 
+        var postView = await db.feedPostViews
+                               .where({uid: post.id, visitId: visitId})
+                               .first(); 
+
+        if (!postView){
+
+            postView = {
+                category: post.category,
+                initiator: post.initiator,
+                uid: post.id,
+                date: dateTime,
+                visitId: visitId, 
+                feedPostId: dbFeedPost.id,
+                reactions: post.content.reactions,
+                commentsCount: post.content.commentsCount,
+                repostsCount: post.content.repostsCount,
+                timeCount: 1,
+            };
+
+            // saving the post view
+            await db.feedPostViews.add(postView);
+
+            visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+            
+        }
+
+
         post.reminder = await db.reminders
-                                 .where("objectId")
-                                 .equals(post.id)
+                                 .where({objectId: dbFeedPost.id})
                                  .first();
 
         post.viewsCount = 0;
         post.timeCount = 0;
 
         await db.feedPostViews
-                 .where("uid")
-                 .equals(post.id)
+                 .where({feedPostId: dbFeedPost.id})
                  .each(postView => {
                     post.viewsCount++;
                     post.timeCount += (postView.timeCount ? postView.timeCount : 0);
@@ -703,10 +713,10 @@ async function recordFeedVisit(tabData){
         });
 
         chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: [post]}}, (response) => {
-            console.log('response sent', response);
+            console.log('response sent', [post], response);
         });  
 
-      });
+    });
 
 }
 
@@ -955,6 +965,10 @@ async function saveReminder(reminder){
     reminder.active = true;
 
     try{
+
+        reminder.objectId = (await db.feedPostViews
+                                     .where({uid: reminder.objectId})
+                                     .first()).feedPostId;
 
         await db.reminders
                 .add(reminder);

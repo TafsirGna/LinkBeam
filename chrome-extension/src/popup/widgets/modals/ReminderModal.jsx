@@ -25,7 +25,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { 
-  appParams,
+  isLinkedinProfilePage,
 } from "../../Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "../../../db";
@@ -72,14 +72,14 @@ export default class ReminderModal extends React.Component{
 
                       reminder = await db.reminders
                                          .where("objectId")
-                                         .equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid)
+                                         .equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.id)
                                          .first();
                     }
                     catch(error){
                       console.error("Error : ", error);
                     }
 
-                    if (reminder.objectId.indexOf("/in/") != - 1){
+                    if (isLinkedinProfilePage(reminder.objectId)){
                       eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
                     }
                     else{
@@ -102,7 +102,7 @@ export default class ReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        var reminder = this.props.object.reminder ? this.props.object.reminder : freshReminder(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.uid);
+        var reminder = this.props.object.reminder ? this.props.object.reminder : freshReminder(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.id);
         this.setState({reminder: reminder, validated: false});
       }
     }

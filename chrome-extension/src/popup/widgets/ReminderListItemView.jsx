@@ -21,7 +21,6 @@
 
 /*import './ReminderListItemView.css'*/
 import React from 'react';
-import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { 
   DuplicateIcon, 
   ClockIcon,
@@ -38,23 +37,37 @@ export default class ReminderListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      link: null,
     };
+
+    this.getObjectLink = this.getObjectLink.bind(this);
 
   }
 
   componentDidMount() {
-
+    this.getObjectLink();
   }
 
   componentDidUpdate(prevProps, prevState){
 
   }
 
-  getObjectLink(){
+  async getObjectLink(){
 
-    return isLinkedinProfilePage(this.props.object.objectId)
-              ?  `/index.html?view=Profile&data=${this.props.object.objectId}`
-              : `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.objectId}`;
+    var link = null
+    if (isLinkedinProfilePage(this.props.object.objectId)){
+      link = `/index.html?view=Profile&data=${this.props.object.objectId}`;
+    }
+    else{
+
+        var feedPostView = (await db.feedPostViews
+                                           .where({feedPostId: this.props.object.objectId})
+                                           .sortBy("date")).toReversed()[0];
+
+      link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`;
+    }
+
+    this.setState({link: link});
 
   }
 
@@ -62,7 +75,7 @@ export default class ReminderListItemView extends React.Component{
     
     return isLinkedinProfilePage(this.props.object.objectId)
               ? this.props.object.object.fullName
-              : "Feed Post";
+              : `${this.props.object.object.author.name} (feed)`;
 
   }
 
@@ -74,44 +87,14 @@ export default class ReminderListItemView extends React.Component{
           <div class="d-flex gap-2 w-100 justify-content-between">
             <div>
               <h6 class="mb-0 d-flex gap-2 w-100">
-                { isLinkedinProfilePage(this.props.object.objectId)
-                    && <a 
-                                  href={this.getObjectLink()} 
-                                  target="_blank" 
-                                  class="text-decoration-none text-muted w-100">
-                                  {this.getItemTitle()}
-                                </a>}
-                { !isLinkedinProfilePage(this.props.object.objectId)
-                    && <OverlayTrigger
-                          placement="top"
-                          overlay={<ReactTooltip id="tooltip1">{this.props.object.object 
-                                                                  ? (this.props.object.object.initiator
-                                                                      ? this.props.object.object.initiator.name
-                                                                      : this.props.object.object.content.author.name)
-                                                                  : null}</ReactTooltip>}
-                        >
-                          <a 
-                            href={this.getObjectLink()} 
-                            target="_blank" 
-                            class="text-decoration-none text-muted w-100">
-                            {this.getItemTitle()}
-                          </a>
-                        </OverlayTrigger>}
-                <span class="text-muted">·</span>
-                <OverlayTrigger
-                  placement="top"
-                  overlay={<ReactTooltip id="tooltip1">Visit Linkedin Page</ReactTooltip>}
-                >
-                  <a 
-                    href={ isLinkedinProfilePage(this.props.object.objectId) ? `https://${this.props.object.objectId}` : this.getObjectLink() } 
-                    target="_blank" 
-                    class="">
-                    <DuplicateIcon
-                      size="18"/>
-                  </a>
-                </OverlayTrigger>
+                <a 
+                  href={this.state.link} 
+                  target="_blank" 
+                  class="text-decoration-none text-muted w-100">
+                  {this.getItemTitle()}
+                </a>
               </h6>
-              <p class="mb-0 opacity-75 fst-italic" dangerouslySetInnerHTML={{__html: this.props.object.text}}></p>
+              <p class="mb-0 opacity-75 fst-italic" /*dangerouslySetInnerHTML={{__html: this.props.object.text}}*/>{this.props.object.text}</p>
               <div class={`small mt-1 ${new Date(this.props.object.date) >= new Date() ? "text-warning" : "text-muted"}`}>
                 <ClockIcon
                   size="14"/>

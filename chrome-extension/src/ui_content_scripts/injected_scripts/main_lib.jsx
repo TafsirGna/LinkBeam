@@ -143,7 +143,7 @@ export class ScriptAgentBase {
 
   chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
     
-    console.log('linkedin-data response sent', response, data);
+    console.log('extracted data sent', response, data);
 
     if (callback) { callback(); }
 

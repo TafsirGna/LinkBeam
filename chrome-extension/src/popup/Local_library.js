@@ -232,6 +232,10 @@ export const dbDataSanitizer = {
 
   preSanitize: function(str){
 
+    if (!str){
+      return null;
+    }
+
     // clean the front
     var startIndex = 0, endIndex = str.length - 1;
     while(str[startIndex] == " " || str[startIndex] == "\n"){
@@ -949,7 +953,6 @@ export async function setFolderProfiles(folderList, db){
           ...(await getProfileDataFrom(db, object.url)),
         }
 
-        console.log("eeeeeeeeeeeeeeeeeee 1 : ", object.url, object);
         folderList[folderIndex].profiles[profileIndex] = object;
 
         profileIndex++;
@@ -962,7 +965,6 @@ export async function setFolderProfiles(folderList, db){
 
   }
 
-  console.log("eeeeeeeeeeeeeeeeeee 2 : ", folderList);
   return folderList;
 
 }
@@ -1214,7 +1216,7 @@ export function getVisitsPostCount(visits){
 }
 
 export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
-export const isLinkedinProfilePage = (url) => url.indexOf("/in/") != -1;
+export const isLinkedinProfilePage = (url) => url.toString().indexOf("/in/") != -1;
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
 
 export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, profileUrl = null){
@@ -1438,7 +1440,7 @@ async function getReminders(db, criteria){
     if (criteria == "today"){
 
       reminders = await db.reminders
-                          .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active == true)
+                          .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active)
                           .toArray();
 
     }
@@ -1501,8 +1503,7 @@ export async function setReminderObject(db, reminder){
   else{
 
     reminder.object = await db.feedPosts 
-                              .where("uid")
-                              .equals(reminder.objectId)
+                              .where({id: reminder.objectId})
                               .first();
 
   }

@@ -31,9 +31,8 @@ db.version(appParams.appDbVersion).stores({
   reminders: '++id, &objectId, createdOn, active, date',
   settings: '++id',
   bookmarks: '++id, &url, createdOn',
-  feedPosts: '++id, &uid',
-  feedPostViews: '++id, uid, date, tabId', /*feedPostId*/
+  feedPosts: '++id, &uid, date', /*linkedPostId*/
+  feedPostViews: '++id, feedPostId, uid, date, visitId, category',
   tags: '++id, &name, createdOn',
   folders: '++id, &name, createdOn',
-  // media: '++id, postId, date',
 });

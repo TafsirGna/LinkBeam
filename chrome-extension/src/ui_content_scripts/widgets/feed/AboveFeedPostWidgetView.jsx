@@ -362,6 +362,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
       text: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
           ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
           : null,
+      media: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content") 
+          ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
+                 .map(htmlEl => ({
+                    type: htmlEl.tagName,
+                    src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
+                    poster: htmlEl.poster ? htmlEl.poster : null,
+                  }))
+          : null,
       reactions: getPostReactionsValues("reaction"),
       commentsCount: getPostReactionsValues("comment"),               
       repostsCount: getPostReactionsValues("repost"),
@@ -626,7 +634,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     return <button 
             type="button" 
             title={`${Object.keys(this.state.foundKeywords).length == "0" ? "No" : Object.keys(this.state.foundKeywords).length} keyword${Object.keys(this.state.foundKeywords).length > 1 ? "s" : ""} detected`}
-            class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
+            class=/*me-1*/"flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
             <span class="text-base me-2">({Object.keys(this.state.foundKeywords).length})</span>
             <KeyIcon 
               size="10"/>
@@ -664,7 +672,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     checkAndHighlightKeywordsInHtmlEl(htmlElement, this.props.allKeywords, detected, this.props.highlightedKeywordBadgeColors);
 
-    this.setState({foundKeywords: detected});                                               
+    this.setState({foundKeywords: this.props.allKeywords.length ? detected : null});                                               
 
   }
 

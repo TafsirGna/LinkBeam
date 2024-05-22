@@ -77,27 +77,16 @@ export default class FeedActiveUserListItemView extends React.Component{
 
   onEnteringUserTooltip = async () => {
 
-    // const url = this.props.object.category 
-    //                     ? this.props.object.initiator.url
-    //                     : this.props.object.content.author.url,
-    //       category = this.props.object.category ? this.props.object.category : "publications";
-
-    // const count = await db.feedPosts 
-    //                     .filter(post => post.category == this.props.object.category
-    //                                       && ((post.category && post.initiator.url == url)
-    //                                             || !post.category && post.content.author.url == url))
-    //                     .count();
-
-    // this.setState({userTooltipContent: <span class="fw-light">{`${count} ${category}`} so far</span>});
+    this.setState({userTooltipContent: <span class="fw-light">{`${this.state.totalInteractions} deeds`} so far</span>});
 
   }
 
   onExitingUserTooltip = async () => {
 
-    // this.setState({userTooltipContent: <Spinner 
-    //                         animation="border" 
-    //                         size="sm"
-    //                         variant="secondary" />});
+    this.setState({userTooltipContent: <Spinner 
+                            animation="border" 
+                            size="sm"
+                            variant="secondary" />});
 
   }
 

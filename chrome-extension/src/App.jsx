@@ -29,6 +29,7 @@ import KeywordView from "./popup/KeywordView";
 import MainProfileView from "./popup/MainProfileView";
 import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
+import MediaView from "./popup/MediaView";
 import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
 import TagView from "./popup/TagView";
@@ -285,6 +286,10 @@ export default class App extends React.Component{
         {/*ChartExpansion Page*/}
         { this.state.currentPageTitle == "ChartExpansion" 
             && <ChartExpansionView globalData={this.state.globalData} />}
+
+        {/*Media Page*/}
+        { this.state.currentPageTitle == "Media" 
+            && <MediaView globalData={this.state.globalData} />}
 
       </>
     );

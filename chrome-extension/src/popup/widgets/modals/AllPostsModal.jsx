@@ -24,7 +24,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AlertCircleIcon } from "../SVGs";
-import PostListItemView from "../PostListItemView";
+import PostViewListItemView from "../PostViewListItemView";
 import { 
   dbDataSanitizer,
   dateBetweenRange,
@@ -37,7 +37,7 @@ export default class AllPostsModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-    	posts: null,
+    	feedPostViews: null,
       sortByValueIndex: 0,
     };
 
@@ -46,26 +46,6 @@ export default class AllPostsModal extends React.Component{
 
   componentDidMount() {
 
-    eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
-      {
-        const index = this.state.posts.map(p => p.id).indexOf(data.post.id);
-        if (index != -1){
-          this.state.posts[index].reminder = data.reminder;
-        }
-        // this.toggleToastShow("Reminder added!");
-      }
-    );
-
-    eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
-      {
-        const index = this.state.posts.map(p => p.id).indexOf(data);
-        if (index != -1){
-          this.state.posts[index].reminder = null;
-        }
-        // this.toggleToastShow("Reminder deleted!");
-      }
-    );
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -73,8 +53,14 @@ export default class AllPostsModal extends React.Component{
     if (prevProps.show != this.props.show){
 
       if (this.props.show){
-        this.setState({sortByValueIndex: 0});
-        this.setPosts();
+        if (!this.state.feedPostViews){
+          this.setState({feedPostViews: this.props.objects}, () => {
+            this.setSortByValue(0);
+          });
+        }
+        else{
+          this.setSortByValue(0);
+        }
       }
 
     }
@@ -82,76 +68,30 @@ export default class AllPostsModal extends React.Component{
   }
 
   componentWillUnmount(){
-
-    eventBus.remove(eventBus.POST_REMINDER_ADDED);
-    eventBus.remove(eventBus.POST_REMINDER_DELETED);
-
-  }
-
-  async setPosts(){
-
-    var uids = [];
-  	await db.feedPostViews
-            .filter(postView => dateBetweenRange(this.props.startDate, this.props.endDate, postView.date))
-            .each(postView => {
-              if (uids.indexOf(postView.uid) == -1){
-                uids.push(postView.uid);
-              }
-            });   
-
-    var posts = await db.feedPosts
-                          .where("uid")
-                          .anyOf(uids)
-                          .toArray(); 
-
-    await Promise.all (posts.map (async post => {
-      [post.reminder] = await Promise.all([
-         db.reminders.where('objectId').equals(post.uid).first()
-       ]);
-
-      post.timeCount = 0; post.date = null;
-      await db.feedPostViews
-              .where({uid: post.uid})
-              .filter(postView => dateBetweenRange(this.props.startDate, this.props.endDate, postView.date))
-              .each(postView => {
-        post.timeCount += (postView.timeCount ? postView.timeCount : 0);
-        if (post.date){
-          post.date = (new Date(post.date) >= new Date(postView.date)) ? post.date : postView.date;
-        }
-        else{
-          post.date = postView.date;
-        }
-      });
-
-    }));
-
-    // descending order
-    posts.sort(function(a, b){return new Date(b.date) - new Date(a.date)});
-
-  	this.setState({posts: posts});
-
+    
   }
 
   setSortByValue(index){
     this.setState({sortByValueIndex: index}, () => {
 
-      var posts = this.state.posts;
+      var feedPostViews = this.state.feedPostViews;
       switch(index){
         case 0: { // sort by date
-          posts.sort(function(a, b){return new Date(b.date) - new Date(a.date)});
+          feedPostViews.sort(function(a, b){return new Date(b.date) - new Date(a.date)});
           break;
         }
         case 1:{
-          posts.sort(function(a, b){return b.timeCount - a.timeCount});
+          feedPostViews.sort(function(a, b){return b.timeCount - a.timeCount});
           break;
         }
         case 2:{
-          
+          const popularityValue = p => (p.commentsCount + p.repostsCount + p.reactions);
+          feedPostViews.sort(function(a, b){return popularityValue(b) - popularityValue(a)});
           break;
         }
       }
-      this.setState({posts: null}, () => {
-        this.setState({posts: posts});
+      this.setState({feedPostViews: null}, () => {
+        this.setState({feedPostViews: feedPostViews});
       });
     });
   }
@@ -195,7 +135,7 @@ export default class AllPostsModal extends React.Component{
 
             </div>
 
-          	{ !this.state.posts 
+          	{ !this.state.feedPostViews 
                 && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                       {/*<span class="visually-hidden">Loading...</span>*/}
                     </div>
@@ -203,21 +143,21 @@ export default class AllPostsModal extends React.Component{
                   </div>
                 </div>}
 
-            { this.state.posts
+            { this.state.feedPostViews
         		    && <div>
 
-            				{this.state.posts.length == 0
+            				{this.state.feedPostViews.length == 0
     		                  && <div class="text-center m-5">
     		                        <AlertCircleIcon size="100" className="text-muted"/>
     		                        <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
     		                      </div>}
 
-            				{ this.state.posts.length != 0
+            				{ this.state.feedPostViews.length != 0
                         		&& <div>
-    			                    { this.state.posts.map(((post, index) => <PostListItemView 
+    			                    { this.state.feedPostViews.map(((feedPostView, index) => <PostViewListItemView 
                                                                           startDate={this.props.startDate}
                                                                           endDate={this.props.endDate}
-                                                                          object={post}
+                                                                          object={feedPostView}
                                                                           globalData={this.props.globalData}/>))}
     			                  	</div>}
 

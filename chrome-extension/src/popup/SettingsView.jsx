@@ -177,7 +177,7 @@ export default class SettingsView extends React.Component{
 
         for (var table of db.tables){
 
-          if (["settings", "feedPosts"].indexOf(table.name) != -1){
+          if (["settings", "feedPosts", "reminders", "tags", "folders", "bookmarks"].indexOf(table.name) != -1){
             continue;
           }
 
@@ -187,37 +187,49 @@ export default class SettingsView extends React.Component{
             case "feedPostViews": {
 
               if (this.state.offCanvasFormSelectValue == "1"){
+
+                // Deleting all feedPost objects
                 await db.feedPosts.clear();
+                // Deleting all reminder objects if not done yet
+                await db.reminders.clear();
+                
               }
               else{
 
                 const feedPostViews = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                                       .toArray();
-                var uids = [], doneUids = [];
+                var feedPostIds = [], doneFeedPostIds = [];
 
                 await Promise.all(feedPostViews.map(async feedPostView => {
 
-                  if (doneUids.indexOf(feedPostView.uid) == -1){
+                  if (doneFeedPostIds.indexOf(feedPostView.feedPostId) == -1){
 
                     var subFeedPostViews = null;
                     [subFeedPostViews] = await Promise.all([
                       db.feedPostViews
-                        .filter(entry => entry.uid == feedPostView.uid 
+                        .filter(entry => entry.feedPostId == feedPostView.feedPostId 
                                           && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                         .toArray()
                     ]);
 
                     if (!subFeedPostViews.length){
-                      uids.push(feedPostView.uid);
+
+                      feedPostIds.push(feedPostView.feedPostId);
+
+                      // then i delete any reminder associated with this feedPost object
+                      await db.reminders
+                              .where({objectId: feedPostView.feedPostId})
+                              .delete();
+
                     }
 
-                    doneUids.push(feedPostView.uid);
+                    doneFeedPostIds.push(feedPostView.feedPostId);
 
                   }
 
                 }));
 
-                await db.feedPosts.where("uid").anyOf(uids).delete();
+                await db.feedPosts.where("id").anyOf(feedPostIds).delete();
 
               }
 
@@ -225,19 +237,111 @@ export default class SettingsView extends React.Component{
 
             }
 
+            case "visits": {
+
+              if (this.state.offCanvasFormSelectValue == "1"){
+
+                // Deleting all reminder objects if not done yet
+                await db.reminders.clear();
+                // Deleting all folder objects
+                await db.folders.clear();
+                // Deleting all tag objects
+                await db.tags.clear();
+                // Deleting all bookmark objects
+                await db.bookmarks.clear();
+
+              }
+              else{
+
+                const profileVisits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                      .toArray();
+
+                var profileUrls = [];
+
+                await Promise.all(profileVisits.map(async visit => {
+
+                  if (!Object.hasOwn(visit, "profileData")){
+                    return;
+                  }
+
+                  if (profileUrls.indexOf(visit.url) != -1){
+                    return;
+                  }
+
+                  // Delete associated reminder if exists
+                  await db.reminders
+                          .where("objectId")
+                          .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                          .delete();
+
+                  // Delete associated bookmarks
+                  await db.bookmarks
+                          .where("url")
+                          .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                          .delete();
+
+                  // delete associated folder
+                  var folder = await db.folders
+                                        .filter(folder => folder.profiles && folder.profiles.map(p => p.url).indexOf(visit.url) != -1)
+                                        .first();
+
+                  if (folder){
+
+                    folder.profiles.splice(folder.profiles.map(p => p.url).indexOf(visit.url), 1);
+
+                    if (!folder.profiles.length){
+                      if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, folder.createdOn.split("T")[0])){
+                        await db.folders
+                                .where({id: folder.id})
+                                .delete();
+                      }
+                    }
+                    else{
+                      await db.folders.update(folder.id, folder);
+                    }
+
+                  }
+
+                  // delete associated tags
+                  var tags = await db.tags
+                                     .filter(tag => tag.profiles && tag.profiles.map(p => p.url).indexOf(visit.url) != -1)
+                                     .toArray();
+
+                  for (var tag of tags){
+                    tag.profiles.splice(tag.profiles.map(p => p.url).indexOf(visit.url), 1);
+
+                    if (!tag.profiles.length){
+                      if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, tag.createdOn.split("T")[0])){
+                        await db.tags
+                                .where({id: tag.id})
+                                .delete();
+                      }
+                    }
+                    else{
+                      await db.tags.update(tag.id, tag);
+                    }
+
+                  }
+
+                  profileUrls.push(visit.url);
+
+                }));
+
+
+              }
+
+              break;
+            }
+
 
           }
 
           if (this.state.offCanvasFormSelectValue == "1"){
-
             await table.clear();
-
           }
           else{
-
             await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                        .delete();
-
           }
 
         }
@@ -284,10 +388,9 @@ export default class SettingsView extends React.Component{
             tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                                      .toArray();
 
-            tableData = tableData.map(object => {
-              delete object.id;
-              return object;
-            });
+            if (["keywords", "feedPostViews"].indexOf(table.name) != -1){ // no need to include the id for these objects
+              tableData = removeObjectsId(tableData)
+            }
 
           }
 
@@ -322,7 +425,7 @@ export default class SettingsView extends React.Component{
                   db.reminders.where({objectId: feedPost.id}).first()
                 ]);
 
-                if (reminder){
+                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) != -1){
                   reminders.push(reminder);
                 }
 
@@ -334,7 +437,7 @@ export default class SettingsView extends React.Component{
               else{
                 dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
               }
-              dbData.objectStores["feedPosts"] = removeObjectsId(feedPosts);
+              dbData.objectStores["feedPosts"] = feedPosts;
 
               break;
               
@@ -363,15 +466,15 @@ export default class SettingsView extends React.Component{
                 var reminder = null,
                     bookmark = null;
                 [reminder, bookmark] = await Promise.all([
-                  db.reminders.where({objectId: visit.url}).first(),
-                  db.bookmarks.where({url: visit.url}).first()
+                  db.reminders.where("objectId").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first(),
+                  db.bookmarks.where("url").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first()
                 ]);
 
-                if (reminder){
+                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) != -1){
                   reminders.push(reminder);
                 }
 
-                if (bookmark){
+                if (bookmark && bookmarks.map(b => b.id).indexOf(bookmark.id) != -1){
                   bookmarks.push(bookmark);
                 }
 

@@ -190,7 +190,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
   }
 
   cropLabel(str){
-    return str.slice(0, 30) + (str.length >= 30 ? "..." : "")
+    return str ? str.slice(0, 30) + (str.length >= 30 ? "..." : "") : null;
   }
 
   setChartData(){

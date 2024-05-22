@@ -23,7 +23,7 @@
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
-import PostListItemView from "./widgets/PostListItemView";
+import PostViewListItemView from "./widgets/PostViewListItemView";
 import { 
   appParams,
   setGlobalDataSettings,
@@ -59,7 +59,7 @@ export default class FeedDashView extends React.Component{
       startDate: null,
       endDate: null,
       visits: null,
-      feedPosts: null,
+      feedPostViews: null,
       allPostsModalShow: false,
       chartModalShow: false,
       chartModalTitle: "",
@@ -72,7 +72,7 @@ export default class FeedDashView extends React.Component{
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
     this.handleEndDateInputChange = this.handleEndDateInputChange.bind(this);
     this.setVisits = this.setVisits.bind(this);
-    this.setFeedPosts = this.setFeedPosts.bind(this);
+    this.setFeedPostViews = this.setFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
     this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
 
@@ -82,9 +82,9 @@ export default class FeedDashView extends React.Component{
 
     eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
       {
-        const index = this.state.feedPosts.map(p => p.id).indexOf(data.post.id);
+        const index = this.state.feedPostViews.map(p => p.feedPostId).indexOf(data.post.id);
         if (index != -1){
-          this.state.feedPosts[index].reminder = data.reminder;
+          this.state.feedPostViews[index].feedPost.reminder = data.reminder;
         }
         this.toggleToastShow("Reminder added!");
       }
@@ -92,9 +92,9 @@ export default class FeedDashView extends React.Component{
 
     eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
       {
-        const index = this.state.feedPosts.map(p => p.id).indexOf(data);
+        const index = this.state.feedPostViews.map(p => p.feedPostId).indexOf(data);
         if (index != -1){
-          this.state.feedPosts[index].reminder = null;
+          this.state.feedPostViews[index].feedPost.reminder = null;
         }
         this.toggleToastShow("Reminder deleted!");
       }
@@ -144,7 +144,7 @@ export default class FeedDashView extends React.Component{
 
       this.setVisits();
 
-      this.setFeedPosts();
+      this.setFeedPostViews();
 
       this.setMostActiveUsers();
 
@@ -163,43 +163,40 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  async setFeedPosts(){
+  async setFeedPostViews(){
 
-    var uids = [];
+    var feedPostViews = [];
     await db.feedPostViews
-            .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
-            .limit(7)
-            .each(postView => {
-              if (uids.length == 5){
-                return;
+            .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
+            .each(feedPostView => {
+              const index = feedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
+              if (index == -1){
+                feedPostViews.push(feedPostView);
               }
-
-              if (uids.indexOf(postView.uid) == -1){
-                uids.push(postView.uid);
+              else{
+                if (new Date(feedPostView.date) > new Date(feedPostViews[index].date)){
+                  feedPostView.timeCount += feedPostViews[index].timeCount;
+                  feedPostViews[index] = feedPostView;
+                }
+                else{
+                  feedPostViews[index].timeCount += feedPostView.timeCount;
+                }
               }
             });
 
-    var feedPosts = await db.feedPosts
-                              .where("uid")
-                              .anyOf(uids)
-                              .toArray();
+    await Promise.all (feedPostViews.map (async feedPostView => {
 
-    await Promise.all (feedPosts.map (async post => {
-      [post.reminder] = await Promise.all([
-         db.reminders.where('objectId').equals(post.uid).first()
+      [feedPostView.feedPost] = await Promise.all([
+         db.feedPosts.where({id: feedPostView.feedPostId}).first()
        ]);
 
-      post.timeCount = 0;
-      await db.feedPostViews
-              .where({uid: post.uid})
-              .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
-              .each(postView => {
-                post.timeCount += (postView.timeCount ? postView.timeCount : 0);
-              });
+      [feedPostView.feedPost.reminder] = await Promise.all([
+         db.reminders.where({objectId: feedPostView.feedPostId}).first()
+       ]);
 
     }));
 
-    this.setState({feedPosts: feedPosts});
+    this.setState({feedPostViews: feedPostViews});
 
   }
 
@@ -257,87 +254,57 @@ export default class FeedDashView extends React.Component{
 
     var mostActiveUsers = [];
 
-    var uids = [];
-    await db.feedPostViews
-            .filter(postView => dateBetweenRange(this.state.startDate, this.state.endDate, postView.date))
-            .each(postView => {
-              if (uids.indexOf(postView.uid) == -1){
-                uids.push(postView.uid);
-              }
-            });
-
-    const posts = await db.feedPosts
-                          .where("uid")
-                          .anyOf(uids)
-                          .toArray();
-
-    for (var post of posts){
-
-      // for initiator
-      if (post.initiator && post.initiator.name){
-        const index = mostActiveUsers.map(m => m.url).indexOf(post.initiator.url);
-        if (index == -1){
-
-          var feedItemsMetrics = {};
-          for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { 
-            feedItemsMetrics[category] = (post.category 
-                                            ? (post.category == category ? 1 : 0) 
-                                            : (category == "publications" ? 1 : 0)); 
-          }
-
-          mostActiveUsers.push({
-            name: post.initiator.name,
-            url: post.initiator.url,
-            picture: post.initiator.picture,
-            feedItemsMetrics: feedItemsMetrics,
-          });
-        }
-        else{
-
-          for (var category in mostActiveUsers[index].feedItemsMetrics) { 
-            if (post.category){
-              if (post.category == category){
-                mostActiveUsers[index].feedItemsMetrics[category]++;
-              }
-            }
-            else{
-              if (category == "publications"){
-                mostActiveUsers[index].feedItemsMetrics[category]++;
-              }
-            }
-          }
-
-        }
+    function feedItemsMetrics(viewCategory){
+      var result = {};
+      for (const category of Object.keys(categoryVerbMap).concat(["publications"])) {
+        result[category] = Number(category == viewCategory);
       }
+      return result;
+    }
 
-      // for author
-      if (post.content.author && post.content.author.name){
-        const index = mostActiveUsers.map(m => m.url).indexOf(post.content.author.url);
+    for (var feedPostView of this.state.feedPostViews){
+      if (feedPostView.initiator.url){
+        const index = mostActiveUsers.map(a => a.url).indexOf(feedPostView.initiator.url);
         if (index == -1){
-
-          var feedItemsMetrics = {};
-          for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { 
-            feedItemsMetrics[category] = (category == "publications" ? 1 : 0); 
-          }
-
           mostActiveUsers.push({
-            name: post.content.author.name,
-            url: post.content.author.url,
-            picture: post.content.author.picture,
-            feedItemsMetrics: feedItemsMetrics,
+            name: feedPostView.initiator.name,
+            url: feedPostView.initiator.url,
+            picture: feedPostView.initiator.picture,
+            feedItemsMetrics: feedItemsMetrics(feedPostView.category),
           });
         }
         else{
-
-          for (var category in mostActiveUsers[index].feedItemsMetrics) { 
-            if (category == "publications"){
+          for (const category of Object.keys(categoryVerbMap)) {
+            if (category == feedPostView.category){
               mostActiveUsers[index].feedItemsMetrics[category]++;
             }
           }
-
         }
       }
-    }
+      else{
+        if (!feedPostView.category){
+          var feedPost = await db.feedPosts
+                                 .where({id: feedPostView.feedPostId})
+                                 .first();
+          const index = mostActiveUsers.map(a => a.url).indexOf(feedPost.author.url);
+          if (index == -1){
+            mostActiveUsers.push({
+              name: feedPost.author.name,
+              url: feedPost.author.url,
+              picture: feedPost.author.picture,
+              feedItemsMetrics: feedItemsMetrics("publications"),
+            });
+          }
+          else{
+            for (const category of Object.keys(categoryVerbMap)) {
+              if (category == "publications"){
+                mostActiveUsers[index].feedItemsMetrics["publications"]++;
+              }
+            }
+          }
+        }
+      }
+    }    
 
     mostActiveUsers.sort((a, b) => totalInteractions(b) - totalInteractions(a));
     mostActiveUsers = mostActiveUsers.slice(0, 10);
@@ -458,28 +425,31 @@ export default class FeedDashView extends React.Component{
               && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
                       <h6 class="border-bottom pb-2 mb-0">Posts</h6>
           
-                      { !this.state.feedPosts && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                      { !this.state.feedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                                 {/*<span class="visually-hidden">Loading...</span>*/}
                               </div>
                               <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
                             </div>
                           </div>}
           
-                      { this.state.feedPosts 
+                      { this.state.feedPostViews 
                         && <>
-                          {this.state.feedPosts.length == 0
+                          {this.state.feedPostViews.length == 0
                             && <div class="text-center m-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
                                   <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
                                 </div>}
           
-                          { this.state.feedPosts.length  != 0
+                          { this.state.feedPostViews.length  != 0
                               && <div>
-                                  { this.state.feedPosts.map(((post, index) => <PostListItemView  
-                                                                                  startDate={this.state.startDate}
-                                                                                  endDate={this.state.endDate}
-                                                                                  object={post}
-                                                                                  globalData={this.props.globalData}/>))}
+                                  { this.state.feedPostViews.map(((feedPostView, index) => {
+                                    return index < 5 ? <PostViewListItemView  
+                                                        startDate={this.state.startDate}
+                                                        endDate={this.state.endDate}
+                                                        object={feedPostView}
+                                                        globalData={this.props.globalData}/>
+                                                     : null;
+                                  }))}
                                   <small class="d-block text-end mt-3 fst-italic">
                                     <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
                                   </small>
@@ -529,7 +499,8 @@ export default class FeedDashView extends React.Component{
         endDate={this.state.endDate}
         show={this.state.allPostsModalShow}
         onHide={this.handleAllPostsModalClose}
-        globalData={this.props.globalData}/>
+        globalData={this.props.globalData}
+        objects={this.state.feedPostViews}/>
 
 
       <Modal show={this.state.chartModalShow} onHide={this.handleChartModalClose}>

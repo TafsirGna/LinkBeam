@@ -151,15 +151,15 @@ export default class HomeMenu extends React.Component{
                 Folders
               </a>
             </li>
-            {/*<li>
+            <li>
               <a 
                 class="dropdown-item small" 
-                href="#" 
-                onClick={() => {switchToView(eventBus, "Folders")}}
+                href="/index.html?view=Media" 
+                target="_blank"
                 title="Display all media">
-                Medias
+                Media
               </a>
-            </li>*/}
+            </li>
             <li>
               <a 
                 class="dropdown-item small" 
