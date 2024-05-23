@@ -27,7 +27,17 @@ import {
   appParams,
 } from "../Local_library";
 import bell_icon from '../../assets/bell_icon.png';
-import { LayersIcon } from "./SVGs";
+import { 
+  LayersIcon,
+  FolderIcon,
+  SettingsIcon,
+  BookmarkIcon,
+  SearchIcon,
+  BarChartIcon,
+  BellIcon,
+  HelpIcon,
+  MediaIcon,
+} from "./SVGs";
 import eventBus from "../EventBus";
 
 export default class HomeMenu extends React.Component{
@@ -103,6 +113,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.STATISTICS)}}
                 title="See profile visits statistics">
+                <BarChartIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Profile visits stats
               </a>
             </li>
@@ -112,6 +125,9 @@ export default class HomeMenu extends React.Component{
                 href="/index.html?view=FeedDash" 
                 target="_blank"
                 title="See feed visits statistics">
+                <BarChartIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Feed visits stats
               </a>
             </li>
@@ -121,6 +137,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.BOOKMARKS)}}
                 title="List bookmarked profiles">
+                <BookmarkIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Bookmarked Profiles
               </a>
             </li>
@@ -130,6 +149,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {this.props.handleOffCanvasShow("Posts")}}
                 title="Search a post">
+                <SearchIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Search Posts
               </a>
             </li>
@@ -139,6 +161,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.REMINDERS)}}
                 title="List reminders">
+                <BellIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Reminders
               </a>
             </li>
@@ -148,6 +173,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.FOLDERS)}}
                 title="List folders">
+                <FolderIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Folders
               </a>
             </li>
@@ -157,6 +185,9 @@ export default class HomeMenu extends React.Component{
                 href="/index.html?view=Media" 
                 target="_blank"
                 title="Display all media">
+                <MediaIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Media
               </a>
             </li>
@@ -166,6 +197,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.SETTINGS)}}
                 title="See app settings">
+                <SettingsIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 Settings
               </a>
             </li>
@@ -175,6 +209,9 @@ export default class HomeMenu extends React.Component{
                 href="#" 
                 onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.ABOUT)}}
                 title="About the app">
+                <HelpIcon
+                  size="15"
+                  className="me-2 text-muted"/>
                 About
               </a>
             </li>

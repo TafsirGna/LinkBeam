@@ -152,7 +152,7 @@ export default class HomeView extends React.Component{
 
     const visits = await db.visits
                           .where("date")
-                          .startsWith(LuxonDateTime.now().minus({days:1}).toJSDate().toISOString().split("T")[0])
+                          .startsWith(LuxonDateTime.now().minus({days:1}).toISO().split("T")[0])
                           .toArray();
 
     if (!visits.length){

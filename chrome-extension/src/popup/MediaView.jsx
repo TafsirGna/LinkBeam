@@ -22,13 +22,18 @@
 /*import './MediaView.css'*/
 import React from 'react';
 import { DateTime as LuxonDateTime } from "luxon";
-import { appParams } from "./Local_library";
+import { 
+  appParams,
+  setGlobalDataSettings, 
+} from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import Masonry from "react-responsive-masonry";
 import app_logo from '../assets/app_logo.png';
 import PageTitleView from "./widgets/PageTitleView";
+import { liveQuery } from "dexie"; 
+import SeeMoreButtonView from "./widgets/SeeMoreButtonView";
 
 export default class MediaView extends React.Component{
 
@@ -36,6 +41,7 @@ export default class MediaView extends React.Component{
     super(props);
     this.state = {
       objects: null,
+      searchingMedia: false,
     };
 
     this.searchMedia = this.searchMedia.bind(this);
@@ -44,43 +50,61 @@ export default class MediaView extends React.Component{
 
   componentDidMount() {
 
-    this.searchMedia();
+    if (!this.props.globalData.settings){
+      setGlobalDataSettings(db, eventBus, liveQuery);
+    }
 
   }
 
-  async searchMedia(){
+  componentDidUpdate(prevProps, prevState){
 
-    var objects = null;
-    if (!this.state.objects){
-      objects = [{date: new Date().toISOString().split("T")[0], feedPosts: null}];
-    }
-    else{
-      const newDate = LuxonDateTime.fromISO(this.state.objects[this.state.objects.length - 1].date).minus({days: 1}).toJSDate().toISOString().split("T")[0];
-      objects = this.state.objects.concat([{date: newDate, feedPosts: null}]);
-    }
+  }
 
-    var feedPosts = [];
-    var feedPostViews = await db.feedPostViews
-                                .where("date")
-                                .startsWith(objects[objects.length - 1].date)
-                                .toArray();
+  searchMedia(){
 
-    for (var feedPostView of feedPostViews){
+    this.setState({searchingMedia: true}, async () => {
 
-      if (feedPosts.map(f => f.id).indexOf() != -1){
-        continue;
+      var objects = null,
+          newDate = null;
+
+      if (!this.state.objects){
+
+        newDate = LuxonDateTime.now();
+        objects = [];
+
+      }
+      else{
+
+        newDate = this.state.objects[this.state.objects.length - 1].date.minus({days: 1});
+        objects = this.state.objects;
+
       }
 
-      var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-      if (!feedPost.media || (feedPost.media && !feedPost.media.length)){
-        continue;
+      var feedPosts = [];
+      var feedPostViews = await db.feedPostViews
+                                  .where("date")
+                                  .startsWith(newDate.toISO().split("T")[0])
+                                  .toArray();
+
+      for (var feedPostView of feedPostViews){
+
+        if (feedPosts.map(f => f.id).indexOf(feedPostView.feedPostId) != -1){
+          continue;
+        }
+
+        var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+        if (!feedPost.media || (feedPost.media && !feedPost.media.length)){
+          continue;
+        }
+        feedPosts.push(feedPost);
+
       }
-      feedPosts.push(feedPost);
 
-    }
+      objects.push({date: newDate, feedPosts: feedPosts});
+      console.log("eeeeeeeeeeeeeeeeeeeeeeeeeee : ", {date: newDate.toISO().split("T")[0], feedPosts: feedPosts});
+      this.setState({objects: objects, searchingMedia: false});
 
-    objects[objects.length - 1].feedPosts = feedPosts;
-    this.setState({objects: objects});
+    })
 
   }
 
@@ -106,45 +130,58 @@ export default class MediaView extends React.Component{
                         </div> }
 
           { this.state.objects
+              && this.state.objects.length == 0
+              && <div class="text-center m-5">
+                                  <AlertCircleIcon size="100" className="text-muted"/>
+                                  <p><span class="badge text-bg-primary fst-italic shadow">No media yet</span></p>
+                                </div> }
+
+          { this.state.objects
+              && this.state.objects.length != 0
               && <ul class="timeline mt-4 mx-2 small">
-                    { this.state.objects.map(object => (
-                                                        <li class="timeline-item mb-5 small">
-                                                          { <p class="text-muted mb-2 fw-light">{LuxonDateTime.fromISO(object.date).toFormat("MMMM dd, yyyy")}</p>}
-                                                          { <div class="p-2">
+                    { this.state.objects.map(object => ( object.feedPosts.length == 0 
+                                                          ? null
+                                                          : <li class="timeline-item mb-5 small">
+                                                              { <p class="text-muted mb-2 fw-light">{object.date.toFormat("MMMM dd, yyyy")}</p>}
+                                                              { <div class="p-2">
 
-                                                              { !object.feedPosts
-                                                                  && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
-                                                                        </div>
-                                                                        <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                                                                      </div>
-                                                                    </div> }
+                                                                  { object.feedPosts
+                                                                      && <Masonry columnsCount={3} gutter="10px">
 
-                                                              { object.feedPosts
-                                                                  && <Masonry columnsCount={3} gutter="10px">
+                                                                            { object.feedPosts.map(feedPost => (/*<div class="col">*/
+                                                                                                                  <div class="card shadow">
+                                                                                                                    <img 
+                                                                                                                      src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                      class="card-img-top" 
+                                                                                                                      alt="..."/>
+                                                                                                                    {/*<div class="card-body">
+                                                                                                                      <h5 class="card-title">Card title</h5>
+                                                                                                                      <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                                    </div>
+                                                                                                                    <div class="card-footer">
+                                                                                                                      <small class="text-body-secondary">Last updated 3 mins ago</small>
+                                                                                                                    </div>*/}
+                                                                                                                  </div>
+                                                                                                                /*</div>*/)) }
 
-                                                                        { object.feedPosts.map(feedPost => (/*<div class="col">*/
-                                                                                                              <div class="card shadow">
-                                                                                                                <img 
-                                                                                                                  src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                                                                  class="card-img-top" 
-                                                                                                                  alt="..."/>
-                                                                                                                {/*<div class="card-body">
-                                                                                                                  <h5 class="card-title">Card title</h5>
-                                                                                                                  <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                                                                                                                </div>
-                                                                                                                <div class="card-footer">
-                                                                                                                  <small class="text-body-secondary">Last updated 3 mins ago</small>
-                                                                                                                </div>*/}
-                                                                                                              </div>
-                                                                                                            /*</div>*/)) }
+                                                                          </Masonry> }
 
-                                                                      </Masonry> }
-
-                                                            </div>}
-                                                        </li>
+                                                                </div>}
+                                                            </li>
 
                       )) }
-                  </ul> }
+                  </ul> 
+
+                }
+
+          { this.props.globalData.settings
+              && this.props.globalData.settings.lastDataResetDate 
+              && <SeeMoreButtonView
+                      showSeeMoreButton = { !this.state.searchingMedia 
+                                              && (!this.state.objects || (this.state.objects && this.state.objects[this.state.objects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))}
+                      seeMore={this.searchMedia}
+                      showLoadingSpinner={this.state.searchingMedia}
+                      onSeeMoreButtonVisibilityChange={(isVisible) => { if (isVisible) { this.searchMedia() } }}/>}
 
         </div>
       </>

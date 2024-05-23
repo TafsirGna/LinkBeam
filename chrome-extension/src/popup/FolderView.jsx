@@ -33,7 +33,10 @@ import {
 import { db } from "../db";
 import eventBus from "./EventBus";
 import Accordion from 'react-bootstrap/Accordion';
-import { AlertCircleIcon } from "./widgets/SVGs";
+import { 
+  AlertCircleIcon,
+  FolderIcon,
+} from "./widgets/SVGs";
 import { liveQuery } from "dexie";
 
 export default class FolderView extends React.Component{
@@ -96,7 +99,12 @@ export default class FolderView extends React.Component{
                 && <Accordion/*defaultActiveKey="0"*/ className="shadow">
                     { this.state.folderList.map(folder => (<Accordion.Item eventKey={folder.id}>
                                                               <Accordion.Header>
+                                                                <FolderIcon
+                                                                  size="20"
+                                                                  className="me-2 text-muted"/>
+                                                                <span>
                                                                 {folder.name}
+                                                                </span>
                                                                 <span 
                                                                   class="badge text-bg-primary ms-2 shadow py-1"
                                                                   title={`${!folder.profiles ? 0 : folder.profiles.length} profiles`}>
@@ -117,19 +125,6 @@ export default class FolderView extends React.Component{
                                                               </Accordion.Body>
                                                             </Accordion.Item>))}
                 </Accordion>}
-
-              {/*<Accordion.Item eventKey="1">
-                <Accordion.Header>Folder #2</Accordion.Header>
-                <Accordion.Body>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-                  eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-                  minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                  aliquip ex ea commodo consequat. Duis aute irure dolor in
-                  reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                  pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-                  culpa qui officia deserunt mollit anim id est laborum.
-                </Accordion.Body>
-              </Accordion.Item>*/}
 
           </div>
         </div>

@@ -52,7 +52,6 @@ export default class AggregatedVisitListView extends React.Component{
 
     if (prevProps.object != this.props.object){
       if (this.props.object && this.props.object.action == "display_all"){
-        console.log("^^^^^^^^^^^^^^^^^^^^^: ", this.props.object.list);
         var seeMore = true;
         if (prevProps.object){
           if (prevProps.object.action == "display_all"){
