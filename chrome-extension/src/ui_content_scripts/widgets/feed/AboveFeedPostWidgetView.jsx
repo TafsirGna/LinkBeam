@@ -114,7 +114,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       postHtmlElement: null,
       foundKeywords: null,
       fetchedTimeCount: 0,
-      isSuggestedPost: false,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -151,23 +150,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       return;
     }
 
-    // check if it's a suggested post
-    var isSuggestedPost = false;
-    if (postHtmlElement.querySelector(".update-components-header")){
-
-      for (var variant of Object.values(categoryVerbMap["suggestions"])){
-        if (postHtmlElement.querySelector(".update-components-header")
-                                 .textContent
-                                 .toLowerCase()
-                                 .indexOf(variant) != -1){
-          isSuggestedPost = true;
-          this.setState({isSuggestedPost: isSuggestedPost});
-          break;
-        }
-      }
-
-    }
-
     if (isElVisible(postHtmlElement)){
       this.setState({postHtmlElementVisible: true});
     }
@@ -181,10 +163,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       });
 
-      if (!isSuggestedPost){
-        // Screen this post for all contained keywords
-        this.checkAndHighlightKeywordsInPost();
-      }
+      // Screen this post for all contained keywords
+      this.checkAndHighlightKeywordsInPost();
 
     });
 
@@ -392,8 +372,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
           }
 
           if (!(this.state.timeCount % 3)){
-            if (this.state.impressionCount == null 
-                  || this.state.isSuggestedPost){
+            if (this.state.impressionCount == null){
               return;
             }
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.props.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
@@ -546,19 +525,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
-  /*() => this.setState((prevState) => ({timerDisplay: !prevState.timerDisplay}),*/
-  // toggleTimerDisplay = () => {
-
-  //   // let the other markers know of the change of settings
-  //   eventBus.dispatch(eventBus.TIMER_DISPLAY_UPDATED, {timerDisplay: !this.state.timerDisplay});
-
-  // };
-
   sendReminderData(){
-
-    if (this.state.isSuggestedPost){
-      return;
-    }
 
     this.setState({processing: true}, () => {
 
@@ -601,10 +568,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   updateReminder(){
-
-    if (this.state.isSuggestedPost){
-      return;
-    }
 
     if (Object.hasOwn(this.state.reminder, "id")){
 
@@ -679,8 +642,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   render(){
     return (
       <>
-        { !this.state.isSuggestedPost 
-            && <div>
+        <div>
                   <div class={`shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 `} role="alert">
                     <div class="flex items-center">
                       <Tooltip content="Proudly yours">
@@ -751,26 +713,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                   </span>
                                 }>
                                 { !isLinkedinFeedPostPage(window.location.href) 
-                                    && /*<Popover
-                                          aria-labelledby="default-popover"
-                                          content={
-                                            <div className="w-64 text-lg text-gray-500 dark:text-gray-400">
-                                              <div className="px-3 py-2 text-center font-bold">
-                                                <p>{secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}</p>
-                                              </div>
-                                            </div>
-                                          }
-                                          arrow={false}
-                                          trigger="hover"
-                                          placement="left">*/
-                                        <Tooltip 
+                                    && <Tooltip 
                                           content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
                                           placement="left">
                                           <Dropdown.Item>
                                             Timer
                                           </Dropdown.Item>
                                         </Tooltip>
-                                        /*</Popover> */
                                       }
                                 { Object.hasOwn(this.state.reminder, "id") 
                                     && <Dropdown.Item 
@@ -893,7 +842,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                               
                             </div>
                           </div> }
-                </div>}
+                </div>
 
         { this.props.index == 0 
             && <FeedPostViewsChartModal

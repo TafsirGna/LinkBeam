@@ -39,7 +39,14 @@ import {
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
-// import Button from 'react-bootstrap/Button';
+import { 
+  AlertCircleIcon,
+  TagIcon,
+  KeyIcon,
+  FolderIcon,
+  BellIcon,
+  DuplicateIcon,
+} from "./widgets/SVGs";
 
 const datePropertyNames = {
             bookmarks: "createdOn",
@@ -612,7 +619,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Enable popup notifications</strong>
+                  <strong class="text-gray-dark">
+                    <BellIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Enable popup notifications
+                  </strong>
                   <Form.Check // prettier-ignore
                     type="switch"
                     id="notif-custom-switch"
@@ -627,7 +639,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Auto tab opening</strong>
+                  <strong class="text-gray-dark">
+                    <DuplicateIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Auto tab opening
+                  </strong>
                   <Form.Check // prettier-ignore
                     type="switch"
                     id="notif-custom-switch"
@@ -642,7 +659,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Outdated profiles reminder</strong>
+                  <strong class="text-gray-dark">
+                    <BellIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Outdated profiles reminder
+                  </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
                       <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedProfileReminder : null}</span>
@@ -698,7 +720,15 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Keywords <span class="badge text-bg-primary ms-1 shadow">{this.state.keywordCount}</span></strong>
+                  <strong class="text-gray-dark">
+                    <KeyIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Keywords 
+                    <span class="badge text-bg-primary ms-1 shadow">
+                      {this.state.keywordCount}
+                    </span>
+                  </strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 
@@ -713,7 +743,15 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Folders <span class="badge text-bg-primary ms-1 shadow">{this.state.folderCount}</span></strong>
+                  <strong class="text-gray-dark">
+                    <FolderIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Folders 
+                    <span class="badge text-bg-primary ms-1 shadow">
+                      {this.state.folderCount}
+                    </span>
+                  </strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 
@@ -727,7 +765,15 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Tags <span class="badge text-bg-primary ms-1 shadow">{this.state.tagCount}</span></strong>
+                  <strong class="text-gray-dark">
+                    <TagIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Tags 
+                    <span class="badge text-bg-primary ms-1 shadow">
+                      {this.state.tagCount}
+                    </span>
+                  </strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 

@@ -34,6 +34,7 @@ import app_logo from '../assets/app_logo.png';
 import PageTitleView from "./widgets/PageTitleView";
 import { liveQuery } from "dexie"; 
 import SeeMoreButtonView from "./widgets/SeeMoreButtonView";
+import Carousel from 'react-bootstrap/Carousel';
 
 export default class MediaView extends React.Component{
 
@@ -96,6 +97,8 @@ export default class MediaView extends React.Component{
         if (!feedPost.media || (feedPost.media && !feedPost.media.length)){
           continue;
         }
+
+        feedPost.view = feedPostView;
         feedPosts.push(feedPost);
 
       }
@@ -130,14 +133,14 @@ export default class MediaView extends React.Component{
                         </div> }
 
           { this.state.objects
-              && this.state.objects.length == 0
-              && <div class="text-center m-5">
+              && this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) == 0
+              && <div class="text-center m-5 border shadow-lg rounded p-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
                                   <p><span class="badge text-bg-primary fst-italic shadow">No media yet</span></p>
                                 </div> }
 
           { this.state.objects
-              && this.state.objects.length != 0
+              && this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) != 0
               && <ul class="timeline mt-4 mx-2 small">
                     { this.state.objects.map(object => ( object.feedPosts.length == 0 
                                                           ? null
@@ -149,19 +152,31 @@ export default class MediaView extends React.Component{
                                                                       && <Masonry columnsCount={3} gutter="10px">
 
                                                                             { object.feedPosts.map(feedPost => (/*<div class="col">*/
-                                                                                                                  <div class="card shadow">
-                                                                                                                    <img 
-                                                                                                                      src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                                                                      class="card-img-top" 
-                                                                                                                      alt="..."/>
-                                                                                                                    {/*<div class="card-body">
-                                                                                                                      <h5 class="card-title">Card title</h5>
-                                                                                                                      <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                                  <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} target="_blank" title="View on linkedin">
+                                                                                                                    <div class="card shadow">
+                                                                                                                      { feedPost.media.length == 1
+                                                                                                                          && <img 
+                                                                                                                              src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                              class="card-img-top" 
+                                                                                                                              alt="..."/> }
+                                                                                                                      { feedPost.media.length != 1
+                                                                                                                          && <Carousel>
+                                                                                                                                {feedPost.media.map(medium => (<Carousel.Item>
+                                                                                                                                                                <img 
+                                                                                                                                                                  src={medium.src ? medium.src : medium.poster} 
+                                                                                                                                                                  class="card-img-top" 
+                                                                                                                                                                  alt="..."/>
+                                                                                                                                                              </Carousel.Item>))}
+                                                                                                                            </Carousel>}
+                                                                                                                      {/*<div class="card-body">
+                                                                                                                        <h5 class="card-title">Card title</h5>
+                                                                                                                        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                                      </div>
+                                                                                                                      <div class="card-footer">
+                                                                                                                        <small class="text-body-secondary">Last updated 3 mins ago</small>
+                                                                                                                      </div>*/}
                                                                                                                     </div>
-                                                                                                                    <div class="card-footer">
-                                                                                                                      <small class="text-body-secondary">Last updated 3 mins ago</small>
-                                                                                                                    </div>*/}
-                                                                                                                  </div>
+                                                                                                                  </a>
                                                                                                                 /*</div>*/)) }
 
                                                                           </Masonry> }

@@ -696,7 +696,7 @@ async function recordFeedVisit(tabData){
                  .where({feedPostId: dbFeedPost.id})
                  .each(postView => {
                     post.viewsCount++;
-                    post.timeCount += (postView.timeCount ? postView.timeCount : 0);
+                    post.timeCount += postView.timeCount;
                  });
 
         await db.visits.update(visit.id, visit);
