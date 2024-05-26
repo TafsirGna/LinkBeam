@@ -25,6 +25,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { 
   appParams,
   setGlobalDataSettings, 
+  periodRange,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -34,7 +35,10 @@ import app_logo from '../assets/app_logo.png';
 import PageTitleView from "./widgets/PageTitleView";
 import { liveQuery } from "dexie"; 
 import SeeMoreButtonView from "./widgets/SeeMoreButtonView";
+import SearchInputView from "./widgets/SearchInputView";
 import Carousel from 'react-bootstrap/Carousel';
+
+var objectsBackup = null;
 
 export default class MediaView extends React.Component{
 
@@ -43,6 +47,7 @@ export default class MediaView extends React.Component{
     this.state = {
       objects: null,
       searchingMedia: false,
+      searchText: null,
     };
 
     this.searchMedia = this.searchMedia.bind(this);
@@ -55,9 +60,77 @@ export default class MediaView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
+    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
+
+      console.log("********************* 1 : ", data);
+
+        if (!data){
+          if (!objectsBackup){
+            objectsBackup = this.state.objects;
+          }
+          this.setState({objects: null});
+          return;
+        }
+
+        if (!data.searchText.replaceAll(/\s/g,"").length){
+
+          if (objectsBackup){
+            this.setState({objects: objectsBackup, searchText: null});
+          }
+
+        }
+        else{
+
+          this.setState({searchText: data.searchText});
+
+          var feedPostsByDate = {};
+          for (var feedPost of data.results){
+
+            if (!feedPost.media){
+              continue;
+            }
+
+            feedPost.view = await db.feedPostViews
+                                     .where({feedPostId: feedPost.id})
+                                     .last(); 
+
+            if (!feedPost.view){
+              continue;
+            }
+
+            if (feedPost.view.date.split("T")[0] in feedPostsByDate){
+              feedPostsByDate[feedPost.view.date.split("T")[0]].push(feedPost);
+            }
+            else{
+              feedPostsByDate[feedPost.view.date.split("T")[0]] = [feedPost];
+            }
+
+          }
+
+          data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), new Date(), 1, LuxonDateTime).map(date => {
+            return {
+              date: date,
+              feedPosts: date.toISO().split("T")[0] in feedPostsByDate ? feedPostsByDate[date.toISO().split("T")[0]] : [],
+            }
+          });
+          data.results.reverse();
+
+          this.setState({objects: data.results});
+
+        }
+
+      }
+    );
+
   }
 
   componentDidUpdate(prevProps, prevState){
+
+  }
+
+  componentWillUnmount(){
+
+    eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
 
   }
 
@@ -94,7 +167,7 @@ export default class MediaView extends React.Component{
         }
 
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-        if (!feedPost.media || (feedPost.media && !feedPost.media.length)){
+        if (!feedPost.media){
           continue;
         }
 
@@ -104,14 +177,9 @@ export default class MediaView extends React.Component{
       }
 
       objects.push({date: newDate, feedPosts: feedPosts});
-      console.log("eeeeeeeeeeeeeeeeeeeeeeeeeee : ", {date: newDate.toISO().split("T")[0], feedPosts: feedPosts});
       this.setState({objects: objects, searchingMedia: false});
 
     })
-
-  }
-
-  componentWillUnmount(){
 
   }
 
@@ -123,6 +191,16 @@ export default class MediaView extends React.Component{
           <div class="text-center">
             <img src={app_logo}  alt="" width="40" height="40"/>
             <PageTitleView pageTitle="Gallery"/>
+          </div>
+
+          <div class="my-4">
+            <SearchInputView 
+              objectStoreName="media" 
+              globalData={this.props.globalData} />
+              { this.state.searchText 
+                  && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
+                      {`${this.state.objects ? this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
+                    </p>}
           </div>
 
           { !this.state.objects 
@@ -144,28 +222,43 @@ export default class MediaView extends React.Component{
               && <ul class="timeline mt-4 mx-2 small">
                     { this.state.objects.map(object => ( object.feedPosts.length == 0 
                                                           ? null
-                                                          : <li class="timeline-item mb-5 small">
-                                                              { <p class="text-muted mb-2 fw-light">{object.date.toFormat("MMMM dd, yyyy")}</p>}
+                                                          : <li class="timeline-item mb-5">
+                                                              { <p class="mb-2 fst-italic">{object.date.toFormat("MMMM dd, yyyy")}</p>}
                                                               { <div class="p-2">
 
                                                                   { object.feedPosts
                                                                       && <Masonry columnsCount={3} gutter="10px">
 
-                                                                            { object.feedPosts.map(feedPost => (/*<div class="col">*/
-                                                                                                                  <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} target="_blank" title="View on linkedin">
+                                                                            { object.feedPosts.toSorted((a, b) => {
+                                                                                                          if (new Date(a.view.date) < new Date(b.view.date)){
+                                                                                                            return 1;
+                                                                                                          }
+                                                                                                          else if (new Date(a.view.date) > new Date(b.view.date)){
+                                                                                                            return -1;
+                                                                                                          }
+                                                                                                          else{
+                                                                                                            return 0;
+                                                                                                          }
+                                                                                                        }).map(feedPost => (/*<div class="col">*/
+                                                                                                                  <a 
+                                                                                                                    href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} 
+                                                                                                                    target="_blank" 
+                                                                                                                    title="View on linkedin">
                                                                                                                     <div class="card shadow">
                                                                                                                       { feedPost.media.length == 1
+                                                                                                                          && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
                                                                                                                           && <img 
                                                                                                                               src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
                                                                                                                               class="card-img-top" 
                                                                                                                               alt="..."/> }
                                                                                                                       { feedPost.media.length != 1
-                                                                                                                          && <Carousel>
+                                                                                                                          && <Carousel controls={false} indicators={false}>
                                                                                                                                 {feedPost.media.map(medium => (<Carousel.Item>
-                                                                                                                                                                <img 
+                                                                                                                                                                { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
+                                                                                                                                                                  && <img 
                                                                                                                                                                   src={medium.src ? medium.src : medium.poster} 
                                                                                                                                                                   class="card-img-top" 
-                                                                                                                                                                  alt="..."/>
+                                                                                                                                                                  alt="..."/>}
                                                                                                                                                               </Carousel.Item>))}
                                                                                                                             </Carousel>}
                                                                                                                       {/*<div class="card-body">
@@ -193,7 +286,8 @@ export default class MediaView extends React.Component{
               && this.props.globalData.settings.lastDataResetDate 
               && <SeeMoreButtonView
                       showSeeMoreButton = { !this.state.searchingMedia 
-                                              && (!this.state.objects || (this.state.objects && this.state.objects[this.state.objects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))}
+                                              && (!this.state.objects || (this.state.objects && this.state.objects[this.state.objects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))
+                                              && !this.state.searchText }
                       seeMore={this.searchMedia}
                       showLoadingSpinner={this.state.searchingMedia}
                       onSeeMoreButtonVisibilityChange={(isVisible) => { if (isVisible) { this.searchMedia() } }}/>}

@@ -205,6 +205,52 @@ export function DataApproximationAlert(props) {
         </div>;
 }
 
+export function extractPostDate(textContent, LuxonDateTime){
+
+  var postDate = null;
+
+  if (!textContent){
+    return postDate;
+  }
+
+  // english version
+  var timeTerm = "ago";
+  if (textContent.endsWith(timeTerm)){
+
+    for (var time of ["hour", "day", "week", "month", "year"]){
+
+      if (textContent.indexOf(time) != -1){
+        var criteria = {};
+        criteria[`${time}s`] = Number(textContent.slice(0, textContent.indexOf(time)));
+        return LuxonDateTime.now().minus(criteria).toISO();
+        // break;
+      }
+
+    }
+
+  }
+
+  // french version
+  timeTerm = "Il y a";
+  if (textContent.startsWith(timeTerm)){
+
+    for (var [timeKey, timeValue] of Object.entries({heure: "hour", jour: "day", semaine: "week", mois: "month", année: "year"})){
+
+      if (textContent.indexOf(timeKey) != -1){
+        var criteria = {};
+        criteria[`${timeValue}s`] = Number(textContent.slice(timeTerm.length, textContent.indexOf(timeKey)));
+        return LuxonDateTime.now().minus(criteria).toISO();
+        // break;
+      }
+
+    }
+
+  }
+
+  return postDate;
+
+}
+
 export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detected, highlightedKeywordBadgeColors){
 
   if (!htmlElement){

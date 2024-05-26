@@ -28,10 +28,12 @@ import {
   categoryVerbMap,
   isLinkedinFeedPostPage,
   isLinkedinFeed,
+  nRange,
 } from "../../../popup/Local_library";
 import{
   sendTabData,
-  checkAndHighlightKeywordsInHtmlEl
+  checkAndHighlightKeywordsInHtmlEl,
+  extractPostDate,
 } from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
@@ -40,6 +42,7 @@ import {
   KeyIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
+import { DateTime as LuxonDateTime } from "luxon";
 import { 
   Dropdown, 
   Spinner, 
@@ -114,6 +117,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
       postHtmlElement: null,
       foundKeywords: null,
       fetchedTimeCount: 0,
+      popularityRank: null,
+      dbId: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -130,6 +135,29 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   componentDidMount() {
+
+    chrome.storage.onChanged.addListener(((changes, namespace) => {
+    
+      if (namespace != "session" || this.state.dbId == null){
+        return;
+      }
+
+      for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+
+        if (key != "rankedPostsByPopularity"){
+          continue;
+        }
+
+        this.setState({
+          popularityRank: { 
+            number: newValue.findIndex(o => o.id == this.state.dbId) + 1, 
+            count: newValue.length, 
+          },
+        });
+
+      }
+
+    }).bind(this));
 
     this.startListening();
 
@@ -225,14 +253,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       post.initiator = {
         name: postContainerHeaderElement.querySelector("a.update-components-text-view__mention") 
-            ? postContainerHeaderElement.querySelector("a.update-components-text-view__mention").textContent 
-            : null,
+                ? postContainerHeaderElement.querySelector("a.update-components-text-view__mention").textContent 
+                : null,
         url: postContainerHeaderElement.querySelector("a.app-aware-link ") 
-            ? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
-            : null,
-        picture: postContainerHeaderElement.querySelector("img")
-              ? postContainerHeaderElement.querySelector("img").src 
+              ? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
               : null,
+        picture: postContainerHeaderElement.querySelector("img")
+                  ? postContainerHeaderElement.querySelector("img").src 
+                  : null,
       };
 
     }
@@ -332,8 +360,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
         name: this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden")
                ? this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden").textContent
                : null,
-        url: this.state.postHtmlElement.querySelector(".update-components-actor__meta a.app-aware-link")
-            ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.app-aware-link").href.split("?")[0]
+        url: this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
+            ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link").href.split("?")[0]
             : null,
         picture: this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")
               ? this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
@@ -350,9 +378,71 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     poster: htmlEl.poster ? htmlEl.poster : null,
                   }))
           : null,
+      date: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
+                    ? this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent
+                    : null, LuxonDateTime),
+
       reactions: getPostReactionsValues("reaction"),
       commentsCount: getPostReactionsValues("comment"),               
       repostsCount: getPostReactionsValues("repost"),
+
+      subPost: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                ? {
+                  author: {
+                    name: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__name .visually-hidden")
+                            ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__name .visually-hidden")
+                                                    .textContent
+                            : null,
+                    url: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
+                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
+                                                    .href
+                          : null,
+                    picture: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__image img")
+                              ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".update-components-actor__image img")
+                                                    .src
+                              : null,
+                  },
+                  text: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".feed-shared-update-v2__description")
+                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".feed-shared-update-v2__description")
+                                                  .textContent
+                          : null ,
+                  media: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".update-components-mini-update-v2__reshared-content")
+                          ? Array.from(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".update-components-mini-update-v2__reshared-content")
+                                                  .querySelectorAll("img, video"))
+                                 .map(htmlEl => ({
+                                    type: htmlEl.tagName,
+                                    src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
+                                    poster: htmlEl.poster ? htmlEl.poster : null,
+                                 }))
+                          : null,
+                  date: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                  .querySelector(".update-components-actor__sub-description-link .visually-hidden")
+                                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                  .querySelector(".update-components-actor__sub-description-link .visually-hidden")
+                                                                  .textContent
+                                          : null, LuxonDateTime),
+                  uid: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".feed-shared-update-v2__description")
+                        ? (this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                      .querySelector(".feed-shared-update-v2__description")
+                                                      .parentNode.tagName.toLowerCase() ==  "a"
+                            ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                      .querySelector(".feed-shared-update-v2__description")
+                                                      .parentNode.getAttribute("href")
+                            : null)
+                        : null,
+                }
+                : null,
     };
 
     sendTabData(this.props.tabId, post);
@@ -423,7 +513,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                 if (message.data.object){
                   const reminder = message.data.object;
-                  if (reminder.objectId != this.props.postUid){
+                  if (reminder.postUid != this.props.postUid){
                     return;
                   }
                   this.setState({
@@ -483,6 +573,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   if (Object.hasOwn(post, "timeCount")){
                     this.setState({fetchedTimeCount: post.timeCount}, () => {
                     });
+                  }
+
+                  if (Object.hasOwn(post, "dbId")){
+                    this.setState({dbId: post.dbId});
+                  }
+
+                  if (Object.hasOwn(post, "rank")){
+                    this.setState({popularityRank: post.rank});
                   }
                   
                 }
@@ -668,6 +766,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                   size="16"
                                   className="ml-2"/>
                             </span>}
+
+                      {/*Rating widget*/}
+                      { this.state.popularityRank
+                          && <div class="flex items-center mx-2" title={`#${this.state.popularityRank.number} out of ${this.state.popularityRank.count}`}>
+                                { nRange(0, 4, 1).map(item => (<svg class={`w-4 h-4 ${((this.state.popularityRank.count - this.state.popularityRank.number) / this.state.popularityRank.count) >= ((item + 1) * 0.25) ? "text-yellow-300" : "text-gray-300 dark:text-gray-500"} ms-1`} aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 22 20">
+                                    <path d="M20.924 7.625a1.523 1.523 0 0 0-1.238-1.044l-5.051-.734-2.259-4.577a1.534 1.534 0 0 0-2.752 0L7.365 5.847l-5.051.734A1.535 1.535 0 0 0 1.463 9.2l3.656 3.563-.863 5.031a1.532 1.532 0 0 0 2.226 1.616L11 17.033l4.518 2.375a1.534 1.534 0 0 0 2.226-1.617l-.863-5.03L20.537 9.2a1.523 1.523 0 0 0 .387-1.575Z"/>
+                                </svg>)) }
+                              </div>}
         
                       { this.state.foundKeywords 
                           && <div> 

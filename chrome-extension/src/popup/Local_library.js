@@ -565,6 +565,8 @@ export function notifyException(){
   
 }
 
+export const periodRange = (start, stop, step, LuxonDateTime) => Array.from({ length: (LuxonDateTime.fromJSDate(stop).diff(LuxonDateTime.fromJSDate(start), "days")).days / step + 1 }, (_, i) => LuxonDateTime.fromJSDate(start).plus({days: i * step}))
+
 export function getPeriodLabel(viewIndex, periodRangeLimits = null, LuxonDateTime = null){
 
   var result = null;
@@ -1200,18 +1202,26 @@ export const removeObjectsId = (objects) => {
   });
 }
 
+export const popularityValue = p => (p.commentsCount + p.repostsCount + p.reactions);
+
 export function dateBetweenRange(lower, upper, date){
   return (new Date(lower) <= new Date(date.split("T")[0]) && new Date(date.split("T")[0]) <= new Date(upper));
 }
 
-export function getVisitsPostCount(visits){
+export async function getVisitsPostCount(visits, db){
 
-  var postCount = 0;
-  visits.forEach(visit => {
-    postCount += getVisitPostCount(visit);
-  });
+  var feedPostIds = [];
+  for (var visit of visits){
+    await db.feedPostViews
+           .where({visitId: visit.id})
+           .each(feedPostView => {
+              if (feedPostIds.indexOf(feedPostView.feedPostId) == -1){
+                feedPostIds.push(feedPostView.feedPostId);
+              }
+           });
+  }
 
-  return postCount;
+  return feedPostIds.length;
 
 }
 

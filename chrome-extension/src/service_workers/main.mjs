@@ -33,6 +33,7 @@ import {
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
     deactivateTodayReminders,
+    popularityValue,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
@@ -45,6 +46,8 @@ import Dexie from 'dexie';
  * and it finally sets the uninstallation process with the deletion
  * of the database
  */
+
+chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' });
 
 chrome.runtime.onInstalled.addListener(details => {
 
@@ -99,42 +102,77 @@ function isUrlOfInterest(url){
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
-    if (changeInfo.url && changeInfo.status == "loading"){      
+    if (!changeInfo.url){      
+        return;
+    }
 
-        var url = changeInfo.url;
-        if (testTabBaseUrl(url) && isUrlOfInterest(url)){
+    if (testTabBaseUrl(changeInfo.url) && isUrlOfInterest(changeInfo.url)){
 
-            url = url.split("?")[0];
-            try{
+        switch(changeInfo.status){
 
-                Dexie.exists(appParams.appDbName).then(function (exists) {
-                    if (exists) {
+            case "loading":{
 
-                        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-                            console.log(",,,,,,,,,,,,,,,, onUpdated | tabs : ", tabs);
-                            handleNewInterestingTab(tabId, url, tabs[0].id == tabId);
-                        });
-                        
-                    }
-                });
+                var url = changeInfo.url.split("?")[0];
 
-            }
-            catch(error){
-                console.error("Error : ", error);
-            }
+                // checking a lock before proceding
+                // var sessionItem = await chrome.storage.session.get(["loadingTabs"]);
+                // if (sessionItem.loadingTabs 
+                //         && sessionItem.loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
+                //     return;
+                // }
+                // sessionItem.loadingTabs = sessionItem.loadingTabs 
+                //                             ? sessionItem.loadingTabs.concat({id: tabId, url: url})
+                //                             : [{id: tabId, url: url}];
+                // await chrome.storage.session.set({ loadingTabs: sessionItem.loadingTabs });
 
-        }
-        else{
+                try{
 
-            chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-                console.log("################### : ", tabs, tabs[0]);
-                if (tabs[0].id == tabId){
-                    resetTabTimer();
-                    chrome.action.setBadgeText({text: null});
+                    Dexie.exists(appParams.appDbName).then(function (exists) {
+                        if (exists) {
+
+                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                                console.log(",,,,,,,,,,,,,,,, onUpdated | tabs : ", tabs);
+                                handleNewInterestingTab(tabId, url, tabs[0].id == tabId);
+                            });
+                            
+                        }
+                    });
+
                 }
-            });
+                catch(error){
+                    console.error("Error : ", error);
+                }
+
+                break;
+
+            }
+
+            case "complete": {
+
+                // var sessionItem = await chrome.storage.session.get(["loadingTabs"]);
+                // if (sessionItem.loadingTabs){
+                //     const index = sessionItem.loadingTabs.findIndex(t => t.id == tabId && t.url == url);
+                //     if (index != -1){
+                //         sessionItem.loadingTabs.splice(index, 1);
+                //         await chrome.storage.session.set({ loadingTabs: sessionItem.loadingTabs });
+                //     }
+                // }
+
+                break;
+            }
 
         }
+
+    }
+    else{
+
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            console.log("################### : ", tabs, tabs[0]);
+            if (tabs[0].id == tabId){
+                resetTabTimer();
+                chrome.action.setBadgeText({text: null});
+            }
+        });
 
     }
 
@@ -151,6 +189,19 @@ async function runTabTimer(tabId, url){
     url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
 
     const interval = setInterval(async () => {       
+
+        // checking first that the user is still on the page for which the timer has been started before proceeding to the next stage
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            if (!tabs[0]){
+                return;
+            }
+            var currTabUrl = tabs[0].url.split("?")[0];
+            currTabUrl = isLinkedinProfilePage(currTabUrl) ? currTabUrl.slice(currTabUrl.indexOf(appParams.LINKEDIN_ROOT_URL)) : currTabUrl;
+            if (currTabUrl != url){
+                resetTabTimer();
+            }
+        });
+
 
         var sessionItem = await chrome.storage.session.get(["myTabs"]);
         if (!sessionItem.myTabs
@@ -412,8 +463,7 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
     }
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
-        visitId = null, 
-        myTabs = null;
+        visitId = null;
     const badgeText = "!";
 
     if (onNewTab){
@@ -422,21 +472,20 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 
     if (!sessionItem.myTabs){
 
-        myTabs = {};  
-        myTabs[tabId] = {badgeText: badgeText};
+        sessionItem.myTabs = {};  
+        sessionItem.myTabs[tabId] = {badgeText: badgeText};
 
         if (isLinkedinFeed(url)){
             visitId = await addFreshFeedVisit();
-            myTabs[tabId].visits = [{id: visitId, url: url}];
+            sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
+            setPostsRankingInSession();
         }
 
-        chrome.storage.session.set({ myTabs: myTabs });
+        chrome.storage.session.set({ myTabs: sessionItem.myTabs });
         injectScriptsInTab(tabId, url, visitId);
 
     }
     else{
-
-        myTabs = sessionItem.myTabs;  
 
         if (Object.hasOwn(sessionItem.myTabs, tabId)){
 
@@ -448,51 +497,54 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 
                 if (isLinkedinFeed(url)){
                     visitId = await addFreshFeedVisit();
-                    myTabs[tabId].visits = [{id: visitId, url: url}];
+                    sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
+                    setPostsRankingInSession();
                 }
 
-                chrome.storage.session.set({ myTabs: myTabs });
+                chrome.storage.session.set({ myTabs: sessionItem.myTabs });
                 injectScriptsInTab(tabId, url, visitId);
 
             }
             else{
 
-                const index = myTabs[tabId].visits.map(v => v.url).indexOf(url);
+                const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
                 if (index == -1){
 
                     if (isLinkedinFeed(url)){
                         visitId = await addFreshFeedVisit();
-                        myTabs[tabId].visits.push({id: visitId, url: url});
+                        sessionItem.myTabs[tabId].visits.push({id: visitId, url: url});
+                        setPostsRankingInSession();
                     }
 
-                    chrome.storage.session.set({ myTabs: myTabs });
+                    chrome.storage.session.set({ myTabs: sessionItem.myTabs });
                     injectScriptsInTab(tabId, url, visitId);
 
                 }
-                else{
-                    visitId = myTabs[tabId].visits[index].id;
-                }
+                // else{
+                //     visitId = sessionItem.myTabs[tabId].visits[index].id;
+                // }
 
             }
 
         }
         else{
 
-            myTabs[tabId] = {badgeText: badgeText};
+            sessionItem.myTabs[tabId] = {badgeText: badgeText};
 
             if (isLinkedinFeed(url)){
                 visitId = await addFreshFeedVisit();
-                if (!myTabs[tabId].visits){
-                    myTabs[tabId].visits = [{id: visitId, url: url}];
+                if (!sessionItem.myTabs[tabId].visits){
+                    sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
                 }
                 else{
-                    if (myTabs[tabId].visits.map(v => v.url).indexOf(url) == -1){
-                        myTabs[tabId].visits.push({id: visitId, url: url});
+                    if (sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url) == -1){
+                        sessionItem.myTabs[tabId].visits.push({id: visitId, url: url});
                     }
                 }
+                setPostsRankingInSession();
             }
 
-            chrome.storage.session.set({ myTabs: myTabs });
+            chrome.storage.session.set({ myTabs: sessionItem.myTabs });
             injectScriptsInTab(tabId, url, visitId);
 
         }
@@ -511,6 +563,39 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
     //     });
 
     // }
+
+    async function setPostsRankingInSession(){
+
+        var sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
+        if (sessionItem.rankedPostsByPopularity){
+            return;
+        }
+
+        var feedPosts = await db.feedPosts.toArray(),
+            results = [];
+        for (var feedPost of feedPosts){
+
+            const lastView = await db.feedPostViews
+                                   .where({feedPostId: feedPost.id})
+                                   .last();
+
+            if (!lastView){
+                continue;
+            }
+
+            results.push({id: feedPost.id, popularity: popularityValue(lastView)});
+
+        }
+
+        results.sort(function(a, b) { return b.popularity - a.popularity; });
+
+        await chrome.storage.session.set({ rankedPostsByPopularity: results }).then(function(){
+            console.log("--- rankedPostsByPopularity set ", results);
+        });
+
+        return results;
+
+    }
 
 
     async function addFreshFeedVisit(){
@@ -570,9 +655,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
             Dexie.exists(appParams.appDbName).then(function (exists) {
                 if (exists) {
-
                     handleNewInterestingTab(activeInfo.tabId, url, true);
-
                 }
             });
 
@@ -625,10 +708,40 @@ async function recordFeedVisit(tabData){
             uid: !post.category ? post.id : null,
             author: post.content.author,
             text: post.content.text,
-            media: post.content.media,
-            date: null,
+            media: post.content.media 
+                    ? (post.content.media.length
+                        ? post.content.media
+                        : null) 
+                    : null,
+            date: post.content.date,
         };
 
+        console.log("!!!!!!!!!!!!!!!!!! : ", post);
+
+
+        if (post.subPost){
+
+            var subPost = {
+                uid: post.subPost.uid,
+                author: post.subPost.author,
+                text: post.subPost.text,
+                media: post.subPost.media
+                        ? (post.subPost.media.length
+                            ? post.subPost.media
+                            : null)
+                        : null,
+                date: post.subPost.date,
+            }
+
+            await db.feedPosts
+                    .add(subPost)
+                    .then(function(id){
+                        subPost.id = id;
+                    })
+
+            newFeedPost["linkedPostId"] = subPost.id;
+            
+        }
 
         function sameFeedPostCondition(entry, newFeedPost){
             return (newFeedPost.uid && entry.uid && newFeedPost.uid == entry.uid)
@@ -688,15 +801,34 @@ async function recordFeedVisit(tabData){
         post.reminder = await db.reminders
                                  .where({objectId: dbFeedPost.id})
                                  .first();
+        if (post.reminder){
+            post.reminder.postUid = post.id;
+        }
 
         post.viewsCount = 0;
         post.timeCount = 0;
+        post.dbId = dbFeedPost.id;
 
+        var popularity = {date: null, value: 0};
         await db.feedPostViews
                  .where({feedPostId: dbFeedPost.id})
                  .each(postView => {
+
                     post.viewsCount++;
                     post.timeCount += postView.timeCount;
+
+                    // updating popularity variable
+                    if (!popularity.date){
+                        popularity.date = postView.date;
+                        popularity.value = popularityValue(postView);
+                    }
+                    else{
+                        if (new Date(popularity.date) < new Date(postView.date)){
+                            popularity.date = postView.date;
+                            popularity.value = popularityValue(postView);
+                        }
+                    }
+
                  });
 
         await db.visits.update(visit.id, visit);
@@ -712,8 +844,33 @@ async function recordFeedVisit(tabData){
             // console.log("Value was set");
         });
 
+        // update the rankedPostsByPopularity session variable
+        sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
+        if (!sessionItem.rankedPostsByPopularity){
+            sessionItem.rankedPostsByPopularity = await setPostsRankingInSession();
+        }
+
+        const index = sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id);
+        if (index != -1){
+            post.rank = {
+                number: index + 1, 
+                count: sessionItem.rankedPostsByPopularity.length,
+            };
+        }
+        else{ /*if (index == -1)*/
+            sessionItem.rankedPostsByPopularity.push({id: dbFeedPost.id, popularity: popularity.value});
+            sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
+            post.rank = {
+                number: sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id) + 1,
+                count: sessionItem.rankedPostsByPopularity.length,
+            };
+            await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
+                console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
+            });
+        }
+
         chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: [post]}}, (response) => {
-            console.log('response sent', [post], response);
+            console.log('post data response sent', [post], response);
         });  
 
     });
@@ -963,6 +1120,7 @@ async function saveReminder(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
     reminder.active = true;
+    const postUid = reminder.objectId;
 
     try{
 
@@ -971,12 +1129,16 @@ async function saveReminder(reminder){
                                      .first()).feedPostId;
 
         await db.reminders
-                .add(reminder);
+                .add(reminder)
+                .then(function(id){
+                    reminder.id = id;
+                });
 
-        return await db.reminders
+        reminder.postUid = postUid;
+        return reminder;/*await db.reminders
                        .where("objectId")
                        .equals(reminder.objectId)
-                       .first();
+                       .first()*/;
 
     }
     catch(error){
@@ -994,7 +1156,7 @@ async function deleteReminder(reminder){
         await db.reminders
                 .delete(reminder.id);
 
-        return reminder.objectId;
+        return reminder.postUid;
 
     }
     catch(error){

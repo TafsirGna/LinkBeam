@@ -28,6 +28,7 @@ import PostViewListItemView from "../PostViewListItemView";
 import { 
   dbDataSanitizer,
   dateBetweenRange,
+  popularityValue,
 } from "../../Local_library";
 import { db } from "../../../db";
 import eventBus from "../../EventBus";
@@ -85,7 +86,6 @@ export default class AllPostsModal extends React.Component{
           break;
         }
         case 2:{
-          const popularityValue = p => (p.commentsCount + p.repostsCount + p.reactions);
           feedPostViews.sort(function(a, b){return popularityValue(b) - popularityValue(a)});
           break;
         }

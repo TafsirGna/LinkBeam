@@ -41,7 +41,6 @@ import ReminderListView from "./widgets/ReminderListView";
 import PageTitleView from "./widgets/PageTitleView";
 import CustomToast from "./widgets/toasts/CustomToast";
 import DailyVisitsBarChart from "./widgets/charts/DailyVisitsBarChart";
-import ProfileActivityListView from "./widgets/ProfileActivityListView";
 import app_logo from '../assets/app_logo.png';
 import { db } from "../db";
 import eventBus from "./EventBus";

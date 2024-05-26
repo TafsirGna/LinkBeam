@@ -1,4 +1,25 @@
-import '../assets/css/ProfileActivityListView.css';
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
+import '../assets/css/ActivityListView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import { DateTime as LuxonDateTime } from "luxon";
@@ -16,7 +37,7 @@ import {
 } from "../Local_library";
 
 
-export default class ProfileActivityListView extends React.Component{
+export default class ActivityListView extends React.Component{
 
   constructor(props){
     super(props);
@@ -48,82 +69,6 @@ export default class ProfileActivityListView extends React.Component{
     this.setState({selectedPost: post, offCanvasShow: true});
   };
 
-  getListItemData(object, property){
-
-    var result = null;
-    switch(property){
-      case "authorPicture":{
-        if (object.profile){
-          result = object.profile.avatar ? object.profile.avatar : default_user_icon; 
-        }
-        else if (object.initiator){
-          result = object.initiator.picture;
-        }
-        else if (object.content){
-          if (object.content.author){
-            result = object.content.author.picture;
-          }
-        }
-        break;
-      }
-
-      case "authorName":{
-        if (object.profile){
-          result = object.profile.fullName; 
-        }
-        else if (object.initiator){
-          result = object.initiator.name;
-        }
-        else if (object.content){
-          if (object.content.author){
-            result = object.content.author.name;
-          }
-        }
-        break;
-      }
-
-      case "postAction":{
-        if (object.profile){
-          result = object.profile.avatar ? object.profile.avatar : default_user_icon; 
-        }
-        else if (object.initiator){
-          result = object.initiator.picture;
-        }
-        else if (object.content){
-          if (object.content.author){
-            result = object.content.author.picture;
-          }
-        }
-        break;
-      }
-
-      case "postLink":{
-        if (object.profile){
-          result = object.link; 
-        }
-        else if (object.content){            
-          result = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${object.uid}`;
-        }
-        break;
-      }
-
-      case "textContent":{
-        if (object.profile){
-          result = object.title; 
-        }
-        else if (object.content){
-          if (object.content.text){
-            result = object.content.text;
-          }
-        }
-        break;
-      }
-    }
-
-    return result;
-
-  }
-
   render(){
     return (
       <>
@@ -151,7 +96,7 @@ export default class ProfileActivityListView extends React.Component{
                     { this.props.variant == "list" 
                         && <div>
                               <div class="list-group small mt-1 shadow-sm">
-                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={this.getListItemData(object, "postLink")} target="_blank">
+                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ object.link } target="_blank">
                                   <div class="d-flex gap-2 w-100 justify-content-between">
                                     <div>
                                       <p class="mb-1">
@@ -161,28 +106,13 @@ export default class ProfileActivityListView extends React.Component{
                                             class="rounded-circle me-1" 
                                             width="24" 
                                             height="24" 
-                                            src={this.getListItemData(object, "authorPicture")} 
+                                            src={ object.user.picture } 
                                             alt=""/>
-                                          { this.getListItemData(object, "authorName") }
-                                          {/*{ this.getListItemData(object, "postAction") 
-                                                  && <OverlayTrigger
-                                                        placement="top"
-                                                        overlay={<Tooltip id="tooltip1">
-                                                                    {(profileActivityObject.action.toLowerCase().indexOf("liked") != -1 
-                                                                        || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) ? "liked" 
-                                                                        : ((this.getListItemData(profileActivityObject, "postAction").toLowerCase().indexOf("shared") != -1 
-                                                                              || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) ? "shared" 
-                                                                              : null)}
-                                                                </Tooltip>}
-                                                      >
-                                                        <span>
-                                                          { (this.getListItemData(object, "postAction").toLowerCase().indexOf("liked") != -1 || profileActivityObject.action.toLowerCase().indexOf("aimé") != -1) &&  <img class="mx-1" width="18" height="18" src={heart_icon} alt=""/>}
-                                                          { (this.getListItemData(object, "postAction").toLowerCase().indexOf("shared") != -1 || profileActivityObject.action.toLowerCase().indexOf("partagé") != -1) &&  <img class="mx-2" width="16" height="16" src={share_icon} alt=""/>}
-                                                        </span>
-                                                      </OverlayTrigger>}*/}
+                                          { object.user.name }
+                                          {/**/}
                                         </span>
                                       </p>
-                                      <p class="mb-0 opacity-75 border p-2 rounded shadow">{this.getListItemData(object, "textContent")}</p>
+                                      <p class="mb-0 opacity-75 border p-2 rounded shadow">{ object.text }</p>
                                     </div>
                                     <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>
                                   </div>
@@ -204,9 +134,9 @@ export default class ProfileActivityListView extends React.Component{
                                           class="rounded-circle me-1" 
                                           width="24" 
                                           height="24" 
-                                          src={this.getListItemData(object, "authorPicture")} 
+                                          src={ object.user.picture } 
                                           alt=""/>
-                                        {this.getListItemData(object, "authorName")}
+                                        { object.user.name }
                                         {/*{object.action 
                                               && <OverlayTrigger
                                                           placement="top"
@@ -227,7 +157,7 @@ export default class ProfileActivityListView extends React.Component{
                                         <a 
                                           title="See post on linkedin" 
                                           class="mx-1" 
-                                          href={this.getListItemData(object, "postLink")}>
+                                          href={ object.link }>
                                           <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                         </a>
                                         <span title="Image" class="mx-1">
@@ -238,7 +168,7 @@ export default class ProfileActivityListView extends React.Component{
                                       </span>
                                     </p>
                                     <p class="text-muted border rounded p-2 shadow-sm">
-                                      {this.getListItemData(object, "textContent")}
+                                      { object.text }
                                     </p>
                                   </li>))} 
                               </ul>
@@ -251,19 +181,24 @@ export default class ProfileActivityListView extends React.Component{
                                 <Offcanvas.Body>
                                   <div>
 
-                                    { (!this.state.selectedPost || (this.state.selectedPost && !this.state.imageLoaded)) && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
-                                                                      </div>
-                                                                      <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                                                                    </div>
-                                                                  </div>}
+                                    { (!this.state.selectedPost || (this.state.selectedPost && !this.state.imageLoaded)) 
+                                        && <div class="text-center">
+                                              <div class="mb-5 mt-3"><
+                                                div class="spinner-border text-primary" role="status"></div>
+                                                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                                                </div>
+                                              </div> }
 
-                                    { (this.state.selectedPost) && <img 
-                                                                                    src={(this.state.selectedPost.picture && this.state.selectedPost.picture != "") ? this.state.selectedPost.picture : newspaper_icon} 
-                                                                                    class={"img-thumbnail shadow-lg"}
-                                                                                    width="350"
-                                                                                    alt="..."
-                                                                                    onLoad={() => {this.setState({imageLoaded: true});}} 
-                                                                                    onerror={() => {console.log("Error loading cover image!")}} />}
+                                    { (this.state.selectedPost) 
+                                        && <img 
+                                              src={(this.state.selectedPost.picture && this.state.selectedPost.picture != "") 
+                                                      ? this.state.selectedPost.picture 
+                                                      : newspaper_icon} 
+                                              class={"img-thumbnail shadow-lg"}
+                                              width="350"
+                                              alt="..."
+                                              onLoad={() => {this.setState({imageLoaded: true});}} 
+                                              onerror={() => {console.log("Error loading cover image!")}} />}
                                   </div>
                                 </Offcanvas.Body>
                               </Offcanvas>

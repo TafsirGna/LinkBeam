@@ -26,7 +26,7 @@ import {
   groupVisitsByProfile,
 } from "../Local_library";
 import SearchInputView from "./SearchInputView";
-import ProfileActivityListView from "./ProfileActivityListView";
+import ActivityListView from "./ActivityListView";
 import eventBus from "../EventBus";
 
 export default class SearchPostFormView extends React.Component{
@@ -43,7 +43,7 @@ export default class SearchPostFormView extends React.Component{
 
     eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, (data) => {
         
-        this.setState({posts: data});
+        this.setState({posts: data.results});
 
       }
     );
@@ -68,7 +68,7 @@ export default class SearchPostFormView extends React.Component{
           objectStoreName="posts"/>
 
         <div class="mt-2">
-          <ProfileActivityListView 
+          <ActivityListView 
             objects={this.state.posts}
             variant="list"/> 
         </div>

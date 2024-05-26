@@ -46,6 +46,11 @@ import {
   FolderIcon,
   BellIcon,
   DuplicateIcon,
+  UserIcon,
+  ClockIcon,
+  DeletionIcon,
+  DownloadIcon,
+  StorageIcon,
 } from "./widgets/SVGs";
 
 const datePropertyNames = {
@@ -685,7 +690,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Max time per day</strong>
+                  <strong class="text-gray-dark">
+                    <ClockIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Max time per day
+                  </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
                       <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.maxTimeAlarm : null}</span>
@@ -725,7 +735,7 @@ export default class SettingsView extends React.Component{
                       size="15"
                       className="me-2 text-muted"/>
                     Keywords 
-                    <span class="badge text-bg-primary ms-1 shadow">
+                    <span class="badge text-bg-light ms-1 shadow border">
                       {this.state.keywordCount}
                     </span>
                   </strong>
@@ -748,7 +758,7 @@ export default class SettingsView extends React.Component{
                       size="15"
                       className="me-2 text-muted"/>
                     Folders 
-                    <span class="badge text-bg-primary ms-1 shadow">
+                    <span class="badge text-bg-light ms-1 shadow border">
                       {this.state.folderCount}
                     </span>
                   </strong>
@@ -770,7 +780,7 @@ export default class SettingsView extends React.Component{
                       size="15"
                       className="me-2 text-muted"/>
                     Tags 
-                    <span class="badge text-bg-primary ms-1 shadow">
+                    <span class="badge text-bg-light ms-1 shadow border">
                       {this.state.tagCount}
                     </span>
                   </strong>
@@ -787,7 +797,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">My identity</strong>
+                  <strong class="text-gray-dark">
+                    <UserIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    My identity
+                  </strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 
@@ -802,7 +817,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Export my data {/*(csv)*/}</strong>
+                  <strong class="text-gray-dark">
+                    <DownloadIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Export my data {/*(csv)*/}
+                  </strong>
                   <a href="#" onClick={() => {this.handleOffCanvasShow("Data export")}} class="text-primary badge" title="Export all my data">Export</a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
@@ -811,7 +831,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Storage usage</strong>
+                  <strong class="text-gray-dark">
+                    <StorageIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Storage usage
+                  </strong>
 
                   { !this.state.usageQuota && <OverlayTrigger
                                       placement="top"
@@ -834,7 +859,12 @@ export default class SettingsView extends React.Component{
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">Erase data</strong>
+                  <strong class="text-gray-dark">
+                    <DeletionIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Erase data
+                  </strong>
                   { this.state.processingState.status == "NO" 
                       && this.state.processingState.info == "" 
                       && <a href="#" class="text-danger badge " title="Delete data" onClick={() => {this.handleOffCanvasShow("Data deletion")}}>Delete</a>}

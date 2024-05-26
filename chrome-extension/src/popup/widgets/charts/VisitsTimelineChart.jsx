@@ -7,6 +7,7 @@ import {
 	groupObjectsByMonth, 
 	saveCanvas,
 	getPeriodLabel,
+	periodRange,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -88,12 +89,11 @@ export default class VisitsTimelineChart extends React.Component{
 
 	}
 
+
 	getDaysVisitsChartLabels(view){
 
 		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
 		var visits = groupObjectsByDate(this.props.objects);
-
-		const periodRange = (start, stop, step) => Array.from({ length: (LuxonDateTime.fromJSDate(stop).diff(LuxonDateTime.fromJSDate(start), "days")).days / step + 1 }, (_, i) => LuxonDateTime.fromJSDate(start).plus({days: i * step}));
 
 		var startDate = null, endDate = null;
 		if (view == 3){
@@ -105,7 +105,7 @@ export default class VisitsTimelineChart extends React.Component{
 			endDate = new Date();
 		}
 
-		for (var date of periodRange(startDate, endDate, 1)){
+		for (var date of periodRange(startDate, endDate, 1, LuxonDateTime)){
 			results.titles.push((view == 0) ? date.toLocaleString({weekday: 'long'}) : date.toFormat("dd-MM"));
 			results.valuesDataset1.push((date.toISO().split("T")[0] in visits) ? visits[date.toISO().split("T")[0]].length : 0);
 

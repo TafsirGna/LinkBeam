@@ -97,3 +97,11 @@ export const HelpIcon = (props) => {
 export const MediaIcon = (props) => {
   return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className ? props.className : ""}`}><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>;
 }
+
+export const UserIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className ? props.className : ""}`}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
+}
+
+export const StorageIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className ? props.className : ""}`}><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>;
+}

@@ -70,12 +70,12 @@ export default class FolderPickModal extends React.Component{
 
   async handleFolderChange(folder){
 
-    var index = this.state.folders.findIndex(f => f.profiles && f.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1);
-    if (index != -1){
-      index = this.state.folders[index].profiles.map(p => p.url).indexOf(this.props.profile.url);
-      this.state.folders[index].profiles.splice(index, 1);
+    const folderIndex = this.state.folders.findIndex(f => f.profiles && f.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1);
+    if (folderIndex != -1){
+      const profileIndex = this.state.folders[folderIndex].profiles.map(p => p.url).indexOf(this.props.profile.url);
+      this.state.folders[folderIndex].profiles.splice(profileIndex, 1);
 
-      await db.folders.update(this.state.folders[index].id, this.state.folders[index]);
+      await db.folders.update(this.state.folders[folderIndex].id, this.state.folders[folderIndex]);
 
     }
 

@@ -67,6 +67,7 @@ export default class FeedDashView extends React.Component{
       toastShow: false,
       activeListIndex: 0,
       mostActiveUsers: null,
+      allVisitsPostCount: 0,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -146,8 +147,6 @@ export default class FeedDashView extends React.Component{
 
       this.setFeedPostViews();
 
-      this.setMostActiveUsers();
-
     }
 
   }
@@ -159,7 +158,10 @@ export default class FeedDashView extends React.Component{
                               end: this.state.endDate,
                             }, LuxonDateTime, db, "feed");
 
-    this.setState({ visits: visits });
+    this.setState({ 
+      visits: visits,
+      allVisitsPostCount: await getVisitsPostCount(visits, db), 
+    });
 
   }
 
@@ -214,7 +216,7 @@ export default class FeedDashView extends React.Component{
 
   toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));};
 
-  getMetricValue(visits, metric){
+  async getMetricValue(visits, metric){
 
     var value = null;
     switch(metric){
@@ -224,7 +226,7 @@ export default class FeedDashView extends React.Component{
       }
 
       case "Post Count": {
-        value = getVisitsPostCount(visits); 
+        value = await getVisitsPostCount(visits, db); 
         break;
       }
 
@@ -263,6 +265,11 @@ export default class FeedDashView extends React.Component{
     }
 
     for (var feedPostView of this.state.feedPostViews){
+
+      if (!feedPostView.initiator){
+        continue;
+      }
+
       if (feedPostView.initiator.url){
         const index = mostActiveUsers.map(a => a.url).indexOf(feedPostView.initiator.url);
         if (index == -1){
@@ -369,7 +376,7 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Post Count")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-warning-emphasis">~{getVisitsPostCount(this.state.visits)}</h6>}
+                {this.state.visits && <h6 class="card-title text-warning-emphasis">~{this.state.allVisitsPostCount}</h6>}
                 <p class="card-text mb-1">Posts</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
@@ -443,7 +450,7 @@ export default class FeedDashView extends React.Component{
                           { this.state.feedPostViews.length  != 0
                               && <div>
                                   { this.state.feedPostViews.map(((feedPostView, index) => {
-                                    return index < 5 ? <PostViewListItemView  
+                                    return index < 3 ? <PostViewListItemView  
                                                         startDate={this.state.startDate}
                                                         endDate={this.state.endDate}
                                                         object={feedPostView}
