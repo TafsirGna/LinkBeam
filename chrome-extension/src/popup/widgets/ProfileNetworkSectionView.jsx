@@ -62,7 +62,7 @@ export default class ProfileNetworkSectionView extends React.Component{
         {this.props.profile.profileSuggestions && <div class="">
                   <div class="clearfix my-3">
 
-                    <Form.Select 
+                    {/*<Form.Select 
                       size="sm"
                       className="float-start ms-3 shadow-sm w-25"
                       onChange={this.handleFormSelectInputChange}>
@@ -71,7 +71,7 @@ export default class ProfileNetworkSectionView extends React.Component{
                       <option value="education">Education</option>
                       <option value="languages">Languages</option>
                       <option value="certifications">Certifications</option>
-                    </Form.Select>
+                    </Form.Select>*/}
 
                     <span class="float-end handy-cursor me-4" onClick={this.handleOffCanvasShow} title="Click to see all">
                       <LayersIcon size="18" className=""/>

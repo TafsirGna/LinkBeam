@@ -188,7 +188,7 @@ export default class HomeMenu extends React.Component{
                 <MediaIcon
                   size="15"
                   className="me-2 text-muted"/>
-                Media
+                Media center
               </a>
             </li>
             <li>

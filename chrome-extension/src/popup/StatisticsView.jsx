@@ -323,7 +323,7 @@ export default class StatisticsView extends React.Component{
                                 end: this.state.offCanvasFormEndDate,
                               }}/>}
             </Carousel.Item>
-            <Carousel.Item>
+            {/*<Carousel.Item>
               { this.state.carrouselActiveItemIndex == 3 
                   && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
@@ -334,7 +334,7 @@ export default class StatisticsView extends React.Component{
                                 start: this.state.offCanvasFormStartDate,
                                 end: this.state.offCanvasFormEndDate,
                               }} />}
-            </Carousel.Item>
+            </Carousel.Item>*/}
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 4 
                   && <ProfilesGeoMapChart 

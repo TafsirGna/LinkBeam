@@ -857,7 +857,7 @@ async function recordFeedVisit(tabData){
                 count: sessionItem.rankedPostsByPopularity.length,
             };
         }
-        else{ /*if (index == -1)*/
+        else{
             sessionItem.rankedPostsByPopularity.push({id: dbFeedPost.id, popularity: popularity.value});
             sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
             post.rank = {

@@ -103,6 +103,12 @@ export default class App extends React.Component{
 
     }).bind(this));
 
+    window.addEventListener('offline', function(e) {
+    console.log('offline'); });
+
+    window.addEventListener('online', function(e) { console.log('online');
+    });
+
   }
 
   listenToBusEvents(){
