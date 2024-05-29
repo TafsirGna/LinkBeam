@@ -108,31 +108,53 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     if (testTabBaseUrl(changeInfo.url) && isUrlOfInterest(changeInfo.url)){
 
+        var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
+        console.log('###################### : ', loadingTabs);
         switch(changeInfo.status){
 
             case "loading":{
 
                 var url = changeInfo.url.split("?")[0];
 
-                // checking a lock before proceding
-                // var sessionItem = await chrome.storage.session.get(["loadingTabs"]);
-                // if (sessionItem.loadingTabs 
-                //         && sessionItem.loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
-                //     return;
-                // }
-                // sessionItem.loadingTabs = sessionItem.loadingTabs 
-                //                             ? sessionItem.loadingTabs.concat({id: tabId, url: url})
-                //                             : [{id: tabId, url: url}];
-                // await chrome.storage.session.set({ loadingTabs: sessionItem.loadingTabs });
+                // checking that i'm not already processing this signal
+                if (loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
+                    return;
+                }
+                loadingTabs.push({id: tabId, url: url});
+                await chrome.storage.session.set({ loadingTabs: loadingTabs });
 
                 try{
 
                     Dexie.exists(appParams.appDbName).then(function (exists) {
                         if (exists) {
 
-                            chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+                            chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
                                 console.log(",,,,,,,,,,,,,,,, onUpdated | tabs : ", tabs);
-                                handleNewInterestingTab(tabId, url, tabs[0].id == tabId);
+
+                                if (!tabs[0]){
+                                    return;
+                                }
+
+                                
+                                var result = await handleInterestingTab(tabId, url);
+
+                                if (tabs[0].id == tabId){
+
+                                    await resetTabTimer();
+
+                                    // updating the badge text
+                                    chrome.action.setBadgeText({text: result.badgeText});
+
+                                    // conditionally injecting the script 
+                                    if (result.inject){
+                                        injectScriptsInTab(tabId, url, result.visitId);
+                                    }
+                                    else{
+                                        runTabTimer(result.visitId);
+                                    }
+
+                                }
+
                             });
                             
                         }
@@ -149,14 +171,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             case "complete": {
 
-                // var sessionItem = await chrome.storage.session.get(["loadingTabs"]);
-                // if (sessionItem.loadingTabs){
-                //     const index = sessionItem.loadingTabs.findIndex(t => t.id == tabId && t.url == url);
-                //     if (index != -1){
-                //         sessionItem.loadingTabs.splice(index, 1);
-                //         await chrome.storage.session.set({ loadingTabs: sessionItem.loadingTabs });
-                //     }
-                // }
+                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == url);
+                if (index != -1){
+                    loadingTabs.splice(index, 1);
+                    await chrome.storage.session.set({ loadingTabs: loadingTabs });
+                }
 
                 break;
             }
@@ -184,9 +203,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  * It only does so when a linkedin page is open on that tab
  */
 
-async function runTabTimer(tabId, url){
+async function runTabTimer(visitId){
 
-    url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
+    if (!visitId){
+        return;
+    }
+
+    var url = (await db.visits.where({id: visitId}).first()).url;
 
     const interval = setInterval(async () => {       
 
@@ -202,21 +225,8 @@ async function runTabTimer(tabId, url){
             }
         });
 
-
-        var sessionItem = await chrome.storage.session.get(["myTabs"]);
-        if (!sessionItem.myTabs
-                || (sessionItem.myTabs && !Object.hasOwn(sessionItem.myTabs, tabId))
-                || (sessionItem.myTabs && Object.hasOwn(sessionItem.myTabs, tabId) && !sessionItem.myTabs[tabId].visits)){
-            return;
-        }
-
-        const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
-        if (index == -1){
-            return;
-        }
-
         await db.visits
-                .where({id: sessionItem.myTabs[tabId].visits[index].id})
+                .where({id: visitId})
                 .modify(visit => {
                     visit.timeCount += (appParams.TIMER_VALUE_2 / 1000);
                 });
@@ -453,56 +463,40 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-async function handleNewInterestingTab(tabId, url, onNewTab){
-
-    if (onNewTab){
-        await resetTabTimer();
-        if (!isLinkedinFeedPostPage(url)){
-            runTabTimer(tabId, url);
-        }
-    }
+async function handleInterestingTab(tabId, url){
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
-        visitId = null;
-    const badgeText = "!";
-
-    if (onNewTab){
-        chrome.action.setBadgeText({text: badgeText});
-    }
+        result = { inject: false, badgeText: "!", visitId: null };
 
     if (!sessionItem.myTabs){
 
         sessionItem.myTabs = {};  
-        sessionItem.myTabs[tabId] = {badgeText: badgeText};
+        sessionItem.myTabs[tabId] = {badgeText: result.badgeText};
 
         if (isLinkedinFeed(url)){
-            visitId = await addFreshFeedVisit();
-            sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
-            setPostsRankingInSession();
+            result.visitId = await addFreshFeedVisit();
+            sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
         }
 
         chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-        injectScriptsInTab(tabId, url, visitId);
+        result.inject = true;
 
     }
     else{
 
         if (Object.hasOwn(sessionItem.myTabs, tabId)){
 
-            if (onNewTab){
-                chrome.action.setBadgeText({text: sessionItem.myTabs[tabId].badgeText});
-            }
+            result.badgeText = sessionItem.myTabs[tabId].badgeText;
             
             if (!sessionItem.myTabs[tabId].visits){
 
                 if (isLinkedinFeed(url)){
-                    visitId = await addFreshFeedVisit();
-                    sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
-                    setPostsRankingInSession();
+                    result.visitId = await addFreshFeedVisit();
+                    sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
                 }
 
                 chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-                injectScriptsInTab(tabId, url, visitId);
+                result.inject = true;
 
             }
             else{
@@ -511,41 +505,39 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
                 if (index == -1){
 
                     if (isLinkedinFeed(url)){
-                        visitId = await addFreshFeedVisit();
-                        sessionItem.myTabs[tabId].visits.push({id: visitId, url: url});
-                        setPostsRankingInSession();
+                        result.visitId = await addFreshFeedVisit();
+                        sessionItem.myTabs[tabId].visits.push({id: result.visitId, url: url});
                     }
 
                     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-                    injectScriptsInTab(tabId, url, visitId);
+                    result.inject = true;
 
                 }
-                // else{
-                //     visitId = sessionItem.myTabs[tabId].visits[index].id;
-                // }
+                else{
+                    result.visitId = sessionItem.myTabs[tabId].visits[index].id;
+                }
 
             }
 
         }
         else{
 
-            sessionItem.myTabs[tabId] = {badgeText: badgeText};
+            sessionItem.myTabs[tabId] = {badgeText: result.badgeText};
 
             if (isLinkedinFeed(url)){
-                visitId = await addFreshFeedVisit();
+                result.visitId = await addFreshFeedVisit();
                 if (!sessionItem.myTabs[tabId].visits){
-                    sessionItem.myTabs[tabId].visits = [{id: visitId, url: url}];
+                    sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
                 }
                 else{
                     if (sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url) == -1){
-                        sessionItem.myTabs[tabId].visits.push({id: visitId, url: url});
+                        sessionItem.myTabs[tabId].visits.push({id: result.visitId, url: url});
                     }
                 }
-                setPostsRankingInSession();
             }
 
             chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-            injectScriptsInTab(tabId, url, visitId);
+            result.inject = true;
 
         }
     }
@@ -564,40 +556,6 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
 
     // }
 
-    async function setPostsRankingInSession(){
-
-        var sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
-        if (sessionItem.rankedPostsByPopularity){
-            return;
-        }
-
-        var feedPosts = await db.feedPosts.toArray(),
-            results = [];
-        for (var feedPost of feedPosts){
-
-            const lastView = await db.feedPostViews
-                                   .where({feedPostId: feedPost.id})
-                                   .last();
-
-            if (!lastView){
-                continue;
-            }
-
-            results.push({id: feedPost.id, popularity: popularityValue(lastView)});
-
-        }
-
-        results.sort(function(a, b) { return b.popularity - a.popularity; });
-
-        await chrome.storage.session.set({ rankedPostsByPopularity: results }).then(function(){
-            console.log("--- rankedPostsByPopularity set ", results);
-        });
-
-        return results;
-
-    }
-
-
     async function addFreshFeedVisit(){
 
         var feedItemsMetrics = {};
@@ -615,6 +573,41 @@ async function handleNewInterestingTab(tabId, url, onNewTab){
         return (await db.visits.where({date: dateTime}).first()).id;
 
     }
+
+    return result;
+
+}
+
+async function setPostsRankingInSession(){
+
+    var sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
+    if (sessionItem.rankedPostsByPopularity){
+        return;
+    }
+
+    var feedPosts = await db.feedPosts.toArray(),
+        results = [];
+    for (var feedPost of feedPosts){
+
+        const lastView = await db.feedPostViews
+                               .where({feedPostId: feedPost.id})
+                               .last();
+
+        if (!lastView){
+            continue;
+        }
+
+        results.push({id: feedPost.id, popularity: popularityValue(lastView)});
+
+    }
+
+    results.sort(function(a, b) { return b.popularity - a.popularity; });
+
+    await chrome.storage.session.set({ rankedPostsByPopularity: results }).then(function(){
+        console.log("--- rankedPostsByPopularity set ", results);
+    });
+
+    return results;
 
 }
 
@@ -652,10 +645,20 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
             }
 
             url = url.split("?")[0];
-
-            Dexie.exists(appParams.appDbName).then(function (exists) {
+            Dexie.exists(appParams.appDbName).then(async function (exists) {
                 if (exists) {
-                    handleNewInterestingTab(activeInfo.tabId, url, true);
+                    var result = await handleInterestingTab(activeInfo.tabId, url);
+
+                    // updating the badge text
+                    chrome.action.setBadgeText({text: result.badgeText});
+
+                    // conditionally injecting the script 
+                    if (result.inject){
+                        injectScriptsInTab(activeInfo.tabId, url, result.visitId);
+                    }
+                    else{
+                        runTabTimer(result.visitId);
+                    }
                 }
             });
 
@@ -692,6 +695,12 @@ async function recordFeedVisit(tabData){
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
     const visitIndex = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
     const visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
+
+    chrome.storage.session.get(["tabTimer"]).then((sessionItem) => {
+        if (sessionItem.tabTimer){
+            runTabTimer(visitId);
+        }
+    });
 
     db.visits
       .where({id: visitId})
@@ -899,20 +908,26 @@ async function recordProfileVisit(tabData){
     }
 
     if (!sessionItem.myTabs[tabData.tabId].visits){
+        const visitId = await processPrimeVisit();
         sessionItem.myTabs[tabData.tabId].visits = [{
-            id: await processPrimeVisit(), 
+            id: visitId, 
             url: tabData.tabUrl, 
             profileData: profileData,
         }];
+
+        runTabTimer(visitId);
     }
     else{
         const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
         if (index == -1){
+            const visitId = await processPrimeVisit();
             sessionItem.myTabs[tabData.tabId].visits.push({
-                id: await processPrimeVisit(), 
+                id: visitId, 
                 url: tabData.tabUrl, 
                 profileData: profileData,
             });
+
+            runTabTimer(visitId);
         }
         else{
             profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
