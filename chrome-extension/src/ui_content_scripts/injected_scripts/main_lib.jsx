@@ -29,6 +29,7 @@ import {
     messageMeta,
     appParams,
     breakHtmlElTextContentByKeywords,
+    insertHtmlTagsIntoEl,
 } from "../../popup/Local_library";
 
 const termLanguageVariants = {
@@ -151,49 +152,6 @@ export class ScriptAgentBase {
 
 }
 
-
-function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadgeColors, detected){
-
-  for (var textItem of textArray){
-    var newChild = document.createElement('span');
-    if (keywords.indexOf(textItem.toLowerCase()) != -1){
-
-      detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
-
-      var newDivTag_A = document.createElement('span');
-      var newDivTag_B = document.createElement('span');
-
-      newDivTag_A.style.cssText = "display: none;";
-      newDivTag_A.innerHTML = textItem;
-
-      newDivTag_B.attachShadow({ mode: 'open' });
-      ReactDOM.createRoot(newDivTag_B.shadowRoot).render(
-              <React.StrictMode>
-                <style type="text/css">{styles}</style>
-                <HighlightedKeywordView
-                  keyword={textItem}
-                  // allDetected={detected}
-                  // highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
-                  order={detected[textItem.toLowerCase()]}
-                  color={highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]}
-                  />
-              </React.StrictMode>
-          );
-
-      newChild.appendChild(newDivTag_A);
-      newChild.appendChild(newDivTag_B);
-
-    }
-    else{
-      newChild.innerHTML = textItem;
-    }
-    node.appendChild(newChild);
-  }
-
-  return node;
-
-}
-
 export function DataApproximationAlert(props) {
   return <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
             <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -277,7 +235,28 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
 
         if (containsKeyword){
           var newNode = document.createElement('span');
-          newNode = insertHtmlTagsIntoEl(newNode, breakHtmlElTextContentByKeywords(node.nodeValue, keywords), keywords, highlightedKeywordBadgeColors, detected);
+          newNode = insertHtmlTagsIntoEl(
+            newNode, 
+            breakHtmlElTextContentByKeywords(node.nodeValue, keywords), 
+            keywords, 
+            highlightedKeywordBadgeColors, 
+            detected,
+            (newDivTag, textItem, order, color) => {
+              newDivTag.attachShadow({ mode: 'open' });
+              ReactDOM.createRoot(newDivTag.shadowRoot).render(
+                <React.StrictMode>
+                  <style type="text/css">{styles}</style>
+                    <HighlightedKeywordView
+                          keyword={textItem}
+                          // allDetected={detected}
+                          // highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
+                          order={order}
+                          color={color}
+                          />
+                </React.StrictMode>
+              );
+            }
+          );
           node.parentNode.replaceChild(newNode, node);
         }
 

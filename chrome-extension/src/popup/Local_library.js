@@ -1225,6 +1225,41 @@ export async function getVisitsPostCount(visits, db){
 
 }
 
+export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadgeColors, detected, setHighlightedKeywordView){
+
+  for (var textItem of textArray){
+    var newChild = document.createElement('span');
+    if (keywords.indexOf(textItem.toLowerCase()) != -1){
+
+      detected[textItem.toLowerCase()] = !(textItem.toLowerCase() in detected) ? 1 : detected[textItem.toLowerCase()] + 1;
+
+      var newDivTag_A = document.createElement('span');
+      var newDivTag_B = document.createElement('span');
+
+      newDivTag_A.style.cssText = "display: none;";
+      newDivTag_A.innerHTML = textItem;
+      
+      setHighlightedKeywordView(
+        newDivTag_B,
+        textItem, 
+        detected[textItem.toLowerCase()],
+        highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]
+      );
+
+      newChild.appendChild(newDivTag_A);
+      newChild.appendChild(newDivTag_B);
+
+    }
+    else{
+      newChild.innerHTML = textItem;
+    }
+    node.appendChild(newChild);
+  }
+
+  return node;
+
+}
+
 export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
 export const isLinkedinProfilePage = (url) => url.toString().indexOf("/in/") != -1;
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;

@@ -69,12 +69,17 @@ export default class LicenseCreditsView extends React.Component{
 
           <div class="fw-light small border border-secondary-subtle rounded p-3 shadow">
 
-          { this.state.currentTabIndex == 0 && <div class="row mx-1">
-
-                                                <p class="col text-end fw-bold">Resources</p>
-
-                                                <p class="col">Icons8</p>
-
+          { this.state.currentTabIndex == 0 && <div>
+                                                {["Icons8",
+                                                  "Feepik (flaticon)",
+                                                  "Surang (flaticon)",
+                                                  "pancaza (flaticon)",
+                                                  "juicy_fish (flaticon)",
+                                                  "Smashicons (flaticon)"
+                                                ].map((item, index) => (<div class="row">
+                                                                          <p class="col text-end fw-bold mb-1">{index == 0 ? "Resources" : ""}</p>
+                                                                          <p class="col mb-1">{item}</p>
+                                                                        </div>))}
                                               </div>}
 
           { this.state.currentTabIndex == 1 && <div class="">

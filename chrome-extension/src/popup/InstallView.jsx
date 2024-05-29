@@ -28,11 +28,13 @@ import new_icon from '../assets/new_icon.png';
 import Alert from 'react-bootstrap/Alert';
 import { db } from "../db";
 import { v4 as uuidv4 } from 'uuid';
+import Form from 'react-bootstrap/Form';
 import { 
   appParams, 
   removeObjectsId,
 } from "./Local_library";
 import Dexie from 'dexie';
+import { liveQuery } from "dexie"; 
 
 export default class About extends React.Component{
 
@@ -44,6 +46,7 @@ export default class About extends React.Component{
       alertVariant: "warning",
       opDone: false,
       processing: false,
+      settings: null,
     };
 
     this.resetDb = this.resetDb.bind(this);
@@ -52,7 +55,9 @@ export default class About extends React.Component{
     this.onImportDataClicked = this.onImportDataClicked.bind(this);
     this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
     this.clearFileInput = this.clearFileInput.bind(this);
-
+    this.setSettingsObject = this.setSettingsObject.bind(this);
+    this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
+    
   }
 
   componentDidMount() {
@@ -60,12 +65,36 @@ export default class About extends React.Component{
     // checking first if a database already exists
     Dexie.exists(appParams.appDbName).then((function (exists) {
         if (exists) {
-            this.setState({opDone: true, processing: false});
+            this.setState({opDone: true, processing: false}, () => {
+              this.setSettingsObject();
+            });
             return;
         }
         this.setFileInputChangeAction();
     }).bind(this));
 
+  }
+
+  setSettingsObject(){
+
+    const settingsObservable = liveQuery(() => db.settings
+                                               .where("id")
+                                               .equals(1)
+                                               .first());
+
+    this.settingsSubscription = settingsObservable.subscribe(
+      result => this.setState({settings: result}),
+      error => this.setState({error})
+    );
+
+  }
+
+  componentWillUnmount(){
+
+    if (this.settingsSubscription) {
+      this.settingsSubscription.unsubscribe();
+      this.settingsSubscription = null;
+    }
   }
 
   clearFileInput(){
@@ -145,7 +174,9 @@ export default class About extends React.Component{
 
                 localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
-                this.setState({opDone: true, processing: false});
+                this.setState({opDone: true, processing: false}, () => {
+                  this.setSettingsObject();
+                });
 
               }
               catch(error){
@@ -232,7 +263,9 @@ export default class About extends React.Component{
 
           localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
-          this.setState({opDone: true, processing: false});
+          this.setState({opDone: true, processing: false}, () => {
+            this.setSettingsObject();
+          });
 
         }).bind(this)).catch ((function (err) {
 
@@ -262,6 +295,20 @@ export default class About extends React.Component{
         formFileElement.click();
 
     }).bind(this));
+
+  }
+
+  saveSettingsPropertyValue(property, value){
+
+    var settings = this.state.settings;
+    settings[property] = value;
+
+    (async () => {
+
+      await db.settings
+              .update(1, settings);
+
+    })();
 
   }
 
@@ -296,11 +343,103 @@ export default class About extends React.Component{
                                                         <span class="visually-hidden">Loading...</span>
                                                       </div></div>}
 
-            { this.state.opDone && <div class="mt-5 text-center row">
-                          <div onClick={() => {this.onImportDataClicked()}} class="col shadow rounded mx-2 py-5 border border-secondary-subtle">
+            { this.state.opDone && <div class="mt-5">
+                          <div class="text-center shadow rounded mx-2 py-5 border border-secondary-subtle">
                             <img src={party_popper_icon} alt="twbs" width="40" height="40" class=""/>
                             <p class="mt-3">Your app is ready for use</p>
                           </div>
+
+                          { this.state.settings 
+                              && <div class="my-5 mx-2">
+                                    <p class="fst-italic text-muted small mb-1">
+                                      The app default settings (you can also opt to change them later)
+                                    </p>
+                                    <div class="list-group shadow">
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Enable popup notifications</h6>
+                                            <p class="mb-0 opacity-75 small">Popup notifications show up to help you notice app's state changes.</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <Form.Check // prettier-ignore
+                                              type="switch"
+                                              id="notif-custom-switch"
+                                              label=""
+                                              checked={this.state.settings.notifications}
+                                              onChange={(event) => {this.saveSettingsPropertyValue("notifications", event.target.checked);}}
+                                            />
+                                          </small>
+                                        </div>
+                                      </a>
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Auto tab opening</h6>
+                                            <p class="mb-0 opacity-75 small">Every time you visit a profile, a new tab is automatically opened with charts about this very profile.</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <Form.Check // prettier-ignore
+                                              type="switch"
+                                              id="notif-custom-switch"
+                                              label=""
+                                              checked={this.state.settings.autoTabOpening}
+                                              onChange={(event) => {this.saveSettingsPropertyValue("autoTabOpening", event.target.checked);}}
+                                            />
+                                          </small>
+                                        </div>
+                                      </a>
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Outdated profile reminder</h6>
+                                            <p class="mb-0 opacity-75 small">A reminder that some profiles you've visited might require your attention once more.</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <div class="dropdown">
+                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.outdatedProfileReminder}</span>
+                                              </div>
+                                              <ul class="dropdown-menu shadow-lg border">
+                                                {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                                                      <li>
+                                                        <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
+                                                          {value}
+                                                        </a>
+                                                      </li>  
+                                                  ))}
+                                              </ul>
+                                            </div>
+                                          </small>
+                                        </div>
+                                      </a>
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Max time per day</h6>
+                                            <p class="mb-0 opacity-75 small">It helps you notice when you're about to reach your daily limit of linkedin browsing.</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <div class="dropdown">
+                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.maxTimeAlarm}</span>
+                                              </div>
+                                              <ul class="dropdown-menu shadow-lg border">
+                                                {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
+                                                      <li>
+                                                        <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                                          {value}
+                                                        </a>
+                                                      </li>  
+                                                  ))}
+                                              </ul>
+                                            </div>
+                                          </small>
+                                        </div>
+                                      </a>
+                                    </div>
+                                  </div>}
+
                         </div>}
 
           </div>

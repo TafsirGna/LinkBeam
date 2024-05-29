@@ -10,7 +10,7 @@
 
 [Linkbeam](https://www.tensorflow.org/) is a basic chrome extension that assists you in your linkedin browsing experience. The idea is to have a chrome extension that stores some of the informations that appear on your screen, locally in your browser [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)  database. These stored data can then be processed back to you in a friendlier way.
 
-To this end, Linkbeam makes a heavy use of tools like [ChartJS](https://www.chartjs.org/) and [D3 JS](https://d3js.org/) to display charts based on the stored data; [Dexie JS](https://dexie.org/) to help with some abstractions in the management of the IndexedDB operations; [React JS](https://react.dev/) to develop all the necessary interfaces and [Bootstrap CSS](https://www.getbootstrap.com) and  [Tailwind CSS](https://tailwindcss.com/) for everything pertaining to the look. A big shoutout for the graphists of https://www.flaticon.com/ (Smashicons, juicy_fish, surang, pancaza, freepik).
+To this end, Linkbeam makes a heavy use of tools like [ChartJS](https://www.chartjs.org/) and [D3 JS](https://d3js.org/) to display charts based on the stored data; [Dexie JS](https://dexie.org/) to help with some abstractions in the management of the IndexedDB operations; [React JS](https://react.dev/) to develop all the necessary interfaces and [Bootstrap CSS](https://www.getbootstrap.com) plus  [Tailwind CSS](https://tailwindcss.com/) for everything pertaining to the look. A big shoutout for the graphists of https://www.flaticon.com/ (Smashicons, juicy_fish, surang, pancaza, freepik) for their icons.
 
 ## Install
 

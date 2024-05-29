@@ -26,6 +26,8 @@ import {
   appParams,
   setGlobalDataSettings, 
   periodRange,
+  insertHtmlTagsIntoEl,
+  breakHtmlElTextContentByKeywords,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -37,6 +39,9 @@ import { liveQuery } from "dexie";
 import SeeMoreButtonView from "./widgets/SeeMoreButtonView";
 import SearchInputView from "./widgets/SearchInputView";
 import Carousel from 'react-bootstrap/Carousel';
+import Popover from 'react-bootstrap/Popover';
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import ReactDOM from 'react-dom/client';
 
 var objectsBackup = null;
 
@@ -56,13 +61,19 @@ export default class MediaView extends React.Component{
 
   componentDidMount() {
 
+    window.addEventListener('offline', function(e) {
+      console.log('offline'); 
+    });
+
+    window.addEventListener('online', function(e) { 
+      console.log('online');
+    });
+
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
     eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
-
-      console.log("********************* 1 : ", data);
 
         if (!data){
           if (!objectsBackup){
@@ -183,6 +194,30 @@ export default class MediaView extends React.Component{
 
   }
 
+  highlightSearchText(textContent){
+
+    if (!this.state.searchText || (this.state.searchText && !this.state.searchText.replaceAll(/\s/g,"").length)){
+      return textContent;
+    }
+
+    var newNode = document.createElement('span');
+    const keywords = [this.state.searchText];
+
+    newNode = insertHtmlTagsIntoEl(
+      newNode, 
+      breakHtmlElTextContentByKeywords(textContent, keywords), 
+      keywords, 
+      ["text-bg-warning"], 
+      {},
+      (newDivTag, textItem, order, color) => {
+        newDivTag.innerHTML = `<span class='border rounded shadow-sm bg-info-subtle text-muted border-primary' title='#${order}'>${textItem}</span>`;
+      }
+    );
+
+    return newNode.innerHTML;
+
+  }
+
   render(){
     return (
       <>
@@ -191,16 +226,6 @@ export default class MediaView extends React.Component{
           <div class="text-center">
             <img src={app_logo}  alt="" width="40" height="40"/>
             <PageTitleView pageTitle="Gallery"/>
-          </div>
-
-          <div class="my-4">
-            <SearchInputView 
-              objectStoreName="media" 
-              globalData={this.props.globalData} />
-              { this.state.searchText 
-                  && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                      {`${this.state.objects ? this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
-                    </p>}
           </div>
 
           { !this.state.objects 
@@ -219,7 +244,19 @@ export default class MediaView extends React.Component{
 
           { this.state.objects
               && this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) != 0
-              && <ul class="timeline mt-4 mx-2 small">
+              && <div>
+
+                  <div class="my-4">
+                    <SearchInputView 
+                      objectStoreName="media" 
+                      globalData={this.props.globalData} />
+                      { this.state.searchText 
+                          && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
+                              {`${this.state.objects ? this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
+                            </p>}
+                  </div>
+
+                  <ul class="timeline mt-4 mx-2 small">
                     { this.state.objects.map(object => ( object.feedPosts.length == 0 
                                                           ? null
                                                           : <li class="timeline-item mb-5">
@@ -239,38 +276,50 @@ export default class MediaView extends React.Component{
                                                                                                           else{
                                                                                                             return 0;
                                                                                                           }
-                                                                                                        }).map(feedPost => (/*<div class="col">*/
-                                                                                                                  <a 
-                                                                                                                    href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} 
-                                                                                                                    target="_blank" 
-                                                                                                                    title="View on linkedin">
-                                                                                                                    <div class="card shadow">
-                                                                                                                      { feedPost.media.length == 1
-                                                                                                                          && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
-                                                                                                                          && <img 
-                                                                                                                              src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                                                                              class="card-img-top" 
-                                                                                                                              alt="..."/> }
-                                                                                                                      { feedPost.media.length != 1
-                                                                                                                          && <Carousel controls={false} indicators={false}>
-                                                                                                                                {feedPost.media.map(medium => (<Carousel.Item>
-                                                                                                                                                                { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
-                                                                                                                                                                  && <img 
-                                                                                                                                                                  src={medium.src ? medium.src : medium.poster} 
-                                                                                                                                                                  class="card-img-top" 
-                                                                                                                                                                  alt="..."/>}
-                                                                                                                                                              </Carousel.Item>))}
-                                                                                                                            </Carousel>}
-                                                                                                                      {/*<div class="card-body">
-                                                                                                                        <h5 class="card-title">Card title</h5>
-                                                                                                                        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                        }).map(feedPost => (
+                                                                                                                  <OverlayTrigger 
+                                                                                                                    trigger="hover" 
+                                                                                                                    placement="left" 
+                                                                                                                    overlay={<Popover id="popover-basic">
+                                                                                                                                <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: this.highlightSearchText(feedPost.author.name)}}>{/*{feedPost.author.name}*/}</Popover.Header>
+                                                                                                                                {feedPost.text 
+                                                                                                                                    && <Popover.Body dangerouslySetInnerHTML={{__html: this.highlightSearchText(feedPost.text)}}>
+                                                                                                                                        {/*{feedPost.text}*/}
+                                                                                                                                      </Popover.Body>}
+                                                                                                                              </Popover>}
+                                                                                                                    >
+                                                                                                                    <a 
+                                                                                                                      href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} 
+                                                                                                                      target="_blank" 
+                                                                                                                      title="View on linkedin">
+                                                                                                                      <div class="card shadow">
+                                                                                                                        { feedPost.media.length == 1
+                                                                                                                            && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
+                                                                                                                            && <img 
+                                                                                                                                src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                                class="card-img-top" 
+                                                                                                                                alt="..."/> }
+                                                                                                                        { feedPost.media.length != 1
+                                                                                                                            && <Carousel controls={false} indicators={false}>
+                                                                                                                                  {feedPost.media.map(medium => (<Carousel.Item>
+                                                                                                                                                                  { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
+                                                                                                                                                                    && <img 
+                                                                                                                                                                    src={medium.src ? medium.src : medium.poster} 
+                                                                                                                                                                    class="card-img-top" 
+                                                                                                                                                                    alt="..."/>}
+                                                                                                                                                                </Carousel.Item>))}
+                                                                                                                              </Carousel>}
+                                                                                                                        {/*<div class="card-body">
+                                                                                                                          <h5 class="card-title">Card title</h5>
+                                                                                                                          <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                                        </div>
+                                                                                                                        <div class="card-footer">
+                                                                                                                          <small class="text-body-secondary">Last updated 3 mins ago</small>
+                                                                                                                        </div>*/}
                                                                                                                       </div>
-                                                                                                                      <div class="card-footer">
-                                                                                                                        <small class="text-body-secondary">Last updated 3 mins ago</small>
-                                                                                                                      </div>*/}
-                                                                                                                    </div>
-                                                                                                                  </a>
-                                                                                                                /*</div>*/)) }
+                                                                                                                    </a>
+                                                                                                                  </OverlayTrigger>
+                                                                                                                )) }
 
                                                                           </Masonry> }
 
@@ -279,6 +328,7 @@ export default class MediaView extends React.Component{
 
                       )) }
                   </ul> 
+                </div>
 
                 }
 

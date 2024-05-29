@@ -191,6 +191,18 @@ export default class HomeMenu extends React.Component{
                 Media center
               </a>
             </li>
+            {/*<li>
+              <a 
+                class="dropdown-item small" 
+                href="/index.html?view=Media" 
+                target="_blank"
+                title="Display all media">
+                <MediaIcon
+                  size="15"
+                  className="me-2 text-muted"/>
+                Profile Studio
+              </a>
+            </li>*/}
             <li>
               <a 
                 class="dropdown-item small" 

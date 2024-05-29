@@ -336,9 +336,20 @@ export default class StatisticsView extends React.Component{
                               }} />}
             </Carousel.Item>*/}
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 4 
+              { this.state.carrouselActiveItemIndex == 3 
                   && <ProfilesGeoMapChart 
                               context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
+                              objects={this.state.periodProfiles} 
+                              carrouselIndex={3}
+                              view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }} />}
+            </Carousel.Item>
+            <Carousel.Item>
+              { this.state.carrouselActiveItemIndex == 4 
+                  && <ExpEdStackBarChart 
                               objects={this.state.periodProfiles} 
                               carrouselIndex={4}
                               view={this.state.view} 
@@ -347,25 +358,14 @@ export default class StatisticsView extends React.Component{
                                 end: this.state.offCanvasFormEndDate,
                               }} />}
             </Carousel.Item>
-            <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 5 
-                  && <ExpEdStackBarChart 
-                              objects={this.state.periodProfiles} 
-                              carrouselIndex={5}
-                              view={this.state.view} 
-                              periodRangeLimits={{
-                                start: this.state.offCanvasFormStartDate,
-                                end: this.state.offCanvasFormEndDate,
-                              }} />}
-            </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 6 
+              { this.state.carrouselActiveItemIndex == 5
                   && <div>
                               <ProfilesGraphChart 
                                 objects={this.state.periodProfiles} 
                                 displayCriteria={ this.state.relChartDisplayCrit } 
                                 profiles={this.state.periodProfiles}
-                                carrouselIndex={6} 
+                                carrouselIndex={5} 
                                 view={this.state.view} 
                                 periodRangeLimits={{
                                   start: this.state.offCanvasFormStartDate,
@@ -399,11 +399,11 @@ export default class StatisticsView extends React.Component{
                             </div>}
             </Carousel.Item>
             <Carousel.Item> 
-              { this.state.carrouselActiveItemIndex == 7 
+              { this.state.carrouselActiveItemIndex == 6
                   && <ProfileVisitsConnectedScatterPlot 
                         objects={this.state.periodVisits} 
                         profiles={this.state.periodProfiles}
-                        carrouselIndex={7} 
+                        carrouselIndex={6} 
                         view={this.state.view} 
                         periodRangeLimits={{
                           start: this.state.offCanvasFormStartDate,
