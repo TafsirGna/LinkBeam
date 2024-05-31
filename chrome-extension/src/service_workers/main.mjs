@@ -729,21 +729,21 @@ async function recordFeedVisit(tabData){
         console.log("!!!!!!!!!!!!!!!!!! 1 : ", post);
 
 
-        if (post.subPost){
+        if (post.content.subPost){
 
             var subPost = {
-                uid: post.subPost.uid,
-                author: post.subPost.author,
-                text: post.subPost.text,
-                media: post.subPost.media
-                        ? (post.subPost.media.length
-                            ? post.subPost.media
+                uid: post.content.subPost.uid,
+                author: post.content.subPost.author,
+                text: post.content.subPost.text,
+                media: post.content.subPost.media
+                        ? (post.content.subPost.media.length
+                            ? post.content.subPost.media
                             : null)
                         : null,
-                date: post.subPost.date,
-                references: post.subPost.references
-                                ? (post.subPost.references.length
-                                        ? post.subPost.references
+                date: post.content.subPost.date,
+                references: post.content.subPost.references
+                                ? (post.content.subPost.references.length
+                                        ? post.content.subPost.references
                                         : null)
                                 : null,
             }

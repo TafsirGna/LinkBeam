@@ -43,18 +43,15 @@ import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
 import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
+import FeedDashActiveUsersSectionView from "./widgets/FeedDashActiveUsersSectionView";
+import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
 import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
 import CustomToast from "./widgets/toasts/CustomToast";
-import FeedActiveUserListItemView, { totalInteractions } from "./widgets/FeedActiveUserListItemView";
-import { 
-  OverlayTrigger, 
-  Tooltip as ReactTooltip, 
-  // Popover, 
-} from "react-bootstrap";
+import { totalInteractions } from "./widgets/FeedActiveUserListItemView";
 
 const subMenuColorsVariants = [
     "secondary",
@@ -190,11 +187,11 @@ export default class FeedDashView extends React.Component{
 
               for (var reference of feedPost.references){
 
-                if (reference.text.indexOf("https://") != -1 || !reference.text.startsWith("#")){
+                if (!reference.text.startsWith("#")){
                   continue;
                 }
 
-                const index = references.findIndex(r => r.url == reference.url);
+                const index = references.findIndex(r => r.text == reference.text);
                 if (index == -1){
                   references.push({
                     ...reference,
@@ -550,68 +547,12 @@ export default class FeedDashView extends React.Component{
 
 
           { this.state.activeListIndex == 1
-              && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
-                      <h6 class="border-bottom pb-2 mb-0">Most active users</h6>
-          
-                      { !this.state.mostActiveUsers && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                                {/*<span class="visually-hidden">Loading...</span>*/}
-                              </div>
-                              <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
-                            </div>
-                          </div>}
-          
-                      { this.state.mostActiveUsers 
-                        && <>
-                          {this.state.mostActiveUsers.length == 0
-                            && <div class="text-center m-5">
-                                  <AlertCircleIcon size="100" className="text-muted"/>
-                                  <p><span class="badge text-bg-primary fst-italic shadow">No recorded users yet</span></p>
-                                </div>}
-          
-                          { this.state.mostActiveUsers.length  != 0
-                              && <div>
-                                 { this.state.mostActiveUsers.map((object, index) => <FeedActiveUserListItemView  
-                                                                                        object={object}/>)}
-                                </div>}
-                          </>}
-          
-                    </div>}
+              && <FeedDashActiveUsersSectionView
+                    mostActiveUsers={this.state.mostActiveUsers}/>}
 
           { this.state.activeListIndex == 2
-              && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
-                      <h6 class="border-bottom pb-2 mb-0">Hashtags</h6>
-          
-                      { !this.state.postsReferences && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                                {/*<span class="visually-hidden">Loading...</span>*/}
-                              </div>
-                              <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
-                            </div>
-                          </div>}
-          
-                      { this.state.postsReferences 
-                        && <>
-                          {Object.keys(this.state.postsReferences).length == 0
-                            && <div class="text-center m-5">
-                                  <AlertCircleIcon size="100" className="text-muted"/>
-                                  <p><span class="badge text-bg-primary fst-italic shadow">No recorded references yet</span></p>
-                                </div>}
-          
-                          { Object.keys(this.state.postsReferences).length != 0
-                              && <div class="mt-2">
-                                 { this.state.postsReferences.map(object => (<OverlayTrigger
-                                                                                placement="top"
-                                                                                overlay={<ReactTooltip id="tooltip1">{`${object.feedPosts.length} post${object.feedPosts.length > 1 ? "s" : ""} associated`}</ReactTooltip>}
-                                                                              >
-                                                                              <span 
-                                                                                class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill` /*shadow*/}
-                                                                                /*onClick={() => {}}*/>
-                                                                                {`${object.text} (${object.feedPosts.length})`}
-                                                                              </span>
-                                                                              </OverlayTrigger>))}
-                                </div>}
-                          </>}
-          
-                    </div>}
+              && <FeedDashHashtagsSectionView
+                    postsReferences={this.state.postsReferences}/>}
 
   			</div>
 

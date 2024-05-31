@@ -936,22 +936,18 @@ export default class SettingsView extends React.Component{
             <div class="d-flex">
               { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
 
-              { this.state.offCanvasTitle == "Data export" && 
-                                      <div>
-
-                                        {this.state.processingState.status == "YES"
-                                          && <div class="ms-auto">
-                                                <div class="spinner-border spinner-border-sm" role="status">
-                                                  <span class="visually-hidden">Loading...</span>
-                                                </div>
-                                            </div>}
-
-                                        { this.state.processingState.status == "NO" 
-                                            && <div class="ms-auto">
-                                                <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
-                                                <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
-                                              </div>}
-                                      </div>}
+              { this.state.offCanvasTitle == "Data export" 
+                  && <div class="ms-auto">
+                        {this.state.processingState.status == "YES"
+                          && <div class="spinner-border spinner-border-sm" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>}
+                        { this.state.processingState.status == "NO" 
+                            && <div>
+                                <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
+                                <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
+                              </div>}
+                    </div>}
             </div>
 
           </Offcanvas.Body>
