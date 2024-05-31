@@ -50,6 +50,17 @@ import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
 import CustomToast from "./widgets/toasts/CustomToast";
 import FeedActiveUserListItemView, { totalInteractions } from "./widgets/FeedActiveUserListItemView";
+import { 
+  OverlayTrigger, 
+  Tooltip as ReactTooltip, 
+  // Popover, 
+} from "react-bootstrap";
+
+const subMenuColorsVariants = [
+    "secondary",
+    "info",
+    "success",
+  ];
 
 export default class FeedDashView extends React.Component{
 
@@ -68,6 +79,7 @@ export default class FeedDashView extends React.Component{
       activeListIndex: 0,
       mostActiveUsers: null,
       allVisitsPostCount: 0,
+      postsReferences: null,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -76,6 +88,7 @@ export default class FeedDashView extends React.Component{
     this.setFeedPostViews = this.setFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
     this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
+    this.setPostsReferences = this.setPostsReferences.bind(this);
 
   }
 
@@ -148,6 +161,54 @@ export default class FeedDashView extends React.Component{
       this.setFeedPostViews();
 
     }
+
+  }
+
+  async setPostsReferences(visits){
+
+    if (!this.state.feedPostViews){
+      return;
+    }
+
+    var references = [];
+
+    var feedPostIds = [];
+    for (var feedPostView of this.state.feedPostViews){
+      if (feedPostIds.indexOf(feedPostView.feedPostId) == -1){
+        feedPostIds.push(feedPostView.feedPostId);
+      }
+    }
+
+    await db.feedPosts
+            .where("id")
+            .anyOf(feedPostIds)
+            .each(feedPost => {
+
+              if (!feedPost.references){
+                return;
+              }
+
+              for (var reference of feedPost.references){
+
+                if (reference.text.indexOf("https://") != -1 || !reference.text.startsWith("#")){
+                  continue;
+                }
+
+                const index = references.findIndex(r => r.url == reference.url);
+                if (index == -1){
+                  references.push({
+                    ...reference,
+                    feedPosts: [feedPost],
+                  });
+                }
+                else{
+                  references[index].feedPosts.push(feedPost);
+                }
+              }
+
+            });
+
+    this.setState({postsReferences: references});
 
   }
 
@@ -246,13 +307,29 @@ export default class FeedDashView extends React.Component{
 
   setActiveListIndex(index){
     this.setState({activeListIndex: index}, () => {
-      if (index == 1 && !this.state.mostActiveUsers){
-        this.setMostActiveUsers();
+
+      switch(index){
+        case 1:{
+          if (!this.state.mostActiveUsers){
+            this.setMostActiveUsers();
+          }
+          break;
+        }
+        case 2:{
+          if (!this.state.postsReferences){
+            this.setPostsReferences();
+          }
+        }
       }
+
     });
   }
 
   async setMostActiveUsers(){
+
+    if (!this.state.feedPostViews){
+      return;
+    }
 
     var mostActiveUsers = [];
 
@@ -416,16 +493,20 @@ export default class FeedDashView extends React.Component{
           </div>
 
           <div class="mt-4 ms-3">
-            <span 
-              class={`handy-cursor badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis ${this.state.activeListIndex == 0 ? "shadow" : "shadow-sm"}`}
-              onClick={() => {this.setActiveListIndex(0)}}>
-              Posts
-            </span>
-            <span 
-              class={`handy-cursor badge bg-info-subtle border border-info-subtle text-info-emphasis mx-2 ${this.state.activeListIndex == 1 ? "shadow" : "shadow-sm"}`}
-              onClick={() => {this.setActiveListIndex(1)}}>
-              Most active users
-            </span>
+            {["Posts", 
+              "Most active users", 
+              "Hashtags"].map((item, index) => (<span 
+                                                          class={`me-2 handy-cursor badge bg-${subMenuColorsVariants[index]}-subtle border border-${subMenuColorsVariants[index]}-subtle text-${subMenuColorsVariants[index]}-emphasis ${this.state.activeListIndex == index ? "shadow" : "shadow-sm"}`}
+                                                          onClick={() => {this.setActiveListIndex(index)}}>
+                                                          {item}
+
+                                                          {/*Display the count*/}
+                                                          { index == 2 
+                                                              ? (this.state.postsReferences
+                                                                  ? ` (${this.state.postsReferences.length})`
+                                                                  : null)
+                                                              : null}
+                                                        </span>))}
           </div>
 
           { this.state.activeListIndex == 0 
@@ -489,6 +570,42 @@ export default class FeedDashView extends React.Component{
                               && <div>
                                  { this.state.mostActiveUsers.map((object, index) => <FeedActiveUserListItemView  
                                                                                         object={object}/>)}
+                                </div>}
+                          </>}
+          
+                    </div>}
+
+          { this.state.activeListIndex == 2
+              && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
+                      <h6 class="border-bottom pb-2 mb-0">Posts' References</h6>
+          
+                      { !this.state.postsReferences && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                                {/*<span class="visually-hidden">Loading...</span>*/}
+                              </div>
+                              <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                            </div>
+                          </div>}
+          
+                      { this.state.postsReferences 
+                        && <>
+                          {Object.keys(this.state.postsReferences).length == 0
+                            && <div class="text-center m-5">
+                                  <AlertCircleIcon size="100" className="text-muted"/>
+                                  <p><span class="badge text-bg-primary fst-italic shadow">No recorded references yet</span></p>
+                                </div>}
+          
+                          { Object.keys(this.state.postsReferences).length != 0
+                              && <div class="mt-2">
+                                 { this.state.postsReferences.map(object => (<OverlayTrigger
+                                                                                placement="top"
+                                                                                overlay={<ReactTooltip id="tooltip1">{`${object.feedPosts.length} post${object.feedPosts.length > 1 ? "s" : ""} associated`}</ReactTooltip>}
+                                                                              >
+                                                                              <span 
+                                                                                class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill` /*shadow*/}
+                                                                                /*onClick={() => {}}*/>
+                                                                                {`${object.text} (${object.feedPosts.length})`}
+                                                                              </span>
+                                                                              </OverlayTrigger>))}
                                 </div>}
                           </>}
           

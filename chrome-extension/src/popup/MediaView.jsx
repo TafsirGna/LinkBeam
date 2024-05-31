@@ -118,7 +118,7 @@ export default class MediaView extends React.Component{
 
           }
 
-          data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), new Date(), 1, LuxonDateTime).map(date => {
+          data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), new Date(), 1, LuxonDateTime, "days").map(date => {
             return {
               date: date,
               feedPosts: date.toISO().split("T")[0] in feedPostsByDate ? feedPostsByDate[date.toISO().split("T")[0]] : [],

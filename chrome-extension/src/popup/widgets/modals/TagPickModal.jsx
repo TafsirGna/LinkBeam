@@ -27,7 +27,10 @@ import {
   setGlobalDataTags,
 } from "../../Local_library";
 import { db } from "../../../db";
-import { AlertCircleIcon } from "../SVGs";
+import { 
+  AlertCircleIcon,
+  CheckIcon,
+} from "../SVGs";
 import { liveQuery } from "dexie"; 
 import eventBus from "../../EventBus";
 import { 
@@ -121,6 +124,11 @@ export default class TagPickModal extends React.Component{
                                                     class={`handy-cursor mx-2 badge ${(tag.profiles && tag.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) ?  "bg-success-subtle border-success-subtle text-success-emphasis shadow" : "bg-light-subtle border-light-subtle text-light-emphasis shadow-sm"} border rounded-pill`}
                                                     onClick={() => {this.onTagClicked(tag)}}>
                                                     {`${tag.name} (${tag.profiles ? tag.profiles.length : 0})`}
+                                                    { (tag.profiles 
+                                                        && tag.profiles.map(p => p.url).indexOf(this.props.profile.url) != -1) 
+                                                        && <CheckIcon
+                                                            size="12"
+                                                            className="ms-2"/>}
                                                   </span>
                                                   </OverlayTrigger>)) }
                 </div> }

@@ -565,7 +565,7 @@ export function notifyException(){
   
 }
 
-export const periodRange = (start, stop, step, LuxonDateTime) => Array.from({ length: (LuxonDateTime.fromJSDate(stop).diff(LuxonDateTime.fromJSDate(start), "days")).days / step + 1 }, (_, i) => LuxonDateTime.fromJSDate(start).plus({days: i * step}))
+export const periodRange = (start, stop, step, LuxonDateTime, timeMetric) => Array.from({ length: (LuxonDateTime.fromJSDate(stop).diff(LuxonDateTime.fromJSDate(start), timeMetric))[timeMetric] / step + 1 }, (_, i) => { var plusObject = {}; plusObject[timeMetric] = i * step; return LuxonDateTime.fromJSDate(start).plus(plusObject);})
 
 export function getPeriodLabel(viewIndex, periodRangeLimits = null, LuxonDateTime = null){
 
@@ -672,96 +672,6 @@ export async function setLocalProfiles(db, eventBus/*, propertyList, callback = 
   }
 
   eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
-
-    // async function initProfiles(profiles){
-
-    //   if (component.state.allProfilesReadiness){
-    //     return null;
-    //   }
-
-    //   // No need to load all the profiles with all its properties, only the needed properties
-    //   var objects = [];
-
-    //   await db.visits
-    //           .each(visit => {
-    //             const index = objects.map(p => p.url).indexOf(visit.url);
-    //             if (index == -1){
-
-    //               var profile = await getProfileDataFrom(db, visit.url);
-    //               profile.url = visit.url;
-    //               objects.push(profile);
-
-    //             }
-    //           });
-
-
-    //   var allProfilesReadiness = component.state.allProfilesReadiness;
-    //   for (var profile of objects){
-
-    //     if (!allProfilesReadiness){
-
-    //       var index = profiles.map(e => e.url).indexOf(profile.url);
-    //       if (index == -1){
-    //         var object = {url: profile.url};
-
-    //         propertyList.forEach(property => {
-    //           property = (property == "suggestions") ? "profileSuggestions" : property;
-    //           object[property] = profile[property];
-    //         })
-
-    //         profiles.push(object);
-    //       }
-    //       else{
-
-    //         propertyList.forEach(property => {
-    //           if (profiles[index][property]){
-    //             allProfilesReadiness = true;
-    //           }
-    //         });
-
-    //         if (!allProfilesReadiness){
-    //           propertyList.forEach(property => {
-    //             property = (property == "suggestions") ? "profileSuggestions" : property;
-    //             profiles[index][property] = profile[property];
-    //           });
-    //         }
-
-    //       }
-
-    //     }
-
-    //   };
-
-    //   if (allProfilesReadiness){
-    //     return null;
-    //   }
-
-    //   // weird :-)
-    //   if (profiles == component.props.localDataObject.profiles){
-    //     return null;
-    //   }
-
-    //   component.setState({allProfilesReadiness: true});
-
-    //   return profiles;
-
-    // }
-
-    // // binding the initProfiles function
-    // initProfiles = initProfiles.bind(component);
-
-    // var profiles = !component.props.localDataObject.profiles ? [] : component.props.localDataObject.profiles;
-
-    // profiles = await initProfiles(profiles);
-
-    // if (profiles){
-    //   eventBus.dispatch(eventBus.SET_PROFILE_LOCAL_DATA, {property: "allProfiles", value: profiles});
-    // }
-    // else{
-    //   if (callback){
-    //     component[callback]();
-    //   }
-    // }
 
 };
 
@@ -1113,7 +1023,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
   for (var visit of objects){
     const dateString = visit.date.split("T")[0],
-          hourString = Number(LuxonDateTime.fromISO(visit.date).toFormat("HH"));
+          hourString = LuxonDateTime.fromISO(visit.date).toFormat("hh a");
     if (dateString in data){
       if (hourString in data[dateString]){
         data[dateString][hourString].push(visit);
@@ -1140,16 +1050,14 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
       // initializing the labels
       const limit = new Date().toISOString().split("T")[0] == dateString 
-                      ? Number(LuxonDateTime.now().toFormat("HH"))
-                      : 23;
+                      ? /*new Date()*/ LuxonDateTime.now().toJSDate()
+                      : LuxonDateTime.now().set({hours: 23, minutes: 0}).toJSDate();
 
-      if (!labels){
-        labels = nRange(0, limit, 1).map(label => `${label}h`);
-      }
+      labels = labels || periodRange(LuxonDateTime.now().set({hours: 0, minutes: 0}).toJSDate(), limit, 1, LuxonDateTime, "hours").map(dt => dt.toFormat("hh a"));
 
       for (const label of labels){
-        resData[metric].push(Number(label.slice(0, label.length - 1)) in data[dateString] 
-                                      ? (await getMetricValue(data[dateString][Number(label.slice(0, label.length - 1))], metric))
+        resData[metric].push(label in data[dateString] 
+                                      ? (await getMetricValue(data[dateString][label], metric))
                                       : 0);
       }
 

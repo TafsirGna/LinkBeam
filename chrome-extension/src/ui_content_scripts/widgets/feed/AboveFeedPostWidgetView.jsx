@@ -361,23 +361,23 @@ export default class AboveFeedPostWidgetView extends React.Component{
                ? this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden").textContent
                : null,
         url: this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
-            ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link").href.split("?")[0]
-            : null,
-        picture: this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")
-              ? this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
+              ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link").href.split("?")[0]
               : null,
+        picture: this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")
+                  ? this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
+                  : null,
       },
       text: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
-          ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
-          : null,
+              ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
+              : null,
       media: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content") 
-          ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
-                 .map(htmlEl => ({
-                    type: htmlEl.tagName,
-                    src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
-                    poster: htmlEl.poster ? htmlEl.poster : null,
-                  }))
-          : null,
+              ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
+                     .map(htmlEl => ({
+                        type: htmlEl.tagName,
+                        src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
+                        poster: htmlEl.poster ? htmlEl.poster : null,
+                      }))
+              : null,
       date: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
                     ? this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent
                     : null, LuxonDateTime),
@@ -385,6 +385,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
       reactions: getPostReactionsValues("reaction"),
       commentsCount: getPostReactionsValues("comment"),               
       repostsCount: getPostReactionsValues("repost"),
+
+      references: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
+                    ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").querySelectorAll("a[href]"))
+                        .map(htmlEl => ({
+                          url: htmlEl.getAttribute("href"),
+                          text: htmlEl.textContent,
+                        }))
+                    : null,
 
       subPost: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                 ? {
@@ -441,6 +449,16 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                                       .parentNode.getAttribute("href")
                             : null)
                         : null,
+                  references: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                  .querySelector(".feed-shared-update-v2__description")
+                                ? Array.from(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                              .querySelector(".feed-shared-update-v2__description")
+                                                              .querySelectorAll("a[href]"))
+                                    .map(htmlEl => ({
+                                      url: htmlEl.getAttribute("href"),
+                                      text: htmlEl.textContent,
+                                    }))
+                                : null,
                 }
                 : null,
     };

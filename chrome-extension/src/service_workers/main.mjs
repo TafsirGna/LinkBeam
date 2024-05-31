@@ -129,13 +129,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                         if (exists) {
 
                             chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-                                console.log(",,,,,,,,,,,,,,,, onUpdated | tabs : ", tabs);
 
                                 if (!tabs[0]){
                                     return;
                                 }
 
-                                
                                 var result = await handleInterestingTab(tabId, url);
 
                                 if (tabs[0].id == tabId){
@@ -232,7 +230,7 @@ async function runTabTimer(visitId){
                 });
 
         // finally, checking periodically if the user's reaching or crossed the time threshold
-        sessionItem = await chrome.storage.session.get(["totalDayTime"]);
+        var sessionItem = await chrome.storage.session.get(["totalDayTime"]);
         const today = (new Date()).toISOString().split("T")[0];
 
         async function getSessionTotalDayTime(){
@@ -313,26 +311,26 @@ async function runTabTimer(visitId){
 
 async function getPostFromPostUrl(url){
 
-    var postUid = url.slice(url.indexOf("urn:li:activity:")).replaceAll("/", "");
+    var postUid = url.slice(url.indexOf("urn:li:")).replaceAll("/", "");
 
-    var post = await db.feedPosts
+    var post = await db.feedPostViews
                        .where({uid: postUid})
                        .first();
 
-    if (!post){
-        post = {};
-    }
+    post = await db.feedPosts
+                   .where({id: post.feedPostId})
+                   .first();
+
+    // post = post || {};
 
     post.reminder = await db.reminders
-                             .where("objectId")
-                             .equals(postUid)
+                             .where({objectId: post.id})
                              .first();
 
     post.viewsCount = 0;
 
     await db.feedPostViews
-             .where("uid")
-             .equals(postUid)
+             .where({feedPostId: post.id})
              .each(postView => {
                 post.viewsCount++;
              });
@@ -349,8 +347,6 @@ async function getPostFromPostUrl(url){
 function injectScriptsInTab(tabId, url, visitId){
 
     // const linkedInPattern = /^(http(s)?:\/\/)?([\w]+\.)?linkedin\.com\/(pub|in|profile)/gm;
-    
-    
 
     // If the user is browsing linkedin's feed
     const dataExtractorPath = "./assets/main_content_script.js";
@@ -697,7 +693,7 @@ async function recordFeedVisit(tabData){
     const visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
 
     chrome.storage.session.get(["tabTimer"]).then((sessionItem) => {
-        if (sessionItem.tabTimer){
+        if (!sessionItem.tabTimer){
             runTabTimer(visitId);
         }
     });
@@ -723,9 +719,14 @@ async function recordFeedVisit(tabData){
                         : null) 
                     : null,
             date: post.content.date,
+            references: post.content.references
+                            ? (post.content.references.length
+                                    ? post.content.references
+                                    : null)
+                            : null,
         };
 
-        console.log("!!!!!!!!!!!!!!!!!! : ", post);
+        console.log("!!!!!!!!!!!!!!!!!! 1 : ", post);
 
 
         if (post.subPost){
@@ -740,15 +741,37 @@ async function recordFeedVisit(tabData){
                             : null)
                         : null,
                 date: post.subPost.date,
+                references: post.subPost.references
+                                ? (post.subPost.references.length
+                                        ? post.subPost.references
+                                        : null)
+                                : null,
             }
 
-            await db.feedPosts
+            var dbSubPost = await db.feedPosts
+                                   .filter(entry => sameFeedPostCondition(entry, subPost))
+                                   .first();
+
+            if (dbSubPost){
+
+                await db.feedPosts
+                        .update(dbSubPost.id, subPost);
+
+            }
+            else{
+
+                await db.feedPosts
                     .add(subPost)
                     .then(function(id){
                         subPost.id = id;
-                    })
+                        dbSubPost = subPost;
+                    });
 
-            newFeedPost["linkedPostId"] = subPost.id;
+            }
+
+            console.log("!!!!!!!!!!!!!!!!!! 2 : ", subPost);
+
+            newFeedPost["linkedPostId"] = dbSubPost.id;
             
         }
 
