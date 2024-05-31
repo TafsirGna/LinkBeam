@@ -92,41 +92,43 @@ export default class MediaView extends React.Component{
         }
         else{
 
-          this.setState({searchText: data.searchText});
+          this.setState({searchText: data.searchText}, async () => {
 
-          var feedPostsByDate = {};
-          for (var feedPost of data.results){
+            var feedPostsByDate = {};
+            for (var feedPost of data.results){
 
-            if (!feedPost.media){
-              continue;
+              if (!feedPost.media){
+                continue;
+              }
+
+              feedPost.view = await db.feedPostViews
+                                       .where({feedPostId: feedPost.id})
+                                       .last(); 
+
+              if (!feedPost.view){
+                continue;
+              }
+
+              if (feedPost.view.date.split("T")[0] in feedPostsByDate){
+                feedPostsByDate[feedPost.view.date.split("T")[0]].push(feedPost);
+              }
+              else{
+                feedPostsByDate[feedPost.view.date.split("T")[0]] = [feedPost];
+              }
+
             }
 
-            feedPost.view = await db.feedPostViews
-                                     .where({feedPostId: feedPost.id})
-                                     .last(); 
+            data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days").map(date => ({
+                date: date,
+                feedPosts: date.toISO().split("T")[0] in feedPostsByDate 
+                            ? feedPostsByDate[date.toISO().split("T")[0]] 
+                            : [],
+              }));
+            data.results.reverse();
 
-            if (!feedPost.view){
-              continue;
-            }
+            this.setState({objects: data.results});
 
-            if (feedPost.view.date.split("T")[0] in feedPostsByDate){
-              feedPostsByDate[feedPost.view.date.split("T")[0]].push(feedPost);
-            }
-            else{
-              feedPostsByDate[feedPost.view.date.split("T")[0]] = [feedPost];
-            }
-
-          }
-
-          data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), new Date(), 1, LuxonDateTime, "days").map(date => {
-            return {
-              date: date,
-              feedPosts: date.toISO().split("T")[0] in feedPostsByDate ? feedPostsByDate[date.toISO().split("T")[0]] : [],
-            }
           });
-          data.results.reverse();
-
-          this.setState({objects: data.results});
 
         }
 

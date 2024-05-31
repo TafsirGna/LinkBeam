@@ -43,7 +43,7 @@ export default class SearchPostFormView extends React.Component{
 
     eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, (data) => {
         
-        this.setState({posts: data.results});
+        this.setState({posts: !data ? null : data.results});
 
       }
     );

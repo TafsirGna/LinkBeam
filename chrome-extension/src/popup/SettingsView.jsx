@@ -87,7 +87,7 @@ export default class SettingsView extends React.Component{
       offCanvasShow: false,
       offCanvasTitle: "",
       offCanvasFormValidated: false,
-      offCanvasFormStartDate: (new Date()).toISOString().split("T")[0],
+      offCanvasFormStartDate: null /*(new Date()).toISOString().split("T")[0]*/,
       offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
       offCanvasFormSelectValue: "1",
       usageQuota: null,
@@ -184,12 +184,16 @@ export default class SettingsView extends React.Component{
       this.setState({processingState: {status: "YES", info: "ERASING"}});
 
       // Initiate data removal
-
       (async () => {
 
-        for (var table of db.tables){
+        for (const table of db.tables){
 
-          if (["settings", "feedPosts", "reminders", "tags", "folders", "bookmarks"].indexOf(table.name) != -1){
+          if (["settings", "feedPosts", "reminders", "tags", "folders", "bookmarks", "keywords"].indexOf(table.name) != -1){
+            if (this.state.offCanvasFormSelectValue == "1"){
+              if (table.name != "settings"){
+                await table.clear();
+              }
+            }
             continue;
           }
 
@@ -199,17 +203,15 @@ export default class SettingsView extends React.Component{
             case "feedPostViews": {
 
               if (this.state.offCanvasFormSelectValue == "1"){
-
-                // Deleting all feedPost objects
-                await db.feedPosts.clear();
-                // Deleting all reminder objects if not done yet
-                await db.reminders.clear();
                 
+                // Deleting all feedPostViews objects
+                await db.feedPostViews.clear(); 
+
               }
               else{
 
                 const feedPostViews = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                      .toArray();
+                                                  .toArray();
                 var feedPostIds = [], doneFeedPostIds = [];
 
                 await Promise.all(feedPostViews.map(async feedPostView => {
@@ -242,6 +244,7 @@ export default class SettingsView extends React.Component{
                 }));
 
                 await db.feedPosts.where("id").anyOf(feedPostIds).delete();
+                await db.feedPostViews.bulkDelete(feedPostViews.map(f => f.id));
 
               }
 
@@ -253,31 +256,25 @@ export default class SettingsView extends React.Component{
 
               if (this.state.offCanvasFormSelectValue == "1"){
 
-                // Deleting all reminder objects if not done yet
-                await db.reminders.clear();
-                // Deleting all folder objects
-                await db.folders.clear();
-                // Deleting all tag objects
-                await db.tags.clear();
-                // Deleting all bookmark objects
-                await db.bookmarks.clear();
+                // Deleting all visit objects
+                await db.visits.clear();
 
               }
               else{
 
                 const profileVisits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                      .toArray();
+                                                .toArray();
 
                 var profileUrls = [];
 
-                await Promise.all(profileVisits.map(async visit => {
+                for (const visit of profileVisits){
 
                   if (!Object.hasOwn(visit, "profileData")){
-                    return;
+                    continue;
                   }
 
                   if (profileUrls.indexOf(visit.url) != -1){
-                    return;
+                    continue;
                   }
 
                   // Delete associated reminder if exists
@@ -320,6 +317,7 @@ export default class SettingsView extends React.Component{
                                      .toArray();
 
                   for (var tag of tags){
+
                     tag.profiles.splice(tag.profiles.map(p => p.url).indexOf(visit.url), 1);
 
                     if (!tag.profiles.length){
@@ -337,8 +335,9 @@ export default class SettingsView extends React.Component{
 
                   profileUrls.push(visit.url);
 
-                }));
+                }
 
+                await db.visits.bulkDelete(profileVisits.map(v => v.id));
 
               }
 
@@ -348,10 +347,7 @@ export default class SettingsView extends React.Component{
 
           }
 
-          if (this.state.offCanvasFormSelectValue == "1"){
-            await table.clear();
-          }
-          else{
+          if (this.state.offCanvasFormSelectValue != "1"){
             await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
                        .delete();
           }
@@ -464,14 +460,14 @@ export default class SettingsView extends React.Component{
                   folders = [],
                   tags = [];
 
-              await Promise.all (tableData.map (async visit => {
+              for (const visit of tableData){
 
                 if (!Object.hasOwn(visit, 'profileData')){
-                  return;
+                  continue;
                 }
 
                 if (profileUrls.indexOf(visit.url) != -1){
-                  return;
+                  continue;
                 }
 
                 // linked reminder & bookmark
@@ -482,11 +478,11 @@ export default class SettingsView extends React.Component{
                   db.bookmarks.where("url").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first()
                 ]);
 
-                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) != -1){
+                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) == -1){
                   reminders.push(reminder);
                 }
 
-                if (bookmark && bookmarks.map(b => b.id).indexOf(bookmark.id) != -1){
+                if (bookmark && bookmarks.map(b => b.id).indexOf(bookmark.id) == -1){
                   bookmarks.push(bookmark);
                 }
 
@@ -534,7 +530,7 @@ export default class SettingsView extends React.Component{
 
                         });
 
-              }));
+              };
 
               if (!dbData.objectStores["reminders"]){
                 dbData.objectStores["reminders"] = removeObjectsId(reminders);
@@ -941,10 +937,21 @@ export default class SettingsView extends React.Component{
               { this.state.offCanvasTitle == "Data deletion" && <button type="button" class="shadow btn btn-danger btn-sm ms-auto" onClick={this.deleteData}>Delete</button>}
 
               { this.state.offCanvasTitle == "Data export" && 
-                                        <div class="ms-auto">
-                                          <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
-                                          <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
-                                        </div>}
+                                      <div>
+
+                                        {this.state.processingState.status == "YES"
+                                          && <div class="ms-auto">
+                                                <div class="spinner-border spinner-border-sm" role="status">
+                                                  <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </div>}
+
+                                        { this.state.processingState.status == "NO" 
+                                            && <div class="ms-auto">
+                                                <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
+                                                <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
+                                              </div>}
+                                      </div>}
             </div>
 
           </Offcanvas.Body>

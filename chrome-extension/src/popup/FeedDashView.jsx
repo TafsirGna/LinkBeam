@@ -208,6 +208,8 @@ export default class FeedDashView extends React.Component{
 
             });
 
+    references.sort((a, b) => b.feedPosts.length - a.feedPosts.length);
+
     this.setState({postsReferences: references});
 
   }
@@ -577,7 +579,7 @@ export default class FeedDashView extends React.Component{
 
           { this.state.activeListIndex == 2
               && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
-                      <h6 class="border-bottom pb-2 mb-0">Posts' References</h6>
+                      <h6 class="border-bottom pb-2 mb-0">Hashtags</h6>
           
                       { !this.state.postsReferences && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                                 {/*<span class="visually-hidden">Loading...</span>*/}
