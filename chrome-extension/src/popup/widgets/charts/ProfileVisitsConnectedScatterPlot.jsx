@@ -146,7 +146,7 @@ export default class ProfileVisitsConnectedScatterPlot extends React.Component{
 		  .x(d => x(d.experience))
 		  .y(d => y(d.time));
 
-		const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+		const svg = d3.select(`#chartTag_${this.state.uuid}`).append("svg")
 		  .attr("width", width)
 		  .attr("height", height)
 		  .attr("viewBox", [0, 0, width, height])
@@ -255,7 +255,7 @@ export default class ProfileVisitsConnectedScatterPlot extends React.Component{
 
         { this.state.chartData && this.state.chartData.length != 0 && 
         		<div>
-        			<div id={"chartTag_"+this.state.uuid} class=""></div>
+        			<div id={`chartTag_${this.state.uuid}`} class=""></div>
         			{ this.props.displayLegend 
         					&& this.props.displayLegend == true 
         					&& <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">

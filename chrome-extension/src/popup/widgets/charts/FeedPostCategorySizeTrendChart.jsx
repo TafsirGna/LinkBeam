@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2';
 import { 
 	getChartColors,
 	getFeedLineChartsData,
+	getVisitsPostCount,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -20,6 +21,7 @@ import {
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { DateTime as LuxonDateTime } from "luxon";
+import { db } from "../../../db";
 
 ChartJS.register(
   CategoryScale,
@@ -84,19 +86,19 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 			return;
 		}
 
-		const titles = [this.props.category];
-		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: this.props.colors};
+		const titles = [this.props.category, "Post Count"];
+		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: [...this.props.colors, ...getChartColors(1).borders]};
 
 		const data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, titles, LuxonDateTime);
 
 		const datasets = titles.map((title, index) => 
 			({
-						    label: `# of ${title}`,
-						    // fill: true,
-						    data: data.values[title],
-						    borderColor: [colors.borders[index]],
-						    backgroundColor: [colors.borders[index]],
-						  })
+		    label: `# of ${title == "Post Count" ? "posts" : title}`,
+		    fill: title == this.props.category,
+		    data: data.values[title],
+		    borderColor: [colors.borders[index]],
+		    backgroundColor: [colors.borders[index]],
+		  })
 		);
 
 		this.setState({
@@ -108,7 +110,11 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 
 	}
 
-	getMetricValue(objects, metric){
+	async getMetricValue(objects, metric){
+
+		if (metric == "Post Count") {
+     	return await getVisitsPostCount(objects, db); 
+    }
 
 		var value = 0;
 		for (const object of objects){

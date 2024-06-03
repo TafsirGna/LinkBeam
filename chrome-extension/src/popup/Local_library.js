@@ -1481,6 +1481,30 @@ export function shuffle(array) {
   return array;
 }
 
+export function highlightText(textContent, keyword){
+
+  if (!keyword || (keyword && !keyword.replaceAll(/\s/g,"").length)){
+    return textContent;
+  }
+
+  var newNode = document.createElement('span');
+  const keywords = [keyword];
+
+  newNode = insertHtmlTagsIntoEl(
+    newNode, 
+    breakHtmlElTextContentByKeywords(textContent, keywords), 
+    keywords, 
+    ["text-bg-warning"], 
+    {},
+    (newDivTag, textItem, order, color) => {
+      newDivTag.innerHTML = `<span class='border rounded shadow-sm bg-info-subtle text-muted border-primary' title='#${order}'>${textItem}</span>`;
+    }
+  );
+
+  return newNode.innerHTML;
+
+}
+
 export function getChartColors(length){
 
   let backgrounds = [], borders = [];

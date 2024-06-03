@@ -26,8 +26,7 @@ import {
   appParams,
   setGlobalDataSettings, 
   periodRange,
-  insertHtmlTagsIntoEl,
-  breakHtmlElTextContentByKeywords,
+  highlightText,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -180,6 +179,15 @@ export default class MediaView extends React.Component{
         }
 
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+
+        if (feedPost.linkedPostId){
+          const linkedPost = await db.feedPosts.where({id: feedPost.linkedPostId}).first();
+          if (linkedPost && linkedPost.media){
+            linkedPost.view = feedPostView;
+            feedPosts.push(linkedPost);
+          }
+        }
+
         if (!feedPost.media){
           continue;
         }
@@ -193,30 +201,6 @@ export default class MediaView extends React.Component{
       this.setState({objects: objects, searchingMedia: false});
 
     })
-
-  }
-
-  highlightSearchText(textContent){
-
-    if (!this.state.searchText || (this.state.searchText && !this.state.searchText.replaceAll(/\s/g,"").length)){
-      return textContent;
-    }
-
-    var newNode = document.createElement('span');
-    const keywords = [this.state.searchText];
-
-    newNode = insertHtmlTagsIntoEl(
-      newNode, 
-      breakHtmlElTextContentByKeywords(textContent, keywords), 
-      keywords, 
-      ["text-bg-warning"], 
-      {},
-      (newDivTag, textItem, order, color) => {
-        newDivTag.innerHTML = `<span class='border rounded shadow-sm bg-info-subtle text-muted border-primary' title='#${order}'>${textItem}</span>`;
-      }
-    );
-
-    return newNode.innerHTML;
 
   }
 
@@ -283,15 +267,15 @@ export default class MediaView extends React.Component{
                                                                                                                     trigger="hover" 
                                                                                                                     placement="left" 
                                                                                                                     overlay={<Popover id="popover-basic">
-                                                                                                                                <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: this.highlightSearchText(feedPost.author.name)}}>{/*{feedPost.author.name}*/}</Popover.Header>
+                                                                                                                                <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: highlightText(feedPost.author.name, this.state.searchText)}}>{/*{feedPost.author.name}*/}</Popover.Header>
                                                                                                                                 {feedPost.text 
-                                                                                                                                    && <Popover.Body dangerouslySetInnerHTML={{__html: this.highlightSearchText(feedPost.text)}}>
+                                                                                                                                    && <Popover.Body dangerouslySetInnerHTML={{__html: highlightText(feedPost.text, this.state.searchText)}}>
                                                                                                                                         {/*{feedPost.text}*/}
                                                                                                                                       </Popover.Body>}
                                                                                                                               </Popover>}
                                                                                                                     >
                                                                                                                     <a 
-                                                                                                                      href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`} 
+                                                                                                                      href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
                                                                                                                       target="_blank" 
                                                                                                                       title="View on linkedin">
                                                                                                                       <div class="card shadow">

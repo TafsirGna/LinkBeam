@@ -446,7 +446,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                                       .parentNode.tagName.toLowerCase() ==  "a"
                             ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                       .querySelector(".feed-shared-update-v2__description")
-                                                      .parentNode.getAttribute("href")
+                                                      .parentNode.getAttribute("href").slice(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                                                .querySelector(".feed-shared-update-v2__description")
+                                                                                                .parentNode.getAttribute("href").indexOf("urn:li")).replaceAll("/", "")
                             : null)
                         : null,
                   references: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")

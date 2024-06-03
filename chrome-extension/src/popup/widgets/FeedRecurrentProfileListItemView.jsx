@@ -1,4 +1,4 @@
-/*import './FeedActiveUserListItemView.css'*/
+/*import './FeedRecurrentProfileListItemView.css'*/
 import React, { useEffect, useState } from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
@@ -45,7 +45,7 @@ export const totalInteractions = (object) => {
   return value;
 }
 
-export default class FeedActiveUserListItemView extends React.Component{
+export default class FeedRecurrentProfileListItemView extends React.Component{
 
   constructor(props){
     super(props);
@@ -77,7 +77,7 @@ export default class FeedActiveUserListItemView extends React.Component{
 
   onEnteringUserTooltip = async () => {
 
-    this.setState({userTooltipContent: <span class="fw-light">{`${this.state.totalInteractions} deeds`} so far</span>});
+    this.setState({userTooltipContent: <span class="fw-light">{`${totalInteractions(this.props.object)} deeds`} so far</span>});
 
   }
 

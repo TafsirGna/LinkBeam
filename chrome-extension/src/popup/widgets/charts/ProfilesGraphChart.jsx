@@ -516,7 +516,7 @@ export default class ProfilesGraphChart extends React.Component{
         .on("tick", ticked);
 
     // Create the SVG container.
-    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+    const svg = d3.select(`#chartTag_${this.state.uuid}`).append("svg")
         .attr("width", /*window.innerWidth*/ width)
         .attr("height", /*window.innerHeight*/ height)
         .attr("viewBox", [0, 0, width, height])
@@ -628,7 +628,7 @@ export default class ProfilesGraphChart extends React.Component{
     }
 
     // Create the SVG container.
-    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+    const svg = d3.select(`#chartTag_${this.state.uuid}`).append("svg")
         .attr("width", /*window.innerWidth*/width)
         .attr("height", /*window.innerHeight*/height)
         .attr("viewBox", [0, 0, width, height])
@@ -777,7 +777,7 @@ export default class ProfilesGraphChart extends React.Component{
         { this.props.objects && 
                   <div>
 
-                    <div id={"chartTag_"+this.state.uuid} class=""></div> 
+                    <div id={`chartTag_${this.state.uuid}`} class=""></div> 
 
                     { this.props.displayLegend 
                         && this.props.displayLegend == true 

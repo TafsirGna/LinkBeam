@@ -6,6 +6,7 @@ import {
 	getChartColors,
 	getFeedLineChartsData,
 	dateBetweenRange,
+	getVisitsPostCount,
 } from "../../Local_library";
 import { db } from "../../../db";
 import {
@@ -107,19 +108,19 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 			return;
 		}
 
-		const titles = [this.props.category];
-		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: this.props.colors};
+		const titles = [this.props.category, "Post Count"];
+		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: [...this.props.colors, ...getChartColors(1).borders]};
 
 		const data = await getFeedLineChartsData(this.state.feedPostViews, this.props.rangeDates, this.getMetricValue, titles, LuxonDateTime);
 
 		const datasets = titles.map((title, index) => 
 			({
-						    label: `# of ${title}`,
-						    // fill: true,
-						    data: data.values[title],
-						    borderColor: [colors.borders[index]],
-						    backgroundColor: [colors.borders[index]],
-						  })
+		    label: `# of ${title == "Post Count" ? "posts" : title}`,
+		    fill: title == this.props.category,
+		    data: data.values[title],
+		    borderColor: [colors.borders[index]],
+		    backgroundColor: [colors.borders[index]],
+		  })
 		);
 
 		this.setState({
@@ -133,8 +134,16 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 
 	async getMetricValue(objects, metric){
 
+		if (metric == "Post Count"){
+			// Unique visits ids
+			const visitIds = objects.map(o => o.visitId).filter((value, index, self) => self.indexOf(value) === index);
+			var visits = await db.visits.where('id').anyOf(visitIds).toArray();
+			return await getVisitsPostCount(visits, db); 
+		}
+
+
 		var value = 0,
-				uids = [];
+				feedPostIds = [];
 
 		objects.sort((a, b) => {
 			if (new Date(a.date) > new Date(b.date)){
@@ -146,18 +155,16 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
       else{
         return 0;
       }
-     });
-
-		// if (objects){
+    });
 			
 		for (var object of objects){
 
-			if (uids.indexOf(object.uid) != -1){
+			if (feedPostIds.indexOf(object.feedPostId) != -1){
 				continue;
 			}
 
 			const postView = await db.feedPostViews
-                                .where({uid: object.uid})
+                                .where({feedPostId: object.feedPostId})
                                 .filter(postView => new Date(postView.date) < new Date(objects[0].date))
                                 .first();
 
@@ -172,7 +179,7 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
       	}
       }
 
-			uids.push(object.uid);
+			feedPostIds.push(object.feedPostId);
 
 		}
 

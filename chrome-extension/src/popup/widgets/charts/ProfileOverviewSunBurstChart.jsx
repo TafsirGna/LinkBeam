@@ -260,7 +260,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
         .outerRadius(d => Math.max(d.y0 * radius, d.y1 * radius - 1))
 
     // Create the SVG container.
-    const svg = d3.select("#chartTag_"+this.state.uuid).append("svg")
+    const svg = d3.select(`#chartTag_${this.state.uuid}`).append("svg")
         .attr("viewBox", [-width / 2, -height / 2, width, width])
         .style("font", "10px sans-serif");
 
@@ -368,7 +368,7 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
                   </div>
                 </div>}
 
-        { this.state.data && <div id={"chartTag_"+this.state.uuid} class=""></div> }
+        { this.state.data && <div id={`chartTag_${this.state.uuid}`} class=""></div> }
       </>
     );
   }

@@ -32,7 +32,6 @@ import {
   getVisitsTotalTime,
   dateBetweenRange,
   getPeriodVisits,
-  categoryVerbMap,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -43,20 +42,21 @@ import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
 import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
-import FeedDashActiveUsersSectionView from "./widgets/FeedDashActiveUsersSectionView";
+import FeedDashRecurrentProfilesSectionView from "./widgets/FeedDashRecurrentProfilesSectionView";
 import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
+import FeedDashAttentionGrabbersSectionView from "./widgets/FeedDashAttentionGrabbersSectionView";
 import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
 import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
 import CustomToast from "./widgets/toasts/CustomToast";
-import { totalInteractions } from "./widgets/FeedActiveUserListItemView";
 
 const subMenuColorsVariants = [
     "secondary",
     "info",
     "success",
+    "warning",
   ];
 
 export default class FeedDashView extends React.Component{
@@ -74,9 +74,8 @@ export default class FeedDashView extends React.Component{
       toastMessage: "",
       toastShow: false,
       activeListIndex: 0,
-      mostActiveUsers: null,
       allVisitsPostCount: 0,
-      postsReferences: null,
+      hashtagCount: null,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -84,8 +83,7 @@ export default class FeedDashView extends React.Component{
     this.setVisits = this.setVisits.bind(this);
     this.setFeedPostViews = this.setFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
-    this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
-    this.setPostsReferences = this.setPostsReferences.bind(this);
+    this.setHashtagCount = this.setHashtagCount.bind(this);
 
   }
 
@@ -148,6 +146,10 @@ export default class FeedDashView extends React.Component{
   handleChartModalClose = () => this.setState({chartModalShow: false});
   handleChartModalShow = (chartModalTitle) => this.setState({chartModalShow: true, chartModalTitle: chartModalTitle});
 
+  setHashtagCount(count){
+    this.setState({hashtagCount: count});
+  }
+
   componentDidUpdate(prevProps, prevState){
    
     if ((prevState.startDate != this.state.startDate) 
@@ -158,56 +160,6 @@ export default class FeedDashView extends React.Component{
       this.setFeedPostViews();
 
     }
-
-  }
-
-  async setPostsReferences(visits){
-
-    if (!this.state.feedPostViews){
-      return;
-    }
-
-    var references = [];
-
-    var feedPostIds = [];
-    for (var feedPostView of this.state.feedPostViews){
-      if (feedPostIds.indexOf(feedPostView.feedPostId) == -1){
-        feedPostIds.push(feedPostView.feedPostId);
-      }
-    }
-
-    await db.feedPosts
-            .where("id")
-            .anyOf(feedPostIds)
-            .each(feedPost => {
-
-              if (!feedPost.references){
-                return;
-              }
-
-              for (var reference of feedPost.references){
-
-                if (!reference.text.startsWith("#")){
-                  continue;
-                }
-
-                const index = references.findIndex(r => r.text == reference.text);
-                if (index == -1){
-                  references.push({
-                    ...reference,
-                    feedPosts: [feedPost],
-                  });
-                }
-                else{
-                  references[index].feedPosts.push(feedPost);
-                }
-              }
-
-            });
-
-    references.sort((a, b) => b.feedPosts.length - a.feedPosts.length);
-
-    this.setState({postsReferences: references});
 
   }
 
@@ -305,95 +257,7 @@ export default class FeedDashView extends React.Component{
   }
 
   setActiveListIndex(index){
-    this.setState({activeListIndex: index}, () => {
-
-      switch(index){
-        case 1:{
-          if (!this.state.mostActiveUsers){
-            this.setMostActiveUsers();
-          }
-          break;
-        }
-        case 2:{
-          if (!this.state.postsReferences){
-            this.setPostsReferences();
-          }
-        }
-      }
-
-    });
-  }
-
-  async setMostActiveUsers(){
-
-    if (!this.state.feedPostViews){
-      return;
-    }
-
-    var mostActiveUsers = [];
-
-    function feedItemsMetrics(viewCategory){
-      var result = {};
-      for (const category of Object.keys(categoryVerbMap).concat(["publications"])) {
-        result[category] = Number(category == viewCategory);
-      }
-      return result;
-    }
-
-    for (var feedPostView of this.state.feedPostViews){
-
-      if (!feedPostView.initiator){
-        continue;
-      }
-
-      if (feedPostView.initiator.url){
-        const index = mostActiveUsers.map(a => a.url).indexOf(feedPostView.initiator.url);
-        if (index == -1){
-          mostActiveUsers.push({
-            name: feedPostView.initiator.name,
-            url: feedPostView.initiator.url,
-            picture: feedPostView.initiator.picture,
-            feedItemsMetrics: feedItemsMetrics(feedPostView.category),
-          });
-        }
-        else{
-          for (const category of Object.keys(categoryVerbMap)) {
-            if (category == feedPostView.category){
-              mostActiveUsers[index].feedItemsMetrics[category]++;
-            }
-          }
-        }
-      }
-      else{
-        if (!feedPostView.category){
-          var feedPost = await db.feedPosts
-                                 .where({id: feedPostView.feedPostId})
-                                 .first();
-          const index = mostActiveUsers.map(a => a.url).indexOf(feedPost.author.url);
-          if (index == -1){
-            mostActiveUsers.push({
-              name: feedPost.author.name,
-              url: feedPost.author.url,
-              picture: feedPost.author.picture,
-              feedItemsMetrics: feedItemsMetrics("publications"),
-            });
-          }
-          else{
-            for (const category of Object.keys(categoryVerbMap)) {
-              if (category == "publications"){
-                mostActiveUsers[index].feedItemsMetrics["publications"]++;
-              }
-            }
-          }
-        }
-      }
-    }    
-
-    mostActiveUsers.sort((a, b) => totalInteractions(b) - totalInteractions(a));
-    mostActiveUsers = mostActiveUsers.slice(0, 10);
-
-    this.setState({mostActiveUsers: mostActiveUsers});
-
+    this.setState({activeListIndex: index});
   }
 
   render(){
@@ -493,19 +357,18 @@ export default class FeedDashView extends React.Component{
 
           <div class="mt-4 ms-3">
             {["Posts", 
-              "Most active users", 
+              "Most recurrent profiles", 
+              "Top attention grabbers", 
               "Hashtags"].map((item, index) => (<span 
                                                           class={`me-2 handy-cursor badge bg-${subMenuColorsVariants[index]}-subtle border border-${subMenuColorsVariants[index]}-subtle text-${subMenuColorsVariants[index]}-emphasis ${this.state.activeListIndex == index ? "shadow" : "shadow-sm"}`}
                                                           onClick={() => {this.setActiveListIndex(index)}}>
                                                           {item}
 
                                                           {/*Display the count*/}
-                                                          { index == 2 
-                                                              ? (this.state.postsReferences
-                                                                  ? ` (${this.state.postsReferences.length})`
-                                                                  : null)
-                                                              : null}
-                                                        </span>))}
+                                                          { index == 3 
+                                                            ? (this.state.hashtagCount ? ` (${this.state.hashtagCount})` : null)
+                                                            : null}
+                                                  </span>))}
           </div>
 
           { this.state.activeListIndex == 0 
@@ -547,12 +410,17 @@ export default class FeedDashView extends React.Component{
 
 
           { this.state.activeListIndex == 1
-              && <FeedDashActiveUsersSectionView
-                    mostActiveUsers={this.state.mostActiveUsers}/>}
+              && <FeedDashRecurrentProfilesSectionView
+                    objects={this.state.feedPostViews}/>}
 
           { this.state.activeListIndex == 2
+              && <FeedDashAttentionGrabbersSectionView
+                  objects={this.state.feedPostViews}/>}
+
+          { this.state.activeListIndex == 3
               && <FeedDashHashtagsSectionView
-                    postsReferences={this.state.postsReferences}/>}
+                    objects={this.state.feedPostViews}
+                    setCount={this.setHashtagCount}/>}
 
   			</div>
 

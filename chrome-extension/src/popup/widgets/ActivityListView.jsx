@@ -96,7 +96,7 @@ export default class ActivityListView extends React.Component{
                     { this.props.variant == "list" 
                         && <div>
                               <div class="list-group small mt-1 shadow-sm">
-                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ object.link } target="_blank">
+                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ !object.link ? null : object.link } target="_blank">
                                   <div class="d-flex gap-2 w-100 justify-content-between">
                                     <div>
                                       <p class="mb-1">
@@ -112,9 +112,9 @@ export default class ActivityListView extends React.Component{
                                           {/**/}
                                         </span>
                                       </p>
-                                      <p class="mb-0 opacity-75 border p-2 rounded shadow">{ object.text }</p>
+                                      <p class="mb-0 opacity-75 border p-2 rounded shadow" dangerouslySetInnerHTML={{__html: object.text}}></p>
                                     </div>
-                                    <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>
+                                    { object.date && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>}
                                   </div>
                                 </a>))} 
                               </div>
