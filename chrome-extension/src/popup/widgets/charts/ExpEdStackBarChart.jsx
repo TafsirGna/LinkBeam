@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, getElementAtEvent } from 'react-chartjs-2';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
@@ -60,10 +60,15 @@ export default class ExpEdStackBarChart extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      chartRef: React.createRef(),
       stackData: null,
       uuid: uuidv4(),
       incompleteProfiles: null,
+      displayedProfiles: null,
     };
+
+    this.onChartClick = this.onChartClick.bind(this);
+
   }
 
   componentDidMount() {
@@ -103,7 +108,11 @@ export default class ExpEdStackBarChart extends React.Component{
       return;
     }
 
-    var labels = [], expTimeData = [], edTimeData = [], incompleteProfiles = [];
+    var labels = [], 
+        expTimeData = [], 
+        edTimeData = [], 
+        incompleteProfiles = [],
+        displayedProfiles = [];
     for (var profile of this.props.objects){
 
       var index = labels.map(e => e.url).indexOf(profile.url);
@@ -118,6 +127,8 @@ export default class ExpEdStackBarChart extends React.Component{
           continue;
         }
 
+        displayedProfiles.push(profile);
+
         labels.push({url: profile.url, fullName: fullName});
         
         experienceTime = Math.ceil(experienceTime / (1000 * 60 * 60 * 24)) // diff days
@@ -131,9 +142,10 @@ export default class ExpEdStackBarChart extends React.Component{
 
     }
 
-    this.setState({incompleteProfiles: incompleteProfiles});
-
-    this.setState({stackData: {
+    this.setState({
+      incompleteProfiles: incompleteProfiles,
+      displayedProfiles: displayedProfiles,
+      stackData: {
         labels: labels.map(label => label.fullName),
         datasets: [
           {
@@ -150,6 +162,20 @@ export default class ExpEdStackBarChart extends React.Component{
       }
     });
 
+    this.setState({
+    });
+
+  }
+
+  onChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      window.open(`/index.html?view=Profile&data=${this.state.displayedProfiles[(elements[0]).index].url}`, '_blank');
+    }
+
   }
 
   render(){
@@ -165,9 +191,11 @@ export default class ExpEdStackBarChart extends React.Component{
                               <div>
                                 <div class="text-center">
                                   <Bar 
+                                    ref={this.state.chartRef}
                                     id={"chartTag_"+this.state.uuid} 
                                     options={options} 
-                                    data={this.state.stackData} />
+                                    data={this.state.stackData}
+                                    onClick={this.onChartClick} />
                                 </div>
                                 { this.props.displayLegend 
                                     && this.props.displayLegend == true 

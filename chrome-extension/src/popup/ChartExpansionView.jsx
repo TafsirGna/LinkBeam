@@ -144,7 +144,7 @@ export default class ChartExpansionView extends React.Component{
                           end: this.state.offCanvasFormEndDate,
                         }}/>}
 
-              {/*{ this.state.carrouselActiveItemIndex == 3 && 
+              { this.state.carrouselActiveItemIndex == 3 && 
                       <ProfilesNetworkMetricsBubbleChart 
                         objects={this.state.periodVisits} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
@@ -154,9 +154,9 @@ export default class ChartExpansionView extends React.Component{
                         periodRangeLimits={{
                           start: this.state.offCanvasFormStartDate,
                           end: this.state.offCanvasFormEndDate,
-                        }} />}*/}
+                        }} />}
 
-              { this.state.carrouselActiveItemIndex == 3 && 
+              { this.state.carrouselActiveItemIndex == 4 && 
                       <ProfilesGeoMapChart 
                         context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
                         objects={this.state.periodProfiles} 
@@ -168,7 +168,7 @@ export default class ChartExpansionView extends React.Component{
                           end: this.state.offCanvasFormEndDate,
                         }} />}
 
-              { this.state.carrouselActiveItemIndex == 4 && 
+              { this.state.carrouselActiveItemIndex == 5 && 
                       <ExpEdStackBarChart 
                         objects={this.state.periodProfiles} 
                         carrouselIndex={this.state.carrouselActiveItemIndex}
@@ -179,7 +179,7 @@ export default class ChartExpansionView extends React.Component{
                           end: this.state.offCanvasFormEndDate,
                         }} />}
 
-              { this.state.carrouselActiveItemIndex == 5 && 
+              {/*{ this.state.carrouselActiveItemIndex == 5 && 
                       <ProfilesGraphChart 
                         objects={this.state.periodProfiles} 
                         displayCriteria={this.state.relChartDisplayCrit} 
@@ -190,7 +190,7 @@ export default class ChartExpansionView extends React.Component{
                         periodRangeLimits={{
                           start: this.state.offCanvasFormStartDate,
                           end: this.state.offCanvasFormEndDate,
-                        }} />}
+                        }} />}*/}
 
               { this.state.carrouselActiveItemIndex == 6 && 
                       <ProfileVisitsConnectedScatterPlot 

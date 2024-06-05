@@ -40,6 +40,9 @@ import {
   LayersIcon,
   CheckIcon,
   KeyIcon,
+  ClockIcon,
+  PlusIcon,
+  ReminderIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
 import { DateTime as LuxonDateTime } from "luxon";
@@ -843,6 +846,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           content={secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
                                           placement="left">
                                           <Dropdown.Item>
+                                            <ClockIcon
+                                              size="12"
+                                              className="me-2"/>
                                             Timer
                                           </Dropdown.Item>
                                         </Tooltip>
@@ -851,11 +857,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                     && <Dropdown.Item 
                                           onClick={this.handleReminderModalShow}
                                           className="">
+                                          <ReminderIcon
+                                            size="12"
+                                            className="me-2"/>
                                           Show reminder
                                           </Dropdown.Item>}
                                 { <Dropdown.Item 
                                           onClick={this.updateReminder}
                                           className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
+
+                                          {Object.hasOwn(this.state.reminder, "id") && <DeleteIcon size="12" className="me-2"/>}
+                                          {!Object.hasOwn(this.state.reminder, "id") && <PlusIcon size="12" className="me-2"/>}
+
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
                                         </Dropdown.Item>}
                               </Dropdown>}

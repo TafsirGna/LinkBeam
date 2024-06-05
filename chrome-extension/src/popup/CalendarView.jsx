@@ -73,6 +73,11 @@ export default class CalendarView extends React.Component{
 
     const urlParams = new URLSearchParams(window.location.search);
     const dataType = urlParams.get("dataType");
+    var currentDate = urlParams.get("currentDate");
+    if (currentDate){
+      currentDate = new Date(currentDate);
+      this.setState({selectedDate: currentDate});
+    }
 
     if (!dataType){
       return;
@@ -81,7 +86,7 @@ export default class CalendarView extends React.Component{
     // Setting the nav default active key
     this.setState({
       tabActiveKey: dataType == "Reminders" ? dataType : this.state.tabTitles[0], 
-      activeStartDate: LuxonDateTime.fromJSDate(this.state.selectedDate).startOf('month').toFormat("yyyy-MM-dd"),
+      activeStartDate: LuxonDateTime.fromJSDate(currentDate || this.state.selectedDate).startOf('month').toFormat("yyyy-MM-dd"),
       dataType: dataType,
     });
 
@@ -89,13 +94,10 @@ export default class CalendarView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    if (dataType == "ProfileVisits"){
-      // Requesting this month's visits list
-      this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.VISITS);
-    }
-    else if (dataType == "Reminders"){
-      this.getMonthObjectList(this.state.selectedDate, dbData.objectStoreNames.REMINDERS);
-    }
+    this.getMonthObjectList(
+      (currentDate || this.state.selectedDate), 
+      dataType == "Reminders" ? dbData.objectStoreNames.REMINDERS : dbData.objectStoreNames.VISITS,
+    );
 
   }
 
@@ -268,12 +270,14 @@ export default class CalendarView extends React.Component{
                           <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>}
-              { this.props.globalData.settings && <Cal onClickDay={this.onClickDay} 
-                            tileDisabled={this.tileDisabled} 
-                            onActiveStartDateChange={this.onActiveStartDateChange} 
-                            value={new Date()} 
-                            tileClassName={this.tileClassName}
-                            className="rounded shadow-lg"/>}
+              { this.props.globalData.settings 
+                  && <Cal 
+                        onClickDay={this.onClickDay} 
+                        tileDisabled={this.tileDisabled} 
+                        onActiveStartDateChange={this.onActiveStartDateChange} 
+                        value={new Date((new URLSearchParams(window.location.search)).get("currentDate") || (new Date()).toISOString())} 
+                        tileClassName={this.tileClassName}
+                        className="rounded shadow-lg"/>}
             </div>
             <div class="col-7 ps-3">
               <div>

@@ -27,7 +27,13 @@ import {
   highlightText,
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
-import { AlertCircleIcon, LayersIcon } from "./SVGs";
+import { 
+  AlertCircleIcon, 
+  LayersIcon,
+  BarChartIcon,
+  GridIcon,
+  DuplicateIcon,
+} from "./SVGs";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ActivityListView from "./ActivityListView";
@@ -145,7 +151,14 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                   className="text-muted"/>
               </div>
               <ul class="dropdown-menu shadow-lg">
-                <li><a class="dropdown-item small" href="#" onClick={this.handleModalShow}>Graph chart</a></li>
+                <li>
+                  <a class="dropdown-item small" href="#" onClick={this.handleModalShow}>
+                    <BarChartIcon 
+                      size="15" 
+                      className="me-2 text-muted"/>
+                    Graph chart
+                  </a>
+                </li>
               </ul>
             </div>*/}
           </h6>
@@ -182,8 +195,22 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                                                                       </OverlayTrigger>
                                                                     </div>
                                                                     <ul class="dropdown-menu shadow-lg">
-                                                                      <li><a class="dropdown-item small" href="#" onClick={() => {this.handleHashtagInfosModalShow(object)}}>Show more</a></li>
-                                                                      <li><a class="dropdown-item small" href={object.url} target="_blank">View on Linkedin</a></li>
+                                                                      <li>
+                                                                        <a class="dropdown-item small" href="#" onClick={() => {this.handleHashtagInfosModalShow(object)}}>
+                                                                          <GridIcon 
+                                                                            size="15"
+                                                                            className="me-2 text-muted"/>
+                                                                          Show more
+                                                                        </a>
+                                                                      </li>
+                                                                      <li>
+                                                                        <a class="dropdown-item small" href={object.url} target="_blank">
+                                                                          <DuplicateIcon 
+                                                                            size="15"
+                                                                            className="me-2 text-muted"/>
+                                                                          View on Linkedin
+                                                                        </a>
+                                                                      </li>
                                                                     </ul>
                                                                   </div>))}
                     </div>}

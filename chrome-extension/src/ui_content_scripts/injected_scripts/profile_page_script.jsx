@@ -55,6 +55,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
         continue;
       }
 
+      console.log("bbbbbbbbbbbbb : ", htmlElement);
+
       if (htmlElement.getAttribute(keywordHighlightMark)){
         continue;
       }

@@ -37,6 +37,7 @@ import eventBus from "./EventBus";
 import { 
   MaximizeIcon, 
   DownloadIcon,
+  CalendarIcon,
   CheckIcon,
 } from "./widgets/SVGs";
 import { db } from "../db";
@@ -62,7 +63,6 @@ export default class StatisticsView extends React.Component{
       periodProfiles: null,
       view: 0,
       carrouselActiveItemIndex: 0,
-      controlsVisibility: true,
       relChartDisplayCrit: "suggestions",
       offCanvasShow: false,
       offCanvasFormStartDate: (new Date()).toISOString().split("T")[0],
@@ -170,11 +170,8 @@ export default class StatisticsView extends React.Component{
 
   handleCarrouselSelect = (selectedIndex) => {
 
-    var controlsVisibility = (selectedIndex != 1);
-
     this.setState({
       carrouselActiveItemIndex: selectedIndex,
-      controlsVisibility: controlsVisibility,
     });
 
   };
@@ -224,20 +221,29 @@ export default class StatisticsView extends React.Component{
 
           {/*View dropdown*/}
           <div class="clearfix">
-            { this.state.controlsVisibility && <span class="border shadow-sm rounded p-1 text-muted">
-                          <span 
-                            title="Expand chart" 
-                            onClick={this.onChartExpansion} 
-                            class="handy-cursor mx-1 text-primary">
-                            <MaximizeIcon size="16" className=""/>
-                          </span>
-                          <span 
-                            onClick={this.downloadChart} 
-                            title="Download chart" 
-                            class="handy-cursor mx-1">
-                            <DownloadIcon size="16" className=""/>
-                          </span>
-                        </span> }
+            { this.state.carrouselActiveItemIndex != 1 
+                && <span class="border shadow-sm rounded p-1 text-muted">
+                      <span 
+                        title="Expand chart" 
+                        onClick={this.onChartExpansion} 
+                        class="handy-cursor mx-1 text-primary">
+                        <MaximizeIcon size="16" className=""/>
+                      </span>
+                      { this.state.carrouselActiveItemIndex == 0 
+                          && <a
+                                title="Show on calendar"
+                                class="mx-1"
+                                href="/index.html?view=Calendar&dataType=ProfileVisits" 
+                                target="_blank">
+                                <CalendarIcon size="16" className=""/>
+                              </a> }                  
+                      <span 
+                        onClick={this.downloadChart} 
+                        title="Download chart" 
+                        class="handy-cursor mx-1">
+                        <DownloadIcon size="16" className=""/>
+                      </span>
+                    </span> }
 
             <div class="btn-group float-end">
               <button 
@@ -275,15 +281,6 @@ export default class StatisticsView extends React.Component{
                             className="float-end"/>}
                   </a>
                 </li>
-                <li>
-                  <a 
-                    class="dropdown-item small" 
-                    href="/index.html?view=Calendar&dataType=ProfileVisits" 
-                    target="_blank">
-                    Show calendar
-                  </a>
-                </li>
-
               </ul>
             </div>
           </div>
@@ -297,33 +294,33 @@ export default class StatisticsView extends React.Component{
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 0 
                   && <VisitsTimelineChart 
-                              objects={this.state.periodVisits} 
-                              view={this.state.view} 
-                              periodRangeLimits={{
-                                start: this.state.offCanvasFormStartDate,
-                                end: this.state.offCanvasFormEndDate,
-                              }}
-                              carrouselIndex={0} />}
+                      objects={this.state.periodVisits} 
+                      view={this.state.view} 
+                      periodRangeLimits={{
+                        start: this.state.offCanvasFormStartDate,
+                        end: this.state.offCanvasFormEndDate,
+                      }}
+                      carrouselIndex={0} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 1 
                   && <StatIndicatorsView 
-                              objects={this.state.periodVisits}
-                              carrouselIndex={1} />}
+                      objects={this.state.periodVisits}
+                      carrouselIndex={1} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 2 
                   && <VisitsKeywordsBarChart 
-                              globalData={this.props.globalData} 
-                              objects={this.state.periodProfiles} 
-                              view={this.state.view} 
-                              carrouselIndex={2}
-                              periodRangeLimits={{
-                                start: this.state.offCanvasFormStartDate,
-                                end: this.state.offCanvasFormEndDate,
-                              }}/>}
+                      globalData={this.props.globalData} 
+                      objects={this.state.periodProfiles} 
+                      view={this.state.view} 
+                      carrouselIndex={2}
+                      periodRangeLimits={{
+                        start: this.state.offCanvasFormStartDate,
+                        end: this.state.offCanvasFormEndDate,
+                      }}/>}
             </Carousel.Item>
-            {/*<Carousel.Item>
+            <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 3 
                   && <ProfilesNetworkMetricsBubbleChart 
                               objects={this.state.periodVisits} 
@@ -334,22 +331,11 @@ export default class StatisticsView extends React.Component{
                                 start: this.state.offCanvasFormStartDate,
                                 end: this.state.offCanvasFormEndDate,
                               }} />}
-            </Carousel.Item>*/}
-            <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 3 
-                  && <ProfilesGeoMapChart 
-                              context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
-                              objects={this.state.periodProfiles} 
-                              carrouselIndex={3}
-                              view={this.state.view} 
-                              periodRangeLimits={{
-                                start: this.state.offCanvasFormStartDate,
-                                end: this.state.offCanvasFormEndDate,
-                              }} />}
             </Carousel.Item>
             <Carousel.Item>
-              { this.state.carrouselActiveItemIndex == 4 
-                  && <ExpEdStackBarChart 
+              { this.state.carrouselActiveItemIndex == 4
+                  && <ProfilesGeoMapChart 
+                              context={appParams.COMPONENT_CONTEXT_NAMES.STATISTICS}
                               objects={this.state.periodProfiles} 
                               carrouselIndex={4}
                               view={this.state.view} 
@@ -358,7 +344,18 @@ export default class StatisticsView extends React.Component{
                                 end: this.state.offCanvasFormEndDate,
                               }} />}
             </Carousel.Item>
-            <Carousel.Item> 
+            <Carousel.Item>
+              { this.state.carrouselActiveItemIndex == 5 
+                  && <ExpEdStackBarChart 
+                              objects={this.state.periodProfiles} 
+                              carrouselIndex={5}
+                              view={this.state.view} 
+                              periodRangeLimits={{
+                                start: this.state.offCanvasFormStartDate,
+                                end: this.state.offCanvasFormEndDate,
+                              }} />}
+            </Carousel.Item>
+            {/*<Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 5
                   && <div>
                               <ProfilesGraphChart 
@@ -397,7 +394,7 @@ export default class StatisticsView extends React.Component{
                                         </ul>
                                       </div>}
                             </div>}
-            </Carousel.Item>
+            </Carousel.Item>*/}
             <Carousel.Item> 
               { this.state.carrouselActiveItemIndex == 6
                   && <ProfileVisitsConnectedScatterPlot 

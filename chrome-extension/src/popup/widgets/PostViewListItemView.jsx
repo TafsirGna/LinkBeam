@@ -4,6 +4,8 @@ import {
   BarChartIcon,
   LayersIcon,
   CheckIcon,
+  PlusIcon,
+  DeletionIcon,
 } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
@@ -290,6 +292,8 @@ export default class PostViewListItemView extends React.Component{
                     <a 
                       class={"dropdown-item small handy-cursor " + (this.props.object.feedPost.reminder ? "text-danger" : "text-muted")} 
                       onClick={this.onReminderActionClick}>
+                      {this.props.object.feedPost.reminder && <DeletionIcon size="15" className="me-2"/>}
+                      {!this.props.object.feedPost.reminder && <PlusIcon size="15" className="me-2 text-muted"/>}
                       { this.props.object.feedPost.reminder ? "Delete " : "Add "} reminder
                     </a>
                     </li>

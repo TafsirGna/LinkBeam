@@ -77,7 +77,7 @@ export default class ProfileListItemView extends React.Component{
                                                                   </a>
                                                                 </h6> }
                         { this.props.parentList == "aggregated" && <h6 class="mb-0 d-flex align-items-center gap-1">
-                                                <a class="text-decoration-none text-black" href={"/index.html?view=Profile&data=" + this.props.object.url} target="_blank" dangerouslySetInnerHTML={{__html: this.props.object.profileData.fullName}}></a> 
+                                                <a class="text-decoration-none text-black" href={`/index.html?view=Profile&data=${this.props.object.url}`} target="_blank" dangerouslySetInnerHTML={{__html: this.props.object.profileData.fullName}}></a> 
                                                 <OverlayTrigger
                                                   placement="top"
                                                   overlay={<Tooltip id="tooltip1">{this.props.object.count} visit{this.props.object.count > 1 ? "s" : ""} { this.props.context == "all" ? " | " + LuxonDateTime.fromISO(this.props.object.date).toRelative() : " in total"}</Tooltip>}

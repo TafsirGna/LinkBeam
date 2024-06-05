@@ -382,8 +382,8 @@ function getProfileAuthViewMainHtmlElements(){
   return {
     full_name: document.querySelector(".text-heading-xlarge"),
     avatar: document.querySelector(".pv-top-card-profile-picture__image--show"),
-    cover_image: document.querySelector(".cover-img__image"),
-    location: document.querySelectorAll(".text-body-small")[3],
+    cover_image: document.querySelector("section.artdeco-card .profile-background-image img"),
+    location: document.querySelector("section.artdeco-card #top-card-text-details-contact-info").parentElement.parentElement,
     job_title: document.querySelector("section .text-body-medium"),
     followers: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[0]) : null,
     connections: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[1]) : null,
@@ -647,7 +647,7 @@ export const DataExtractor = {
             name: (educationLiTag.querySelectorAll(".visually-hidden")[0] && educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
                     ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
                     : null),
-            url: null,
+            url: (educationLiTag.querySelectorAll("a.optional-action-target-wrapper") ? educationLiTag.querySelectorAll("a.optional-action-target-wrapper").href : null),
           }, 
           title: (educationLiTag.querySelectorAll(".visually-hidden")[1] && educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
                     ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
@@ -739,6 +739,7 @@ export const DataExtractor = {
               entity: {
                 name: featuredExperienceEntityName,
                 url: null,
+                picture: null,
               },
               period: (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null),
               location: (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
@@ -755,6 +756,7 @@ export const DataExtractor = {
             entity: {
               name: (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null),
               url: null,
+              picture: null,
             },
             period: (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null),
             location: (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
@@ -779,19 +781,26 @@ export const DataExtractor = {
         var experienceItem = {};
         if (experienceLiTag.querySelector("ul")){
 
-          var featuredExperienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
+          const experienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
                                                 ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                                                : null);
+                                                : null),
+                experienceEntityUrl = experienceLiTag.querySelector("a[data-field='experience_company_logo']") 
+                                        ? experienceLiTag.querySelector("a[data-field='experience_company_logo']").href 
+                                        : null,
+                experienceEntityPicture = experienceLiTag.querySelector("a[data-field='experience_company_logo'] img") 
+                                            ? experienceLiTag.querySelector("a[data-field='experience_company_logo'] img").src 
+                                            : null;
 
-          Array.from(experienceLiTag.querySelector("ul").querySelectorAll(".pvs-entity__path-node")).forEach((positionLiTag) => {
+          Array.from(experienceLiTag.querySelector("ul").querySelectorAll("li")).forEach((positionLiTag) => {
             positionLiTag = positionLiTag.parentElement;
-            var experienceItem = {
+            experienceItem = {
               title: (positionLiTag.querySelectorAll(".visually-hidden")[0] && positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
                         ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
                         : null),
               entity: {
-                name: featuredExperienceEntityName,
-                url: null,
+                name: experienceEntityName,
+                url: experienceEntityUrl,
+                picture: experienceEntityPicture,
               },
               period: (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
               location: null, // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
@@ -811,7 +820,12 @@ export const DataExtractor = {
               name: (experienceLiTag.querySelectorAll(".visually-hidden")[1] && experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
                       ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
                       : null),
-              url: null,
+              url: experienceLiTag.querySelector("a[data-field='experience_company_logo']") 
+                    ? experienceLiTag.querySelector("a[data-field='experience_company_logo']").href 
+                    : null,
+              picture: experienceLiTag.querySelector("a[data-field='experience_company_logo'] img") 
+                        ? experienceLiTag.querySelector("a[data-field='experience_company_logo'] img").src 
+                        : null,
             },
             period: (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
             location: null, // (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),

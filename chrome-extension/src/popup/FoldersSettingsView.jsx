@@ -155,7 +155,7 @@ export default class FolderView extends React.Component{
     return(
       <>
         <div class="p-3">
-          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.SETTINGS}/>
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.OBJECTS_SETTINGS}/>
 
           <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.FOLDERS}/>
 

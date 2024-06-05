@@ -24,6 +24,7 @@ import './App.css';
 import AboutView from "./popup/AboutView";
 import HomeView from "./popup/HomeView";
 import SettingsView from "./popup/SettingsView";
+import ObjectsSettingsView from "./popup/ObjectsSettingsView";
 import StatisticsView from "./popup/StatisticsView";
 import KeywordView from "./popup/KeywordView";
 import MainProfileView from "./popup/MainProfileView";
@@ -290,6 +291,10 @@ export default class App extends React.Component{
         {/*Media Page*/}
         { this.state.currentPageTitle == "Media" 
             && <MediaView globalData={this.state.globalData} />}
+
+        {/*Object settings Page*/}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.OBJECTS_SETTINGS 
+            && <ObjectsSettingsView globalData={this.state.globalData} />}
 
       </>
     );

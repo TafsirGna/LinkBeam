@@ -1,6 +1,6 @@
 /*import './VisitsTimelineChart.css'*/
 import React from 'react';
-import { Line } from 'react-chartjs-2';
+import { Line, getElementAtEvent } from 'react-chartjs-2';
 import { 
 	getChartColors,
 	groupObjectsByDate, 
@@ -56,11 +56,14 @@ export default class VisitsTimelineChart extends React.Component{
 	constructor(props){
 		super(props);
 		this.state = {
+			chartRef: React.createRef(),
 			lineData: null,
 			uuid: uuidv4(),
+			givenDates: null,
 		};
 
   	this.setChartLabels = this.setChartLabels.bind(this);
+  	this.onChartClick = this.onChartClick.bind(this);
 
 	}
 
@@ -92,7 +95,7 @@ export default class VisitsTimelineChart extends React.Component{
 
 	getDaysVisitsChartLabels(view){
 
-		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
+		var results = {titles: [], valuesDataset1: [], valuesDataset2: [], dates: []};
 		var visits = groupObjectsByDate(this.props.objects);
 
 		var startDate = null, endDate = null;
@@ -107,6 +110,7 @@ export default class VisitsTimelineChart extends React.Component{
 
 		for (var date of periodRange(startDate, endDate, 1, LuxonDateTime, "days")){
 			results.titles.push((view == 0) ? date.toLocaleString({weekday: 'long'}) : date.toFormat("dd-MM"));
+			results.dates.push(date);
 			results.valuesDataset1.push((date.toISO().split("T")[0] in visits) ? visits[date.toISO().split("T")[0]].length : 0);
 
 			var valueDataset2 = 0;
@@ -125,13 +129,15 @@ export default class VisitsTimelineChart extends React.Component{
 
 	getYearVisitsChartLabels(){
 
-		var results = {titles: [], valuesDataset1: [], valuesDataset2: []};
+		var results = {titles: [], valuesDataset1: [], valuesDataset2: [], dates: []};
 		var visits = groupObjectsByMonth(this.props.objects);
 		const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 		for (var i=0; i < 12; i++){
-			var month = LuxonDateTime.now().minus({months: i}).toLocaleString({month: 'numeric'}) - 1;
+			const date = LuxonDateTime.now().minus({months: i});
+			const month = date.toLocaleString({month: 'numeric'}) - 1;
 			results.titles.push(months[month]);
+			results.dates.push(date);
 			results.valuesDataset1.push((month in visits) ? visits[month].length : 0);
 
 			var valueDataset2 = 0;
@@ -144,6 +150,7 @@ export default class VisitsTimelineChart extends React.Component{
 		}
 
 		results.titles.reverse();
+		results.dates.reverse();
 		results.valuesDataset1.reverse();
 		results.valuesDataset2.reverse();
 
@@ -184,12 +191,13 @@ export default class VisitsTimelineChart extends React.Component{
 			}
 		}
 
-		var titles = results.titles;
-		var colors = getChartColors(2);
-		var colorDataset1 = {borders: [colors.borders[0]], backgrounds: [colors.backgrounds[0]]};
-		var colorDataset2 = {borders: [colors.borders[1]], backgrounds: [colors.backgrounds[1]]};
+		const titles = results.titles,
+				  colors = getChartColors(2);
+		const colorDataset1 = {borders: [colors.borders[0]], backgrounds: [colors.backgrounds[0]]},
+					colorDataset2 = {borders: [colors.borders[1]], backgrounds: [colors.backgrounds[1]]};
 
 		this.setState({
+			givenDates: results.dates,
 			lineData: {
 				labels: results.titles,
 				datasets: [
@@ -212,6 +220,17 @@ export default class VisitsTimelineChart extends React.Component{
 		});
 	}
 
+	onChartClick(event){
+
+    var elements = getElementAtEvent(this.state.chartRef.current, event);
+    console.log(elements, (elements[0]).index);
+
+    if (elements.length != 0){
+      window.open(`/index.html?view=Calendar&dataType=ProfileVisits&currentDate=${this.state.givenDates[elements[0].index].toJSDate().toISOString()}`, '_blank');
+    }
+
+  }
+
 	render(){
 		return (
 			<>
@@ -222,7 +241,12 @@ export default class VisitsTimelineChart extends React.Component{
 	                                        </div> }
 
 					{ this.state.lineData && <div>
-																		<Line id={"chartTag_"+this.state.uuid} options={lineOptions} data={this.state.lineData} />
+																		<Line 
+																			id={`chartTag_${this.state.uuid}`} 
+																			ref={this.state.chartRef}
+																			options={lineOptions} 
+																			data={this.state.lineData} 
+																			onClick={this.onChartClick}/>
 																		{ this.props.displayLegend 
 																				&& this.props.displayLegend == true 
 																				&& <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">

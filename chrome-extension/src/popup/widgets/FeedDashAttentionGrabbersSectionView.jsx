@@ -27,7 +27,11 @@ import {
   secondsToHms,
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
-import { AlertCircleIcon, LayersIcon } from "./SVGs";
+import { 
+  AlertCircleIcon, 
+  LayersIcon,
+  BarChartIcon, 
+} from "./SVGs";
 import { 
   OverlayTrigger, 
   Tooltip as ReactTooltip, 
@@ -142,7 +146,17 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                   className="text-muted"/>
               </div>
               <ul class="dropdown-menu shadow-lg">
-                <li><a class="dropdown-item small" href="#" onClick={null}>Bar chart race</a></li>
+                <li>
+                  <a 
+                    class="dropdown-item small" 
+                    href="#" 
+                    onClick={null}>
+                    <BarChartIcon 
+                      size="15" 
+                      className="me-2 text-muted"/>
+                    Bar chart race
+                  </a>
+                </li>
               </ul>
             </div>
           </h6>

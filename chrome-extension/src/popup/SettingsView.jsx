@@ -41,9 +41,6 @@ import eventBus from "./EventBus";
 import { db } from "../db";
 import { 
   AlertCircleIcon,
-  TagIcon,
-  KeyIcon,
-  FolderIcon,
   BellIcon,
   DuplicateIcon,
   UserIcon,
@@ -51,34 +48,28 @@ import {
   DeletionIcon,
   DownloadIcon,
   StorageIcon,
+  GridIcon,
 } from "./widgets/SVGs";
 
 const datePropertyNames = {
-            bookmarks: "createdOn",
-            keywords: "createdOn",
-            tags: "createdOn",
-            folders: "createdOn",
-            reminders: "createdOn",
-            visits: "date",
-            feedPostViews: "date",
-          };
+        bookmarks: "createdOn",
+        keywords: "createdOn",
+        tags: "createdOn",
+        folders: "createdOn",
+        reminders: "createdOn",
+        visits: "date",
+        feedPostViews: "date",
+      };
 
 const betweenRange = (lower, upper, date) => {
   return (new Date(lower) <= new Date(date) && new Date(date) <= new Date(upper));
 }
-
-const keywordCountObservable = liveQuery(() => db.keywords.count());
-const tagCountObservable = liveQuery(() => db.tags.count());
-const folderCountObservable = liveQuery(() => db.folders.count());
 
 export default class SettingsView extends React.Component{
   
   constructor(props){
     super(props);
     this.state = {
-      keywordCount: 0,
-      tagCount: 0,
-      folderCount: 0,
       darkThemeCheckBoxValue: false,
       processingState: {
         status: "NO",
@@ -111,21 +102,6 @@ export default class SettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    this.keywordSubscription = keywordCountObservable.subscribe(
-      result => this.setState({keywordCount: result}),
-      error => this.setState({error})
-    );
-
-    this.tagSubscription = tagCountObservable.subscribe(
-      result => this.setState({tagCount: result}),
-      error => this.setState({error})
-    );
-
-    this.folderSubscription = folderCountObservable.subscribe(
-      result => this.setState({folderCount: result}),
-      error => this.setState({error})
-    );
-
     this.checkStorageUsage();
 
   }
@@ -157,21 +133,6 @@ export default class SettingsView extends React.Component{
   }
 
   componentWillUnmount(){
-
-    if (this.keywordSubscription) {
-      this.keywordSubscription.unsubscribe();
-      this.keywordSubscription = null;
-    }
-
-    if (this.tagSubscription) {
-      this.tagSubscription.unsubscribe();
-      this.tagSubscription = null;
-    }
-
-    if (this.folderSubscription) {
-      this.folderSubscription.unsubscribe();
-      this.folderSubscription = null;
-    }
 
   }
 
@@ -657,58 +618,62 @@ export default class SettingsView extends React.Component{
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <BellIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Outdated profiles reminder
-                  </strong>
-                  <div class="dropdown">
-                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedProfileReminder : null}</span>
-                    </div>
-                    <ul class="dropdown-menu shadow-lg border">
-                      {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                            <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
-                                {value}
-                              </a>
-                            </li>  
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <ClockIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Max time per day
-                  </strong>
-                  <div class="dropdown">
-                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.maxTimeAlarm : null}</span>
-                    </div>
-                    <ul class="dropdown-menu shadow-lg border">
-                      {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
-                            <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
-                                {value}
-                              </a>
-                            </li>  
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
+            { this.props.globalData.settings 
+                && this.props.globalData.settings.notifications
+                && <div class="d-flex text-body-secondary pt-3">
+                          <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                            <div class="d-flex justify-content-between">
+                              <strong class="text-gray-dark">
+                                <BellIcon
+                                  size="15"
+                                  className="me-2 text-muted"/>
+                                Outdated profiles reminder
+                              </strong>
+                              <div class="dropdown">
+                                <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                  <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.outdatedProfileReminder : null}</span>
+                                </div>
+                                <ul class="dropdown-menu shadow-lg border">
+                                  {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                                        <li>
+                                          <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
+                                            {value}
+                                          </a>
+                                        </li>  
+                                    ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>}
+            { this.props.globalData.settings 
+                && this.props.globalData.settings.notifications
+                && <div class="d-flex text-body-secondary pt-3">
+                          <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                            <div class="d-flex justify-content-between">
+                              <strong class="text-gray-dark">
+                                <ClockIcon
+                                  size="15"
+                                  className="me-2 text-muted"/>
+                                Max time per day
+                              </strong>
+                              <div class="dropdown">
+                                <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                  <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.maxTimeAlarm : null}</span>
+                                </div>
+                                <ul class="dropdown-menu shadow-lg border">
+                                  {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
+                                        <li>
+                                          <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                            {value}
+                                          </a>
+                                        </li>  
+                                    ))}
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>}
             {/*<div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
@@ -727,69 +692,23 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">
-                    <KeyIcon
+                    <GridIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Keywords 
-                    <span class="badge text-bg-light ms-1 shadow border">
-                      {this.state.keywordCount}
-                    </span>
+                    Objects
                   </strong>
                   <a 
                     href="#" 
                     class="text-primary badge" 
-                    title="Add new keyword"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.KEYWORDS)}}>
-                      Add
+                    title="View Objects"
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.OBJECTS_SETTINGS)}}>
+                      View
                   </a>
                 </div>
                 {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <FolderIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Folders 
-                    <span class="badge text-bg-light ms-1 shadow border">
-                      {this.state.folderCount}
-                    </span>
-                  </strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="Add new folder"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.FOLDERS_SETTINGS)}}>
-                      Add
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <TagIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Tags 
-                    <span class="badge text-bg-light ms-1 shadow border">
-                      {this.state.tagCount}
-                    </span>
-                  </strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="Add new tag"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.TAGS)}}>
-                      Add
-                  </a>
-                </div>
-              </div>
-            </div>
+            
             <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">

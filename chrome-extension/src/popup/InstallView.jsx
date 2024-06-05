@@ -388,55 +388,57 @@ export default class About extends React.Component{
                                             />
                                           </small>
                                         </div>
-                                      </a>
-                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                        <div class="d-flex gap-2 w-100 justify-content-between">
-                                          <div>
-                                            <h6 class="mb-0">Outdated profile reminder</h6>
-                                            <p class="mb-0 opacity-75 small">A reminder that some profiles you've visited might require your attention once more.</p>
-                                          </div>
-                                          <small /*class="opacity-50 text-nowrap"*/>
-                                            <div class="dropdown">
-                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.outdatedProfileReminder}</span>
+                                      </a>                                   
+                                      { this.state.settings.notifications
+                                          && <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                                <div class="d-flex gap-2 w-100 justify-content-between">
+                                                  <div>
+                                                    <h6 class="mb-0">Outdated profile reminder</h6>
+                                                    <p class="mb-0 opacity-75 small">A reminder that some profiles you've visited might require your attention once more.</p>
+                                                  </div>
+                                                  <small /*class="opacity-50 text-nowrap"*/>
+                                                    <div class="dropdown">
+                                                      <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                        <span class="rounded shadow-sm badge border text-primary">{this.state.settings.outdatedProfileReminder}</span>
+                                                      </div>
+                                                      <ul class="dropdown-menu shadow-lg border">
+                                                        {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                                                              <li>
+                                                                <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
+                                                                  {value}
+                                                                </a>
+                                                              </li>  
+                                                          ))}
+                                                      </ul>
+                                                    </div>
+                                                  </small>
+                                                </div>
+                                              </a>}
+                                      { this.state.settings.notifications 
+                                          && <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                              <div class="d-flex gap-2 w-100 justify-content-between">
+                                                <div>
+                                                  <h6 class="mb-0">Max time per day</h6>
+                                                  <p class="mb-0 opacity-75 small">It helps you notice when you're about to reach your daily limit of linkedin browsing.</p>
+                                                </div>
+                                                <small /*class="opacity-50 text-nowrap"*/>
+                                                  <div class="dropdown">
+                                                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                      <span class="rounded shadow-sm badge border text-primary">{this.state.settings.maxTimeAlarm}</span>
+                                                    </div>
+                                                    <ul class="dropdown-menu shadow-lg border">
+                                                      {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
+                                                            <li>
+                                                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                                                {value}
+                                                              </a>
+                                                            </li>  
+                                                        ))}
+                                                    </ul>
+                                                  </div>
+                                                </small>
                                               </div>
-                                              <ul class="dropdown-menu shadow-lg border">
-                                                {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
-                                                      <li>
-                                                        <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
-                                                          {value}
-                                                        </a>
-                                                      </li>  
-                                                  ))}
-                                              </ul>
-                                            </div>
-                                          </small>
-                                        </div>
-                                      </a>
-                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                        <div class="d-flex gap-2 w-100 justify-content-between">
-                                          <div>
-                                            <h6 class="mb-0">Max time per day</h6>
-                                            <p class="mb-0 opacity-75 small">It helps you notice when you're about to reach your daily limit of linkedin browsing.</p>
-                                          </div>
-                                          <small /*class="opacity-50 text-nowrap"*/>
-                                            <div class="dropdown">
-                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.maxTimeAlarm}</span>
-                                              </div>
-                                              <ul class="dropdown-menu shadow-lg border">
-                                                {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
-                                                      <li>
-                                                        <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
-                                                          {value}
-                                                        </a>
-                                                      </li>  
-                                                  ))}
-                                              </ul>
-                                            </div>
-                                          </small>
-                                        </div>
-                                      </a>
+                                            </a>}
                                     </div>
                                   </div>}
 
