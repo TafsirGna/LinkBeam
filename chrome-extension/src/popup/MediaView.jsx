@@ -41,6 +41,7 @@ import Carousel from 'react-bootstrap/Carousel';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import ReactDOM from 'react-dom/client';
+import CustomToast from "./widgets/toasts/CustomToast";
 
 var objectsBackup = null;
 
@@ -52,6 +53,8 @@ export default class MediaView extends React.Component{
       objects: null,
       searchingMedia: false,
       searchText: null,
+      toastShow: false,
+      toastMessage: "",
     };
 
     this.searchMedia = this.searchMedia.bind(this);
@@ -62,10 +65,12 @@ export default class MediaView extends React.Component{
 
     window.addEventListener('offline', function(e) {
       console.log('offline'); 
+      this.toggleToastShow("You're offline", true);
     });
 
     window.addEventListener('online', function(e) { 
       console.log('online');
+      this.toggleToastShow("You're online", true);
     });
 
     if (!this.props.globalData.settings){
@@ -145,6 +150,8 @@ export default class MediaView extends React.Component{
     eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
 
   }
+
+  toggleToastShow = (message = "", show = null) => {this.setState((prevState) => ({toastMessage: message, toastShow: (show || !prevState.toastShow)}));};
 
   searchMedia(){
 
@@ -329,6 +336,13 @@ export default class MediaView extends React.Component{
                       onSeeMoreButtonVisibilityChange={(isVisible) => { if (isVisible) { this.searchMedia() } }}/>}
 
         </div>
+
+        {/*Toasts*/}
+        <CustomToast 
+          globalData={this.props.globalData} 
+          message={this.state.toastMessage} 
+          show={this.state.toastShow} 
+          onClose={this.toggleToastShow} />
       </>
     );
   }

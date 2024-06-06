@@ -464,6 +464,8 @@ async function handleInterestingTab(tabId, url){
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
         result = { inject: false, badgeText: "!", visitId: null };
 
+    console.log("MMMMMMMMMMMMMMMMMMMMM 0 : ", sessionItem.myTabs, tabId);
+
     if (!sessionItem.myTabs){
 
         sessionItem.myTabs = {};  
@@ -498,6 +500,7 @@ async function handleInterestingTab(tabId, url){
             else{
 
                 const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
+                console.log("MMMMMMMMMMMMMMMMMMMMM 1 : ", tabId, index);
                 if (index == -1){
 
                     if (isLinkedinFeed(url)){
@@ -726,9 +729,6 @@ async function recordFeedVisit(tabData){
                             : null,
         };
 
-        console.log("!!!!!!!!!!!!!!!!!! 1 : ", post);
-
-
         if (post.content.subPost){
 
             var subPost = {
@@ -768,8 +768,6 @@ async function recordFeedVisit(tabData){
                     });
 
             }
-
-            console.log("!!!!!!!!!!!!!!!!!! 2 : ", subPost);
 
             newFeedPost["linkedPostId"] = dbSubPost.id;
             

@@ -792,7 +792,7 @@ export const DataExtractor = {
                                             : null;
 
           Array.from(experienceLiTag.querySelector("ul").querySelectorAll("li")).forEach((positionLiTag) => {
-            positionLiTag = positionLiTag.parentElement;
+            console.log("************* 0 :", positionLiTag);
             experienceItem = {
               title: (positionLiTag.querySelectorAll(".visually-hidden")[0] && positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
                         ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
@@ -806,6 +806,7 @@ export const DataExtractor = {
               location: null, // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
               description: null, // (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
             };
+            console.log("************* 1 :", positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent, experienceItem);
             experienceData.push(experienceItem);
           });
 

@@ -101,7 +101,7 @@ export default class FeedDashView extends React.Component{
 
     eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
       {
-        const index = this.state.feedPostViews.map(p => p.feedPostId).indexOf(data);
+        const index = this.state.feedPostViews.map(p => p.id).indexOf(data);
         if (index != -1){
           this.state.feedPostViews[index].feedPost.reminder = null;
         }

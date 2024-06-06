@@ -1,43 +1,9 @@
 /*import './StatIndicatorsView.css'*/
 import React from 'react';
-import hourglass_icon from '../../assets/hourglass_icon.png';
-import search_icon from '../../assets/search_icon.png';
-import news_icon from '../../assets/newspaper_icon.png';
-import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   secondsToHms,
 } from "../Local_library";
-
-const PROFILE_LABEL = "Profiles",
-      TIME_SPENT_LABEL = "Time spent",
-      PROFILES_ACTIVITY_LABEL = "Profiles' Activity",
-      VISIT_LABEL = "Visits";
-
-
-class IndicatorWidget extends React.Component {
-
-  constructor(props){
-    super(props);
-    this.state = {
-
-    }
-  }
-
-  render() {
-    return (
-      <>
-        <div type="button" class="btn shadow-sm col mx-2 mt-3 fw-light text-start">
-          <h6 class={"ms-3 my-0 " + this.props.object.color}>
-            <img src={this.props.object.icon} alt="twbs" width="15" height="15" class="me-2 shadow-lg"/>
-            {this.props.object.value}
-          </h6>
-          <p class="ms-3 my-0 small">{this.props.object.label}</p>
-        </div>
-      </>
-    );
-  }
-}
-
+import badge_icon from '../../assets/badge_icon.png';
 
 export default class StatIndicatorsView extends React.Component{
 
@@ -46,21 +12,18 @@ export default class StatIndicatorsView extends React.Component{
     this.state = {
       indicatorData: {
         profileData: {
-          label: PROFILE_LABEL,
+          label: "# of profiles",
           value: 0,
-          color: "text-warning",
-          icon: default_user_icon,
         },
         visitData: {
-          label: VISIT_LABEL,
+          label: "# of visits",
           value: 0,
-          color: "text-success",
-          icon: search_icon,
+        },
+        timeData: {
+          label: "Total time",
+          value: 0,
         },
       },
-      // indicatorStyles: [
-
-      // ],
     };
 
     this.setData = this.setData.bind(this);
@@ -129,6 +92,13 @@ export default class StatIndicatorsView extends React.Component{
       return { indicatorData };
     });
 
+    // Setting time data
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.timeData.value = secondsToHms(time);
+      return { indicatorData };
+    });
+
   }
 
   componentWillUnmount(){
@@ -138,10 +108,22 @@ export default class StatIndicatorsView extends React.Component{
   render(){
     return (
       <>
-        <div class="row mx-4 my-3">
+        <div class="m-2" data-bs-theme="light">
 
           { Object.keys(this.state.indicatorData).map((key) => 
-              <IndicatorWidget object={this.state.indicatorData[key]} />
+              /*<IndicatorWidget object={this.state.indicatorData[key]} />*/
+              /*<OverlayTrigger
+                placement="top"
+                overlay={<ReactTooltip id="tooltip1">{`${tag.profiles ? tag.profiles.length : 0} profile${!tag.profiles || (tag.profiles && [0, 1].indexOf(tag.profiles.length) != -1) ? "" : "s"} associated`}</ReactTooltip>}
+              >*/
+                <span class="badge align-items-center p-1 pe-2 text-dark-emphasis bg-light-subtle border rounded-pill m-1 shadow-sm">
+                  <img class="rounded-circle me-1" width="16" height="16" src={badge_icon} alt=""/>
+                  {this.state.indicatorData[key].label}
+                  <span class="ms-1 badge rounded-pill bg-secondary">
+                    {this.state.indicatorData[key].value}
+                  </span>
+                </span>
+              /*</OverlayTrigger>*/
             )}
 
         </div>
