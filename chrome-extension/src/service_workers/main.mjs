@@ -461,6 +461,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 async function handleInterestingTab(tabId, url){
 
+    // a little bit of formatting if the url is the one of a linkedin profile
+    url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
+
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
         result = { inject: false, badgeText: "!", visitId: null };
 
@@ -500,7 +503,7 @@ async function handleInterestingTab(tabId, url){
             else{
 
                 const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
-                console.log("MMMMMMMMMMMMMMMMMMMMM 1 : ", tabId, index);
+                console.log("MMMMMMMMMMMMMMMMMMMMM 1 : ", tabId, index, url);
                 if (index == -1){
 
                     if (isLinkedinFeed(url)){

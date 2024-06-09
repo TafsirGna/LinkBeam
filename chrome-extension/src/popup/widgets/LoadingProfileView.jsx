@@ -8,6 +8,7 @@ import {
 import ProgressBar from 'react-bootstrap/ProgressBar';
 import Spinner from 'react-bootstrap/Spinner';
 import { CheckIcon, DeletionIcon } from "./SVGs";
+import { liveQuery } from "dexie";
 
 const profileProperties = [
   "info", 
@@ -18,6 +19,17 @@ const profileProperties = [
   "certifications", 
   "languages"];
 
+export async function buildProfileObject(profileUrl){
+
+  var profile = await getProfileDataFrom(db, profileUrl);
+
+  profile.bookmark = await db.bookmarks.where({url: profileUrl}).first();
+  profile.reminder = await db.reminders.where({objectId: profileUrl}).first();
+
+  return profile;
+
+}
+
 export default class LoadingprofileView extends React.Component{
 
   constructor(props){
@@ -25,6 +37,7 @@ export default class LoadingprofileView extends React.Component{
     this.state = {
       profile: null,
       profileProperties: [],
+      profileObservable: null,
     };
 
     this.initCheck = this.initCheck.bind(this);
@@ -33,8 +46,7 @@ export default class LoadingprofileView extends React.Component{
   componentDidMount() {
 
     // Getting the window url params
-    const urlParams = new URLSearchParams(window.location.search);
-    const profileUrl = urlParams.get("data");
+    const profileUrl = (new URLSearchParams(window.location.search)).get("data");
 
     if (!profileUrl){
       this.props.loadingDone("FAILURE", null);
@@ -46,23 +58,15 @@ export default class LoadingprofileView extends React.Component{
 
       try {
 
-        var profile = await getProfileDataFrom(db, profileUrl);
-
-        await Promise.all ([profile].map (async profile => {
-          [profile.bookmark] = await Promise.all([
-            db.bookmarks.where('url').equals(profile.url).first()
-          ]);
-        }));
-
-        await Promise.all ([profile].map (async profile => {
-          [profile.reminder] = await Promise.all([
-            db.reminders.where('objectId').equals(profile.url).first()
-          ]);
-        }));
-
-        this.setState({profile: profile}, () => {
-          this.initCheck(0);
-        });
+        this.setState(
+          {
+            profile: await buildProfileObject(profileUrl),
+            profileObservable: liveQuery(() => db.visits.where({url: profileUrl}).last()),
+          }, 
+          () => {
+            this.initCheck(0);
+          }
+        );
 
       } catch (error) {
 
@@ -87,7 +91,7 @@ export default class LoadingprofileView extends React.Component{
   initCheck(index){
 
     if (index == profileProperties.length){
-      this.props.loadingDone("SUCCESS", this.state.profile);
+      this.props.loadingDone("SUCCESS", {profileObject: this.state.profile, profileObservable: this.state.profileObservable});
       return;
     }
 

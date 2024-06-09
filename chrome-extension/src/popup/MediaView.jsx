@@ -63,15 +63,15 @@ export default class MediaView extends React.Component{
 
   componentDidMount() {
 
-    window.addEventListener('offline', function(e) {
-      console.log('offline'); 
-      this.toggleToastShow("You're offline", true);
-    });
+    window.addEventListener('offline', (function(e) {
+          console.log('offline'); 
+          this.toggleToastShow("You're offline", true);
+        }).bind(this));
 
-    window.addEventListener('online', function(e) { 
-      console.log('online');
-      this.toggleToastShow("You're online", true);
-    });
+    window.addEventListener('online', (function(e) { 
+          console.log('online');
+          this.toggleToastShow("You're online", true);
+        }).bind(this));
 
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);

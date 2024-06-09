@@ -157,7 +157,7 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
               </span>
             </OverlayTrigger>
 
-            <div class="dropdown float-end bd-gray">
+            {/*<div class="dropdown float-end bd-gray">
               <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                 <LayersIcon 
                   size="18" 
@@ -170,10 +170,11 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
                       size="15"
                       className="me-2 text-muted"/>
                     Bar chart race
+                    <span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>
                   </a>
                 </li>
               </ul>
-            </div>
+            </div>*/}
           </h6>
 
           { !this.state.profiles 

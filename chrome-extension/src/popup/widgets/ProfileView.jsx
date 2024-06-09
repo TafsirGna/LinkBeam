@@ -31,7 +31,13 @@ import FolderPickModal from "./modals/FolderPickModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
-import { LayersIcon } from "./SVGs";
+import { 
+  LayersIcon,
+  ReminderIcon,
+  BookmarkIcon, 
+  BarChartIcon,
+  FolderIcon,
+} from "./SVGs";
 
 export default class ProfileView extends React.Component{
 
@@ -174,10 +180,38 @@ export default class ProfileView extends React.Component{
                 className="text-muted"/>
             </div>
             <ul class="dropdown-menu shadow-lg">
-              <li><a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>{ this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }</a></li>
-              <li><a class={"dropdown-item small " + (this.props.profile.reminder ? "text-danger" : "")} href="#" onClick={this.onReminderMenuActionClick}>{ this.props.profile.reminder ? "Delete" : "Add" } reminder</a></li>
-              <li><a class="dropdown-item small" href="#" onClick={this.handleVisitsChartModalShow}>Chart visits</a></li>
-              <li><a class="dropdown-item small" href="#" onClick={this.handleFolderPickModalShow}>Move to folder</a></li>
+              <li>
+                <a class="dropdown-item small" href="#" onClick={this.toggleBookmarkStatus}>
+                  <BookmarkIcon
+                    size="15"
+                    className="me-2 text-muted"/>
+                  { this.props.profile.bookmark ? "Unbookmark this" : "Bookmark this" }
+                </a>
+              </li>
+              <li>
+                <a class={`dropdown-item small ${(this.props.profile.reminder ? "text-danger" : "")}`} href="#" onClick={this.onReminderMenuActionClick}>
+                  <ReminderIcon
+                    size="15"
+                    className="me-2 text-muted"/>
+                  { this.props.profile.reminder ? "Delete" : "Add" } reminder
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item small" href="#" onClick={this.handleVisitsChartModalShow}>
+                  <BarChartIcon
+                    size="15"
+                    className="me-2 text-muted"/>
+                  Chart visits
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item small" href="#" onClick={this.handleFolderPickModalShow}>
+                  <FolderIcon
+                    size="15"
+                    className="me-2 text-muted"/>
+                  Move to folder
+                </a>
+              </li>
             </ul>
           </div>
         </div>          

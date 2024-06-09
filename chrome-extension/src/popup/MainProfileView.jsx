@@ -22,7 +22,7 @@
 /*import './MainProfileView.css'*/
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
-import LoadingProfileView from "./widgets/LoadingProfileView";
+import LoadingProfileView, { buildProfileObject } from "./widgets/LoadingProfileView";
 import { appParams } from "./Local_library";
 // import { db } from "../db";
 import eventBus from "./EventBus";
@@ -35,6 +35,7 @@ export default class MainProfileView extends React.Component{
     this.state = {
       profile: null, 
       loadingProfile: true,
+      dbLastestProfileVisitObject: null,
     };
 
     this.loadingProfileDone = this.loadingProfileDone.bind(this);
@@ -59,14 +60,37 @@ export default class MainProfileView extends React.Component{
 
     eventBus.remove(eventBus.SET_PROFILE_DATA);
 
+    if (this.profileSubscription) {
+      this.profileSubscription.unsubscribe();
+      this.profileSubscription = null;
+    }
+
   }
 
   loadingProfileDone(status, payload){
     this.setState({loadingProfile: false}, () => {
       if (status == "SUCCESS"){
-        this.setState({profile: payload});
+
+        this.profileSubscription = payload.profileObservable.subscribe(
+          result => this.setState({dbLastestProfileVisitObject: result}),
+          error => this.setState({error})
+        );
+
+        this.setState({profile: payload.profileObject});
       }
     });
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevState.dbLastestProfileVisitObject != this.state.dbLastestProfileVisitObject){
+      if (prevState.dbLastestProfileVisitObject){
+        (async () => {
+          this.setState({profile: await buildProfileObject((new URLSearchParams(window.location.search)).get("data"))});
+        }).bind(this)();
+      }
+    }
+
   }
 
   render(){

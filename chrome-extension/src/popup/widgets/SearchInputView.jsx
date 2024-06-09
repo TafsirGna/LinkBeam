@@ -77,7 +77,7 @@ export default class SearchInputView extends React.Component{
 
     const index = propValue.toLowerCase().indexOf(this.state.text.toLowerCase());
     var result = propValue.slice(0, index)
-    result += `<span class="border rounded shadow-sm bg-info-subtle text-muted border-primary">${propValue.slice(index, (index + this.state.text.length))}</span>`;
+    result += `<span class="border rounded shadow bg-info-subtle text-muted border-primary">${propValue.slice(index, (index + this.state.text.length))}</span>`;
     result += propValue.slice((index + this.state.text.length));
 
     return result;

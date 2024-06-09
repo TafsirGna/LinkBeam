@@ -1498,7 +1498,7 @@ export function highlightText(textContent, keyword){
     ["text-bg-warning"], 
     {},
     (newDivTag, textItem, order, color) => {
-      newDivTag.innerHTML = `<span class='border rounded shadow-sm bg-info-subtle text-muted border-primary' title='#${order}'>${textItem}</span>`;
+      newDivTag.innerHTML = `<span class='border rounded shadow bg-info-subtle text-muted border-primary' title='#${order}'>${textItem}</span>`;
     }
   );
 

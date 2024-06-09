@@ -31,6 +31,7 @@ import {
     breakHtmlElTextContentByKeywords,
     insertHtmlTagsIntoEl,
 } from "../../popup/Local_library";
+import { countriesNaming } from "../../popup/countriesNamingFile";
 
 const termLanguageVariants = {
 
@@ -284,7 +285,7 @@ function passThroughHtmlElement(htmlElement, callback){
       continue;
     }
 
-    var children = node.childNodes;
+    const children = node.childNodes;
 
     if (children.length){
       pipe = [...children].concat(pipe);
@@ -447,7 +448,7 @@ export const DataExtractor = {
     }
 
     function extractAuthData(){
-      return htmlElements.location.textContent;
+      return htmlElements.location.textContent.replace("Contact info", "");
     }
 
     if (htmlElements.location){
@@ -642,23 +643,7 @@ export const DataExtractor = {
 
       Array.from(htmlElements.education.querySelectorAll("li.artdeco-list__item")).forEach((educationLiTag) => {
 
-        var education = {
-          entity:{
-            name: (educationLiTag.querySelectorAll(".visually-hidden")[0] && educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                    ? educationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                    : null),
-            url: (educationLiTag.querySelectorAll("a.optional-action-target-wrapper") ? educationLiTag.querySelectorAll("a.optional-action-target-wrapper").href : null),
-          }, 
-          title: (educationLiTag.querySelectorAll(".visually-hidden")[1] && educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
-                    ? educationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
-                    : null),
-          period: (educationLiTag.querySelectorAll(".visually-hidden")[2] && educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
-                    ? educationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
-                    : null),
-          description: (educationLiTag.querySelectorAll(".visually-hidden")[3] ? educationLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
-        };
-
-        educationData.push(education);
+        educationData.push(extractEducationItemData(educationLiTag));
 
       });
 
@@ -777,64 +762,7 @@ export const DataExtractor = {
       var experienceData = [];
 
       Array.from(htmlElements.experience.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
-        
-        var experienceItem = {};
-        if (experienceLiTag.querySelector("ul")){
-
-          const experienceEntityName = (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                                                ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                                                : null),
-                experienceEntityUrl = experienceLiTag.querySelector("a[data-field='experience_company_logo']") 
-                                        ? experienceLiTag.querySelector("a[data-field='experience_company_logo']").href 
-                                        : null,
-                experienceEntityPicture = experienceLiTag.querySelector("a[data-field='experience_company_logo'] img") 
-                                            ? experienceLiTag.querySelector("a[data-field='experience_company_logo'] img").src 
-                                            : null;
-
-          Array.from(experienceLiTag.querySelector("ul").querySelectorAll("li")).forEach((positionLiTag) => {
-            console.log("************* 0 :", positionLiTag);
-            experienceItem = {
-              title: (positionLiTag.querySelectorAll(".visually-hidden")[0] && positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                        ? positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                        : null),
-              entity: {
-                name: experienceEntityName,
-                url: experienceEntityUrl,
-                picture: experienceEntityPicture,
-              },
-              period: (positionLiTag.querySelector(".pvs-entity__caption-wrapper") ? positionLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
-              location: null, // (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-              description: null, // (positionLiTag.querySelector(".show-more-less-text__text--less") ? positionLiTag.querySelector(".show-more-less-text__text--less").innerHTML : null),
-            };
-            console.log("************* 1 :", positionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent, experienceItem);
-            experienceData.push(experienceItem);
-          });
-
-        }
-        else{
-
-          experienceItem = {
-            title: (experienceLiTag.querySelectorAll(".visually-hidden")[0] && experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                      ? experienceLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                      : null),
-            entity: {
-              name: (experienceLiTag.querySelectorAll(".visually-hidden")[1] && experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
-                      ? experienceLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
-                      : null),
-              url: experienceLiTag.querySelector("a[data-field='experience_company_logo']") 
-                    ? experienceLiTag.querySelector("a[data-field='experience_company_logo']").href 
-                    : null,
-              picture: experienceLiTag.querySelector("a[data-field='experience_company_logo'] img") 
-                        ? experienceLiTag.querySelector("a[data-field='experience_company_logo'] img").src 
-                        : null,
-            },
-            period: (experienceLiTag.querySelector(".pvs-entity__caption-wrapper") ? experienceLiTag.querySelector(".pvs-entity__caption-wrapper").textContent : null),
-            location: null, // (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
-            description: (experienceLiTag.querySelectorAll(".visually-hidden")[3] ? experienceLiTag.querySelectorAll(".visually-hidden")[3].previousElementSibling.innerHTML : null),
-          };
-          experienceData.push(experienceItem);
-
-        }
+        experienceData = experienceData.concat(extractExperienceItemData(experienceLiTag));
 
       });
 
@@ -1034,3 +962,262 @@ export const DataExtractor = {
   },
 
 };
+
+
+function extractEducationItemData(htmlElement){
+
+  var educationItemData = {
+        entity:{
+          name: null,
+          url: null,
+          picture: null,
+        }, 
+        title: null,
+        period: null,
+        description: null,
+      }, 
+      counter = 0;
+
+  extractItemData(htmlElement, hydrateItemObject);
+
+  function hydrateItemObject(nodeValue, nodeTagName){
+
+    console.log("###############-------------- : ", nodeValue, nodeTagName, counter);
+
+    switch(nodeTagName){
+      case "IMG":{
+        // picture
+        if (!educationItemData.entity.picture){
+          educationItemData.entity.picture = nodeValue;
+        }
+        return;
+        // break;
+      }
+      case "A":{
+        // entity link
+        if (!educationItemData.entity.url){
+          educationItemData.entity.url = nodeValue;
+        }
+        return;
+        // break;
+      }
+    }
+
+    switch(counter){
+      case 0: {
+        // name
+        educationItemData.entity.name = nodeValue;
+        counter++;
+        return;
+        // break;
+      }
+      case 1: {
+        // title
+        educationItemData.title = nodeValue;
+        counter++;
+        return;
+        
+        // break;
+      }
+    }
+
+    // period
+    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)){
+      educationItemData.period = nodeValue;
+      // counter++;
+      return;
+    }
+
+    // location
+    if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = nodeValue.split(", ").toReversed()[0];
+      for (const countryObject of countriesNaming){
+        if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
+            || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
+          educationItemData.location = nodeValue;
+          // counter++;
+          return;
+        }
+      }
+    }
+
+    // description
+    educationItemData.description = nodeValue;
+
+    // console.log("###############-------------- : N ", educationItemData);
+  }
+
+  return educationItemData;
+
+}
+
+function extractExperienceItemData(htmlElement){
+
+  var experienceItemDataList = [], 
+      counter = null;
+
+  function addNewToList(){
+    experienceItemDataList.push({
+        title: null,
+        entity: {
+          name: experienceItemDataList.length ? experienceItemDataList[0].entity.name : null,
+          url: experienceItemDataList.length ? experienceItemDataList[0].entity.url : null,
+          picture: experienceItemDataList.length ? experienceItemDataList[0].entity.picture : null,
+        },
+        period: null,
+        location: null,
+        description: null,
+      });
+    counter = 0;
+  }
+
+  addNewToList();
+
+  extractItemData(htmlElement, hydrateItemObject);
+
+  function hydrateItemObject(nodeValue, nodeTagName){
+
+    console.log("###############-------------- : ", nodeValue, nodeTagName, counter, htmlElement.querySelector("ul") == null);
+    var experienceItemData = experienceItemDataList[experienceItemDataList.length -1];
+
+    switch(nodeTagName){
+      case "IMG":{
+        // picture
+        if (!experienceItemData.entity.picture){
+          experienceItemData.entity.picture = nodeValue;
+        }
+        return;
+        // break;
+      }
+      case "A":{
+        // entity link
+        if (!experienceItemData.entity.url){
+          experienceItemData.entity.url = nodeValue;
+        }
+        return;
+        // break;
+      }
+      case "LI":{
+        addNewToList();
+        return;
+        // break;
+      }
+    }
+
+    switch(counter){
+      case 0: {
+        // title
+        if (!htmlElement.querySelector("ul")){
+          experienceItemData.title = nodeValue;
+        }
+        else{
+          if (experienceItemDataList.length == 1){
+            experienceItemData.entity.name = nodeValue;
+          }
+          else{
+            experienceItemData.title = nodeValue;
+          }
+        }
+        counter++;
+        return;
+        // break;
+      }
+      case 1: {
+        // name
+        if (!htmlElement.querySelector("ul")){
+          experienceItemData.entity.name = nodeValue;
+          counter++;
+          return;
+        }
+        
+        // break;
+      }
+    }
+
+    // period
+    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)){
+      experienceItemData.period = nodeValue;
+      // counter++;
+      return;
+    }
+
+    // location
+    if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = nodeValue.split(", ").toReversed()[0];
+      for (const countryObject of countriesNaming){
+        if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
+            || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
+          experienceItemData.location = nodeValue;
+          // counter++;
+          return;
+        }
+      }
+    }
+
+    // description
+    experienceItemData.description = nodeValue;
+
+    // console.log("###############-------------- : N ", experienceItemData);
+  }
+
+  return experienceItemDataList.length == 1 ? experienceItemDataList : experienceItemDataList.slice(1);
+
+}
+
+function extractItemData(htmlElement, callback){
+
+  var pipe = [...htmlElement.childNodes];
+  while (pipe.length){
+    var node = pipe.shift();
+
+    // focusing only on the visible part of the post
+    if (node.display === "none" || node.nodeType == Node.TEXT_NODE){
+      continue;
+    }
+
+    const children = node.childNodes;
+    var nodeValue = null;
+    switch(node.tagName){
+      case "IMG":{
+        nodeValue = node.getAttribute("src");
+        break;
+      }
+      case "A":{
+        nodeValue = node.getAttribute("href");
+        break;
+      }
+      case "LI":{
+        nodeValue = "###";
+        break;
+      }
+    }
+
+    if (nodeValue){
+      callback(nodeValue, node.tagName);
+      if (children.length){
+        pipe = [...children].concat(pipe);
+      }
+      continue;
+    }
+
+    var nodePropValue = null;
+    try{
+      nodePropValue = (node.tagName == "SPAN") && node.getAttribute("aria-hidden");
+    }
+    catch(error){
+      // console.log("Error : ", error);
+      continue;
+    }
+
+    if (nodePropValue){
+      callback(node.textContent, node.tagName);
+      continue;
+    }
+
+    if (children.length){
+      pipe = [...children].concat(pipe);
+    }
+
+  } 
+
+}
