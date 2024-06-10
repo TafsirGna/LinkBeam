@@ -150,7 +150,7 @@ export default class ActivityListView extends React.Component{
                                       </span>
                                     </h5>
                                     <p class="text-muted mb-2 fw-bold">
-                                      <span>
+                                      <span class="small">
                                         Added {LuxonDateTime.fromISO(object.date).toRelative()}
                                       </span>
                                       <span class="border shadow-sm rounded p-1 mx-2">

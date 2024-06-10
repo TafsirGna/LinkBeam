@@ -51,7 +51,7 @@ export default class ProfileActivitySectionView extends React.Component{
         name: this.props.profile.fullName,
       },
       link: activity.link,
-      date: this.props.profile.date,
+      date: this.props.profile.lastVisitDate,
       text: activity.title,
     }));
 

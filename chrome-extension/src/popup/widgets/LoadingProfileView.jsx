@@ -17,7 +17,8 @@ const profileProperties = [
   "profileSuggestions", 
   "projects", 
   "certifications", 
-  "languages"];
+  "languages"
+  ];
 
 export async function buildProfileObject(profileUrl){
 

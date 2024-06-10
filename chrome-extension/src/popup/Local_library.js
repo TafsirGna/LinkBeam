@@ -945,7 +945,7 @@ export async function getProfileDataFrom(db, url, properties = null){
   }
 
   profileData.url = url;
-  profileData.date = visits[0].date;
+  profileData.lastVisitDate = visits[0].date;
 
   return profileData;
 

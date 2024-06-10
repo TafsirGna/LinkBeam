@@ -23,10 +23,14 @@
 import React from 'react';
 import ProfileView from "./widgets/ProfileView";
 import LoadingProfileView, { buildProfileObject } from "./widgets/LoadingProfileView";
-import { appParams } from "./Local_library";
-// import { db } from "../db";
+import { 
+  appParams,
+  setGlobalDataSettings,
+} from "./Local_library";
+import { db } from "../db";
 import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
+import { liveQuery } from "dexie"; 
 
 export default class MainProfileView extends React.Component{
 
@@ -53,6 +57,8 @@ export default class MainProfileView extends React.Component{
         });
       }
     );
+
+    setGlobalDataSettings(db, eventBus, liveQuery);
 
   }
 
