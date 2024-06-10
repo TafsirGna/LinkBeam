@@ -28,7 +28,8 @@ export const appParams = {
   keywordCountLimit: 5, 
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE_1: 5000,
-  TIMER_VALUE_2: 5000,
+  TIMER_VALUE_2: 5000, // to be increased to 10000
+  IDLING_TIMER_VALUE: 60000,
   appAuthor: "Stoic Beaver",
 
   extShadowHostId: "linkBeamExtensionMainRoot",

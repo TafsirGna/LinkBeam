@@ -32,6 +32,7 @@ import {
     insertHtmlTagsIntoEl,
 } from "../../popup/Local_library";
 import { countriesNaming } from "../../popup/countriesNamingFile";
+import eventBus from "../../popup/EventBus";
 
 const termLanguageVariants = {
 
@@ -60,6 +61,12 @@ export class ScriptAgentBase {
     this.appSettings = null;
     this.visitId = null;
     this.otherArgs = {};
+    this.idlingTimer = null;
+    this.scrolling = false;
+    this.mouseMoving = false;
+    this.mouseMoveTimeout = null;
+    this.scrollTimeout = null;
+
 
 		// Starting listening to different messages
 		this.startMessageListener();
@@ -68,7 +75,93 @@ export class ScriptAgentBase {
 
     // }).bind(this);
 
+    // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
+    this.startIdlingTimer();
+
+    document.addEventListener("scroll", (event) => {
+
+      if (!this.scrolling){
+        this.scrolling = true;
+        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+
+        // I cancel the timer
+        if (this.idlingTimer){
+          clearTimeout(this.idlingTimer);
+          this.idlingTimer = null;
+        }
+
+        // if not done yet 
+        if (this.scrollTimeout){
+          return;
+        }
+
+        // i reset the scrolling value to false
+        this.scrollTimeout = setTimeout(() => {
+
+          this.scrolling = false;
+          // and I reset the timeout 
+          this.scrollTimeout = null;
+
+          if (!this.mouseMoving){
+            this.startIdlingTimer();
+          }
+
+        }, 
+        appParams.TIMER_VALUE_1);
+
+      }
+
+    });
+
+    document.onmousemove = (event) => {
+
+      if (!this.mouseMoving){
+        this.mouseMoving = true;
+        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+
+        // I cancel the timer
+        if (this.idlingTimer){
+          clearTimeout(this.idlingTimer);
+          this.idlingTimer = null;
+        }
+
+        // if not done yet 
+        if (this.mouseMoveTimeout){
+          return;
+        }
+
+        // i reset the mouseMoving value to false
+        this.mouseMoveTimeout = setTimeout(() => {
+
+          this.mouseMoving = false;
+          // and I reset the timeout 
+          this.mouseMoveTimeout = null;
+
+          if (!this.scrolling){
+            this.startIdlingTimer();
+          }
+
+        }, 
+        appParams.TIMER_VALUE_1);
+
+      }
+
+    };
+
+    // document.onmouseout = (event) => {
+    //   this.mouseMoving = false;
+    // };
+
 	}
+
+  startIdlingTimer(){
+
+    this.idlingTimer = setTimeout(() => {
+      eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: true});
+    }, 
+    appParams.IDLING_TIMER_VALUE);
+
+  }
 
 	setInitData(messageData, sendResponse){
 

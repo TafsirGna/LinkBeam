@@ -164,6 +164,19 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     this.startListening();
 
+    eventBus.on(eventBus.PAGE_IDLE_SIGNAL, (data) => {
+      if (data.value){
+        if (this.state.timerInterval){
+          this.clearTimer();
+        }
+      }
+      else{
+        if (!this.state.timerInterval){
+          this.runTimer();
+        }
+      }
+    });
+
     const postHtmlElement = isLinkedinFeed(window.location.href) ? document.querySelector(".scaffold-finite-scroll__content")
                                                                     .querySelector(`div[data-id='${this.props.postUid}']`)
                                                                     .querySelector(".feed-shared-update-v2")
@@ -503,6 +516,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   componentWillUnmount(){
 
     eventBus.remove(eventBus.TIMER_DISPLAY_UPDATED);
+    eventBus.remove(eventBus.PAGE_IDLE_SIGNAL);
 
     if (this.state.timerInterval){
       this.clearTimer();

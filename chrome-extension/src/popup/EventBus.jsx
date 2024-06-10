@@ -34,6 +34,7 @@ const eventBus = {
   SET_MATCHING_POSTS_DATA: "SET_MATCHING_POSTS_DATA",
   POST_REMINDER_DELETED: "POST_REMINDER_DELETED",
   POST_REMINDER_ADDED: "POST_REMINDER_ADDED",
+  PAGE_IDLE_SIGNAL: "PAGE_IDLE_SIGNAL",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));
