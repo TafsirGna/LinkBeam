@@ -43,8 +43,10 @@ import {
   ClockIcon,
   PlusIcon,
   ReminderIcon,
+  BranchIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
+import sleeping_icon from '../../../assets/sleeping_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   Dropdown, 
@@ -60,6 +62,7 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../../styles.min.css";
 import FeedPostViewsChartModal from "./FeedPostViewsChartModal";
+import FeedPostRelatedPostsModal from "./FeedPostRelatedPostsModal";
 
 const freshReminder = () => {
 
@@ -122,9 +125,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
       fetchedTimeCount: 0,
       popularityRank: null,
       dbId: null,
+      idlePage: false,
+      extractedPostData: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
+    this.showFeedPostRelatedPostsModal = this.showFeedPostRelatedPostsModal.bind(this);
     this.sendReminderData = this.sendReminderData.bind(this);
     this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
     this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
@@ -168,11 +174,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
       if (data.value){
         if (this.state.timerInterval){
           this.clearTimer();
+          this.setState({idlePage: true});
         }
       }
       else{
         if (!this.state.timerInterval){
           this.runTimer();
+          this.setState({idlePage: false});
         }
       }
     });
@@ -481,6 +489,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
                 : null,
     };
 
+    this.setState({extractedPostData: post});
+
     sendTabData(this.props.tabId, post);
 
   }
@@ -527,6 +537,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
   showFeedPostDataModal(){
 
     eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { postUid: this.props.postUid });
+
+  }
+
+  showFeedPostRelatedPostsModal(){
+    
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, { postUid: this.props.postUid });
 
   }
 
@@ -795,7 +811,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
                           && <span class="flex items-center bg-blue-100 text-blue-800 text-xl font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
                               {secondsToHms((this.state.timeCount + this.state.fetchedTimeCount), false)}
                             </span>}*/}
+
+                      {/* Indication that the page has gone idle after some time of inactivity */}
+                      { this.state.idlePage 
+                          && <div class="flex items-center">
+                                  <img src={chrome.runtime.getURL("/assets/sleeping_icon.png")} alt="" width="20" height="20" class="mx-2"/>
+                              </div> }
         
+                      {/* Indication that the post has just been updated */}
                       { this.state.updated 
                           && <span class="flex items-center bg-green-100 text-green-800 text-lg font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
                                 Updated
@@ -887,10 +910,11 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                         </Dropdown.Item>}
                               </Dropdown>}
         
+                      {/* Indication of the number of this post inpression on the user's feed */}
                       <button 
                         onClick={() => {if (this.state.impressionCount != null) {this.showFeedPostDataModal()}}} 
                         type="button" 
-                        class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                        class="me-2 flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                         title={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}
                         >
       
@@ -906,6 +930,19 @@ export default class AboveFeedPostWidgetView extends React.Component{
                             size="14"
                             className=""/>
                       </button>
+
+                      {/*Connected posts*/}
+                      {/*<button 
+                        onClick={this.showFeedPostRelatedPostsModal} 
+                        type="button" 
+                        class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                        title="Previous related posts"
+                        >
+                        <BranchIcon 
+                            size="14"
+                            className=""/>
+                      </button>*/}
+
                     </div>
                   </div>
         
@@ -998,9 +1035,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
                 </div>
 
         { this.props.index == 0 
-            && <FeedPostViewsChartModal
+            && 
+              <>
+
+                <FeedPostViewsChartModal
                   appSettings={this.props.appSettings}
-                  tabId={this.props.tabId}/> }
+                  tabId={this.props.tabId}/>
+
+                <FeedPostRelatedPostsModal
+                  appSettings={this.props.appSettings}
+                  tabId={this.props.tabId}/>
+
+              </> }
 
       </>
     );

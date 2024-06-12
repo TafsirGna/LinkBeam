@@ -75,14 +75,15 @@ export class ScriptAgentBase {
 
     // }).bind(this);
 
-    // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
-    this.startIdlingTimer();
-
     document.addEventListener("scroll", (event) => {
 
       if (!this.scrolling){
         this.scrolling = true;
-        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+
+        if (!this.mouseMoving){
+          eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+          this.sendTabIdleStatusSignal(false);
+        }
 
         // I cancel the timer
         if (this.idlingTimer){
@@ -117,7 +118,11 @@ export class ScriptAgentBase {
 
       if (!this.mouseMoving){
         this.mouseMoving = true;
-        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+
+        if (!this.scrolling){
+          eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+          this.sendTabIdleStatusSignal(false);
+        }
 
         // I cancel the timer
         if (this.idlingTimer){
@@ -158,6 +163,7 @@ export class ScriptAgentBase {
 
     this.idlingTimer = setTimeout(() => {
       eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: true});
+      this.sendTabIdleStatusSignal(true);
     }, 
     appParams.IDLING_TIMER_VALUE);
 
@@ -187,9 +193,18 @@ export class ScriptAgentBase {
 
     this.updateUi();
 
+    // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
+    this.startIdlingTimer();
+
     this.runTabDataExtractionProcess();
 
 	}
+
+  sendTabIdleStatusSignal(idleStatus){
+    chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: {idleStatus: idleStatus, tabId: this.tabId }}, (response) => {
+      console.log('tab idle status sent', response, data);
+    });
+  }
 
   // runTabDataExtractionProcess(){
 
@@ -227,7 +242,7 @@ export class ScriptAgentBase {
 };
 
 // Function for sending the page data
- export function sendTabData(tabId, data, callback = null){
+export function sendTabData(tabId, data, callback = null){
 
   var pageUrl = window.location.href.split("?")[0];
   pageUrl = isLinkedinFeed(pageUrl)

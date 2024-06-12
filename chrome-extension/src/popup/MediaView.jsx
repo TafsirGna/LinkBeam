@@ -45,19 +45,53 @@ import CustomToast from "./widgets/toasts/CustomToast";
 
 var objectsBackup = null;
 
+function separateVideoAndImage(feedPost){
+
+  var videoFeedPost = null,
+      imageFeedPost = null;
+      
+  for (const medium of feedPost.media){
+
+    if (medium.src){ // the medium is an image
+      if (!imageFeedPost){
+        imageFeedPost = {...feedPost};
+        imageFeedPost.media = [medium];
+      }
+      else{
+        imageFeedPost.media.push(medium);
+      }
+    }
+    else{ // it's a video
+      if (!videoFeedPost){
+        videoFeedPost = {...feedPost};
+        videoFeedPost.media = [medium];
+      }
+      else{
+        videoFeedPost.media.push(medium);
+      }
+    }
+
+  }
+  return {videoFeedPost: videoFeedPost, imageFeedPost: imageFeedPost};
+}
+
 export default class MediaView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      objects: null,
+      allObjects: null,
       searchingMedia: false,
       searchText: null,
       toastShow: false,
       toastMessage: "",
+      videoObjects: null,
+      imageObjects: null, 
+      viewIndex: 0,
     };
 
     this.searchMedia = this.searchMedia.bind(this);
+    this.setViewIndex = this.setViewIndex.bind(this);
 
   }
 
@@ -81,16 +115,25 @@ export default class MediaView extends React.Component{
 
         if (!data){
           if (!objectsBackup){
-            objectsBackup = this.state.objects;
+            objectsBackup = {
+              all: this.state.allObjects,
+              video: this.state.videoObjects,
+              image: this.state.imageObjects,
+            };
           }
-          this.setState({objects: null});
+          this.setState({allObjects: null});
           return;
         }
 
         if (!data.searchText.replaceAll(/\s/g,"").length){
 
           if (objectsBackup){
-            this.setState({objects: objectsBackup, searchText: null});
+            this.setState({
+              allObjects: objectsBackup.all, 
+              videoObjects: objectsBackup.video,
+              imageObjects: objectsBackup.image,
+              searchText: null,
+            });
           }
 
         }
@@ -98,7 +141,10 @@ export default class MediaView extends React.Component{
 
           this.setState({searchText: data.searchText}, async () => {
 
-            var feedPostsByDate = {};
+            var feedPostsByDate = {},
+                videoFeedPostsByDate = {},
+                imageFeedPostsByDate = {};
+
             for (var feedPost of data.results){
 
               if (!feedPost.media){
@@ -113,24 +159,74 @@ export default class MediaView extends React.Component{
                 continue;
               }
 
-              if (feedPost.view.date.split("T")[0] in feedPostsByDate){
-                feedPostsByDate[feedPost.view.date.split("T")[0]].push(feedPost);
+              var imgVideo = separateVideoAndImage(feedPost),
+                  date = feedPost.view.date.split("T")[0];
+
+              if (date in feedPostsByDate){
+                feedPostsByDate[date].push(feedPost);
               }
               else{
-                feedPostsByDate[feedPost.view.date.split("T")[0]] = [feedPost];
+                feedPostsByDate[date] = [feedPost];
+              }
+
+              // push a new feedPost object with a video
+              if (imgVideo.videoFeedPost){
+                if (date in videoFeedPostsByDate){
+                  videoFeedPostsByDate[date].push(imgVideo.videoFeedPost);
+                }
+                else{
+                  videoFeedPostsByDate[date] = [imgVideo.videoFeedPost];
+                }
+              }
+
+              // push a new feedPost object with an image
+              if (imgVideo.imageFeedPost){
+                if (date in imageFeedPostsByDate){
+                  imageFeedPostsByDate[date].push(imgVideo.imageFeedPost);
+                }
+                else{
+                  imageFeedPostsByDate[date] = [imgVideo.imageFeedPost];
+                }
               }
 
             }
 
-            data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days").map(date => ({
+            data.results = {
+              all: [], 
+              video: [],
+              image: [],
+            };
+
+            for (const date of periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days").toReversed()){
+              
+              data.results.all.push({
                 date: date,
                 feedPosts: date.toISO().split("T")[0] in feedPostsByDate 
-                            ? feedPostsByDate[date.toISO().split("T")[0]] 
-                            : [],
-              }));
-            data.results.reverse();
+                                ? feedPostsByDate[date.toISO().split("T")[0]] 
+                                : [],
+              });
 
-            this.setState({objects: data.results});
+              data.results.video.push({
+                date: date,
+                feedPosts: date.toISO().split("T")[0] in videoFeedPostsByDate 
+                                        ? videoFeedPostsByDate[date.toISO().split("T")[0]] 
+                                        : [],
+              });
+
+              data.results.image.push({
+                date: date,
+                feedPosts: date.toISO().split("T")[0] in imageFeedPostsByDate 
+                                        ? imageFeedPostsByDate[date.toISO().split("T")[0]] 
+                                        : [],
+              });
+
+            }
+
+            this.setState({
+              allObjects: data.results.all,
+              videoObjects: data.results.video,
+              imageObjects: data.results.image,
+            });
 
           });
 
@@ -157,24 +253,32 @@ export default class MediaView extends React.Component{
 
     this.setState({searchingMedia: true}, async () => {
 
-      var objects = null,
+      var allObjects = null,
+          imageObjects = null,
+          videoObjects = null,
           newDate = null;
 
-      if (!this.state.objects){
+      if (!this.state.allObjects){
 
         newDate = LuxonDateTime.now();
-        objects = [];
+        allObjects = [];
+        imageObjects = [];
+        videoObjects = [];
 
       }
       else{
 
-        newDate = this.state.objects[this.state.objects.length - 1].date.minus({days: 1});
-        objects = this.state.objects;
+        newDate = this.state.allObjects[this.state.allObjects.length - 1].date.minus({days: 1});
+        allObjects = this.state.allObjects;
+        videoObjects = this.state.videoObjects;
+        imageObjects = this.state.imageObjects;
 
       }
 
-      var feedPosts = [];
-      var feedPostViews = await db.feedPostViews
+      var feedPosts = [],
+          videoFeedPosts = [],
+          imageFeedPosts = [],
+          feedPostViews = await db.feedPostViews
                                   .where("date")
                                   .startsWith(newDate.toISO().split("T")[0])
                                   .toArray();
@@ -190,8 +294,22 @@ export default class MediaView extends React.Component{
         if (feedPost.linkedPostId){
           const linkedPost = await db.feedPosts.where({id: feedPost.linkedPostId}).first();
           if (linkedPost && linkedPost.media){
+
             linkedPost.view = feedPostView;
             feedPosts.push(linkedPost);
+
+            var imgVideo = separateVideoAndImage(linkedPost);
+
+            // push a new feedPost object with a video
+            if (imgVideo.videoFeedPost){
+              videoFeedPosts.push(imgVideo.videoFeedPost);
+            }
+
+            // push a new feedPost object with an image
+            if (imgVideo.imageFeedPost){
+              imageFeedPosts.push(imgVideo.imageFeedPost);
+            }
+
           }
         }
 
@@ -202,13 +320,37 @@ export default class MediaView extends React.Component{
         feedPost.view = feedPostView;
         feedPosts.push(feedPost);
 
+        var imgVideo = separateVideoAndImage(feedPost);
+
+        // push a new feedPost object with a video
+        if (imgVideo.videoFeedPost){
+          videoFeedPosts.push(imgVideo.videoFeedPost);
+        }
+
+        // push a new feedPost object with an image
+        if (imgVideo.imageFeedPost){
+          imageFeedPosts.push(imgVideo.imageFeedPost);
+        }
+
       }
 
-      objects.push({date: newDate, feedPosts: feedPosts});
-      this.setState({objects: objects, searchingMedia: false});
+      allObjects.push({date: newDate, feedPosts: feedPosts});
+      videoObjects.push({date: newDate, feedPosts: videoFeedPosts});
+      imageObjects.push({date: newDate, feedPosts: imageFeedPosts});
+
+      this.setState({
+        allObjects: allObjects, 
+        imageObjects: imageObjects,
+        videoObjects: videoObjects,
+        searchingMedia: false
+      });
 
     })
 
+  }
+
+  setViewIndex(index){
+    this.setState({viewIndex: index});
   }
 
   render(){
@@ -221,22 +363,22 @@ export default class MediaView extends React.Component{
             <PageTitleView pageTitle="Gallery"/>
           </div>
 
-          { !this.state.objects 
+          { !this.state.allObjects 
               && <div class="text-center"><div class="mb-5 mt-5"><div class="spinner-border text-primary" role="status">
                             </div>
                             <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
                           </div>
                         </div> }
 
-          { this.state.objects
-              && this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) == 0
+          { this.state.allObjects
+              && this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) == 0
               && <div class="text-center m-5 border shadow-lg rounded p-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
                                   <p><span class="badge text-bg-primary fst-italic shadow">No media yet</span></p>
                                 </div> }
 
-          { this.state.objects
-              && this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) != 0
+          { this.state.allObjects
+              && this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) != 0
               && <div>
 
                   <div class="my-4">
@@ -245,82 +387,44 @@ export default class MediaView extends React.Component{
                       globalData={this.props.globalData} />
                       { this.state.searchText 
                           && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                              {`${this.state.objects ? this.state.objects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
+                              {`${this.state.allObjects ? this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
                             </p>}
                   </div>
 
-                  <ul class="timeline mt-4 mx-2 small">
-                    { this.state.objects.map(object => ( object.feedPosts.length == 0 
-                                                          ? null
-                                                          : <li class="timeline-item mb-5">
-                                                              { <p class="mb-2 fst-italic">{object.date.toFormat("MMMM dd, yyyy")}</p>}
-                                                              { <div class="p-2">
+                  <ul class="nav nav-underline small ms-2">
+                    <li class="nav-item" onClick={() => {this.setViewIndex(0)}}>
+                      <a class={`nav-link ${this.state.viewIndex == 0 ? "active" : ""}`} aria-current="page" href="#">
+                        All
+                        { this.state.allObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                      </a>
+                    </li>
+                    <li class="nav-item" onClick={() => {this.setViewIndex(1)}}>
+                      <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
+                        Photos
+                        { this.state.imageObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.imageObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                      </a>
+                    </li>
+                    <li class="nav-item" onClick={() => {this.setViewIndex(2)}}>
+                      <a class={`nav-link ${this.state.viewIndex == 2 ? "active" : ""}`} href="#">
+                        Videos
+                        { this.state.videoObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.videoObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                      </a>
+                    </li>
+                    
+                  </ul>
 
-                                                                  { object.feedPosts
-                                                                      && <Masonry columnsCount={3} gutter="10px">
+                  { this.state.viewIndex == 0 
+                      && <MediaGridView
+                          objects={this.state.allObjects}/>}
 
-                                                                            { object.feedPosts.toSorted((a, b) => {
-                                                                                                          if (new Date(a.view.date) < new Date(b.view.date)){
-                                                                                                            return 1;
-                                                                                                          }
-                                                                                                          else if (new Date(a.view.date) > new Date(b.view.date)){
-                                                                                                            return -1;
-                                                                                                          }
-                                                                                                          else{
-                                                                                                            return 0;
-                                                                                                          }
-                                                                                                        }).map(feedPost => (
-                                                                                                                  <OverlayTrigger 
-                                                                                                                    trigger="hover" 
-                                                                                                                    placement="left" 
-                                                                                                                    overlay={<Popover id="popover-basic">
-                                                                                                                                <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: highlightText(feedPost.author.name, this.state.searchText)}}>{/*{feedPost.author.name}*/}</Popover.Header>
-                                                                                                                                {feedPost.text 
-                                                                                                                                    && <Popover.Body dangerouslySetInnerHTML={{__html: highlightText(feedPost.text, this.state.searchText)}}>
-                                                                                                                                        {/*{feedPost.text}*/}
-                                                                                                                                      </Popover.Body>}
-                                                                                                                              </Popover>}
-                                                                                                                    >
-                                                                                                                    <a 
-                                                                                                                      href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
-                                                                                                                      target="_blank" 
-                                                                                                                      title="View on linkedin">
-                                                                                                                      <div class="card shadow">
-                                                                                                                        { feedPost.media.length == 1
-                                                                                                                            && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
-                                                                                                                            && <img 
-                                                                                                                                src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                                                                                class="card-img-top" 
-                                                                                                                                alt="..."/> }
-                                                                                                                        { feedPost.media.length != 1
-                                                                                                                            && <Carousel controls={false} indicators={false}>
-                                                                                                                                  {feedPost.media.map(medium => (<Carousel.Item>
-                                                                                                                                                                  { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
-                                                                                                                                                                    && <img 
-                                                                                                                                                                    src={medium.src ? medium.src : medium.poster} 
-                                                                                                                                                                    class="card-img-top" 
-                                                                                                                                                                    alt="..."/>}
-                                                                                                                                                                </Carousel.Item>))}
-                                                                                                                              </Carousel>}
-                                                                                                                        {/*<div class="card-body">
-                                                                                                                          <h5 class="card-title">Card title</h5>
-                                                                                                                          <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                                                                                                                        </div>
-                                                                                                                        <div class="card-footer">
-                                                                                                                          <small class="text-body-secondary">Last updated 3 mins ago</small>
-                                                                                                                        </div>*/}
-                                                                                                                      </div>
-                                                                                                                    </a>
-                                                                                                                  </OverlayTrigger>
-                                                                                                                )) }
+                  { this.state.viewIndex == 1 
+                      && <MediaGridView
+                          objects={this.state.imageObjects}/>}
 
-                                                                          </Masonry> }
+                  { this.state.viewIndex == 2 
+                      && <MediaGridView
+                          objects={this.state.videoObjects}/>}
 
-                                                                </div>}
-                                                            </li>
-
-                      )) }
-                  </ul> 
                 </div>
 
                 }
@@ -329,7 +433,7 @@ export default class MediaView extends React.Component{
               && this.props.globalData.settings.lastDataResetDate 
               && <SeeMoreButtonView
                       showSeeMoreButton = { !this.state.searchingMedia 
-                                              && (!this.state.objects || (this.state.objects && this.state.objects[this.state.objects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))
+                                              && (!this.state.allObjects || (this.state.allObjects && this.state.allObjects[this.state.allObjects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))
                                               && !this.state.searchText }
                       seeMore={this.searchMedia}
                       showLoadingSpinner={this.state.searchingMedia}
@@ -343,6 +447,104 @@ export default class MediaView extends React.Component{
           message={this.state.toastMessage} 
           show={this.state.toastShow} 
           onClose={this.toggleToastShow} />
+      </>
+    );
+  }
+}
+
+
+
+
+
+
+
+class MediaGridView extends React.Component{
+
+  constructor(props){
+    super(props);
+    this.state = {
+    };
+  }
+
+  componentDidMount() {
+
+  }
+
+  render(){
+    return (
+      <>  
+        <ul class="timeline mt-4 mx-2 small">
+          { this.props.objects.map(object => ( object.feedPosts.length == 0 
+                                                ? null
+                                                : <li class="timeline-item mb-5">
+                                                    { <p class="mb-2 fst-italic">{object.date.toFormat("MMMM dd, yyyy")}</p>}
+                                                    { <div class="p-2">
+
+                                                        { object.feedPosts
+                                                            && <Masonry columnsCount={3} gutter="10px">
+
+                                                                  { object.feedPosts.toSorted((a, b) => {
+                                                                                                if (new Date(a.view.date) < new Date(b.view.date)){
+                                                                                                  return 1;
+                                                                                                }
+                                                                                                else if (new Date(a.view.date) > new Date(b.view.date)){
+                                                                                                  return -1;
+                                                                                                }
+                                                                                                else{
+                                                                                                  return 0;
+                                                                                                }
+                                                                                              }).map(feedPost => (
+                                                                                                        <OverlayTrigger 
+                                                                                                          trigger="hover" 
+                                                                                                          placement="left" 
+                                                                                                          overlay={<Popover id="popover-basic">
+                                                                                                                      <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: highlightText(feedPost.author.name, this.state.searchText)}}>{/*{feedPost.author.name}*/}</Popover.Header>
+                                                                                                                      {feedPost.text 
+                                                                                                                          && <Popover.Body dangerouslySetInnerHTML={{__html: highlightText(feedPost.text, this.state.searchText)}}>
+                                                                                                                              {/*{feedPost.text}*/}
+                                                                                                                            </Popover.Body>}
+                                                                                                                    </Popover>}
+                                                                                                          >
+                                                                                                          <a 
+                                                                                                            href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
+                                                                                                            target="_blank" 
+                                                                                                            title="View on linkedin">
+                                                                                                            <div class="card shadow">
+                                                                                                              { feedPost.media.length == 1
+                                                                                                                  && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
+                                                                                                                  && <img 
+                                                                                                                      src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                      class="card-img-top" 
+                                                                                                                      alt="..."/> }
+                                                                                                              { feedPost.media.length != 1
+                                                                                                                  && <Carousel controls={false} indicators={false}>
+                                                                                                                        {feedPost.media.map(medium => (<Carousel.Item>
+                                                                                                                                                        { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
+                                                                                                                                                          && <img 
+                                                                                                                                                          src={medium.src ? medium.src : medium.poster} 
+                                                                                                                                                          class="card-img-top" 
+                                                                                                                                                          alt="..."/>}
+                                                                                                                                                      </Carousel.Item>))}
+                                                                                                                    </Carousel>}
+                                                                                                              {/*<div class="card-body">
+                                                                                                                <h5 class="card-title">Card title</h5>
+                                                                                                                <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                                                                              </div>
+                                                                                                              <div class="card-footer">
+                                                                                                                <small class="text-body-secondary">Last updated 3 mins ago</small>
+                                                                                                              </div>*/}
+                                                                                                            </div>
+                                                                                                          </a>
+                                                                                                        </OverlayTrigger>
+                                                                                                      )) }
+
+                                                                </Masonry> }
+
+                                                      </div>}
+                                                  </li>
+
+            )) }
+        </ul>
       </>
     );
   }
