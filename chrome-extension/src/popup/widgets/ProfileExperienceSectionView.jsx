@@ -30,6 +30,7 @@ import eventBus from "../EventBus";
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
 import EdExpInfoModal from "./modals/EdExpInfoModal";
 import sorry_icon from '../../assets/sorry_icon.png';
+import IncompleteSectionMessageView from "./IncompleteSectionMessageView";
 
 export default class ProfileExperienceSectionView extends React.Component{
 
@@ -127,6 +128,10 @@ export default class ProfileExperienceSectionView extends React.Component{
             && this.state.doughnutChartsData
             && this.state.doughnutChartsData.length != 0
             && <div>
+
+                <IncompleteSectionMessageView
+                      sectionName="experience"
+                      profile={this.props.profile}/>
 
                 <div>
                   <div class="container-fluid horizontal-scrollable">

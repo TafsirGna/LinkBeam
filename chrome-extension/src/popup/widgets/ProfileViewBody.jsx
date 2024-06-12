@@ -58,6 +58,9 @@ export default class ProfileViewBody extends React.Component{
       }
 
     };
+
+    this.switchToTabIndex = this.switchToTabIndex.bind(this);
+    
   }
 
   componentDidMount() {
@@ -170,6 +173,7 @@ export default class ProfileViewBody extends React.Component{
             { this.state.currentTabIndex == 0 && <div class="">
                                                     <ProfileOverviewSectionView 
                                                       profile={this.props.profile} 
+                                                      switchToTab={this.switchToTabIndex}
                                                       localDataObject={{
                                                         profileComputedData: this.state.profileComputedData,
                                                         profiles: this.props.localDataObject.profiles,

@@ -235,7 +235,7 @@ export default class ProfileViewHeader extends React.Component{
   render(){
     return (
       <>
-        <p class="small badge text-muted fst-italic mb-1">
+        <p class="small badge text-muted fst-italic mb-1 ps-3">
           <OverlayTrigger
               placement="top"
               overlay={<ReactTooltip id="tooltip1">Warning!</ReactTooltip>}
@@ -249,7 +249,7 @@ export default class ProfileViewHeader extends React.Component{
         { this.props.profile.lastVisitDate 
             && <div class="alert alert-info py-1 shadow-sm small text-muted mt-2" role="alert">
                   <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  <span class="fst-italic ms-2">{`Last visited ${this.props.profile.lastVisitDate.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "today" : `on ${LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toFormat("MMMM dd, yyyy")}`} at ${LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toFormat("hh:mm a")}`}</span>
+                  <span class="fst-italic ms-2">{`Last visited ${this.props.profile.lastVisitDate.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "today" : `on ${LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toFormat("MMMM dd, yyyy")}`} at ${LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toFormat("hh:mm a")} (${LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toRelative()})`}</span>
                   { this.isProfileOutdated()
                       && <span>
                           {" · "}<span class="badge rounded-pill text-bg-danger">Outdated</span>

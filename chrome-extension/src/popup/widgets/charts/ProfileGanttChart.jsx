@@ -121,6 +121,10 @@ export default class ProfileGanttChart extends React.Component{
 
     for (var object of objects){
 
+      if (object == "incomplete"){
+        continue;
+      }
+
       var label = dbDataSanitizer.preSanitize(object.entity.name);
 
       if (!object.period){

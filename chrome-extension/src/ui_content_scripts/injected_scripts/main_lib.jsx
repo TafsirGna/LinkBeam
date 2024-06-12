@@ -201,7 +201,7 @@ export class ScriptAgentBase {
 	}
 
   sendTabIdleStatusSignal(idleStatus){
-    chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: {idleStatus: idleStatus, tabId: this.tabId }}, (response) => {
+    chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: {idleStatus: idleStatus, visitId: this.visitId }}, (response) => {
       console.log('tab idle status sent', response, data);
     });
   }
@@ -755,6 +755,10 @@ export const DataExtractor = {
 
       });
 
+      if (htmlElements.education.querySelector(".pvs-list__footer-wrapper")){
+        educationData.push("incomplete");
+      }
+
       return educationData;
 
     }
@@ -873,6 +877,10 @@ export const DataExtractor = {
         experienceData = experienceData.concat(extractExperienceItemData(experienceLiTag));
 
       });
+
+      if (htmlElements.experience.querySelector(".pvs-list__footer-wrapper")){
+        experienceData.push("incomplete");
+      }
 
       return experienceData;
 
@@ -1114,6 +1122,9 @@ function extractEducationItemData(htmlElement){
     switch(counter){
       case 0: {
         // name
+        if (nodeValue == "profile-component-entity"){
+          return;
+        }
         educationItemData.entity.name = nodeValue;
         counter++;
         return;
@@ -1130,7 +1141,8 @@ function extractEducationItemData(htmlElement){
     }
 
     // period
-    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)){
+    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)
+          || nodeValue.match(/^([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)$/g)){
       educationItemData.period = nodeValue;
       // counter++;
       return;
@@ -1205,17 +1217,24 @@ function extractExperienceItemData(htmlElement){
         return;
         // break;
       }
-      case "LI":{
-        addNewToList();
-        return;
-        // break;
+      // case "LI":{
+      //   addNewToList();
+      //   return;
+      //   // break;
+      // }
+      default:{
+        if (nodeValue == "profile-component-entity"){
+            addNewToList();
+            return;
+            // break;
+        }
       }
     }
 
     switch(counter){
       case 0: {
         // title
-        if (!htmlElement.querySelector("ul")){
+        if (!htmlElement.querySelector(".pvs-entity__sub-components [data-view-name='profile-component-entity']")){
           experienceItemData.title = nodeValue;
         }
         else{
@@ -1232,7 +1251,7 @@ function extractExperienceItemData(htmlElement){
       }
       case 1: {
         // name
-        if (!htmlElement.querySelector("ul")){
+        if (!htmlElement.querySelector(".pvs-entity__sub-components [data-view-name='profile-component-entity']")){ 
           experienceItemData.entity.name = nodeValue;
           counter++;
           return;
@@ -1294,9 +1313,20 @@ function extractItemData(htmlElement, callback){
         nodeValue = node.getAttribute("href");
         break;
       }
-      case "LI":{
-        nodeValue = "###";
-        break;
+      // case "LI":{
+      //   nodeValue = "###";
+      //   break;
+      // }
+      default: {
+        try{
+          if (node.getAttribute("data-view-name") == "profile-component-entity"){
+            nodeValue = "profile-component-entity";
+          }
+        }
+        catch(error){
+          console.log("*** : ", node);
+          console.log("Error : ", error);
+        }
       }
     }
 

@@ -42,6 +42,10 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
 
       for (var experience of this.props.profile.experience){
 
+        if (experience == "incomplete"){
+          continue;
+        }
+
         var entityName = dbDataSanitizer.preSanitize(experience.entity.name), 
             title = dbDataSanitizer.preSanitize(experience.title);
         var itemIndex = expChildren.map(e => e.fullName).indexOf(entityName);
@@ -71,6 +75,10 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     if (this.props.profile.education){
 
       for (var education of this.props.profile.education){
+
+        if (education == "incomplete"){
+          continue;
+        }
 
         var entityName = dbDataSanitizer.preSanitize(education.entity.name), 
             degree = dbDataSanitizer.preSanitize(education.title);

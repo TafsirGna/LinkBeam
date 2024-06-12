@@ -19,26 +19,14 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './BackToPrev.css'*/
-import { appParams } from "../Local_library";
-import { switchToView } from "../Local_library";
-import eventBus from "../EventBus";
+/*import './IncompleteSectionMessageView.css'*/
 
-function BackToPrev(props) {
-  /*const [count, setCount] = useState(0)*/
-
-  return (
-    <>
-    	<div class="clearfix">
-        <a 
-          href="#"
-          onClick={() => {switchToView(eventBus, props.prevPageTitle)}}
-          title={"Back" + (props.prevPageTitle == appParams.COMPONENT_CONTEXT_NAMES.HOME ? "" : " to " + props.prevPageTitle)}>
-       		<svg viewBox="0 0 24 24" width="20" height="20" stroke="gray" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 me-3 handy-cursor float-start"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-        </a>
-       	</div>
-    </>
-  )
+export default function IncompleteSectionMessageView(props){
+  return <div class="small shadow-sm mb-3 mt-2 p-1 mx-3 fst-italic border-start border-warning ps-2 border-4 bg-warning-subtle text-muted">
+          It seems like the {props.sectionName} section is incomplete. Revisit the 
+          <a class="mx-1" href={`https://${props.profile.url}details/${props.sectionName}`} target="_blank">
+            profile
+          </a>
+          to enrich this section.
+        </div>
 }
-
-export default BackToPrev

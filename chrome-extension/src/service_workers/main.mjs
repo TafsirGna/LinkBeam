@@ -209,6 +209,8 @@ async function runTabTimer(visitId){
 
     var url = (await db.visits.where({id: visitId}).first()).url;
 
+    await resetTabTimer();
+
     const interval = setInterval(async () => {       
 
         // checking first that the user is still on the page for which the timer has been started before proceeding to the next stage
@@ -222,6 +224,8 @@ async function runTabTimer(visitId){
                 resetTabTimer();
             }
         });
+
+        console.log("///////////////////////////////////////");
 
         await db.visits
                 .where({id: visitId})
@@ -1089,6 +1093,22 @@ async function processMessageEvent(message, sender, sendResponse){
                     .modify(postView => {
                         postView.timeCount = timeCount;
                     });
+
+            break;
+        }
+
+        case "TAB_IDLE_STATUS":{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            if (message.data.idleStatus){
+                resetTabTimer();
+            }
+            else{
+                runTabTimer(message.data.visitId); // TODO
+            }
 
             break;
         }

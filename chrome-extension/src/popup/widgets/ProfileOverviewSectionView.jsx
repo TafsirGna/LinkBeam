@@ -147,8 +147,8 @@ export default class ProfileOverviewSectionView extends React.Component{
 
         <div class="row mx-2 mt-1">
           <div 
-            class=/*handy-cursor*/" card mb-3 shadow small text-muted col mx-2 border border-1" 
-            /*onClick={() => {this.handleDonutChartModalShow("experience");}}*/>
+            class={`handy-cursor card mb-3 shadow small text-muted col mx-2 border ${this.props.profile.experience.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`} 
+            onClick={() => {this.props.switchToTab(2);}}>
             <div class="card-body">
               <h6 class="card-title text-primary-emphasis">
                 ~{(this.props.localDataObject.profileComputedData 
@@ -159,8 +159,8 @@ export default class ProfileOverviewSectionView extends React.Component{
             </div>
           </div>
           <div 
-            class=/*handy-cursor*/" card mb-3 shadow small text-muted col mx-2 border border-1" 
-            /*onClick={() => {this.handleDonutChartModalShow("education");}}*/>
+            class={`handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1 ${this.props.profile.education.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`}
+            onClick={() => {this.props.switchToTab(3);}}>
             <div class="card-body">
               <h6 class="card-title text-warning-emphasis">
                 ~{(this.props.localDataObject.profileComputedData 
