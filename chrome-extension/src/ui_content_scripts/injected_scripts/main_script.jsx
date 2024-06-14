@@ -108,15 +108,24 @@ class MainScriptAgent extends ScriptAgentBase {
             }
             else if (isLinkedinProfilePage(pageUrl)){
 
-                if (this.pageUrl != pageUrl){
-                    ProfilePageScriptAgent.webPageData = null;
-                    ProfilePageScriptAgent.detectedKeywords = {};
-                    ProfilePageScriptAgent.keywordDetected = false;
-                    ProfilePageScriptAgent.updateUi(props);
-                    this.pageUrl = pageUrl;
-                }
+                if (isLinkedinProfileSectionDetailsPage(url)){
 
-                ProfilePageScriptAgent.runTabDataExtractionProcess(props);
+                    
+
+                }
+                else{
+
+                    if (this.pageUrl != pageUrl){
+                        ProfilePageScriptAgent.webPageData = null;
+                        ProfilePageScriptAgent.detectedKeywords = {};
+                        ProfilePageScriptAgent.keywordDetected = false;
+                        ProfilePageScriptAgent.updateUi(props);
+                        this.pageUrl = pageUrl;
+                    }
+
+                    ProfilePageScriptAgent.runTabDataExtractionProcess(props);
+
+                }
 
             }
 

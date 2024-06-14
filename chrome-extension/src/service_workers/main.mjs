@@ -216,6 +216,7 @@ async function runTabTimer(visitId){
         // checking first that the user is still on the page for which the timer has been started before proceeding to the next stage
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
             if (!tabs[0]){
+                console.log("############## no tab 0");
                 return;
             }
             var currTabUrl = tabs[0].url.split("?")[0];

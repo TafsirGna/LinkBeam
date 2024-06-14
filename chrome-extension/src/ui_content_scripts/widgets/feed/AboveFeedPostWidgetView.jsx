@@ -497,6 +497,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   runTimer(){
 
+    // clearing the timer in case it's not been done before
+    this.clearTimer();
+
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 

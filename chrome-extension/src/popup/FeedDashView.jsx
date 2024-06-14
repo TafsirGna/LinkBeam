@@ -22,7 +22,10 @@
 /*import './About.css'*/
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
-import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
+import {   
+  LayersIcon ,
+  BarChartIcon,
+} from "./widgets/SVGs";
 import PostViewListItemView from "./widgets/PostViewListItemView";
 import { 
   appParams,
@@ -41,6 +44,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
+import FeedPostCreatOccurCandleStickChart from "./widgets/charts/FeedPostCreatOccurCandleStickChart";
 import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
 import FeedDashRecurrentProfilesSectionView from "./widgets/FeedDashRecurrentProfilesSectionView";
 import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
@@ -69,13 +73,14 @@ export default class FeedDashView extends React.Component{
       visits: null,
       feedPostViews: null,
       allPostsModalShow: false,
-      chartModalShow: false,
-      chartModalTitle: "",
+      metricLineChartModalShow: false,
+      metricLineChartModalTitle: "",
       toastMessage: "",
       toastShow: false,
       activeListIndex: 0,
       allVisitsPostCount: 0,
       hashtagCount: null,
+      postCandleStickChartModalShow: false,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -143,8 +148,8 @@ export default class FeedDashView extends React.Component{
   handleAllPostsModalClose = () => this.setState({allPostsModalShow: false});
   handleAllPostsModalShow = () => this.setState({allPostsModalShow: true});
 
-  handleChartModalClose = () => this.setState({chartModalShow: false});
-  handleChartModalShow = (chartModalTitle) => this.setState({chartModalShow: true, chartModalTitle: chartModalTitle});
+  handleMetricLineChartModalClose = () => this.setState({metricLineChartModalShow: false});
+  handleMetricLineChartModalShow = (metricLineChartModalTitle) => this.setState({metricLineChartModalShow: true, metricLineChartModalTitle: metricLineChartModalTitle});
 
   setHashtagCount(count){
     this.setState({hashtagCount: count});
@@ -260,6 +265,9 @@ export default class FeedDashView extends React.Component{
     this.setState({activeListIndex: index});
   }
 
+  handlePostCandleStickChartModalClose = () => this.setState({postCandleStickChartModalShow: false});
+  handlePostCandleStickChartModalShow = () => this.setState({postCandleStickChartModalShow: true});
+
   render(){
     return (
       <>
@@ -300,28 +308,28 @@ export default class FeedDashView extends React.Component{
           </div>
 
           <div class="row mx-2 mt-1">
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Total time")}}>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Total time")}}>
               <div class="card-body">
                 {this.state.visits && <h6 class="card-title text-primary-emphasis">~{`${getVisitsTotalTime(this.state.visits)} mins`}</h6>}
                 <p class="card-text mb-1">Total time spent</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Visit Count")}}>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Visit Count")}}>
               <div class="card-body">
                 {this.state.visits && <h6 class="card-title text-danger-emphasis">{this.state.visits.length}</h6>}
                 <p class="card-text mb-1">Visits</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Post Count")}}>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Post Count")}}>
               <div class="card-body">
                 {this.state.visits && <h6 class="card-title text-warning-emphasis">~{this.state.allVisitsPostCount}</h6>}
                 <p class="card-text mb-1">Posts</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleChartModalShow("Mean time")}}>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time")}}>
               <div class="card-body">
                 {this.state.visits && <h6 class="card-title text-info-emphasis">~{this.state.visits.length ? `${(getVisitsTotalTime(this.state.visits)/this.state.visits.length).toFixed(2)} mins` : "0 mins"}</h6>}
                 <p class="card-text mb-1">Mean time per visit</p>
@@ -373,7 +381,30 @@ export default class FeedDashView extends React.Component{
 
           { this.state.activeListIndex == 0 
               && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
-                      <h6 class="border-bottom pb-2 mb-0">Posts</h6>
+                      <h6 class="border-bottom pb-2 mb-0">
+
+                        Posts
+
+                        <div class="dropdown float-end bd-gray">
+                            <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                              <LayersIcon 
+                                size="18" 
+                                className="text-muted"/>
+                            </div>
+                            <ul class="dropdown-menu shadow-lg">
+                              <li>
+                                <a class="dropdown-item small" href="#" onClick={this.handlePostCandleStickChartModalShow}>
+                                  <BarChartIcon
+                                    size="15"
+                                    className="me-2 text-muted"/>
+                                  Post candlestick chart
+                                  {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+
+                      </h6>
           
                       { !this.state.feedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                                 {/*<span class="visually-hidden">Loading...</span>*/}
@@ -438,36 +469,64 @@ export default class FeedDashView extends React.Component{
         objects={this.state.feedPostViews}/>
 
 
-      <Modal show={this.state.chartModalShow} onHide={this.handleChartModalClose}>
-          <Modal.Header closeButton>
-            <Modal.Title>{this.state.chartModalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+      <Modal show={this.state.metricLineChartModalShow} onHide={this.handleMetricLineChartModalClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>{this.state.metricLineChartModalTitle}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
 
-            { this.state.chartModalShow 
-                && <FeedMetricsLineChart
-                      rangeDates={{
-                        start: this.state.startDate,
-                        end: this.state.endDate,
-                      }}
-                      objects={this.state.visits}
-                      metric={this.state.chartModalTitle}
-                      metricValueFunction={this.getMetricValue}/>}
+          { this.state.metricLineChartModalShow 
+              && <FeedMetricsLineChart
+                    rangeDates={{
+                      start: this.state.startDate,
+                      end: this.state.endDate,
+                    }}
+                    objects={this.state.visits}
+                    metric={this.state.metricLineChartModalTitle}
+                    metricValueFunction={this.getMetricValue}/>}
 
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleChartModalClose} className="shadow">
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={this.handleMetricLineChartModalClose} className="shadow">
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
-        {/*Toasts*/}
-        <CustomToast 
-          globalData={this.props.globalData} 
-          message={this.state.toastMessage} 
-          show={this.state.toastShow} 
-          onClose={this.toggleToastShow} />
+
+
+      <Modal 
+        show={this.state.postCandleStickChartModalShow} 
+        onHide={this.handlePostCandleStickChartModalClose}
+        size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Post creation and first feed occurence dates chart</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+
+          <FeedPostCreatOccurCandleStickChart
+            rangeDates={{
+              start: this.state.startDate,
+              end: this.state.endDate,
+            }}
+            objects={this.state.feedPostViews}/>
+
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" size="sm" onClick={this.handlePostCandleStickChartModalClose} className="shadow">
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
+
+      {/*Toasts*/}
+      <CustomToast 
+        globalData={this.props.globalData} 
+        message={this.state.toastMessage} 
+        show={this.state.toastShow} 
+        onClose={this.toggleToastShow}/>
 
       </>
     );

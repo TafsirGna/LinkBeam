@@ -1173,6 +1173,7 @@ export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywo
 export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
 export const isLinkedinProfilePage = (url) => url.toString().indexOf("/in/") != -1;
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
+export const isLinkedinProfileSectionDetailsPage = (url) => url.match(/linkedin.com\/in\/\w+\/details\//g);
 
 export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, profileUrl = null){
 
