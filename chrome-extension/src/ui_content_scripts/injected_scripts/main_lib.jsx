@@ -201,7 +201,8 @@ export class ScriptAgentBase {
 	}
 
   sendTabIdleStatusSignal(idleStatus){
-    chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: {idleStatus: idleStatus, visitId: this.visitId }}, (response) => {
+    const data = {idleStatus: idleStatus, visitId: this.visitId }
+    chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: data}, (response) => {
       console.log('tab idle status sent', response, data);
     });
   }
@@ -1080,7 +1081,7 @@ export const DataExtractor = {
 };
 
 
-function extractEducationItemData(htmlElement){
+export function extractEducationItemData(htmlElement){
 
   var educationItemData = {
         entity:{
@@ -1171,7 +1172,7 @@ function extractEducationItemData(htmlElement){
 
 }
 
-function extractExperienceItemData(htmlElement){
+export function extractExperienceItemData(htmlElement){
 
   var experienceItemDataList = [], 
       counter = null;
@@ -1324,8 +1325,8 @@ function extractItemData(htmlElement, callback){
           }
         }
         catch(error){
-          console.log("*** : ", node);
-          console.log("Error : ", error);
+          // console.log("*** : ", node);
+          // console.log("Error : ", error);
         }
       }
     }

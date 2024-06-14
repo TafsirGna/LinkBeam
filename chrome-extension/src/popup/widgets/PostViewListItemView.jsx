@@ -243,7 +243,7 @@ export default class PostViewListItemView extends React.Component{
                   <img class="mx-1" width="16" height="16" src={this.props.object.category ? categoryIconMap[this.props.object.category] : share_icon} alt=""/>
                 </span>
               </OverlayTrigger>
-              this <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.uid}`} class="fst-italic">post</a>
+              this <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.uid}`} target="_blank" class="fst-italic">post</a>
               { this.props.object.category 
                   && <span class="ms-1"> 
                       of

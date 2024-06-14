@@ -31,7 +31,7 @@ db.version(appParams.appDbVersion).stores({
   reminders: '++id, &objectId, createdOn, active, date',
   settings: '++id',
   bookmarks: '++id, &url, createdOn',
-  feedPosts: '++id, &uid, date, linkedPostId',
+  feedPosts: '++id, &uid, estimatedDate, linkedPostId',
   feedPostViews: '++id, feedPostId, uid, date, visitId, category',
   tags: '++id, &name, createdOn',
   folders: '++id, &name, createdOn',

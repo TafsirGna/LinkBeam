@@ -22,15 +22,21 @@
 
 import { 
 	ScriptAgentBase,
+	extractEducationItemData,
+	extractExperienceItemData,
+	sendTabData,
 } from "./main_lib";
 import React from 'react';
 import { 
-	appParams 
+	appParams, 
 } from "../../popup/Local_library";
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 
+
 export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBase {
+
+	static webPageData = null;
 
 	constructor(){
 		super();
@@ -42,7 +48,65 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 
 	static runTabDataExtractionProcess(props){
 
+		console.log("èèèèèèèè 1 : ");
 
+		var webPageData = null;
+
+		if (!this.webPageData){
+			console.log("èèèèèèèè 2 : ");
+
+			webPageData = this.extractData();
+			this.webPageData = document.querySelector(".scaffold-finite-scroll__content") 
+								? document.querySelector(".scaffold-finite-scroll__content").innerHTML
+								: null;
+
+		}
+		else{
+			console.log("èèèèèèèè 3 : ");
+
+			if (document.querySelector(".scaffold-finite-scroll__content")
+					&& document.querySelector(".scaffold-finite-scroll__content").innerHTML != this.webPageData){
+				webPageData = this.extractData();
+				this.webPageData = document.querySelector(".scaffold-finite-scroll__content").innerHTML;
+			}
+
+		}
+
+		if (!webPageData){
+			console.log("èèèèèèèè 4 : ");
+	      return;
+	    }
+
+	    console.log("èèèèèèèè 5 : ", webPageData);
+	    sendTabData(props.tabId, webPageData); 
+
+	}
+
+	static extractData(){
+
+		var extractedData = {label: null, list: []};
+
+		Array.from(document.querySelectorAll(".scaffold-finite-scroll__content [data-view-name='profile-component-entity']")).forEach((liElement) => {
+
+			if (window.location.href.indexOf("/experience") != -1){
+				if (!extractedData.label){
+					extractedData.label = "experience";
+				}
+				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement));
+				return;
+			}
+
+			if (window.location.href.indexOf("/education") != -1){
+				if (!extractedData.label){
+					extractedData.label = "education";
+				}
+				extractedData.list.push(extractEducationItemData(liElement));
+				return;
+			}
+
+		});
+
+		return extractedData;
 
 	}
 

@@ -165,7 +165,7 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
         },
         plugins: {
           legend: {
-            display: false,
+            display: true,
             labels: {
                 // This more specific font property overrides the global property
                 font: {

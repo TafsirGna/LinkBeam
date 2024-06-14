@@ -27,11 +27,13 @@ import {
     isLinkedinFeed,
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
+    isLinkedinProfileSectionDetailsPage,
     shuffle,
 } from "../../popup/Local_library";
 import FeedPageScriptAgent from "./feed_page_script";
 import ProfilePageScriptAgent from "./profile_page_script";
 import FeedPostPageScriptAgent from "./feed_post_page_script";
+import ProfileSectionDetailsPageScriptAgent from "./profile_section_details_page_script";
 import eventBus from "../../popup/EventBus";
 
 
@@ -67,7 +69,12 @@ class MainScriptAgent extends ScriptAgentBase {
             FeedPageScriptAgent.updateUi(props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
-            ProfilePageScriptAgent.updateUi(props);
+            if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
+                // TODO
+            }
+            else{
+                ProfilePageScriptAgent.updateUi(props);
+            }
         }
         else if (isLinkedinFeedPostPage(this.pageUrl)){
             FeedPostPageScriptAgent.updateUi(props);
@@ -108,9 +115,17 @@ class MainScriptAgent extends ScriptAgentBase {
             }
             else if (isLinkedinProfilePage(pageUrl)){
 
-                if (isLinkedinProfileSectionDetailsPage(url)){
+                if (isLinkedinProfileSectionDetailsPage(pageUrl)){
 
-                    
+                    console.log("<<<<<<<<<<<<<< 1 : ");
+
+                    if (this.pageUrl != pageUrl){
+                        ProfileSectionDetailsPageScriptAgent.webPageData = null;
+                        // ProfileSectionDetailsPageScriptAgent.updateUi(props);
+                        this.pageUrl = pageUrl;
+                    }
+
+                    ProfileSectionDetailsPageScriptAgent.runTabDataExtractionProcess(props);
 
                 }
                 else{

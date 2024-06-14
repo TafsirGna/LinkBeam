@@ -32,6 +32,7 @@ import {
     isLinkedinFeed,
     isLinkedinProfilePage,
     isLinkedinFeedPostPage,
+    isLinkedinProfileSectionDetailsPage,
     deactivateTodayReminders,
     popularityValue,
 } from "../popup/Local_library";
@@ -680,18 +681,34 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
 // Script for processing linkedin data
 
-async function processTabData(tabData){
+function processTabData(tabData){
     
     console.log("linkedInData : ", tabData);
 
     if (tabData.extractedData){
         if (isLinkedinFeed(tabData.tabUrl)){ // feed data
-            await recordFeedVisit(tabData);
+            recordFeedVisit(tabData);
         }
         else if (isLinkedinProfilePage(tabData.tabUrl)){ // profile data
-            await recordProfileVisit(tabData);
+            if (isLinkedinProfileSectionDetailsPage(tabData.tabUrl)){
+                enrichProfileSectionData(tabData);
+            }
+            else{
+                recordProfileVisit(tabData);
+            }
         }
     }
+
+}
+
+async function enrichProfileSectionData(tabData){
+
+    const url = tabData.tabUrl.slice(tabData.tabUrl.indexOf("linkedin.com"), tabData.tabUrl.indexOf("details/"));
+
+    var lastView = await db.visits.where("url").anyOf([url, encodeURI(url), decodeURI(url)]).last();
+    lastView.profileData[tabData.extractedData.label] = tabData.extractedData.list;
+
+    await db.visits.update(lastView.id, lastView);
 
 }
 
@@ -1041,7 +1058,7 @@ async function processMessageEvent(message, sender, sendResponse){
 
     console.log("Message received : ", message);
 
-    // testUpDb();
+    // await testUpDb();
 
     // Script for getting all the visits done so far
     switch(message.header){
@@ -1054,7 +1071,7 @@ async function processMessageEvent(message, sender, sendResponse){
             
             // Saving the new notification setting state
             var tabData = message.data;
-            await processTabData(tabData);
+            processTabData(tabData);
             break;
         }
 
@@ -1246,3 +1263,14 @@ async function fetchPostViews(props){
     }
 
 }
+
+// async function testUpDb(){
+
+//     await db.feedPosts.filter(post => true).modify(post => {
+//         if (post.date){
+//             post.estimatedDate = post.date;
+//             delete post.date;
+//         }
+//     });
+
+// }
