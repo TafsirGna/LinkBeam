@@ -39,6 +39,9 @@ import {
 } from "react-bootstrap";
 import { db } from "../../db";
 import FeedRecurrentProfileListItemView, { totalInteractions } from "./FeedRecurrentProfileListItemView";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import FeedProfilesNetworkGraphChart from "./charts/FeedProfilesNetworkGraphChart";
 
 export default class FeedDashRecurrentProfilesSectionView extends React.Component{
 
@@ -46,6 +49,7 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
     super(props);
     this.state = {
       profiles: null,
+      profilesNetworkChartModalShow: false,
     };
 
     this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
@@ -67,6 +71,9 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
   componentWillUnmount() {
 
   }
+
+  handleProfilesNetworkChartModalClose = () => this.setState({profilesNetworkChartModalShow: false});
+  handleProfilesNetworkChartModalShow = () => this.setState({profilesNetworkChartModalShow: true});
 
   async setMostActiveUsers(){
 
@@ -157,7 +164,7 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
               </span>
             </OverlayTrigger>
 
-            {/*<div class="dropdown float-end bd-gray">
+            <div class="dropdown float-end bd-gray">
               <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                 <LayersIcon 
                   size="18" 
@@ -165,16 +172,17 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
               </div>
               <ul class="dropdown-menu shadow-lg">
                 <li>
-                  <a class="dropdown-item small" href="#" onClick={null}>
+                  <a class="dropdown-item small" href="#" onClick={this.handleProfilesNetworkChartModalShow}>
                     <BarChartIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Bar chart race
-                    <span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>
+                    {/*Bar chart race*/}
+                    Profiles Network Graph
+                    {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
                   </a>
                 </li>
               </ul>
-            </div>*/}
+            </div>
           </h6>
 
           { !this.state.profiles 
@@ -201,6 +209,27 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
               </>}
 
         </div>
+
+
+        <Modal 
+          show={this.state.profilesNetworkChartModalShow} 
+          onHide={this.handleProfilesNetworkChartModalClose}
+          size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Network Graph</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            <FeedProfilesNetworkGraphChart
+              objects={this.props.objects}/>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleProfilesNetworkChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
       </>
     );

@@ -213,7 +213,8 @@ export default class PostViewListItemView extends React.Component{
                   class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
                   href={this.props.object.category 
                           ? (this.props.object.initiator.url ? this.props.object.initiator.url : appParams.LINKEDIN_FEED_URL())
-                          : this.props.object.feedPost.author.url}>
+                          : this.props.object.feedPost.author.url}
+                  target="_blank">
                   <OverlayTrigger 
                     trigger="hover" 
                     placement="top" 
@@ -258,7 +259,8 @@ export default class PostViewListItemView extends React.Component{
                           alt=""/>
                         <a 
                           class="text-decoration-none text-muted"
-                          href={this.props.object.feedPost.author.url}>
+                          href={this.props.object.feedPost.author.url}
+                          target="_blank">
                           {this.props.object.feedPost.author.name}
                         </a>
                       </span>

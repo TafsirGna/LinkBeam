@@ -19,7 +19,7 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './FeedPostCreatOccurCandleStickChart.css'*/
+/*import './FeedPostCreatOccurStackedBarChart.css'*/
 import React from 'react';
 import {
   Chart as ChartJS,
@@ -61,7 +61,7 @@ ChartJS.register(
   Colors,
 );
 
-export default class FeedPostCreatOccurCandleStickChart extends React.Component{
+export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -112,11 +112,11 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
 
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
 
-        if (!feedPost.date){
+        if (!feedPost.estimatedDate){
           continue;
         }
 
-        minDate = LuxonDateTime.fromISO(feedPost.date) < minDate ? LuxonDateTime.fromISO(feedPost.date) : minDate;
+        minDate = LuxonDateTime.fromISO(feedPost.estimatedDate) < minDate ? LuxonDateTime.fromISO(feedPost.estimatedDate) : minDate;
 
         feedPost.views = [feedPostView];
         var firstView = await db.feedPostViews.where({feedPostId: feedPostView.feedPostId}).first()
@@ -125,17 +125,11 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
 
         feedPosts.push(feedPost);
 
-        data[0].push({
-          x: new Date(feedPost.date).valueOf().toString(),
-          y: [feedPost.date.split("T")[0], feedPost.firstFeedOccurence.split("T")[0]], 
-        });
+        data[0].push(feedPost.estimatedDate.split("T")[0]);
 
-        data[1].push({
-          x: new Date(feedPost.date).valueOf().toString(),
-          y: [feedPost.firstFeedOccurence.split("T")[0], this.props.rangeDates.end], 
-        });
+        data[1].push(feedPost.firstFeedOccurence.split("T")[0]);
 
-        labels.push(new Date(feedPost.date).valueOf().toString());
+        labels.push(new Date(feedPost.estimatedDate).valueOf().toString());
 
       }
 
@@ -149,7 +143,7 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
         scales: {
           x: {
             beginAtZero: true,
-            // stacked: true,
+            stacked: true,
           },
           y: {
             position: "left",
@@ -159,7 +153,7 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
             },
             min: minDate.toFormat("yyyy-MM-dd"),
             max: this.props.rangeDates.end,
-            // stacked: true,
+            stacked: true,
             reverse: true,
           }
         },
@@ -173,14 +167,14 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
                 }
             }
           },
-          tooltip: {
-            callbacks: {
-              label: ((tooltipItem, data) => {
-                // console.log(tooltipItem);
-                return `${tooltipItem.dataset.label} [${tooltipItem.raw.y[0]} - ${tooltipItem.raw.y[1]}]`;
-              })
-            }
-          }
+          // tooltip: {
+          //   callbacks: {
+          //     label: ((tooltipItem, data) => {
+          //       // console.log(tooltipItem);
+          //       return `${tooltipItem.dataset.label} [${tooltipItem.raw.y[0]} - ${tooltipItem.raw.y[1]}]`;
+          //     })
+          //   }
+          // }
         }
       },
       startDateLinePlugin: {
@@ -203,7 +197,7 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
       }
     }, () => {
 
-      const datasetLabels = ["Creation -> First occurence", "First occurence -> now"];
+      const datasetLabels = ["Estimated creation date", "First occurence date"];
       const chartColors = getChartColors(datasetLabels.length);
       const datasets = datasetLabels.map((label, index) => ({
         label: label,
@@ -211,14 +205,14 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
         backgroundColor: [chartColors.borders[index]]/*chartColors.backgrounds*/,
         borderColor: [chartColors.borders[index]],
         borderWidth: 1,
-        borderSkipped: false,
+        // borderSkipped: false,
         // borderRadius: 10,
-        barPercentage: .85,
+        // barPercentage: .85,
       }))
 
       this.setState({
         barData: {
-          // labels,
+          labels,
           datasets: datasets,
         },
       });
@@ -246,6 +240,14 @@ export default class FeedPostCreatOccurCandleStickChart extends React.Component{
   render(){
     return (
       <>
+
+        { !this.state.barData && <div class="text-center"><div class="mt-4"><div class="spinner-border spinner-border-sm text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    {/*<p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>*/}
+                  </div>
+                </div>}
+
         { this.state.barData && <div> 
                                   <Bar 
                                       ref={this.state.chartRef}

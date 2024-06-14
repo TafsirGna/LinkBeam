@@ -746,7 +746,7 @@ async function recordFeedVisit(tabData){
                         ? post.content.media
                         : null) 
                     : null,
-            date: post.content.date,
+            estimatedDate: post.content.estimatedDate,
             references: post.content.references
                             ? (post.content.references.length
                                     ? post.content.references
@@ -765,7 +765,7 @@ async function recordFeedVisit(tabData){
                             ? post.content.subPost.media
                             : null)
                         : null,
-                date: post.content.subPost.date,
+                estimatedDate: post.content.subPost.estimatedDate,
                 references: post.content.subPost.references
                                 ? (post.content.subPost.references.length
                                         ? post.content.subPost.references

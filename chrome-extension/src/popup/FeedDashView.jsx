@@ -44,7 +44,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
-import FeedPostCreatOccurCandleStickChart from "./widgets/charts/FeedPostCreatOccurCandleStickChart";
+import FeedPostCreatOccurStackedBarChart from "./widgets/charts/FeedPostCreatOccurStackedBarChart";
 import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
 import FeedDashRecurrentProfilesSectionView from "./widgets/FeedDashRecurrentProfilesSectionView";
 import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
@@ -80,7 +80,7 @@ export default class FeedDashView extends React.Component{
       activeListIndex: 0,
       allVisitsPostCount: 0,
       hashtagCount: null,
-      postCandleStickChartModalShow: false,
+      postStackedBarChartModalShow: false,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
@@ -265,8 +265,8 @@ export default class FeedDashView extends React.Component{
     this.setState({activeListIndex: index});
   }
 
-  handlePostCandleStickChartModalClose = () => this.setState({postCandleStickChartModalShow: false});
-  handlePostCandleStickChartModalShow = () => this.setState({postCandleStickChartModalShow: true});
+  handlePostStackedBarChartModalClose = () => this.setState({postStackedBarChartModalShow: false});
+  handlePostStackedBarChartModalShow = () => this.setState({postStackedBarChartModalShow: true});
 
   render(){
     return (
@@ -393,11 +393,11 @@ export default class FeedDashView extends React.Component{
                             </div>
                             <ul class="dropdown-menu shadow-lg">
                               <li>
-                                <a class="dropdown-item small" href="#" onClick={this.handlePostCandleStickChartModalShow}>
+                                <a class="dropdown-item small" href="#" onClick={this.handlePostStackedBarChartModalShow}>
                                   <BarChartIcon
                                     size="15"
                                     className="me-2 text-muted"/>
-                                  Post candlestick chart
+                                  Post Creat/Occur bar chart
                                   {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
                                 </a>
                               </li>
@@ -496,15 +496,15 @@ export default class FeedDashView extends React.Component{
 
 
       <Modal 
-        show={this.state.postCandleStickChartModalShow} 
-        onHide={this.handlePostCandleStickChartModalClose}
+        show={this.state.postStackedBarChartModalShow} 
+        onHide={this.handlePostStackedBarChartModalClose}
         size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Post creation and first feed occurence dates chart</Modal.Title>
         </Modal.Header>
         <Modal.Body>
 
-          <FeedPostCreatOccurCandleStickChart
+          <FeedPostCreatOccurStackedBarChart
             rangeDates={{
               start: this.state.startDate,
               end: this.state.endDate,
@@ -513,7 +513,7 @@ export default class FeedDashView extends React.Component{
 
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" size="sm" onClick={this.handlePostCandleStickChartModalClose} className="shadow">
+          <Button variant="secondary" size="sm" onClick={this.handlePostStackedBarChartModalClose} className="shadow">
             Close
           </Button>
         </Modal.Footer>

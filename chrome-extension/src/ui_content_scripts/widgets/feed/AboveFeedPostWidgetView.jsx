@@ -457,7 +457,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                     poster: htmlEl.poster ? htmlEl.poster : null,
                                  }))
                           : null,
-                  date: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                  estimatedDate: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                                   .querySelector(".update-components-actor__sub-description-link .visually-hidden")
                                           ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                                   .querySelector(".update-components-actor__sub-description-link .visually-hidden")
