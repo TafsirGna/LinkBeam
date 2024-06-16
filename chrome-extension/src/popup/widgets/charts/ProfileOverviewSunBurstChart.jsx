@@ -4,7 +4,6 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { saveCanvas, dbDataSanitizer } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
-import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 
 export default class ProfileOverviewSunBurstChart extends React.Component{

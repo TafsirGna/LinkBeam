@@ -96,7 +96,7 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
   async setBarData(){
 
-    var data = [[], []], 
+    var data = [/*[], */[], []], 
         minDate = LuxonDateTime.now(),
         feedPosts = [],
         labels = [];
@@ -125,7 +125,9 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
         feedPosts.push(feedPost);
 
-        data[0].push(feedPost.estimatedDate.split("T")[0]);
+        data[0].push(feedPost.estimatedDate.split("T")[0] < feedPost.firstFeedOccurence.split("T")[0] 
+                      ? feedPost.estimatedDate.split("T")[0]
+                      : feedPost.firstFeedOccurence.split("T")[0]);
 
         data[1].push(feedPost.firstFeedOccurence.split("T")[0]);
 
@@ -134,6 +136,8 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
       }
 
     }
+
+    // data[0] = Array.from({length: feedPosts.length}, () => minDate.toFormat("yyyy-MM-dd"));
 
     this.setState({
       feedPosts: feedPosts,
@@ -198,7 +202,8 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
     }, () => {
 
       const datasetLabels = ["Estimated creation date", "First occurence date"];
-      const chartColors = getChartColors(datasetLabels.length);
+      const chartColors = getChartColors(datasetLabels.length - 1);
+      chartColors.borders = ["rgba(255, 255, 255)"].concat(chartColors.borders);
       const datasets = datasetLabels.map((label, index) => ({
         label: label,
         data: data[index],
@@ -265,7 +270,7 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                                     </Modal.Header>
                                     <Modal.Body>
 
-                                      { this.state.selectedFeedPostIndex 
+                                      { this.state.selectedFeedPostIndex != null 
                                           && <ActivityListView 
                                                 objects={[{
                                                   user: {

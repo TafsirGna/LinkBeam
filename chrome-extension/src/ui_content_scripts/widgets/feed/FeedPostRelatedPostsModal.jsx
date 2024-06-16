@@ -34,7 +34,6 @@ import { Spinner } from "flowbite-react";
 // import { Button, Modal } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
 
-
 export default class FeedPostRelatedPostsModal extends React.Component{
 
   constructor(props){
@@ -42,27 +41,32 @@ export default class FeedPostRelatedPostsModal extends React.Component{
     this.state = {
       show: false,
       viewIndex: 0,
+      extractedPostData: null,
+      tabsData: Array.from({length: 3}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} }),
     };
 
     this.startListening = this.startListening.bind(this);
     this.setViewIndex = this.setViewIndex.bind(this);
+    this.requestTabData = this.requestTabData.bind(this);
 
   }
 
   componentDidMount() {
 
+    console.log("nnn 222");
+
     this.startListening();
 
     eventBus.on(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, (data) => {
+
+        console.log("nnn 333");
         
         this.setState({
           show: true, 
+          extractedPostData: data.extractedPostData,
         }, () => {
 
-          /*chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, action: "read", objectStoreName: "feedPostViews", props: {uid: data.postUid}}}, (response) => {
-            // Got an asynchronous response with the data from the service worker
-            console.log("Post views data request sent !");
-          });*/
+          this.requestTabData({offset: 0, viewIndex: 0, url: data.extractedPostData.content.author.url});
 
         });
 
@@ -82,17 +86,43 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
       switch(message.header){
 
-        /*case messageMeta.header.CRUD_OBJECT_RESPONSE:{
+        case "PREVIOUS_RELATED_POSTS_LIST":{
 
-          if (message.data.objectStoreName == "feedPostViews"){
-            var feedPostViews = message.data.object.views;
-            this.setChartData(feedPostViews);
-            this.setMetricChangeValues(feedPostViews);
+          switch(message.data.viewIndex){
+            case 0:{
+              var items = this.state.tabsData[message.data.viewIndex].items;
+              if (!items){
+                items = message.data.objects;
+              }
+              else{
+                items = items.concat(message.data.objects);
+              }
+              var tabsData = this.state.tabsData;
+              tabsData[index].items = items;
+              this.setState({tabsData: tabsData});
+              break;
+            }
+            case 1:{
+              break;
+            }
+            case 2:{
+              var items = this.state.tabsData[message.data.viewIndex].items;
+              if (!items){
+                items = message.data.objects;
+              }
+              else{
+                items = items.concat(message.data.objects);
+              }
+              var tabsData = this.state.tabsData;
+              tabsData[index].items = items;
+              this.setState({tabsData: tabsData});
+              break;
+            }
           }
 
           break;
 
-        }*/
+        }
 
       }
 
@@ -106,10 +136,46 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
   }
 
-  handleModalClose = () => { this.setState({show: false, viewIndex: 0}); }
+  handleModalClose = () => { 
+    this.setState({
+      show: false, 
+      viewIndex: 0, 
+      tabsData: Array.from({length: 3}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} }),
+    }); 
+  }
 
   setViewIndex(index){
-    this.setState({viewIndex: index});
+    this.setState({viewIndex: index}, () => {
+      if (!this.state.tabsData[index].items){
+
+        var payload = null;
+        switch(index){
+          case 0:{
+            payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.content.author.url};
+            break;
+          }
+          case 1:{
+            // payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.content.author.url};
+            break;
+          }
+          case 2:{
+            payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.initiator.url};
+            break;
+          }
+        }
+
+        this.requestTabData(payload);
+      }
+    });
+  }
+
+  requestTabData(payload){
+
+    chrome.runtime.sendMessage({header: "PREVIOUS_RELATED_POSTS", data: {tabId: this.props.tabId, payload: payload}}, (response) => {
+      // Got an asynchronous response with the data from the service worker
+      console.log("Previous related posts data request sent !");
+    });
+
   }
 
   render(){
@@ -120,29 +186,63 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             
             <div class="p-4">
 
-              {/*{ !this.state.data 
+              { !this.state.extractedPostData
                   && <div class="text-center">
                       <Spinner aria-label="Default status example" />
                     </div>}
 
-              { this.state.data
+              {/*{ this.state.data
                     && <div>
                           
                       </div> }*/}
 
-              <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-                  <ul class="flex flex-wrap -mb-px">
-                      <li class="me-2" onClick={() => {this.setViewIndex(0)}}>
-                          <a href="#" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Profile</a>
-                      </li>
-                      <li class="me-2" onClick={() => {this.setViewIndex(1)}}>
-                          <a href="#" class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500" aria-current="page">Tags</a>
-                      </li>
-                      <li class="me-2" onClick={() => {this.setViewIndex(2)}}>
-                          <a href="#" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">fff</a>
-                      </li>
-                  </ul>
-              </div>
+              { this.state.extractedPostData 
+                  && <div>
+                      <div class="text-base font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                        <ul class="flex flex-wrap -mb-px">
+                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(0)}}>
+                                <a
+                                  class={ this.state.viewIndex == 0 
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                  {this.state.extractedPostData.content.author.name}
+                                </a>
+                            </li>
+                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                                <a 
+                                  class={ this.state.viewIndex == 1 
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
+                                  /*aria-current="page"*/>
+                                  Tags
+                                </a>
+                            </li>
+                            { this.state.extractedPostData.initiator
+                                && this.state.extractedPostData.initiator.name 
+                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
+                                    <a 
+                                      class={ this.state.viewIndex == 2
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                      {this.state.extractedPostData.initiator.name}
+                                    </a>
+                                </li>}
+                        </ul>
+                    </div>
+
+                    { this.state.viewIndex == 0 
+                        && <div>
+                      </div>}
+
+                    { this.state.viewIndex == 1
+                        && <div>
+                      </div>}
+
+                    { this.state.viewIndex == 2
+                        && <div>
+                      </div>}
+
+                  </div>}
 
 
             </div>
@@ -162,3 +262,27 @@ export default class FeedPostRelatedPostsModal extends React.Component{
     );
   }
 }
+
+// function PreviousPostsList(props){
+//   return <ol class="relative border-s border-gray-200 dark:border-gray-700">                  
+//             { props.objects.map(object => (<li class="mb-10 ms-6">
+//                                                         <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
+//                                                             <img 
+//                                                               class="rounded-full shadow-lg" 
+//                                                               src={props.viewIndex == 0 
+//                                                                     ? props.extractedPostData.content.author.picture
+//                                                                     : (props.viewIndex == 2 
+//                                                                         ? props.extractedPostData
+//                                                                         : object.profile.picture)} 
+//                                                               alt="Thomas Lean image"/>
+//                                                         </span>
+//                                                         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
+//                                                             <div class="items-center justify-between mb-3 sm:flex">
+//                                                                 <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">{LuxonDateTime.fromISO(object.date).toRelative()}</time>
+//                                                                 <div class="text-sm font-normal text-gray-500 lex dark:text-gray-300">Thomas Lean commented on  <a href="#" class="font-semibold text-gray-900 dark:text-white hover:underline">Flowbite Pro</a></div>
+//                                                             </div>
+//                                                             <div class="p-3 text-xs italic font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300">{object.text}</div>
+//                                                         </div>
+//                                                     </li>)) }
+//         </ol>
+// }

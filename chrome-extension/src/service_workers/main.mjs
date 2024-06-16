@@ -1131,6 +1131,17 @@ async function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case "PREVIOUS_RELATED_POSTS":{
+
+            const posts = await getPreviousRelatedPosts(message.data.payload);
+
+            chrome.tabs.sendMessage(message.data.tabId, {header: "PREVIOUS_RELATED_POSTS_LIST", data: {objects: posts, viewIndex: message.data.payload.viewIndex}}, (response) => {
+                console.log('Previous related posts response sent', response, posts);
+            });
+
+            break;
+        }
+
         case messageMeta.header.CRUD_OBJECT:{
             // acknowledge receipt
             sendResponse({
@@ -1157,6 +1168,62 @@ async function processMessageEvent(message, sender, sendResponse){
         }
 
     }
+}
+
+async function getPreviousRelatedPosts(payload){
+
+    var posts = [];
+    const limit = 10;
+
+    if (Object.hasOwn(payload, "url")){
+
+        var url = payload.url.split("?")[0]/*.slice(payload.url.indexOf("linkedin.com"))*/;
+
+        // feed posts, this user authored
+        const feedPosts = await db.feedPosts
+                                  .filter(post => post.author.url == url)
+                                  .offset(payload.offset)
+                                  .limit(limit)
+                                  .toArray();
+
+        var link = null;
+
+        for (const feedPost of feedPosts){
+
+            if (feedPost.uid){
+                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+            }
+            else{
+                const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
+                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+            }
+
+            posts.push({
+                text: feedPost.text,
+                link: link,
+                date: feedPost.estimatedDate,
+            });
+        }
+
+        // feed post views, this given user triggered
+        const feedPostViews = await db.feedPostViews
+                                  .filter(view => view.initiator && view.initiator.url == url)
+                                  .offset(payload.offset)
+                                  .limit(limit)
+                                  .toArray();
+
+        for (const feedPostView of feedPostViews){
+            posts.push({
+                text: (await db.feedPosts.where({id: feedPostView.feedPostId}).first()).text,
+                link: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`,
+                date: feedPostView.date,
+            });
+        }
+
+    }
+
+    return posts;
+
 }
 
 async function crudFeedPostViews(action, props){

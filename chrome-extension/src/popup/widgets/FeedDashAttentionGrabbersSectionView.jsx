@@ -38,6 +38,9 @@ import {
   // Popover, 
 } from "react-bootstrap";
 import { db } from "../../db";
+import AttentionGrabbersAnimatedTreeMapChart from "./charts/AttentionGrabbersAnimatedTreeMapChart";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 export default class FeedDashAttentionGrabbersSectionView extends React.Component{
 
@@ -45,6 +48,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
     super(props);
     this.state = {
       profiles: null,
+      animatedTreeMapChartModalShow: false,
     };
 
     this.setAttentionGrabbers = this.setAttentionGrabbers.bind(this);
@@ -123,6 +127,9 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
   }
 
+  handleAnimatedTreeMapChartModalClose = () => {this.setState({animatedTreeMapChartModalShow: false})};
+  handleAnimatedTreeMapChartModalShow = () => {this.setState({animatedTreeMapChartModalShow: true})};
+
   render(){
     return (
       <>
@@ -139,7 +146,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
               </span>
             </OverlayTrigger>
 
-            {/*<div class="dropdown float-end bd-gray">
+            <div class="dropdown float-end bd-gray">
               <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                 <LayersIcon 
                   size="18" 
@@ -150,16 +157,16 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                   <a 
                     class="dropdown-item small" 
                     href="#" 
-                    onClick={null}>
+                    onClick={this.handleAnimatedTreeMapChartModalShow}>
                     <BarChartIcon 
                       size="15" 
                       className="me-2 text-muted"/>
-                    Bar chart race
-                    <span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>
+                    Treemap chart
+                    {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
                   </a>
                 </li>
               </ul>
-            </div>*/}
+            </div>
           </h6>
 
           { !this.state.profiles 
@@ -217,6 +224,23 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
               </>}
 
         </div>
+
+        <Modal show={this.state.animatedTreeMapChartModalShow} onHide={this.handleAnimatedTreeMapChartModalClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Attention Grabbers Treemap chart</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            {/*<AttentionGrabbersAnimatedTreeMapChart
+              objects={this.props.objects}/>*/}
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleAnimatedTreeMapChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
       </>
     );

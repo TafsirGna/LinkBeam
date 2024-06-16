@@ -44,6 +44,7 @@ import {
 } from "react-bootstrap";
 import HashtagTimelineChart from "./charts/HashtagTimelineChart";
 import HashtagTangledTreeChart from "./charts/HashtagTangledTreeChart";
+import HashtagAnimatedTreeMapChart from "./charts/HashtagAnimatedTreeMapChart";
 import { db } from "../../db";
 
 export default class FeedDashHashtagsSectionView extends React.Component{
@@ -52,6 +53,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
     super(props);
     this.state = {
       hashtagInfosModalShow: false,
+      animatedTreeMapChartModalShow: false,
       selectedReference: null,
       hashtagInfosModalSelectedView: 0,
       hashtags: null,
@@ -84,6 +86,9 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
   handleHashtagInfosModalClose = () => {this.setState({hashtagInfosModalShow: false})};
   handleHashtagInfosModalShow = (reference) => {this.setState({selectedReference: reference, hashtagInfosModalShow: true})};
+
+  handleAnimatedTreeMapChartModalClose = () => {this.setState({animatedTreeMapChartModalShow: false})};
+  handleAnimatedTreeMapChartModalShow = () => {this.setState({animatedTreeMapChartModalShow: true})};
 
   async setHashtags(){
 
@@ -144,7 +149,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
         <div class="my-2 p-3 bg-body rounded shadow border mx-3">
           <h6 class="border-bottom pb-2 mb-0">
             Hashtags
-            {/*<div class="dropdown float-end bd-gray">
+            <div class="dropdown float-end bd-gray">
               <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                 <LayersIcon 
                   size="18" 
@@ -152,15 +157,21 @@ export default class FeedDashHashtagsSectionView extends React.Component{
               </div>
               <ul class="dropdown-menu shadow-lg">
                 <li>
-                  <a class="dropdown-item small" href="#" onClick={this.handleModalShow}>
+                  {/*<a class="dropdown-item small" href="#" onClick={this.handleModalShow}>
                     <BarChartIcon 
                       size="15" 
                       className="me-2 text-muted"/>
                     Graph chart
+                  </a>*/}
+                  <a class="dropdown-item small" href="#" onClick={this.handleAnimatedTreeMapChartModalShow}>
+                    <BarChartIcon 
+                      size="15" 
+                      className="me-2 text-muted"/>
+                    Treemap chart
                   </a>
                 </li>
               </ul>
-            </div>*/}
+            </div>
           </h6>
 
           { !this.state.hashtags 
@@ -181,38 +192,37 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
               { Object.keys(this.state.hashtags).length != 0
                   && <div class="mt-2">
-                     { this.state.hashtags.map(object => (
-                                                                  <div class="dropdown bd-gray d-inline">
-                                                                    <div class="handy-cursor d-inline" data-bs-toggle="dropdown" aria-expanded="false">
-                                                                      <OverlayTrigger
-                                                                        placement="top"
-                                                                        overlay={<ReactTooltip id="tooltip1">{`${object.feedPosts.length} post${object.feedPosts.length > 1 ? "s" : ""} associated`}</ReactTooltip>}
-                                                                      >
-                                                                      <span 
-                                                                        class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill`}>
-                                                                        {`${object.text} (${object.feedPosts.length})`}
-                                                                      </span>
-                                                                      </OverlayTrigger>
-                                                                    </div>
-                                                                    <ul class="dropdown-menu shadow-lg">
-                                                                      <li>
-                                                                        <a class="dropdown-item small" href="#" onClick={() => {this.handleHashtagInfosModalShow(object)}}>
-                                                                          <GridIcon 
-                                                                            size="15"
-                                                                            className="me-2 text-muted"/>
-                                                                          Show more
-                                                                        </a>
-                                                                      </li>
-                                                                      <li>
-                                                                        <a class="dropdown-item small" href={object.url} target="_blank">
-                                                                          <DuplicateIcon 
-                                                                            size="15"
-                                                                            className="me-2 text-muted"/>
-                                                                          View on Linkedin
-                                                                        </a>
-                                                                      </li>
-                                                                    </ul>
-                                                                  </div>))}
+                     { this.state.hashtags.map(object => (<div class="dropdown bd-gray d-inline">
+                                                            <div class="handy-cursor d-inline" data-bs-toggle="dropdown" aria-expanded="false">
+                                                              <OverlayTrigger
+                                                                placement="top"
+                                                                overlay={<ReactTooltip id="tooltip1">{`${object.feedPosts.length} post${object.feedPosts.length > 1 ? "s" : ""} associated`}</ReactTooltip>}
+                                                              >
+                                                              <span 
+                                                                class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill`}>
+                                                                {`${object.text} (${object.feedPosts.length})`}
+                                                              </span>
+                                                              </OverlayTrigger>
+                                                            </div>
+                                                            <ul class="dropdown-menu shadow-lg">
+                                                              <li>
+                                                                <a class="dropdown-item small" href="#" onClick={() => {this.handleHashtagInfosModalShow(object)}}>
+                                                                  <GridIcon 
+                                                                    size="15"
+                                                                    className="me-2 text-muted"/>
+                                                                  Show more
+                                                                </a>
+                                                              </li>
+                                                              <li>
+                                                                <a class="dropdown-item small" href={object.url} target="_blank">
+                                                                  <DuplicateIcon 
+                                                                    size="15"
+                                                                    className="me-2 text-muted"/>
+                                                                  View on Linkedin
+                                                                </a>
+                                                              </li>
+                                                            </ul>
+                                                          </div>))}
                     </div>}
               </>}
 
@@ -274,6 +284,25 @@ export default class FeedDashHashtagsSectionView extends React.Component{
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleHashtagInfosModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+
+        <Modal show={this.state.animatedTreeMapChartModalShow} onHide={this.handleAnimatedTreeMapChartModalClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Hashtags Treemap chart</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            <HashtagAnimatedTreeMapChart
+              objects={this.props.objects}
+              hashtags={this.state.hashtags}/>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleAnimatedTreeMapChartModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

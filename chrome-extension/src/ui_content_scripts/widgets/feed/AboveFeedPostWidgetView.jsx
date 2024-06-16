@@ -402,7 +402,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                         poster: htmlEl.poster ? htmlEl.poster : null,
                       }))
               : null,
-      date: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
+      estimatedDate: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
                     ? this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent
                     : null, LuxonDateTime),
 
@@ -544,8 +544,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   showFeedPostRelatedPostsModal(){
+
+    console.log("nnn 111");
     
-    eventBus.dispatch(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, { postUid: this.props.postUid });
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, { extractedPostData: this.state.extractedPostData });
 
   }
 
@@ -906,7 +908,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           onClick={this.updateReminder}
                                           className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
 
-                                          {Object.hasOwn(this.state.reminder, "id") && <DeleteIcon size="12" className="me-2"/>}
+                                          {Object.hasOwn(this.state.reminder, "id") && <DeletionIcon size="12" className="me-2"/>}
                                           {!Object.hasOwn(this.state.reminder, "id") && <PlusIcon size="12" className="me-2"/>}
 
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
@@ -935,16 +937,17 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       </button>
 
                       {/*Connected posts*/}
-                      {/*<button 
-                        onClick={this.showFeedPostRelatedPostsModal} 
-                        type="button" 
-                        class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
-                        title="Previous related posts"
-                        >
-                        <BranchIcon 
-                            size="14"
-                            className=""/>
-                      </button>*/}
+                      { this.state.extractedPostData 
+                          && <button 
+                              onClick={this.showFeedPostRelatedPostsModal} 
+                              type="button" 
+                              class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                              title="Previous related posts"
+                              >
+                              <BranchIcon 
+                                  size="14"
+                                  className=""/>
+                            </button>}
 
                     </div>
                   </div>
@@ -1037,19 +1040,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
                           </div> }
                 </div>
 
-        { this.props.index == 0 
-            && 
-              <>
+        { !document.querySelector("div.linkbeam-modal-group") 
+            && <div class="linkbeam-modal-group">
 
                 <FeedPostViewsChartModal
                   appSettings={this.props.appSettings}
                   tabId={this.props.tabId}/>
 
                 <FeedPostRelatedPostsModal
-                  appSettings={this.props.appSettings}
-                  tabId={this.props.tabId}/>
+                                  appSettings={this.props.appSettings}
+                                  tabId={this.props.tabId}/>
 
-              </> }
+              </div> }
 
       </>
     );

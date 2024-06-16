@@ -72,8 +72,8 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 				// Adding the marker
 				var newDivTag = document.createElement('div');
 				newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-	      postContainerElement.prepend(newDivTag);
-	      newDivTag.attachShadow({ mode: 'open' });
+			    postContainerElement.prepend(newDivTag);
+			    newDivTag.attachShadow({ mode: 'open' });
 
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
 		            <React.StrictMode>
@@ -84,7 +84,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		              	allKeywords={props.allKeywords}
 		              	visitId={props.visitId}
 		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
-		              	index={index}
+		              	// index={index}
 		              	appSettings={props.appSettings}/>
 		            </React.StrictMode>
 		        );
