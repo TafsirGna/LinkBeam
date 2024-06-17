@@ -29,6 +29,7 @@ import {
   getPostMetricValue,
 } from "../../../popup/Local_library";
 import { BarChartIcon } from "../../../popup/widgets/SVGs";
+import SeeMoreButtonView from "../../../popup/widgets/SeeMoreButtonView";
 import eventBus from "../../../popup/EventBus";
 import { Spinner } from "flowbite-react";
 // import { Button, Modal } from "flowbite-react";
@@ -53,13 +54,9 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
   componentDidMount() {
 
-    console.log("nnn 222");
-
     this.startListening();
 
     eventBus.on(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, (data) => {
-
-        console.log("nnn 333");
         
         this.setState({
           show: true, 
@@ -98,7 +95,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                 items = items.concat(message.data.objects);
               }
               var tabsData = this.state.tabsData;
-              tabsData[index].items = items;
+              tabsData[message.data.viewIndex].items = items;
               this.setState({tabsData: tabsData});
               break;
             }
@@ -114,7 +111,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                 items = items.concat(message.data.objects);
               }
               var tabsData = this.state.tabsData;
-              tabsData[index].items = items;
+              tabsData[message.data.viewIndex].items = items;
               this.setState({tabsData: tabsData});
               break;
             }
@@ -185,6 +182,12 @@ export default class FeedPostRelatedPostsModal extends React.Component{
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             
             <div class="p-4">
+              <div onClick={null} class="text-lg pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                Previous related posts
+              </div>
+            </div>
+
+            <div class="p-4">
 
               { !this.state.extractedPostData
                   && <div class="text-center">
@@ -198,7 +201,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
               { this.state.extractedPostData 
                   && <div>
-                      <div class="text-base font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                      <div class="text-lg font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
                         <ul class="flex flex-wrap -mb-px">
                             <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(0)}}>
                                 <a
@@ -206,6 +209,8 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
                                   {this.state.extractedPostData.content.author.name}
+                                  { this.state.tabsData[0].items 
+                                      && <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[0].items.length}+</span>}
                                 </a>
                             </li>
                             <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
@@ -225,6 +230,8 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
                                       {this.state.extractedPostData.initiator.name}
+                                      { this.state.tabsData[2].items 
+                                        && <span class="bg-blue-100 text-blue-800 text-xs font-medium me-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[2].items.length}+</span>}
                                     </a>
                                 </li>}
                         </ul>
@@ -232,7 +239,18 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
                     { this.state.viewIndex == 0 
                         && <div>
-                      </div>}
+
+                            { !this.state.tabsData[this.state.viewIndex].items 
+                              && <div class="text-center">
+                                                  <Spinner aria-label="Default status example" />
+                                                </div>}
+
+                            { this.state.tabsData[this.state.viewIndex].items
+                                && <PreviousPostsList
+                                    objects={this.state.tabsData[this.state.viewIndex].items}
+                                    extractedPostData={this.state.extractedPostData}
+                                    viewIndex={0}/> }
+                          </div>}
 
                     { this.state.viewIndex == 1
                         && <div>
@@ -240,7 +258,18 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
                     { this.state.viewIndex == 2
                         && <div>
-                      </div>}
+
+                            { !this.state.tabsData[this.state.viewIndex].items 
+                              && <div class="text-center">
+                                                  <Spinner aria-label="Default status example" />
+                                                </div>}
+
+                            { this.state.tabsData[this.state.viewIndex].items 
+                                && <PreviousPostsList
+                                    objects={this.state.tabsData[this.state.viewIndex].items}
+                                    extractedPostData={this.state.extractedPostData}
+                                    viewIndex={2}/> }
+                          </div>}
 
                   </div>}
 
@@ -263,26 +292,52 @@ export default class FeedPostRelatedPostsModal extends React.Component{
   }
 }
 
-// function PreviousPostsList(props){
-//   return <ol class="relative border-s border-gray-200 dark:border-gray-700">                  
-//             { props.objects.map(object => (<li class="mb-10 ms-6">
-//                                                         <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
-//                                                             <img 
-//                                                               class="rounded-full shadow-lg" 
-//                                                               src={props.viewIndex == 0 
-//                                                                     ? props.extractedPostData.content.author.picture
-//                                                                     : (props.viewIndex == 2 
-//                                                                         ? props.extractedPostData
-//                                                                         : object.profile.picture)} 
-//                                                               alt="Thomas Lean image"/>
-//                                                         </span>
-//                                                         <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
-//                                                             <div class="items-center justify-between mb-3 sm:flex">
-//                                                                 <time class="mb-1 text-xs font-normal text-gray-400 sm:order-last sm:mb-0">{LuxonDateTime.fromISO(object.date).toRelative()}</time>
-//                                                                 <div class="text-sm font-normal text-gray-500 lex dark:text-gray-300">Thomas Lean commented on  <a href="#" class="font-semibold text-gray-900 dark:text-white hover:underline">Flowbite Pro</a></div>
-//                                                             </div>
-//                                                             <div class="p-3 text-xs italic font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300">{object.text}</div>
-//                                                         </div>
-//                                                     </li>)) }
-//         </ol>
-// }
+function PreviousPostsList(props){
+  return <div>
+          <ol class="relative border-s border-gray-200 dark:border-gray-700 mt-5 mx-2">                  
+            { props.objects.map(object => (<li class="mb-10 ms-6">
+                                                        <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
+                                                            <img 
+                                                              class="rounded-full shadow-lg" 
+                                                              src={props.viewIndex == 0 
+                                                                    ? props.extractedPostData.content.author.picture
+                                                                    : (props.viewIndex == 2 
+                                                                        ? props.extractedPostData.initiator.picture
+                                                                        : object.profile.picture)} 
+                                                              alt="Thomas Lean image"/>
+                                                        </span>
+                                                        <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
+                                                            <div class="items-center justify-between mb-3 sm:flex">
+                                                                <time class="mb-1 text-base font-normal text-gray-400 sm:order-last sm:mb-0">{LuxonDateTime.fromISO(object.date).toRelative()}</time>
+                                                                <div class="text-xl font-normal text-gray-500 lex dark:text-gray-300">
+                                                                  {props.viewIndex == 0 
+                                                                    ? props.extractedPostData.content.author.name
+                                                                    : (props.viewIndex == 2 
+                                                                        ? props.extractedPostData.initiator.name
+                                                                        : null)}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                              <a href={object.link}>
+                                                                { object.media && <img class="rounded-lg shadow-lg" src={(object.media[0].src ? object.media[0].src : object.media[0].poster)}/>}
+                                                                <div class="mt-1 handy-cursor p-3 text-xl font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300">
+                                                                  {object.text}
+                                                                </div>
+                                                              </a>
+                                                            </div>
+                                                        </div>
+                                                    </li>)) }
+        </ol>
+
+        {/*{ props.objects 
+            && <SeeMoreButtonView
+                  showSeeMoreButton = { !this.state.searchingMedia 
+                                          && (!this.state.allObjects || (this.state.allObjects && this.state.allObjects[this.state.allObjects.length - 1].date.toJSDate() > new Date(this.props.globalData.settings.lastDataResetDate)))
+                                          && !this.state.searchText }
+                  seeMore={this.searchMedia}
+                  showLoadingSpinner={this.state.searchingMedia}
+                  onSeeMoreButtonVisibilityChange={(isVisible) => { if (isVisible) { this.searchMedia() } }}
+                  buttonClass=""/> }*/}
+
+      </div>
+}

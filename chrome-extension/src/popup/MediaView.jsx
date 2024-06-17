@@ -395,19 +395,19 @@ export default class MediaView extends React.Component{
                     <li class="nav-item" onClick={() => {this.setViewIndex(0)}}>
                       <a class={`nav-link ${this.state.viewIndex == 0 ? "active" : ""}`} aria-current="page" href="#">
                         All
-                        { this.state.allObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                        { this.state.allObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
                       </a>
                     </li>
                     <li class="nav-item" onClick={() => {this.setViewIndex(1)}}>
                       <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
                         Photos
-                        { this.state.imageObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.imageObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                        { this.state.imageObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.imageObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
                       </a>
                     </li>
                     <li class="nav-item" onClick={() => {this.setViewIndex(2)}}>
                       <a class={`nav-link ${this.state.viewIndex == 2 ? "active" : ""}`} href="#">
                         Videos
-                        { this.state.videoObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.videoObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}</span>}
+                        { this.state.videoObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.videoObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
                       </a>
                     </li>
                     

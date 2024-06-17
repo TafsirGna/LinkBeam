@@ -26,13 +26,13 @@ export default class SeeMoreButtonView extends React.Component {
   render() {
     return (
 
-    	<div class="text-center my-2 ">
+    	<div class="text-center my-2">
         
           { this.props.showSeeMoreButton 
               && <VisibilitySensor
                   onChange={this.props.onSeeMoreButtonVisibilityChange}
                 >
-                  <button class="btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3 " onClick={this.props.seeMore} type="button">
+                  <button class={this.props.buttonClass ? this.props.buttonClass : "btn btn-light rounded-pill btn-sm fst-italic text-muted border badge shadow-sm mb-3"} onClick={this.props.seeMore} type="button">
                     See more
                   </button>
                 </VisibilitySensor>}

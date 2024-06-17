@@ -61,8 +61,6 @@ import {
 } from "flowbite-react";
 import ReactDOM from 'react-dom/client';
 import styles from "../../styles.min.css";
-import FeedPostViewsChartModal from "./FeedPostViewsChartModal";
-import FeedPostRelatedPostsModal from "./FeedPostRelatedPostsModal";
 
 const freshReminder = () => {
 
@@ -1039,19 +1037,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
                             </div>
                           </div> }
                 </div>
-
-        { !document.querySelector("div.linkbeam-modal-group") 
-            && <div class="linkbeam-modal-group">
-
-                <FeedPostViewsChartModal
-                  appSettings={this.props.appSettings}
-                  tabId={this.props.tabId}/>
-
-                <FeedPostRelatedPostsModal
-                                  appSettings={this.props.appSettings}
-                                  tabId={this.props.tabId}/>
-
-              </div> }
 
       </>
     );

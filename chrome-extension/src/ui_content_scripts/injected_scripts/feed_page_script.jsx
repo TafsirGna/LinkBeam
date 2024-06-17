@@ -30,6 +30,10 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 import AboveFeedPostWidgetView from "../widgets/feed/AboveFeedPostWidgetView";
+import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
+import FeedPostRelatedPostsModal from "../widgets/feed/FeedPostRelatedPostsModal";
+
+const LINKBEAM_ALL_FEED_MODALS = "LINKBEAM_ALL_FEED_MODALS";
 
 export default class FeedPageScriptAgent extends ScriptAgentBase {
 
@@ -38,7 +42,34 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	}
 
 	static updateUi(props){
-		
+
+		if (document.querySelector(".scaffold-finite-scroll__content")
+			&& !document.querySelector(".scaffold-finite-scroll__content")
+					 	.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
+
+			var newDivTag = document.createElement('div');
+			newDivTag.classList.add("LINKBEAM_ALL_FEED_MODALS");
+		    document.querySelector(".scaffold-finite-scroll__content")
+		    		.prepend(newDivTag);
+		    newDivTag.attachShadow({ mode: 'open' });
+
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <div>
+	              	<FeedPostViewsChartModal
+	                  appSettings={props.appSettings}
+	                  tabId={props.tabId}/>
+
+	                <FeedPostRelatedPostsModal
+	                  appSettings={props.appSettings}
+	                  tabId={props.tabId}/>
+	              </div>
+	            </React.StrictMode>
+	        );
+
+		}
+
 	}
 
 	static runTabDataExtractionProcess(props){
@@ -92,6 +123,8 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			}
 
 		});
+
+		this.updateUi(props);
 
 	}
 

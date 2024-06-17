@@ -1202,6 +1202,7 @@ async function getPreviousRelatedPosts(payload){
                 text: feedPost.text,
                 link: link,
                 date: feedPost.estimatedDate,
+                media: feedPost.media,
             });
         }
 
@@ -1211,12 +1212,14 @@ async function getPreviousRelatedPosts(payload){
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
-
+    
         for (const feedPostView of feedPostViews){
+            const feedPost = (await db.feedPosts.where({id: feedPostView.feedPostId}).first());
             posts.push({
-                text: (await db.feedPosts.where({id: feedPostView.feedPostId}).first()).text,
+                text: feedPost.text,
                 link: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`,
                 date: feedPostView.date,
+                media: feedPost.media,
             });
         }
 
