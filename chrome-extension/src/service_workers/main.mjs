@@ -40,6 +40,8 @@ import { v4 as uuidv4 } from 'uuid';
 import Dexie from 'dexie';
 // import { DateTime as LuxonDateTime } from "luxon";
 
+const app_logo_path = "/assets/app_logo.png";
+
 /** The following code is executed on installation
  * and check if the required database already exists.
  * If it does exist, everything runs smoothly from then on  
@@ -299,7 +301,7 @@ async function runTabTimer(visitId){
                 chrome.notifications.create(uuid, {
                   title: 'Linkbeam',
                   message: `Time limit ${mins >= sessionItem.totalDayTime.max ? "" : "almost"} reached`,
-                  iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                  iconUrl: chrome.runtime.getURL(app_logo_path),
                   type: 'basic',
                 });
 
@@ -412,7 +414,7 @@ async function injectDataExtractorParams(tabId, url, visitId){
                 chrome.notifications.create(uuid, {
                     title: 'Linkbeam',
                     message: `${reminders.length} waiting reminder${reminders.length <= 1 ? "" : "s"}`,
-                    iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                    iconUrl: chrome.runtime.getURL(app_logo_path),
                     type: 'basic',
                     buttons: [{
                         title: "Show",
@@ -705,10 +707,25 @@ async function enrichProfileSectionData(tabData){
 
     const url = tabData.tabUrl.slice(tabData.tabUrl.indexOf("linkedin.com"), tabData.tabUrl.indexOf("details/"));
 
+    var profileData = await getProfileDataFrom(db, url);
+
+    if (!profileData || (profileData && JSON.stringify(profileData[tabData.extractedData.label]) == JSON.stringify(tabData.extractedData.list))){
+        return;
+    }
+
     var lastView = await db.visits.where("url").anyOf([url, encodeURI(url), decodeURI(url)]).last();
     lastView.profileData[tabData.extractedData.label] = tabData.extractedData.list;
 
     await db.visits.update(lastView.id, lastView);
+
+    // notify the user of the update
+    const uuid = uuidv4();
+    chrome.notifications.create(uuid, {
+      title: 'Linkbeam',
+      message: `Profile ${tabData.extractedData.label} data updated !`,
+      iconUrl: chrome.runtime.getURL(app_logo_path),
+      type: 'basic',
+    });
 
 }
 
@@ -741,6 +758,7 @@ async function recordFeedVisit(tabData){
             uid: !post.category ? post.id : null,
             author: post.content.author,
             text: post.content.text,
+            innerHtml: post.content.innerHtml,
             media: post.content.media 
                     ? (post.content.media.length
                         ? post.content.media
@@ -760,6 +778,7 @@ async function recordFeedVisit(tabData){
                 uid: post.content.subPost.uid,
                 author: post.content.subPost.author,
                 text: post.content.subPost.text,
+                innerHtml: post.content.subPost.innerHtml,
                 media: post.content.subPost.media
                         ? (post.content.subPost.media.length
                             ? post.content.subPost.media
@@ -1087,7 +1106,7 @@ async function processMessageEvent(message, sender, sendResponse){
                 chrome.notifications.create(uuid, {
                   title: 'Linkbeam',
                   message: `Keyword detected !`,
-                  iconUrl: chrome.runtime.getURL("/assets/app_logo.png"),
+                  iconUrl: chrome.runtime.getURL(app_logo_path),
                   type: 'basic',
                 });
 

@@ -9,6 +9,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dateBetweenRange,
   periodRange,
+  dbDataSanitizer,
 } from "../../Local_library";
 import eventBus from "../../EventBus";
 
@@ -53,18 +54,23 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 
   async setChartData(){
 
-  	if (!this.props.hashtags || !this.props.objects){
+  	if (!this.props.profiles){
   		return;
   	}
+
+    console.log("lllllllllllll 1 : ", this.props.profiles);
 
     var chartData = {
     			keys: [],
     			group: null,
     		},
-    		hashtagData = this.props.hashtags.map(hashtag => ({
-    			name: hashtag.text,
+    		profileData = this.props.profiles.filter(object => object.profile).map(object => ({
+    			name: object.profile.name,
     			values: [],
+    			url: object.profile.url,
     		}));
+
+    console.log("lllllllllllll 2 : ", profileData);
 
     var feedPosts = [];
 
@@ -83,7 +89,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
   	}
   	else{
 
-  		for (const date of periodRange(LuxonDateTime.fromISO(this.props.objects[0].date).set({hours: 0, minutes: 0, seconds: 0}).plus({days: 1}).toJSDate(), LuxonDateTime.fromISO(this.props.objects[this.props.objects.length - 1].date).set({hours: 0, minutes: 0, seconds: 0}).toJSDate(), 1, LuxonDateTime, "days")){
+  		for (const date of periodRange(LuxonDateTime.fromISO(this.props.objects[0].date).set({hours: 0, minutes: 0, seconds: 0}).plus({days: 1}).toJSDate(), LuxonDateTime.fromISO(this.props.objects[this.props.objects.length - 1].date).set({hours: 0, minutes: 0, seconds: 0}).plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days")){
 
   			chartData.keys.push(date.toFormat("MMMM dd"));
 
@@ -96,7 +102,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
   	}
 
 
-  	chartData.group = new Map([["group1", hashtagData]]);
+  	chartData.group = new Map([["group1", profileData]]);
 
     this.setState({
     	chartData: chartData,
@@ -116,7 +122,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 
     async function handleTimeSlotViews(views){
 
-  		for (var hashtag of hashtagData){ hashtag.values.push(!hashtag.values.length ? /*(Math.floor(Math.random() * 1000) + 100)*/ 0 : hashtag.values[hashtag.values.length - 1]);	}
+  		for (var profile of profileData){ profile.values.push(!profile.values.length ? /*(Math.floor(Math.random() * 1000) + 100)*/ 0 : profile.values[profile.values.length - 1]);	}
 
     	for (var feedPostView of views){
 				const feedPostIndex = feedPosts.findIndex(post => post.id == feedPostView.feedPostId);
@@ -129,17 +135,26 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 					feedPost = feedPosts[feedPostIndex];
 				}
 
-				if (!feedPost.references){
-					continue;
+				if (feedPostView.initiator && feedPostView.initiator.name){
+
+					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf("linkedin.com")) == feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf("linkedin.com")));	
+					
+					// i increment the last item's value
+					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 
+					profileData[profileIndex].values[profileData[profileIndex].values.length - 1] += /*(Math.floor(Math.random() * 1000) + 100);*/ feedPostView.timeCount;
+					
+
 				}
 
-				for (var reference of feedPost.references){
-					const hashtagIndex = hashtagData.findIndex(hashtag => hashtag.name == reference.text);	
-					if (hashtagIndex != -1){
-						// i increment the last item's value
-						// hashtagData[hashtagIndex].values[hashtagData[hashtagIndex].values.length - 1]++; // or 
-						hashtagData[hashtagIndex].values[hashtagData[hashtagIndex].values.length - 1] += /*(Math.floor(Math.random() * 1000) + 100);*/ feedPostView.timeCount;
-					}
+				if (feedPost.author && feedPost.author.name){
+
+					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf("linkedin.com")) == feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));	
+					
+					// i increment the last item's value
+					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 
+					profileData[profileIndex].values[profileData[profileIndex].values.length - 1] += /*(Math.floor(Math.random() * 1000) + 100);*/ feedPostView.timeCount;
+				
+
 				}
 
 			}
@@ -150,7 +165,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 
   componentDidUpdate(prevProps, prevState){
 
-  	if (prevProps.objects != this.props.objects){
+  	if (prevProps.profiles != this.props.profiles){
   		this.setChartData();
   	}
 
@@ -396,6 +411,16 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
                 </div>}
 
         <div>
+        	<div>
+					  <div class="alert alert-secondary d-flex align-items-center py-1 fst-italic small shadow-sm" role="alert">
+						  <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:" width="16">
+						    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+						  </svg>
+						  <div>
+						    The numbers displayed below represent the attention got by all the posts that these profiles have either edited or interacted with (in seconds)
+							</div>
+						</div>
+					</div>
 					<div></div>
 					<div id={`chartTag_${this.state.uuid}`} class="shadow-sm rounded border"></div>
 				</div> 

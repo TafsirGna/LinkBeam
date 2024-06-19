@@ -129,9 +129,10 @@ export default class ProfileExperienceSectionView extends React.Component{
             && this.state.doughnutChartsData.length != 0
             && <div>
 
-                <IncompleteSectionMessageView
-                      sectionName="experience"
-                      profile={this.props.profile}/>
+                { this.props.profile.experience[this.props.profile.experience.length - 1] == "incomplete"
+                    && <IncompleteSectionMessageView
+                                      sectionName="experience"
+                                      profile={this.props.profile}/>}
 
                 <div>
                   <div class="container-fluid horizontal-scrollable">

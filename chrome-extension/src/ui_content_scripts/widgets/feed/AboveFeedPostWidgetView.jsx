@@ -392,6 +392,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
       text: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
               ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
               : null,
+      innerHtml: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
+                  ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").innerHTML
+                  : null
       media: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content") 
               ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
                      .map(htmlEl => ({
@@ -429,7 +432,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                                     .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
                           ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                     .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
-                                                    .href
+                                                    .href.split("?")[0]
                           : null,
                     picture: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                     .querySelector(".update-components-actor__image img")
@@ -444,6 +447,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                                   .querySelector(".feed-shared-update-v2__description")
                                                   .textContent
                           : null ,
+                  innerHtml: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                        .querySelector(".feed-shared-update-v2__description")
+                                ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                        .querySelector(".feed-shared-update-v2__description")
+                                                        .innerHTML
+                                : null ,
                   media: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                   .querySelector(".update-components-mini-update-v2__reshared-content")
                           ? Array.from(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")

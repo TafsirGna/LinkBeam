@@ -48,36 +48,30 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 
 	static runTabDataExtractionProcess(props){
 
-		console.log("èèèèèèèè 1 : ");
-
 		var webPageData = null;
 
 		if (!this.webPageData){
-			console.log("èèèèèèèè 2 : ");
 
 			webPageData = this.extractData();
-			this.webPageData = document.querySelector(".scaffold-finite-scroll__content") 
-								? document.querySelector(".scaffold-finite-scroll__content").innerHTML
+			this.webPageData = document.querySelector(".scaffold-layout__main") 
+								? document.querySelector(".scaffold-layout__main").innerHTML
 								: null;
 
 		}
 		else{
-			console.log("èèèèèèèè 3 : ");
 
-			if (document.querySelector(".scaffold-finite-scroll__content")
-					&& document.querySelector(".scaffold-finite-scroll__content").innerHTML != this.webPageData){
+			if (document.querySelector(".scaffold-layout__main")
+					&& document.querySelector(".scaffold-layout__main").innerHTML != this.webPageData){
 				webPageData = this.extractData();
-				this.webPageData = document.querySelector(".scaffold-finite-scroll__content").innerHTML;
+				this.webPageData = document.querySelector(".scaffold-layout__main").innerHTML;
 			}
 
 		}
 
 		if (!webPageData){
-			console.log("èèèèèèèè 4 : ");
 	      return;
 	    }
 
-	    console.log("èèèèèèèè 5 : ", webPageData);
 	    sendTabData(props.tabId, webPageData); 
 
 	}
@@ -86,12 +80,25 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 
 		var extractedData = {label: null, list: []};
 
-		Array.from(document.querySelectorAll(".scaffold-finite-scroll__content [data-view-name='profile-component-entity']")).forEach((liElement) => {
+		Array.from(document.querySelectorAll(".scaffold-layout__main [data-view-name='profile-component-entity']")).forEach((liElement) => {
 
 			if (window.location.href.indexOf("/experience") != -1){
 				if (!extractedData.label){
 					extractedData.label = "experience";
 				}
+
+				// checking if this liElement is a child of a higher level li and then should be passed on
+				var htmlParent = liElement.parentNode, 
+					liCounter = 0;
+				while(!htmlParent.classList.contains("scaffold-layout__main")){
+					if (htmlParent.tagName == "LI"){
+						liCounter++;
+						if (liCounter == 2){ return; }
+					}
+					htmlParent = htmlParent.parentNode;
+				}
+
+				// if not process the liElement
 				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement));
 				return;
 			}

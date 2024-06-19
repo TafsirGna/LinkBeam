@@ -83,7 +83,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
     for (var feedPostView of this.props.objects){
 
       if (feedPostView.initiator && feedPostView.initiator.url){
-        const profileIndex = attentionGrabbers.map(g => g.profile.url).indexOf(feedPostView.initiator.url);
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf("linkedin.com")));
         if (profileIndex == -1){
           attentionGrabbers.push({
             profile: feedPostView.initiator,
@@ -99,7 +99,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       if (feedPostIndex == -1){
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
 
-        const profileIndex = attentionGrabbers.map(g => g.profile.url).indexOf(feedPost.author.url);
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));
         if (profileIndex == -1){
           attentionGrabbers.push({
             profile: feedPost.author,
@@ -114,14 +114,14 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       }
       else{
         var feedPost = feedPosts[feedPostIndex];
-        const profileIndex = attentionGrabbers.map(g => g.profile.url).indexOf(feedPost.author.url);
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));
         attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
       }
 
     }    
 
     attentionGrabbers.sort((a, b) => b.timeCount - a.timeCount);
-    attentionGrabbers = attentionGrabbers.slice(0, 10);
+    // attentionGrabbers = attentionGrabbers.slice(0, 10);
 
     this.setState({profiles: attentionGrabbers});
 
@@ -187,7 +187,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
               { this.state.profiles.length  != 0
                   && <div>
-                     { this.state.profiles.map((object, index) => <div class="d-flex text-body-secondary pt-3 border-bottom">
+                     { this.state.profiles.map((object, index) => index < 10 ? <div class="d-flex text-body-secondary pt-3 border-bottom">
                                                                           <img 
                                                                             src={ object.profile.picture } 
                                                                             alt="twbs" 
@@ -219,7 +219,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                               </div>
 
                                                                           </p>
-                                                                        </div>)}
+                                                                        </div>
+                                                                        : null)}
                     </div>}
               </>}
 
@@ -231,8 +232,9 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
           </Modal.Header>
           <Modal.Body>
 
-            {/*<AttentionGrabbersAnimatedTreeMapChart
-              objects={this.props.objects}/>*/}
+            <AttentionGrabbersAnimatedTreeMapChart
+              objects={this.props.objects}
+              profiles={this.state.profiles}/>
 
           </Modal.Body>
           <Modal.Footer>

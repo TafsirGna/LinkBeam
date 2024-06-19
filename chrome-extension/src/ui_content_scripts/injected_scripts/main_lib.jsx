@@ -1263,7 +1263,7 @@ export function extractExperienceItemData(htmlElement){
     }
 
     // period
-    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)){
+    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?)|Less than a year)$/g)){
       experienceItemData.period = nodeValue;
       // counter++;
       return;
