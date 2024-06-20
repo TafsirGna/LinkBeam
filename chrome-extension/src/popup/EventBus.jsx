@@ -36,6 +36,7 @@ const eventBus = {
   POST_REMINDER_ADDED: "POST_REMINDER_ADDED",
   PAGE_IDLE_SIGNAL: "PAGE_IDLE_SIGNAL",
   SHOW_FEED_POST_RELATED_POSTS_MODAL: "SHOW_FEED_POST_RELATED_POSTS_MODAL",
+  ACTIVE_POST_CONTAINER_ELEMENT: "ACTIVE_POST_CONTAINER_ELEMENT",
 
   on(event, callback) {
     document.addEventListener(event, (e) => callback(e.detail));

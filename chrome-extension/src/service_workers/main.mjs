@@ -939,7 +939,7 @@ async function recordFeedVisit(tabData){
                 count: sessionItem.rankedPostsByPopularity.length,
             };
             await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
-                console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
+                // console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
             });
         }
 
@@ -1338,9 +1338,12 @@ async function fetchPostViews(props){
 
     try{
 
+        const feedPostId = (await db.feedPostViews
+                                    .where({uid: props.uid})
+                                    .first()).feedPostId;
+
         const feedPostViews = await db.feedPostViews
-                                      .where("uid")
-                                      .equals(props.uid)
+                                      .where({feedPostId: feedPostId})
                                       .toArray();
 
         return {views: feedPostViews};

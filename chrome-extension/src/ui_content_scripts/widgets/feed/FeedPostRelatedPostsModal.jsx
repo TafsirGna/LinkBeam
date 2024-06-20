@@ -241,7 +241,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                         && <div>
 
                             { !this.state.tabsData[this.state.viewIndex].items 
-                              && <div class="text-center">
+                              && <div class="text-center mt-5">
                                                   <Spinner aria-label="Default status example" />
                                                 </div>}
 
@@ -254,7 +254,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
                     { this.state.viewIndex == 1
                         && <div>
-                            <div id="alert-border-1" class="flex items-center p-4 mb-4 text-blue-800 border-t-4 border-blue-300 bg-blue-50 dark:text-blue-400 dark:bg-gray-800 dark:border-blue-800" role="alert">
+                            <div id="alert-border-1" class="flex items-center p-4 my-4 text-blue-800 border-t-4 border-blue-300 bg-blue-50 dark:text-blue-400 dark:bg-gray-800 dark:border-blue-800" role="alert">
                               <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                               </svg>
@@ -274,7 +274,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                         && <div>
 
                             { !this.state.tabsData[this.state.viewIndex].items 
-                              && <div class="text-center">
+                              && <div class="text-center mt-5">
                                                   <Spinner aria-label="Default status example" />
                                                 </div>}
 

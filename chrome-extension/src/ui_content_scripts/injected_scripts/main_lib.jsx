@@ -77,40 +77,9 @@ export class ScriptAgentBase {
 
     document.addEventListener("scroll", (event) => {
 
-      if (!this.scrolling){
-        this.scrolling = true;
-
-        if (!this.mouseMoving){
-          eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
-          this.sendTabIdleStatusSignal(false);
-        }
-
-        // I cancel the timer
-        if (this.idlingTimer){
-          clearTimeout(this.idlingTimer);
-          this.idlingTimer = null;
-        }
-
-        // if not done yet 
-        if (this.scrollTimeout){
-          return;
-        }
-
-        // i reset the scrolling value to false
-        this.scrollTimeout = setTimeout(() => {
-
-          this.scrolling = false;
-          // and I reset the timeout 
-          this.scrollTimeout = null;
-
-          if (!this.mouseMoving){
-            this.startIdlingTimer();
-          }
-
-        }, 
-        appParams.TIMER_VALUE_1);
-
-      }
+      this.scrollEventHandler1();
+      
+      this.scrollEventHandler2();
 
     });
 
@@ -158,6 +127,46 @@ export class ScriptAgentBase {
     // };
 
 	}
+
+  scrollEventHandler1(){
+
+    if (!this.scrolling){
+        
+      this.scrolling = true;
+
+      if (!this.mouseMoving){
+        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
+        this.sendTabIdleStatusSignal(false);
+      }
+
+      // I cancel the timer
+      if (this.idlingTimer){
+        clearTimeout(this.idlingTimer);
+        this.idlingTimer = null;
+      }
+
+      // if not done yet 
+      if (this.scrollTimeout){
+        return;
+      }
+
+      // i reset the scrolling value to false
+      this.scrollTimeout = setTimeout(() => {
+
+        this.scrolling = false;
+        // and I reset the timeout 
+        this.scrollTimeout = null;
+
+        if (!this.mouseMoving){
+          this.startIdlingTimer();
+        }
+
+      }, 
+      appParams.TIMER_VALUE_1);
+
+    }
+
+  }
 
   startIdlingTimer(){
 

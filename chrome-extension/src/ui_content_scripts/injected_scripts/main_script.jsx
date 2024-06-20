@@ -54,6 +54,25 @@ class MainScriptAgent extends ScriptAgentBase {
         
     }
 
+    scrollEventHandler2(){
+    
+        if (isLinkedinFeed(this.pageUrl)){
+            FeedPageScriptAgent.scrollEventHandler();
+        }
+        else if (isLinkedinProfilePage(this.pageUrl)){
+            if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
+                // ProfileSectionDetailsPageScriptAgent.scrollEventHandler(props);
+            }
+            else{
+                // ProfilePageScriptAgent.scrollEventHandler(props);
+            }
+        }
+        else if (isLinkedinFeedPostPage(this.pageUrl)){
+            // FeedPostPageScriptAgent.scrollEventHandler(props);
+        }
+
+    }
+
     updateUi(){
 
         const props = {
@@ -63,14 +82,14 @@ class MainScriptAgent extends ScriptAgentBase {
             tabId: this.tabId,
             allKeywords: this.allKeywords,
             highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
-        }
+        };
         
         if (isLinkedinFeed(this.pageUrl)){
             FeedPageScriptAgent.updateUi(props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
             if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
-                // TODO
+                // ProfileSectionDetailsPageScriptAgent.updateUi(props);
             }
             else{
                 ProfilePageScriptAgent.updateUi(props);
@@ -116,8 +135,6 @@ class MainScriptAgent extends ScriptAgentBase {
             else if (isLinkedinProfilePage(pageUrl)){
 
                 if (isLinkedinProfileSectionDetailsPage(pageUrl)){
-
-                    console.log("<<<<<<<<<<<<<< 1 : ");
 
                     if (this.pageUrl != pageUrl){
                         ProfileSectionDetailsPageScriptAgent.webPageData = null;

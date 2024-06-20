@@ -143,6 +143,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   componentDidMount() {
 
+    eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
+      this.setState({
+        postHtmlElementVisible: (this.props.postUid == data.uid),
+      });
+    });
+
     chrome.storage.onChanged.addListener(((changes, namespace) => {
     
       if (namespace != "session" || this.state.dbId == null){
@@ -205,13 +211,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
     }
 
     this.setState({postHtmlElement: postHtmlElement}, () => {
-
-      document.addEventListener("scroll", (event) => {
-
-        const visible = isElVisible(this.state.postHtmlElement);
-        this.setState({postHtmlElementVisible: visible});
-
-      });
 
       // Screen this post for all contained keywords
       this.checkAndHighlightKeywordsInPost();
@@ -394,7 +393,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
               : null,
       innerHtml: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
                   ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").innerHTML
-                  : null
+                  : null,
       media: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content") 
               ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
                      .map(htmlEl => ({
@@ -537,6 +536,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     eventBus.remove(eventBus.TIMER_DISPLAY_UPDATED);
     eventBus.remove(eventBus.PAGE_IDLE_SIGNAL);
+    eventBus.remove(eventBus.ACTIVE_POST_CONTAINER_ELEMENT);
 
     if (this.state.timerInterval){
       this.clearTimer();
