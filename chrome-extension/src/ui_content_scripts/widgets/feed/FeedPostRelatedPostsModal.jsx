@@ -32,7 +32,6 @@ import { BarChartIcon } from "../../../popup/widgets/SVGs";
 import SeeMoreButtonView from "../../../popup/widgets/SeeMoreButtonView";
 import eventBus from "../../../popup/EventBus";
 import { Spinner } from "flowbite-react";
-// import { Button, Modal } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
 
 export default class FeedPostRelatedPostsModal extends React.Component{
@@ -183,6 +182,11 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             
             <div class="p-4">
               <div onClick={null} class="text-lg pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+                <img 
+                  width="16" 
+                  height="16" 
+                  src={chrome.runtime.getURL("/assets/app_logo.png")}
+                  class="mx-2"/>
                 Previous related posts
               </div>
             </div>
@@ -234,6 +238,17 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                         && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[2].items.length}+</span>}
                                     </a>
                                 </li>}
+
+                            {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                                <a 
+                                  class={ this.state.viewIndex == 1 
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
+                                  >
+                                  Copycats
+                                </a>
+                            </li>*/}
+
                         </ul>
                     </div>
 
@@ -331,7 +346,7 @@ function PreviousPostsList(props){
                                                                 ? props.extractedPostData.initiator.name
                                                                 : null)}
                                                         </span>
-                                                        {" interacted or edited this"}
+                                                        {" interacted with or edited this"}
                                                       </div>
                                                   </div>
                                                   <div>

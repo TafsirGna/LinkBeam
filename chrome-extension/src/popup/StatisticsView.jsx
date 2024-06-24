@@ -307,7 +307,8 @@ export default class StatisticsView extends React.Component{
               { this.state.carrouselActiveItemIndex == 1 
                   && <StatIndicatorsView 
                       objects={this.state.periodVisits}
-                      carrouselIndex={1} />}
+                      carrouselIndex={1}
+                      profiles={this.state.periodProfiles} />}
             </Carousel.Item>
             <Carousel.Item>
               { this.state.carrouselActiveItemIndex == 2 

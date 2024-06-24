@@ -373,9 +373,30 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 }
 
+// export function areObjectLabelsSimilar(name1, name2){
+
+//   var name1Words = name1.split(" "),
+//       percentage = 0;
+
+//   var copyName2 = dbDataSanitizer.preSanitize(name2);
+//   for (var word of name1Words){
+//     if (copyName2.indexOf(word) != -1){
+//       percentage += 1;
+//     }
+//   }
+
+//   percentage /= name1Words.length;
+//   if (percentage > .75){
+//     return true;
+//   }
+
+//   return false;
+
+// }
+
 export const performProfileSubPartComparison = function(theProfile, entityName, profileList, category){
 
-  var entityNameWords = entityName.split(" "), results = [];
+  var results = [];
 
   for (var profile of profileList){
 
@@ -392,18 +413,8 @@ export const performProfileSubPartComparison = function(theProfile, entityName, 
       if (!object.entity.name){
         continue;
       }
-      
-      var entityName = dbDataSanitizer.preSanitize(object.entity.name);
 
-      var percentage = 0;
-      for (var word of entityNameWords){
-        if (entityName.indexOf(word) != -1){
-          percentage += 1;
-        }
-      }
-
-      percentage /= entityNameWords.length;
-      if (percentage > .75){
+      if (areObjectLabelsSimilar(object.entity.name, entityName)){
         results.push(profile);
       }
 

@@ -4,6 +4,7 @@ import {
   secondsToHms,
 } from "../Local_library";
 import badge_icon from '../../assets/badge_icon.png';
+import { stringSimilarity } from "string-similarity-js";
 
 export default class StatIndicatorsView extends React.Component{
 
@@ -28,7 +29,7 @@ export default class StatIndicatorsView extends React.Component{
           value: 0,
         },
         experienceData: {
-          label: "# of expericence entities",
+          label: "# of employers",
           value: 0,
         },
         certificationData: {
@@ -37,6 +38,10 @@ export default class StatIndicatorsView extends React.Component{
         },
         languageData: {
           label: "# of languages",
+          value: 0,
+        },
+        jobTitleData: {
+          label: "# of job titles",
           value: 0,
         },
 
@@ -72,7 +77,7 @@ export default class StatIndicatorsView extends React.Component{
     var profiles = [],
         time = 0,
         activityList = [];
-    for (var visit of this.props.objects){
+    for (const visit of this.props.objects){
 
       // Incrementing time spent
       time += visit.timeCount;
@@ -94,27 +99,90 @@ export default class StatIndicatorsView extends React.Component{
       }
 
     }
-
-    // Setting profile data
+    
     this.setState(prevState => {
       let indicatorData = Object.assign({}, prevState.indicatorData);
+      // Setting profile data
       indicatorData.profileData.value = profiles.length;
-      return { indicatorData };
-    });
-
-    // Setting visit data
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
+      // Setting visit data
       indicatorData.visitData.value = this.props.objects.length;
-      return { indicatorData };
-    });
-
-    // Setting time data
-    this.setState(prevState => {
-      let indicatorData = Object.assign({}, prevState.indicatorData);
+      // Setting time data
       indicatorData.timeData.value = secondsToHms(time);
       return { indicatorData };
     });
+
+    // Part II
+    if (!this.props.profiles){
+      return;
+    }
+
+    // settings education entities data
+    var edEntities = [],
+        expEntities = [],
+        certifications = [],
+        languages = [],
+        jobTitles = [];
+    for (const profile of this.props.profiles){
+
+      if (profile.education){
+        for (const education of profile.education){
+          if (!this.isObjectNameInList(education.entity.name, edEntities, "education")){
+            edEntities.push(education.entity.name);
+          }
+        }
+      }
+
+      if (profile.experience){
+        for (const experience of profile.experience){
+          if (!this.isObjectNameInList(experience.entity.name, expEntities, "experience")){
+            expEntities.push(experience.entity.name);
+          }
+          if (!this.isObjectNameInList(experience.title, jobTitles, "jobTitles")){
+            jobTitles.push(experience.title);
+          }
+        }
+      }
+
+      if (profile.languages){
+        for (const language of profile.languages){
+          if (!this.isObjectNameInList(language.name, languages, "languages")){
+            languages.push(language.name);
+          }
+        }
+      }
+
+      if (profile.certifications){
+        for (const certification of profile.certifications){
+          if (!this.isObjectNameInList(certification.title, certifications, "certifications")){
+            certifications.push(certification.title);
+          }
+        }
+      }
+
+    }
+
+    this.setState(prevState => {
+      let indicatorData = Object.assign({}, prevState.indicatorData);
+      indicatorData.experienceData.value = expEntities.length;
+      indicatorData.educationData.value = edEntities.length;
+      indicatorData.certificationData.value = certifications.length;
+      indicatorData.languageData.value = languages.length;
+      indicatorData.jobTitleData.value = jobTitles.length;
+      return { indicatorData };
+    });
+
+
+  }
+
+  isObjectNameInList(name, list, type){
+
+    for (const itemName of list){
+      if (stringSimilarity(itemName, name) > 0.8){
+        return true;
+      }
+    }
+
+    return false;
 
   }
 

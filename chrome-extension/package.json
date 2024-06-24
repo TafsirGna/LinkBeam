@@ -39,6 +39,7 @@
     "react-visibility-sensor": "^5.1.1",
     "redux": "^5.0.1",
     "sass": "^1.66.1",
+    "string-similarity-js": "^2.1.4",
     "tailwindcss": "^3.3.3",
     "uuid": "^9.0.0"
   },

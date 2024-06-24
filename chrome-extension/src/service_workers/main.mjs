@@ -920,14 +920,12 @@ async function recordFeedVisit(tabData){
 
         // update the rankedPostsByPopularity session variable
         sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
-        if (!sessionItem.rankedPostsByPopularity){
-            sessionItem.rankedPostsByPopularity = await setPostsRankingInSession();
-        }
+        sessionItem.rankedPostsByPopularity = sessionItem.rankedPostsByPopularity || await setPostsRankingInSession();
 
         const index = sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id);
         if (index != -1){
             post.rank = {
-                number: index + 1, 
+                index1: index + 1, 
                 count: sessionItem.rankedPostsByPopularity.length,
             };
         }
@@ -935,7 +933,7 @@ async function recordFeedVisit(tabData){
             sessionItem.rankedPostsByPopularity.push({id: dbFeedPost.id, popularity: popularity.value});
             sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
             post.rank = {
-                number: sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id) + 1,
+                index1: sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id) + 1,
                 count: sessionItem.rankedPostsByPopularity.length,
             };
             await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){

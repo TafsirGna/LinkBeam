@@ -25,7 +25,7 @@ import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   appParams,
-} from "./Local_library";
+} from "../Local_library";
 
 export default class ProfileElementsPeriodShareView extends React.Component{
 
@@ -85,7 +85,8 @@ export default class ProfileElementsPeriodShareView extends React.Component{
       <>
         
         <div class="list-group">
-          { this.state.items.map(item => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+          { this.state.items 
+              && this.state.items.map(item => (<a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                             {/*<img src="https://github.com/twbs.png" alt="twbs" width="32" height="32" class="rounded-circle flex-shrink-0">*/}
                                             <div class="d-flex gap-2 w-100 justify-content-between">
                                               <div>
