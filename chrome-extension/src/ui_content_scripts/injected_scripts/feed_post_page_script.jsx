@@ -40,7 +40,7 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 		super();
 	}
 
-	static updateUi(props){
+	static checkAndUpdateUi(props){
 
 		if (!document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 

@@ -144,9 +144,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
   componentDidMount() {
 
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
+
+      if (this.props.postUid == data.uid){ console.log("QQQQQQQQQQQQQQQQQQQQ 2 : ", data.uid); }
+
       this.setState({
         postHtmlElementVisible: (this.props.postUid == data.uid),
       });
+      
     });
 
     chrome.storage.onChanged.addListener(((changes, namespace) => {

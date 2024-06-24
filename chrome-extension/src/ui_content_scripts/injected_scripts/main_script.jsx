@@ -55,9 +55,18 @@ class MainScriptAgent extends ScriptAgentBase {
     }
 
     scrollEventHandler2(){
+
+        var props = {
+            tabId: this.tabId, 
+            highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
+            allKeywords: this.allKeywords,
+            appSettings: this.appSettings,
+            visitId: this.visitId,
+            otherArgs: this.otherArgs,
+        };
     
         if (isLinkedinFeed(this.pageUrl)){
-            FeedPageScriptAgent.scrollEventHandler();
+            FeedPageScriptAgent.scrollEventHandler(props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
             if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
@@ -69,34 +78,6 @@ class MainScriptAgent extends ScriptAgentBase {
         }
         else if (isLinkedinFeedPostPage(this.pageUrl)){
             // FeedPostPageScriptAgent.scrollEventHandler(props);
-        }
-
-    }
-
-    updateUi(){
-
-        const props = {
-            appSettings: this.appSettings,
-            visitId: this.visitId,
-            otherArgs: this.otherArgs,
-            tabId: this.tabId,
-            allKeywords: this.allKeywords,
-            highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
-        };
-        
-        if (isLinkedinFeed(this.pageUrl)){
-            FeedPageScriptAgent.updateUi(props);
-        }
-        else if (isLinkedinProfilePage(this.pageUrl)){
-            if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
-                // ProfileSectionDetailsPageScriptAgent.updateUi(props);
-            }
-            else{
-                ProfilePageScriptAgent.updateUi(props);
-            }
-        }
-        else if (isLinkedinFeedPostPage(this.pageUrl)){
-            FeedPostPageScriptAgent.updateUi(props);
         }
 
     }
@@ -115,21 +96,19 @@ class MainScriptAgent extends ScriptAgentBase {
                 highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
                 allKeywords: this.allKeywords,
                 appSettings: this.appSettings,
+                visitId: this.visitId,
+                otherArgs: this.otherArgs,
             };
 
             if (isLinkedinFeed(pageUrl)){
 
-                props = {
-                    ...props,
-                    visitId: this.visitId,
-                }
-
                 if (this.pageUrl != pageUrl){
-                    FeedPageScriptAgent.updateUi(props);
+                    FeedPageScriptAgent.activePostContainerElementUid = null;
                     this.pageUrl = pageUrl;
                 }
 
-                FeedPageScriptAgent.runTabDataExtractionProcess(props);
+                FeedPageScriptAgent.checkAndUpdateUi(props);
+                // FeedPageScriptAgent.runTabDataExtractionProcess(props);
 
             }
             else if (isLinkedinProfilePage(pageUrl)){
@@ -138,7 +117,7 @@ class MainScriptAgent extends ScriptAgentBase {
 
                     if (this.pageUrl != pageUrl){
                         ProfileSectionDetailsPageScriptAgent.webPageData = null;
-                        // ProfileSectionDetailsPageScriptAgent.updateUi(props);
+                        // ProfileSectionDetailsPageScriptAgent.checkAndUpdateUi(props);
                         this.pageUrl = pageUrl;
                     }
 
@@ -151,7 +130,7 @@ class MainScriptAgent extends ScriptAgentBase {
                         ProfilePageScriptAgent.webPageData = null;
                         ProfilePageScriptAgent.detectedKeywords = {};
                         ProfilePageScriptAgent.keywordDetected = false;
-                        ProfilePageScriptAgent.updateUi(props);
+                        ProfilePageScriptAgent.checkAndUpdateUi(props);
                         this.pageUrl = pageUrl;
                     }
 

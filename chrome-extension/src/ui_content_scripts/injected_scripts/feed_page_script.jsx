@@ -26,6 +26,7 @@ import {
 import React from 'react';
 import { 
 	appParams,
+	isLinkedinFeed,
 } from "../../popup/Local_library";
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
@@ -37,7 +38,6 @@ import eventBus from "../../popup/EventBus";
 const LINKBEAM_ALL_FEED_MODALS = "LINKBEAM_ALL_FEED_MODALS";
 
 function getElementVisibility(element) {
-
 
 	var windowHeight = window.innerHeight,
         docScroll = window.scrollY,
@@ -61,52 +61,6 @@ function getElementVisibility(element) {
 
         return Math.round(result);
     }
-
-
-	// // Get the relevant measurements and positions
-  	// const viewportHeight = window.innerHeight;
-  	// const scrollTop = window.scrollY;
-  	// const elementOffsetTop = element.offsetTop;
-  	// const elementHeight = element.offsetHeight;
-
-  	// // Calculate percentage of the element that's been seen
-  	// const distance = scrollTop + viewportHeight - elementOffsetTop;
-  	// const percentage = Math.round(
-    // 	distance / ((viewportHeight + elementHeight) / 100)
-  	// );
-
-  	// // Restrict the range to between 0 and 100
-  	// return Math.min(100, Math.max(0, percentage));
-
-
-
-  // const rect = element.getBoundingClientRect();
-  
-  // const elementArea = (rect.width * rect.height);
-  
-  // let visibleWidth = (
-  //   rect.left >= 0 ? rect.width : rect.width + rect.left
-  // );
-  // if (visibleWidth < 0) {
-  //   visibleWidth = 0;
-  // }
-  
-  // let visibleHeight = (
-  //   rect.top >= 0 ? rect.height : rect.height + rect.top
-  // );
-  // if (visibleHeight < 0) {
-  //   visibleHeight = 0;
-  // }
-  
-  // const visibleArea = visibleWidth * visibleHeight;
-  
-  // return { 
-  //   elementArea,
-  //   visibleWidth,
-  //   visibleHeight,
-  //   visibleArea,
-  //   visiblePercentage: (visibleArea / elementArea * 100)
-  // };
   
 }
 
@@ -118,7 +72,11 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		super();
 	}
 
-	static scrollEventHandler(){
+	static scrollEventHandler(props){
+
+		if (!isLinkedinFeed(window.location.href)){
+			return;
+		}
 
 		const postContainerElements = this.getPostContainerElements();
 
@@ -126,24 +84,28 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			return;
 		}
 
-		var postContainerElementsExposurePercentage = [];
+		var postContainerElementsExposurePercentage = postContainerElements.map(postContainerElement => ({
+			uid: postContainerElement.getAttribute("data-id"),
+			exposurePercentage: getElementVisibility(postContainerElement),
+		}));
 
-		Array.from(postContainerElements).forEach(postContainerElement => {
-
-			postContainerElementsExposurePercentage.push({
-				uid: postContainerElement.getAttribute("data-id"),
-				exposurePercentage: getElementVisibility(postContainerElement)/*.visiblePercentage*/,
-			});
-
-		});
-
-		postContainerElementsExposurePercentage.sort((a, b) => b.exposurePercentage - a.exposurePercentage);
-
-		console.log("QQQQQQQQQQQQQQQQQQQQ : ", postContainerElementsExposurePercentage);
+		postContainerElementsExposurePercentage.sort((a, b) => (b.exposurePercentage - a.exposurePercentage));
 
 		if (this.activePostContainerElementUid != postContainerElementsExposurePercentage[0].uid){
+
 			this.activePostContainerElementUid = postContainerElementsExposurePercentage[0].uid;
-			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
+
+			const postContainerElement = postContainerElements.filter(postContainerElement => postContainerElement.getAttribute("data-id") == this.activePostContainerElementUid)[0];
+			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+				this.attachPostWidget(postContainerElement, props);
+			}
+			else{
+
+				eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
+				console.log("QQQQQQQQQQQQQQQQQQQQ 1 : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage);
+
+			}
+
 		}
 
 	}
@@ -156,93 +118,94 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			return null;
 		}
 
-		return mainSectionHtmlEl.querySelectorAll("div[data-id]");
+		return Array.from(mainSectionHtmlEl.querySelectorAll("div[data-id]")).filter(htmlElement => {
 
-	}
-
-	static updateUi(props){
-
-		if (document.querySelector(".scaffold-finite-scroll__content")
-			&& !document.querySelector(".scaffold-finite-scroll__content")
-					 	.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
-
-			var newDivTag = document.createElement('div');
-			newDivTag.classList.add("LINKBEAM_ALL_FEED_MODALS");
-		    document.querySelector(".scaffold-finite-scroll__content")
-		    		.prepend(newDivTag);
-		    newDivTag.attachShadow({ mode: 'open' });
-
-			ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	            <React.StrictMode>
-	              <style type="text/css">{styles}</style>
-	              <div>
-	              	<FeedPostViewsChartModal
-	                  appSettings={props.appSettings}
-	                  tabId={props.tabId}/>
-
-	                <FeedPostRelatedPostsModal
-	                  appSettings={props.appSettings}
-	                  tabId={props.tabId}/>
-	              </div>
-	            </React.StrictMode>
-	        );
-
-		}
-
-	}
-
-	static runTabDataExtractionProcess(props){
-
-		const postContainerElements = this.getPostContainerElements();
-
-		if (!postContainerElements){
-			return;
-		}
-
-		Array.from(postContainerElements).forEach((postContainerElement, index) => {
-
-			if (postContainerElement.querySelector(".feed-shared-update-v2")){
-				if (window.getComputedStyle(postContainerElement.querySelector(".feed-shared-update-v2")).display === "none"){
-					return;
+			if (htmlElement.querySelector(".feed-shared-update-v2")){
+				if (window.getComputedStyle(htmlElement.querySelector(".feed-shared-update-v2")).display === "none"){
+					return false;
 				}
 			}
 			else{
-				return;
+				return false;
 			}
 
 			// if a post doesn't have neither a category (publication) nor author, then pass
-			if (!postContainerElement.querySelector(".update-components-actor__name .visually-hidden")){
-				return;
+			if (!htmlElement.querySelector(".update-components-actor__name .visually-hidden")){
+				return false;
 			}
 
-			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+			return true;
 
-				// Adding the marker
+		});
+
+	}
+
+	static checkAndUpdateUi(props){
+
+		if (document.querySelector(".scaffold-finite-scroll__content")){
+
+			if (!document.querySelector(".scaffold-finite-scroll__content")
+					 	.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
+
 				var newDivTag = document.createElement('div');
-				newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-			    postContainerElement.prepend(newDivTag);
+				newDivTag.classList.add("LINKBEAM_ALL_FEED_MODALS");
+			    document.querySelector(".scaffold-finite-scroll__content")
+			    		.prepend(newDivTag);
 			    newDivTag.attachShadow({ mode: 'open' });
 
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
 		            <React.StrictMode>
 		              <style type="text/css">{styles}</style>
-		              <AboveFeedPostWidgetView 
-		              	postUid={postContainerElement.getAttribute("data-id")}
-		              	tabId={props.tabId}
-		              	allKeywords={props.allKeywords}
-		              	visitId={props.visitId}
-		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
-		              	// index={index}
-		              	appSettings={props.appSettings}/>
+		              <div>
+		              	<FeedPostViewsChartModal
+		                  appSettings={props.appSettings}
+		                  tabId={props.tabId}/>
+
+		                <FeedPostRelatedPostsModal
+		                  appSettings={props.appSettings}
+		                  tabId={props.tabId}/>
+		              </div>
 		            </React.StrictMode>
 		        );
 
 			}
 
-		});
+			if (!this.getPostContainerElements()[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
-		this.updateUi(props);
+				this.attachPostWidget(this.getPostContainerElements()[0], props);
+
+			}
+
+		}
 
 	}
+
+	static attachPostWidget(postContainerElement, props){
+
+		// Adding the marker
+		var newDivTag = document.createElement('div');
+		newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
+	    postContainerElement.prepend(newDivTag);
+	    newDivTag.attachShadow({ mode: 'open' });
+
+		ReactDOM.createRoot(newDivTag.shadowRoot).render(
+            <React.StrictMode>
+              <style type="text/css">{styles}</style>
+              <AboveFeedPostWidgetView 
+              	postUid={postContainerElement.getAttribute("data-id")}
+              	tabId={props.tabId}
+              	allKeywords={props.allKeywords}
+              	visitId={props.visitId}
+              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
+              	// index={index}
+              	appSettings={props.appSettings}/>
+            </React.StrictMode>
+        );
+
+	}
+
+	// static runTabDataExtractionProcess(props){
+
+	// }
 
 }

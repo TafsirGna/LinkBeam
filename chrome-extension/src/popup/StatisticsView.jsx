@@ -28,6 +28,7 @@ import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
+import ProfileElementsPeriodShareView from "./widgets/ProfileElementsPeriodShareView";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
@@ -407,6 +408,14 @@ export default class StatisticsView extends React.Component{
                           end: this.state.offCanvasFormEndDate,
                         }}/>}
             </Carousel.Item>
+
+            { ["education"].map((profileElement, index) => (<Carousel.Item> 
+                                      { this.state.carrouselActiveItemIndex == (7 + index)
+                                          && <ProfileElementsPeriodShareView 
+                                                profiles={this.state.periodProfiles}
+                                                profileElement={profileElement}/>}
+                                    </Carousel.Item>))}
+
           </Carousel>
 
           <div class="clearfix">

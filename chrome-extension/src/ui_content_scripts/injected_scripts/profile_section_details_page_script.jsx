@@ -42,7 +42,7 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 		super();
 	}
 
-	static updateUi(props){
+	static checkAndUpdateUi(props){
 		
 	}
 

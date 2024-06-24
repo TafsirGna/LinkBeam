@@ -17,7 +17,7 @@ import {
   appParams,
   getPeriodLabel,
 } from "../../Local_library";
-
+import { AlertCircleIcon } from "../SVGs";
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
@@ -25,6 +25,7 @@ import { Offcanvas } from "react-bootstrap";
 import ProfileListItemView from "../ProfileListItemView";
 import sorry_icon from '../../../assets/sorry_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
+import { OverlayTrigger, Popover } from "react-bootstrap";
 
 ChartJS.register(
   Title,
@@ -254,7 +255,24 @@ export default class ProfilesGeoMapChart extends React.Component{
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE 
                     && <p class="shadow-sm mt-3 border p-2 rounded">
                         { Object.keys(this.state.locationsData).map((key) => 
-                          (this.state.locationsData[key].length > 0 && <span class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill">{key}</span>)
+                          (this.state.locationsData[key].length > 0 
+                            && <OverlayTrigger 
+                                  trigger="click" 
+                                  placement="left" 
+                                  overlay={<Popover id="popover-basic">
+                                            <Popover.Header as="h3">Details</Popover.Header>
+                                            <Popover.Body>
+                                              And here's some <strong>amazing</strong> content. It's very engaging.
+                                              right?
+                                            </Popover.Body>
+                                          </Popover>}>
+                                  <span 
+                                    class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
+                                    title="Click to see details">
+                                    {key}
+                                    <AlertCircleIcon size="16" className="rounded-circle mx-1"/>
+                                </span>
+                              </OverlayTrigger>)
                         )}
                       </p>}
 

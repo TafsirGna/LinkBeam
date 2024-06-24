@@ -23,6 +23,23 @@ export default class StatIndicatorsView extends React.Component{
           label: "Total time",
           value: 0,
         },
+        educationData: {
+          label: "# of education entities",
+          value: 0,
+        },
+        experienceData: {
+          label: "# of expericence entities",
+          value: 0,
+        },
+        certificationData: {
+          label: "# of certifications",
+          value: 0,
+        },
+        languageData: {
+          label: "# of languages",
+          value: 0,
+        },
+
       },
     };
 

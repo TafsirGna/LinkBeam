@@ -31,6 +31,7 @@ import {
 } from "./SVGs";
 import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
+import ImageLoader from "./ImageLoader";
 
 const COVER_IMAGE_MODAL_TITLE = "Cover Image",
       AVATAR_IMAGE_MODAL_TITLE = "Avatar";
@@ -49,7 +50,6 @@ export default class ProfileViewHeader extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      imageLoaded: false,
       imageModalTitle: "",
       imageModalShow: false,
       geoMapModalShow: false,
@@ -84,7 +84,7 @@ export default class ProfileViewHeader extends React.Component{
 
   }
 
-  handleImageModalClose = () => this.setState({imageModalShow: false, imageModalTitle: "", imageLoaded: false});
+  handleImageModalClose = () => this.setState({imageModalShow: false, imageModalTitle: ""});
   handleImageModalShow = (modalTitle) => this.setState({imageModalShow: true, imageModalTitle: modalTitle});
 
   handleTagPickModalClose = () => this.setState({tagPickModalShow: false});
@@ -374,13 +374,9 @@ export default class ProfileViewHeader extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            {!this.state.imageLoaded && <div class="text-center">
-                                              <div class={"spinner-border text-secondary "} role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                              </div>
-                                            </div>}
-            
-            <img src={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? this.props.profile.avatar : ((this.state.imageModalTitle == COVER_IMAGE_MODAL_TITLE) ? this.props.profile.coverImage : "")} class="rounded shadow w-100" onLoad={() => {this.setState({imageLoaded: true});}} onerror={() => {console.log("Error loading cover image!")}}/>
+            <ImageLoader
+              imgSrc={(this.state.imageModalTitle == AVATAR_IMAGE_MODAL_TITLE) ? this.props.profile.avatar : ((this.state.imageModalTitle == COVER_IMAGE_MODAL_TITLE) ? this.props.profile.coverImage : "")}
+              imgClass="rounded shadow w-100"/>
 
           </Modal.Body>
         </Modal>

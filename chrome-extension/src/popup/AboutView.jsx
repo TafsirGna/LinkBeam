@@ -29,11 +29,9 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   saveCurrentPageTitle, 
   appParams,
+  switchToView,
 } from "./Local_library";
 import eventBus from "./EventBus";
-import { 
-  switchToView,  
-} from "./Local_library";
 
 export default class AboutView extends React.Component{
 

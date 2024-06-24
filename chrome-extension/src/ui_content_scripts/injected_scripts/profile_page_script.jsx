@@ -78,7 +78,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   }
 
-  static async updateUi(props){
+  static async checkAndUpdateUi(props){
 
     var result = await getProfileViewMainHtmlElements();
 
@@ -177,7 +177,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
       return;
     }
 
-    this.updateUi(props);
+    this.checkAndUpdateUi(props);
 
     sendTabData(props.tabId, webPageData);  
 

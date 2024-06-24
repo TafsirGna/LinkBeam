@@ -78,8 +78,6 @@ export class ScriptAgentBase {
     document.addEventListener("scroll", (event) => {
 
       this.scrollEventHandler1();
-      
-      this.scrollEventHandler2();
 
     });
 
@@ -200,7 +198,9 @@ export class ScriptAgentBase {
       this.allKeywords = messageData.allKeywords;
     }
 
-    this.updateUi();
+    document.addEventListener("scroll", (event) => {
+      this.scrollEventHandler2();
+    });
 
     // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
     this.startIdlingTimer();

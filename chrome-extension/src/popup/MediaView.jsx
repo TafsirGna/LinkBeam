@@ -36,6 +36,7 @@ import app_logo from '../assets/app_logo.png';
 import PageTitleView from "./widgets/PageTitleView";
 import { liveQuery } from "dexie"; 
 import SeeMoreButtonView from "./widgets/SeeMoreButtonView";
+import ImageLoader from "./widgets/ImageLoader";
 import SearchInputView from "./widgets/SearchInputView";
 import Carousel from 'react-bootstrap/Carousel';
 import Popover from 'react-bootstrap/Popover';
@@ -512,18 +513,18 @@ class MediaGridView extends React.Component{
                                                                                                             <div class="card shadow">
                                                                                                               { feedPost.media.length == 1
                                                                                                                   && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
-                                                                                                                  && <img 
-                                                                                                                      src={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                                                                      class="card-img-top" 
-                                                                                                                      alt="..."/> }
+                                                                                                                  && <ImageLoader
+                                                                                                                        imgSrc={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                        imgClass="card-img-top"
+                                                                                                                        spinnerSize="small" /> }
                                                                                                               { feedPost.media.length != 1
                                                                                                                   && <Carousel controls={false} indicators={false}>
                                                                                                                         {feedPost.media.map(medium => (<Carousel.Item>
                                                                                                                                                         { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
-                                                                                                                                                          && <img 
-                                                                                                                                                          src={medium.src ? medium.src : medium.poster} 
-                                                                                                                                                          class="card-img-top" 
-                                                                                                                                                          alt="..."/>}
+                                                                                                                                                          && <ImageLoader 
+                                                                                                                                                              imgSrc={medium.src ? medium.src : medium.poster} 
+                                                                                                                                                              imgClass="card-img-top"
+                                                                                                                                                              spinnerSize="small"/>}
                                                                                                                                                       </Carousel.Item>))}
                                                                                                                     </Carousel>}
                                                                                                               {/*<div class="card-body">
