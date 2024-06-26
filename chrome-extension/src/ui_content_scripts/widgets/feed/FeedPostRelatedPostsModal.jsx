@@ -182,12 +182,14 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             
             <div class="p-4">
               <div onClick={null} class="text-lg pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                <img 
-                  width="16" 
-                  height="16" 
-                  src={chrome.runtime.getURL("/assets/app_logo.png")}
-                  class="mx-2"/>
-                Previous related posts
+                <div class="inline-flex items-center">
+                  <img 
+                    width="15" 
+                    height="15" 
+                    src={chrome.runtime.getURL("/assets/app_logo.png")}
+                    class="mx-2"/>
+                  <span>Previous related posts</span>
+                </div>
               </div>
             </div>
 
@@ -239,15 +241,15 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                     </a>
                                 </li>}
 
-                            {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
                                 <a 
-                                  class={ this.state.viewIndex == 1 
+                                  class={ this.state.viewIndex == 3 
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
                                   >
                                   Copycats
                                 </a>
-                            </li>*/}
+                            </li>
 
                         </ul>
                     </div>
@@ -273,7 +275,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                               <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
                               </svg>
-                              <div class="ms-3 text-sm font-medium">
+                              <div class="ms-3 text-base font-medium">
                                 Section still in active development.
                               </div>
                               {/*<button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-border-1" aria-label="Close">
@@ -298,6 +300,18 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                     objects={this.state.tabsData[this.state.viewIndex].items}
                                     extractedPostData={this.state.extractedPostData}
                                     viewIndex={2}/> }
+                          </div>}
+
+                    { this.state.viewIndex == 3
+                        && <div>
+
+                            { !this.state.tabsData[this.state.viewIndex].items 
+                              && <div class="text-center mt-5">
+                                                  <Spinner aria-label="Default status example" />
+                                                </div>}
+
+                            { this.state.tabsData[this.state.viewIndex].items 
+                                && <div></div> }
                           </div>}
 
                   </div>}

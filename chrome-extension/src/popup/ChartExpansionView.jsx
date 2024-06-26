@@ -27,13 +27,15 @@ import {
   appParams,
   getPeriodVisits,
   getProfileDataFrom,
+  nRange,
 } from "./Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
-import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
+import ProfileElementsPeriodShareBarChart from "./widgets/charts/ProfileElementsPeriodShareBarChart";
+import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";ProfileElementsPeriodShareBarChart
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
 import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
 import { db } from "../db";
@@ -203,6 +205,18 @@ export default class ChartExpansionView extends React.Component{
                           start: this.state.offCanvasFormStartDate,
                           end: this.state.offCanvasFormEndDate,
                         }}/>}
+
+              { nRange(7, 10, 1).indexOf(this.state.carrouselActiveItemIndex) != -1
+                    && <ProfileElementsPeriodShareBarChart 
+                          profiles={this.state.periodProfiles}
+                          profilePropertyName={["education", "experience", "jobTitles", "certifications"][this.state.carrouselActiveItemIndex - 7]}
+                          carrouselIndex={this.state.carrouselActiveItemIndex}
+                          displayLegend={true}
+                          view={this.state.carrouselChartView} 
+                          periodRangeLimits={{
+                            start: this.state.offCanvasFormStartDate,
+                            end: this.state.offCanvasFormEndDate,
+                          }} />}
     
             </div>
           </div>

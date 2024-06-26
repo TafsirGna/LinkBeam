@@ -2,6 +2,8 @@
 import React from 'react';
 import { 
   secondsToHms,
+  dbDataSanitizer,
+  isProfilePropertyLabelInList,
 } from "../Local_library";
 import badge_icon from '../../assets/badge_icon.png';
 import { stringSimilarity } from "string-similarity-js";
@@ -126,35 +128,35 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.education){
         for (const education of profile.education){
-          if (!this.isObjectNameInList(education.entity.name, edEntities, "education")){
-            edEntities.push(education.entity.name);
+          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(education.entity.name), edEntities, "education", stringSimilarity)){
+            edEntities.push(dbDataSanitizer.preSanitize(education.entity.name));
           }
         }
       }
 
       if (profile.experience){
         for (const experience of profile.experience){
-          if (!this.isObjectNameInList(experience.entity.name, expEntities, "experience")){
-            expEntities.push(experience.entity.name);
+          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.entity.name), expEntities, "experience", stringSimilarity)){
+            expEntities.push(dbDataSanitizer.preSanitize(experience.entity.name));
           }
-          if (!this.isObjectNameInList(experience.title, jobTitles, "jobTitles")){
-            jobTitles.push(experience.title);
+          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.title), jobTitles, "jobTitles", stringSimilarity)){
+            jobTitles.push(dbDataSanitizer.preSanitize(experience.title));
           }
         }
       }
 
       if (profile.languages){
         for (const language of profile.languages){
-          if (!this.isObjectNameInList(language.name, languages, "languages")){
-            languages.push(language.name);
+          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(language.name), languages, "languages", stringSimilarity)){
+            languages.push(dbDataSanitizer.preSanitize(language.name));
           }
         }
       }
 
       if (profile.certifications){
         for (const certification of profile.certifications){
-          if (!this.isObjectNameInList(certification.title, certifications, "certifications")){
-            certifications.push(certification.title);
+          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(certification.title), certifications, "certifications", stringSimilarity)){
+            certifications.push(dbDataSanitizer.preSanitize(certification.title));
           }
         }
       }
@@ -171,18 +173,6 @@ export default class StatIndicatorsView extends React.Component{
       return { indicatorData };
     });
 
-
-  }
-
-  isObjectNameInList(name, list, type){
-
-    for (const itemName of list){
-      if (stringSimilarity(itemName, name) > 0.8){
-        return true;
-      }
-    }
-
-    return false;
 
   }
 

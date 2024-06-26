@@ -28,7 +28,7 @@ import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
 import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
-import ProfileElementsPeriodShareView from "./widgets/ProfileElementsPeriodShareView";
+import ProfileElementsPeriodShareBarChart from "./widgets/charts/ProfileElementsPeriodShareBarChart";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
@@ -410,11 +410,12 @@ export default class StatisticsView extends React.Component{
                         }}/>}
             </Carousel.Item>
 
-            { ["education"].map((profileElement, index) => (<Carousel.Item> 
+            { ["education", "experience", "jobTitles", "certifications"].map((profilePropertyName, index) => (<Carousel.Item> 
                                       { this.state.carrouselActiveItemIndex == (7 + index)
-                                          && <ProfileElementsPeriodShareView 
+                                          && <ProfileElementsPeriodShareBarChart 
                                                 profiles={this.state.periodProfiles}
-                                                profileElement={profileElement}/>}
+                                                profilePropertyName={profilePropertyName}
+                                                carrouselIndex={(7 + index)}/>}
                                     </Carousel.Item>))}
 
           </Carousel>

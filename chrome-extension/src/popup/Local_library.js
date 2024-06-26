@@ -373,26 +373,22 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 }
 
-// export function areObjectLabelsSimilar(name1, name2){
+export function isProfilePropertyLabelInList(name, list, type, stringSimilarity){
 
-//   var name1Words = name1.split(" "),
-//       percentage = 0;
+  for (const itemName of list){
+    if (type == "languages"){
 
-//   var copyName2 = dbDataSanitizer.preSanitize(name2);
-//   for (var word of name1Words){
-//     if (copyName2.indexOf(word) != -1){
-//       percentage += 1;
-//     }
-//   }
+    }
+    else{
+      if (stringSimilarity(itemName, name) > 0.8){
+        return true;
+      }
+    }
+  }
 
-//   percentage /= name1Words.length;
-//   if (percentage > .75){
-//     return true;
-//   }
+  return false;
 
-//   return false;
-
-// }
+}
 
 export const performProfileSubPartComparison = function(theProfile, entityName, profileList, category){
 

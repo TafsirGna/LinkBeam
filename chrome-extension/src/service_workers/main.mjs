@@ -1223,14 +1223,20 @@ async function getPreviousRelatedPosts(payload){
             });
         }
 
-        // feed post views, this given user triggered
+        // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
                                   .filter(view => view.initiator && view.initiator.url == url)
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
     
+        var uids = [];
         for (const feedPostView of feedPostViews){
+
+            if (uids.indexOf(feedPostView.uid) != -1){
+                continue;
+            }
+
             const feedPost = (await db.feedPosts.where({id: feedPostView.feedPostId}).first());
             posts.push({
                 text: feedPost.text,
@@ -1238,6 +1244,7 @@ async function getPreviousRelatedPosts(payload){
                 date: feedPostView.date,
                 media: feedPost.media,
             });
+            uids.push(feedPostView.uid);
         }
 
     }
