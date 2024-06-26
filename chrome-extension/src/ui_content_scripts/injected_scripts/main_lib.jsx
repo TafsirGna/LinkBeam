@@ -1249,7 +1249,7 @@ export function extractExperienceItemData(htmlElement){
         }
         else{
           if (experienceItemDataList.length == 1){
-            experienceItemData.entity.name = nodeValue;
+            experienceItemData.entity.name = nodeValue.split(" · ")[0];
           }
           else{
             experienceItemData.title = nodeValue;

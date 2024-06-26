@@ -160,8 +160,12 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
             elementName = dbDataSanitizer.preSanitize(element.title);
           }
           else{
-            console.log(" www : ", element);
-            elementName = dbDataSanitizer.preSanitize(element.entity.name);
+            if (element != "incomplete"){
+              elementName = dbDataSanitizer.preSanitize(element.entity.name);
+            }
+            else{
+              continue;
+            }
           } 
 
           if (!isProfilePropertyLabelInList(elementName, items.map(i => i.label), this.props.profilePropertyName, stringSimilarity)){
@@ -276,7 +280,7 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
                       { this.props.displayLegend 
                           && this.props.displayLegend == true 
                           && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
-                              Chart of profiles by their experience and time spent ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                              Chart of {this.getChartTitle()} ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
                             </p> }
                     </div> }
 

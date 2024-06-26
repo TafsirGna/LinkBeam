@@ -35,7 +35,7 @@ import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
 import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
 import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
 import ProfileElementsPeriodShareBarChart from "./widgets/charts/ProfileElementsPeriodShareBarChart";
-import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";ProfileElementsPeriodShareBarChart
+import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
 import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
 import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
 import { db } from "../db";

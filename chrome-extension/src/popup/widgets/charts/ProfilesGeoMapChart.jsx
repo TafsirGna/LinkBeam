@@ -49,6 +49,7 @@ export default class ProfilesGeoMapChart extends React.Component{
       chartRef: React.createRef(),
       offCanvasShow: false,
       selectedChartElementIndex: null,
+      badgeRefs: null,
     };
 
     this.setChartCountries = this.setChartCountries.bind(this);
@@ -102,7 +103,10 @@ export default class ProfilesGeoMapChart extends React.Component{
     // initializing locationData
     var locationsData = {};
     for (var object of chartCountries){
-      locationsData[object.properties.name] = [];
+      locationsData[object.properties.name] = {
+        profiles: [],
+        activities: {},
+      };
     }
 
     // if no objects have been passed as parameter
@@ -117,7 +121,8 @@ export default class ProfilesGeoMapChart extends React.Component{
 
       var location = profile.location ? profile.location : "", 
           domain = "experience", 
-          locationIndex = 0;
+          locationIndex = 0,
+          locationActivity = null;
 
       while (true) {
 
@@ -143,11 +148,26 @@ export default class ProfilesGeoMapChart extends React.Component{
             locations.push({
               label: location,
               profiles: [profile],
+              activities: {},
             });
+            if (locationActivity){
+              locations[locations.length - 1].activities[profile.url] = [locationActivity];
+            }
           }
           else{
             if (locations[index].profiles.map(e => e.url).indexOf(profile.url) == -1){
               locations[index].profiles.push(profile);
+              if (locationActivity){
+                locations[index].activities[profile.url] = [locationActivity];
+              }
+            }
+            else{
+              if (/*locationActivity*/ profile.url in locations[index].activities){
+                locations[index].activities[profile.url].push(locationActivity);
+              }
+              else{
+                locations[index].activities[profile.url] = [locationActivity];
+              }
             }
           }
 
@@ -162,7 +182,11 @@ export default class ProfilesGeoMapChart extends React.Component{
             continue;
           }
 
-          location = (profile.experience[locationIndex]).location ? (profile.experience[locationIndex]).location : "";
+          location = profile.experience[locationIndex].location || "";
+
+          locationActivity = profile.experience[locationIndex];
+          // locationActivity.category = domain;
+
         }
         else if (domain == "education"){
 
@@ -170,7 +194,10 @@ export default class ProfilesGeoMapChart extends React.Component{
             break;
           }
 
-          location = (profile.education[locationIndex]).location ? (profile.education[locationIndex]).location : "";
+          location = profile.education[locationIndex].location || "";
+
+          locationActivity = profile.education[locationIndex];
+          // locationActivity.category = domain;
 
         }
 
@@ -185,21 +212,35 @@ export default class ProfilesGeoMapChart extends React.Component{
     for (var object of chartCountries){
       const index = labels.indexOf(object.properties.name);
       if (index != -1){
-        locationsData[object.properties.name] = locations[index].profiles;
+        locationsData[object.properties.name].profiles = locations[index].profiles;
+        locationsData[object.properties.name].activities = locations[index].activities;
       }
     }
 
-    this.setState({locationsData: locationsData, chartCountries: chartCountries});
+    this.setState({
+      locationsData: locationsData, 
+      chartCountries: chartCountries,
+      badgeRefs: Object.keys(locationsData).filter(key => locationsData[key].profiles.length > 0).map(key => ({country: key, ref: React.createRef()})),
+    });
 
   }
 
   onChartClick(event){
 
     var elements = getElementAtEvent(this.state.chartRef.current, event);
-    console.log(elements, (elements[0]).index/*, this.state.chartCountries[elements[0]).index].properties.name, (this.state.locationsData[this.state.chartCountries[elements[0]).index].properties.name])*/);
+    console.log(elements, (elements[0]).index);
 
     if (elements.length != 0){
+      // either this
       this.handleOffCanvasShow((elements[0]).index);
+      // or this
+      if (this.state.badgeRefs){
+        const index = this.state.badgeRefs.findIndex(b => b.country == this.state.chartCountries[(elements[0]).index].properties.name);
+        if (index != -1){
+          this.state.badgeRefs[index].ref.current?.click();
+        }
+      }
+
     }
 
   }
@@ -232,7 +273,7 @@ export default class ProfilesGeoMapChart extends React.Component{
                     labels: this.state.chartCountries.map((d) => d.properties.name),
                     datasets: [{
                       label: 'Countries',
-                      data: this.state.chartCountries.map((d) => ({feature: d, value: this.state.locationsData[d.properties.name].length/*Math.random()*/})),
+                      data: this.state.chartCountries.map((d) => ({feature: d, value: this.state.locationsData[d.properties.name].profiles.length/*Math.random()*/})),
                     }]
                   }}
                   options={{
@@ -254,26 +295,44 @@ export default class ProfilesGeoMapChart extends React.Component{
                 /> 
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE 
                     && <p class="shadow-sm mt-3 border p-2 rounded">
-                        { Object.keys(this.state.locationsData).map((key) => 
-                          (this.state.locationsData[key].length > 0 
-                            && <OverlayTrigger 
+                        { Object.keys(this.state.locationsData)
+                                .filter(key => this.state.locationsData[key].profiles.length > 0)
+                                .map((key, index) => <OverlayTrigger 
                                   trigger="click" 
                                   placement="left" 
                                   overlay={<Popover id="popover-basic">
                                             <Popover.Header as="h3">Details</Popover.Header>
                                             <Popover.Body>
-                                              And here's some <strong>amazing</strong> content. It's very engaging.
-                                              right?
+                                              { Object.keys(this.state.locationsData[key].activities).length == 0
+                                                  && <div class="text-center m-5 mt-2">
+                                                      <img 
+                                                        src={sorry_icon} 
+                                                        width="80" />
+                                                      <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Nothing to show</span></p>
+                                                    </div> }
+
+                                              { Object.keys(this.state.locationsData[key].activities).length != 0 
+                                                  && <ul>
+                                                      { Object.keys(this.state.locationsData[key].activities).map(url => {
+                                                        return <li>
+                                                                { this.state.locationsData[key].activities[url].map(locationActivity => <div>
+                                                                                                                                          <h6 class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.entity.name)}</h6>
+                                                                                                                                          <p class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.title)}</p>
+                                                                                                                                          <p class="small fst-italic">{`${locationActivity.period.startDateRange.toFormat("MMMM yyyy")} - ${locationActivity.period.endDateRange.toFormat("MMMM yyyy")}`}</p>
+                                                                                                                                      </div>) }
+                                                            </li>
+                                                      }) }
+                                                    </ul>}
                                             </Popover.Body>
                                           </Popover>}>
                                   <span 
-                                    class="mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
-                                    title="Click to see details">
+                                    class="handy-cursor mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
+                                    title="Click to see details"
+                                    ref={this.state.badgeRefs[index].ref}>
                                     {key}
                                     <AlertCircleIcon size="16" className="rounded-circle mx-1"/>
                                 </span>
-                              </OverlayTrigger>)
-                        )}
+                              </OverlayTrigger>)}
                       </p>}
 
                 { this.props.displayLegend 
@@ -282,46 +341,47 @@ export default class ProfilesGeoMapChart extends React.Component{
                         Chart of visits mapped by country ({getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
                       </p> }
 
-                { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.STATISTICS && <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
-                                  <Offcanvas.Header closeButton>
-                                    <Offcanvas.Title>
-                                     { (this.state.selectedChartElementIndex != null) ? ("Location: " + this.state.chartCountries[this.state.selectedChartElementIndex].properties.name) : "Title" }
-                                    </Offcanvas.Title>
-                                  </Offcanvas.Header>
-                                  <Offcanvas.Body>
-                
-                                    { this.state.selectedChartElementIndex == null 
-                                        && <div class="text-center">
-                                              <div class="mb-5 mt-3">
-                                                <div class="spinner-border text-primary" role="status"></div>
-                                                <p>
-                                                  <span class="badge text-bg-primary fst-italic shadow">
-                                                    Loading...
-                                                  </span>
-                                                </p>
-                                              </div>
-                                            </div>}
-                
-                                    { this.state.selectedChartElementIndex != null 
-                                        && <div>
+                { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.STATISTICS 
+                    && <Offcanvas show={this.state.offCanvasShow} onHide={this.handleOffCanvasClose}>
+                        <Offcanvas.Header closeButton>
+                          <Offcanvas.Title>
+                           { (this.state.selectedChartElementIndex != null) ? `Location: ${this.state.chartCountries[this.state.selectedChartElementIndex].properties.name}` : "Title" }
+                          </Offcanvas.Title>
+                        </Offcanvas.Header>
+                        <Offcanvas.Body>
+      
+                          { this.state.selectedChartElementIndex == null 
+                              && <div class="text-center">
+                                    <div class="mb-5 mt-3">
+                                      <div class="spinner-border text-primary" role="status"></div>
+                                      <p>
+                                        <span class="badge text-bg-primary fst-italic shadow">
+                                          Loading...
+                                        </span>
+                                      </p>
+                                    </div>
+                                  </div>}
+      
+                          { this.state.selectedChartElementIndex != null 
+                              && <div>
 
-                                          {(this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name]).length == 0
-                                              && <div class="text-center m-5 mt-2">
-                                                <img 
-                                                  src={sorry_icon} 
-                                                  width="80" />
-                                                <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No corresponding profiles</span></p>
-                                              </div>}
+                                {this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name].profiles.length == 0
+                                    && <div class="text-center m-5 mt-2">
+                                      <img 
+                                        src={sorry_icon} 
+                                        width="80" />
+                                      <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">No corresponding profiles</span></p>
+                                    </div>}
 
-                                          {(this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name]).length != 0
-                                              &&  <div class="list-group m-1 shadow-sm small">
-                                                    { (this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name]).map(profile => (<ProfileListItemView profile={profile}/>)) }
-                                                  </div>}
+                                {this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name].profiles.length != 0
+                                    &&  <div class="list-group m-1 shadow-sm small">
+                                          { this.state.locationsData[this.state.chartCountries[this.state.selectedChartElementIndex].properties.name].profiles.map(profile => (<ProfileListItemView profile={profile}/>)) }
+                                        </div>}
 
-                                        </div> }
+                              </div> }
 
-                                  </Offcanvas.Body>
-                                </Offcanvas>}
+                        </Offcanvas.Body>
+                      </Offcanvas>}
 
               </div>}
       </>

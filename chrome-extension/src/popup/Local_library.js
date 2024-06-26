@@ -380,6 +380,7 @@ export function isProfilePropertyLabelInList(name, list, type, stringSimilarity)
 
     }
     else{
+      console.log("!!!!!!!!!!!!!!!!!!! : ", itemName, name);
       if (stringSimilarity(itemName, name) > 0.8){
         return true;
       }
