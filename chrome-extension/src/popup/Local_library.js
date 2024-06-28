@@ -104,6 +104,10 @@ export const categoryVerbMap = {
     fr: "intructif",
     en: "finds this insightful",
   },
+  funs: {
+    fr: "drôle",
+    en: "funny",
+  }
 }
 
 export const dbData = {

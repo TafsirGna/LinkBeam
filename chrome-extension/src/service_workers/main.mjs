@@ -37,6 +37,7 @@ import {
     popularityValue,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
+import { stringSimilarity } from "string-similarity-js";
 import Dexie from 'dexie';
 // import { DateTime as LuxonDateTime } from "luxon";
 
@@ -927,6 +928,7 @@ async function recordFeedVisit(tabData){
             post.rank = {
                 index1: index + 1, 
                 count: sessionItem.rankedPostsByPopularity.length,
+                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
             };
         }
         else{
@@ -935,6 +937,7 @@ async function recordFeedVisit(tabData){
             post.rank = {
                 index1: sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id) + 1,
                 count: sessionItem.rankedPostsByPopularity.length,
+                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
             };
             await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
                 // console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
@@ -1198,7 +1201,7 @@ async function getPreviousRelatedPosts(payload){
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.author.url == url)
+                                  .filter(post => post.author.url == url && ((post.uid && post.uid != payload.uid) || (!post.uid && true)))
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
@@ -1212,6 +1215,9 @@ async function getPreviousRelatedPosts(payload){
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
+                if (view.uid == payload.uid){
+                    continue;
+                }
                 link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
             }
 
@@ -1225,7 +1231,7 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                  .filter(view => view.initiator && view.initiator.url == url)
+                                  .filter(view => view.initiator && view.initiator.url == url && view.uid != payload.uid)
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
@@ -1245,6 +1251,40 @@ async function getPreviousRelatedPosts(payload){
                 media: feedPost.media,
             });
             uids.push(feedPostView.uid);
+        }
+
+    }
+
+    if (Object.hasOwn(payload, "text")){
+
+        const feedPosts = await db.feedPosts
+                                  .filter(post => post.text && (stringSimilarity(payload.text, post.text) > .9) && ((post.uid && post.uid != payload.uid) || (!post.uid && true)))
+                                  .offset(payload.offset)
+                                  .limit(limit)
+                                  .toArray();
+
+        var link = null;
+
+        for (const feedPost of feedPosts){
+
+            if (feedPost.uid){
+                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+            }
+            else{
+                const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
+                if (view.uid == payload.uid){
+                    continue;
+                }
+                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+            }
+
+            posts.push({
+                text: feedPost.text,
+                link: link,
+                date: feedPost.estimatedDate,
+                media: feedPost.media,
+                profile: feedPost.author,
+            });
         }
 
     }

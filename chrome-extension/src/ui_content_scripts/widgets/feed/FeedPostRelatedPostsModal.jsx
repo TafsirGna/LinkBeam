@@ -34,6 +34,8 @@ import eventBus from "../../../popup/EventBus";
 import { Spinner } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
 
+const getBlankTabsData = () => Array.from({length: 4}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} });
+
 export default class FeedPostRelatedPostsModal extends React.Component{
 
   constructor(props){
@@ -42,7 +44,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
       show: false,
       viewIndex: 0,
       extractedPostData: null,
-      tabsData: Array.from({length: 3}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} }),
+      tabsData: getBlankTabsData(),
     };
 
     this.startListening = this.startListening.bind(this);
@@ -62,6 +64,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
           extractedPostData: data.extractedPostData,
         }, () => {
 
+          console.log("azerty : ", this.state.extractedPostData);
           this.requestTabData({offset: 0, viewIndex: 0, url: data.extractedPostData.content.author.url});
 
         });
@@ -85,23 +88,10 @@ export default class FeedPostRelatedPostsModal extends React.Component{
         case "PREVIOUS_RELATED_POSTS_LIST":{
 
           switch(message.data.viewIndex){
-            case 0:{
-              var items = this.state.tabsData[message.data.viewIndex].items;
-              if (!items){
-                items = message.data.objects;
-              }
-              else{
-                items = items.concat(message.data.objects);
-              }
-              var tabsData = this.state.tabsData;
-              tabsData[message.data.viewIndex].items = items;
-              this.setState({tabsData: tabsData});
-              break;
-            }
             case 1:{
               break;
             }
-            case 2:{
+            default:{
               var items = this.state.tabsData[message.data.viewIndex].items;
               if (!items){
                 items = message.data.objects;
@@ -124,7 +114,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
     });
 
-  }
+  }  
 
   componentWillUnmount(){
 
@@ -136,7 +126,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
     this.setState({
       show: false, 
       viewIndex: 0, 
-      tabsData: Array.from({length: 3}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} }),
+      tabsData: getBlankTabsData(),
     }); 
   }
 
@@ -155,17 +145,28 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             break;
           }
           case 2:{
+            if (this.state.extractedPostData.content.text){
+              payload = {viewIndex: index, offset: this.state.tabsData[index].offset, text: this.state.extractedPostData.content.text};
+            }
+            break;
+          }
+          case 3:{
             payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.initiator.url};
             break;
           }
         }
 
-        this.requestTabData(payload);
+        if (payload){
+          this.requestTabData(payload);
+        }
+
       }
     });
   }
 
   requestTabData(payload){
+
+    payload.uid = this.state.extractedPostData.id;
 
     chrome.runtime.sendMessage({header: "PREVIOUS_RELATED_POSTS", data: {tabId: this.props.tabId, payload: payload}}, (response) => {
       // Got an asynchronous response with the data from the service worker
@@ -228,91 +229,68 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                   Tags
                                 </a>
                             </li>
-                            { this.state.extractedPostData.initiator
-                                && this.state.extractedPostData.initiator.name 
-                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
-                                    <a 
-                                      class={ this.state.viewIndex == 2
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
-                                      {this.state.extractedPostData.initiator.name}
-                                      { this.state.tabsData[2].items 
-                                        && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[2].items.length}+</span>}
-                                    </a>
-                                </li>}
-
-                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
+                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
                                 <a 
-                                  class={ this.state.viewIndex == 3 
+                                  class={ this.state.viewIndex == 2 
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
                                   >
                                   Copycats
+                                  <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{/*{this.state.tabsData[2].items.length}+*/ "Beta"}</span>
                                 </a>
                             </li>
+                            { this.state.extractedPostData.initiator
+                                && this.state.extractedPostData.initiator.name 
+                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
+                                    <a 
+                                      class={ this.state.viewIndex == 3
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                      {this.state.extractedPostData.initiator.name}
+                                      { this.state.tabsData[3].items 
+                                        && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[3].items.length}+</span>}
+                                    </a>
+                                </li>}
+
 
                         </ul>
                     </div>
 
-                    { this.state.viewIndex == 0 
-                        && <div>
-
-                            { !this.state.tabsData[this.state.viewIndex].items 
-                              && <div class="text-center mt-5">
-                                                  <Spinner aria-label="Default status example" />
-                                                </div>}
-
-                            { this.state.tabsData[this.state.viewIndex].items
-                                && <PreviousPostsList
-                                    objects={this.state.tabsData[this.state.viewIndex].items}
-                                    extractedPostData={this.state.extractedPostData}
-                                    viewIndex={0}/> }
-                          </div>}
+                    { [0, 2, 3].map(index => <div>
+                                                { this.state.viewIndex == index 
+                                                    && <div>
+                                                
+                                                      { !this.state.tabsData[this.state.viewIndex].items 
+                                                        && <div class="text-center mt-5">
+                                                                            <Spinner aria-label="Default status example" />
+                                                                          </div>}
+    
+                                                      { this.state.tabsData[this.state.viewIndex].items
+                                                          && <div>
+    
+                                                            { this.state.tabsData[this.state.viewIndex].items.length == 0
+                                                                && <AlertWidget
+                                                                      text="Nothing to show."
+                                                                      variant="yellow"
+                                                                      className="mt-5"/>}
+    
+                                                            { this.state.tabsData[this.state.viewIndex].items.length != 0
+                                                                && <PreviousPostsList
+                                                                      objects={this.state.tabsData[this.state.viewIndex].items}
+                                                                      extractedPostData={this.state.extractedPostData}
+                                                                      viewIndex={index}/>}
+                                                          </div> }
+                                                          
+                                                    </div>}
+                                              </div>) }
 
                     { this.state.viewIndex == 1
                         && <div>
-                            <div id="alert-border-1" class="flex items-center p-4 my-4 text-blue-800 border-t-4 border-blue-300 bg-blue-50 dark:text-blue-400 dark:bg-gray-800 dark:border-blue-800" role="alert">
-                              <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
-                              </svg>
-                              <div class="ms-3 text-base font-medium">
-                                Section still in active development.
-                              </div>
-                              {/*<button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-blue-50 text-blue-500 rounded-lg focus:ring-2 focus:ring-blue-400 p-1.5 hover:bg-blue-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700" data-dismiss-target="#alert-border-1" aria-label="Close">
-                                <span class="sr-only">Dismiss</span>
-                                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                </svg>
-                              </button>*/}
-                            </div>
-                      </div>}
-
-                    { this.state.viewIndex == 2
-                        && <div>
-
-                            { !this.state.tabsData[this.state.viewIndex].items 
-                              && <div class="text-center mt-5">
-                                                  <Spinner aria-label="Default status example" />
-                                                </div>}
-
-                            { this.state.tabsData[this.state.viewIndex].items 
-                                && <PreviousPostsList
-                                    objects={this.state.tabsData[this.state.viewIndex].items}
-                                    extractedPostData={this.state.extractedPostData}
-                                    viewIndex={2}/> }
-                          </div>}
-
-                    { this.state.viewIndex == 3
-                        && <div>
-
-                            { !this.state.tabsData[this.state.viewIndex].items 
-                              && <div class="text-center mt-5">
-                                                  <Spinner aria-label="Default status example" />
-                                                </div>}
-
-                            { this.state.tabsData[this.state.viewIndex].items 
-                                && <div></div> }
-                          </div>}
+                            <AlertWidget
+                              text="Section still in active development."
+                              variant="blue"
+                              className="mt-5"/>
+                        </div>}
 
                   </div>}
 
@@ -335,18 +313,60 @@ export default class FeedPostRelatedPostsModal extends React.Component{
   }
 }
 
+function AlertWidget(props){
+
+  return <div id="alert-border-4" class={`${props.className || ""} flex items-center p-4 mb-4 text-${props.variant}-800 border-t-4 border-${props.variant}-300 bg-${props.variant}-50 dark:text-${props.variant}-300 dark:bg-gray-800 dark:border-${props.variant}-800`} role="alert">
+      <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+      </svg>
+      <div class="ms-3 text-base font-medium">
+        {props.text}
+      </div>
+  </div>;
+
+}
+
 function PreviousPostsList(props){
+
+  function getProfilePicture(object){
+
+    switch(props.viewIndex){
+      case 0:{
+        return props.extractedPostData.content.author.picture;
+      }
+      case 2:{
+        return props.extractedPostData.initiator.picture;
+      }
+      case 3:{
+        return object.profile.picture;
+      }
+    }
+
+  }
+
+  function getProfileName(object){
+
+    switch(props.viewIndex){
+      case 0:{
+        return props.extractedPostData.content.author.name;
+      }
+      case 2:{
+        return props.extractedPostData.initiator.name;
+      }
+      case 3:{
+        return object.profile.name;
+      }
+    }
+
+  }
+
   return <div>
           <ol class="relative border-s border-gray-200 dark:border-gray-700 mt-5 mx-2">                  
             { props.objects.map(object => (<li class="mb-10 ms-6" title="Click to open in a new tab">
                                               <span class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900">
                                                   <img 
                                                     class="rounded-full shadow-lg" 
-                                                    src={props.viewIndex == 0 
-                                                          ? props.extractedPostData.content.author.picture
-                                                          : (props.viewIndex == 2 
-                                                              ? props.extractedPostData.initiator.picture
-                                                              : object.profile.picture)} 
+                                                    src={getProfilePicture(object)} 
                                                     alt="Thomas Lean image"/>
                                               </span>
                                               <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-700 dark:border-gray-600">
@@ -354,11 +374,7 @@ function PreviousPostsList(props){
                                                       <time class="mb-1 text-base font-normal text-gray-400 sm:order-last sm:mb-0">{LuxonDateTime.fromISO(object.date).toRelative()}</time>
                                                       <div class="text-xl font-normal text-gray-500 lex dark:text-gray-300">
                                                         <span class="font-bold">
-                                                          {props.viewIndex == 0 
-                                                            ? props.extractedPostData.content.author.name
-                                                            : (props.viewIndex == 2 
-                                                                ? props.extractedPostData.initiator.name
-                                                                : null)}
+                                                          {getProfileName(object)}
                                                         </span>
                                                         {" interacted with or edited this"}
                                                       </div>

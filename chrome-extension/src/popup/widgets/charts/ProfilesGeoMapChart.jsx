@@ -300,9 +300,9 @@ export default class ProfilesGeoMapChart extends React.Component{
                                 .map((key, index) => <OverlayTrigger 
                                   trigger="click" 
                                   placement="left" 
-                                  overlay={<Popover id="popover-basic">
+                                  overlay={<Popover id="popover-basic" className="shadow-lg">
                                             <Popover.Header as="h3">Details</Popover.Header>
-                                            <Popover.Body>
+                                            <Popover.Body className="ps-0">
                                               { Object.keys(this.state.locationsData[key].activities).length == 0
                                                   && <div class="text-center m-5 mt-2">
                                                       <img 
@@ -312,17 +312,17 @@ export default class ProfilesGeoMapChart extends React.Component{
                                                     </div> }
 
                                               { Object.keys(this.state.locationsData[key].activities).length != 0 
-                                                  && <ul>
+                                                  && <div>
                                                       { Object.keys(this.state.locationsData[key].activities).map(url => {
-                                                        return <li>
+                                                        return <div>
                                                                 { this.state.locationsData[key].activities[url].map(locationActivity => <div>
                                                                                                                                           <h6 class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.entity.name)}</h6>
                                                                                                                                           <p class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.title)}</p>
-                                                                                                                                          <p class="small fst-italic">{`${locationActivity.period.startDateRange.toFormat("MMMM yyyy")} - ${locationActivity.period.endDateRange.toFormat("MMMM yyyy")}`}</p>
+                                                                                                                                          <p class="small fst-italic text-muted">{`${locationActivity.period.startDateRange.toFormat("MMMM yyyy")} - ${locationActivity.period.endDateRange.toFormat("MMMM yyyy")}`}</p>
                                                                                                                                       </div>) }
-                                                            </li>
+                                                            </div>
                                                       }) }
-                                                    </ul>}
+                                                    </div>}
                                             </Popover.Body>
                                           </Popover>}>
                                   <span 

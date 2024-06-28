@@ -33,6 +33,7 @@ import comment_icon from '../../assets/comment_icon.png';
 import insightful_icon from '../../assets/insightful_icon.png';
 import repost_icon from '../../assets/repost_icon.png';
 import suggestion_icon from '../../assets/suggestion_icon.png';
+import fun_icon from '../../assets/fun_icon.png';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 
@@ -62,6 +63,7 @@ const categoryIconMap = {
   insights: insightful_icon,
   reposts: repost_icon,
   suggestions: suggestion_icon,
+  funs: fun_icon,
 }
 
 export default class PostViewListItemView extends React.Component{
@@ -84,7 +86,6 @@ export default class PostViewListItemView extends React.Component{
     this.onReminderActionClick = this.onReminderActionClick.bind(this);
     this.registerUpdateEvent = this.registerUpdateEvent.bind(this);
     this.setAllPostViewOccurences = this.setAllPostViewOccurences.bind(this);
-    // this.getPostTimeCount = this.getPostTimeCount.bind(this);
   }
 
   componentDidMount() {

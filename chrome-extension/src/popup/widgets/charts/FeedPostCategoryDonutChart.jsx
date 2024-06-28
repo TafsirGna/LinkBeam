@@ -66,8 +66,7 @@ export default class FeedPostCategoryDonutChart extends React.Component{
         colors = []; 
 
 
-    labels = Object.keys(categoryVerbMap);
-    labels.push("publications");
+    labels = Object.keys(categoryVerbMap).concat(["publications"]);
     
     data = labels.map(label => 0);
     colors = getChartColors(labels.length).borders;
