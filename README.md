@@ -37,12 +37,14 @@ Linkbeam can basically:
 * set reminders on posts and profiles as well as keywords to be highlighted in the interface;
 * regroup all the media associated with the posts in a unique interface for the user to view and search;
 * import/export your data in json format.
+explore some previous related posts when viewing a post right from the feed interface;
+* list all the previous copycats (that the user may have encountered in the past on their feed) of the current post (a beta feature)
 
 Linkbeam doesn't:
 * help in any ad marketing use cases;
 * interact with any of linkedin APIs (only the browser DOM);
 * send any of the data on a remote server (everything's stored locally at the current state);
-* do any action on your behalf;
+* trigger any action on your behalf;
 
 ## License
 

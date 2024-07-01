@@ -335,10 +335,10 @@ function PreviousPostsList(props){
         return props.extractedPostData.content.author.picture;
       }
       case 2:{
-        return props.extractedPostData.initiator.picture;
+        return object.profile.picture;
       }
       case 3:{
-        return object.profile.picture;
+        return props.extractedPostData.initiator.picture;
       }
     }
 
@@ -351,10 +351,10 @@ function PreviousPostsList(props){
         return props.extractedPostData.content.author.name;
       }
       case 2:{
-        return props.extractedPostData.initiator.name;
+        return object.profile.name;
       }
       case 3:{
-        return object.profile.name;
+        return props.extractedPostData.initiator.name;
       }
     }
 
@@ -376,7 +376,7 @@ function PreviousPostsList(props){
                                                         <span class="font-bold">
                                                           {getProfileName(object)}
                                                         </span>
-                                                        {" interacted with or edited this"}
+                                                        <span class="text-base italic">{" interacted with or edited this"}</span>
                                                       </div>
                                                   </div>
                                                   <div>

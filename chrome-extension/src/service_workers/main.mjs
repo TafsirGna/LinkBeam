@@ -106,19 +106,19 @@ function isUrlOfInterest(url){
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
-    if (!changeInfo.url){      
+    if (!tab.url){      
         return;
     }
 
-    if (testTabBaseUrl(changeInfo.url) && isUrlOfInterest(changeInfo.url)){
+    if (testTabBaseUrl(tab.url) && isUrlOfInterest(tab.url)){
 
         var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
-        console.log('###################### : ', loadingTabs);
+        console.log('**************** : ', loadingTabs, changeInfo.status);
         switch(changeInfo.status){
 
             case "loading":{
 
-                var url = changeInfo.url.split("?")[0];
+                var url = tab.url.split("?")[0];
 
                 // checking that i'm not already processing this signal
                 if (loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
@@ -132,32 +132,39 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                     Dexie.exists(appParams.appDbName).then(function (exists) {
                         if (exists) {
 
-                            chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+                            if (changeInfo.url === undefined){ // in case of a tab's page reload
+                                injectScriptsInTab(tabId, url, null);
+                            }
+                            else{
 
-                                if (!tabs[0]){
-                                    return;
-                                }
+                                chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
 
-                                var result = await handleInterestingTab(tabId, url);
-
-                                if (tabs[0].id == tabId){
-
-                                    await resetTabTimer();
-
-                                    // updating the badge text
-                                    chrome.action.setBadgeText({text: result.badgeText});
-
-                                    // conditionally injecting the script 
-                                    if (result.inject){
-                                        injectScriptsInTab(tabId, url, result.visitId);
-                                    }
-                                    else{
-                                        runTabTimer(result.visitId);
+                                    if (!tabs[0]){
+                                        return;
                                     }
 
-                                }
+                                    var result = await handleInterestingTab(tabId, url);
 
-                            });
+                                    if (tabs[0].id == tabId){
+
+                                        await resetTabTimer();
+
+                                        // updating the badge text
+                                        chrome.action.setBadgeText({text: result.badgeText});
+
+                                        // conditionally injecting the script 
+                                        if (!result.visitId){
+                                            injectScriptsInTab(tabId, url, null);
+                                        }
+                                        else{
+                                            runTabTimer(result.visitId);
+                                        }
+
+                                    }
+
+                                });
+
+                            }
                             
                         }
                     });
@@ -173,7 +180,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             case "complete": {
 
-                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == url);
+                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url);
                 if (index != -1){
                     loadingTabs.splice(index, 1);
                     await chrome.storage.session.set({ loadingTabs: loadingTabs });
@@ -474,22 +481,12 @@ async function handleInterestingTab(tabId, url){
     url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
-        result = { inject: false, badgeText: "!", visitId: null };
-
-    console.log("MMMMMMMMMMMMMMMMMMMMM 0 : ", sessionItem.myTabs, tabId);
+        result = { badgeText: "!", visitId: null };
 
     if (!sessionItem.myTabs){
 
         sessionItem.myTabs = {};  
         sessionItem.myTabs[tabId] = {badgeText: result.badgeText};
-
-        if (isLinkedinFeed(url)){
-            result.visitId = await addFreshFeedVisit();
-            sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
-        }
-
-        chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-        result.inject = true;
 
     }
     else{
@@ -498,33 +495,10 @@ async function handleInterestingTab(tabId, url){
 
             result.badgeText = sessionItem.myTabs[tabId].badgeText;
             
-            if (!sessionItem.myTabs[tabId].visits){
-
-                if (isLinkedinFeed(url)){
-                    result.visitId = await addFreshFeedVisit();
-                    sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
-                }
-
-                chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-                result.inject = true;
-
-            }
-            else{
+            if (sessionItem.myTabs[tabId].visits){
 
                 const index = sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url);
-                console.log("MMMMMMMMMMMMMMMMMMMMM 1 : ", tabId, index, url);
-                if (index == -1){
-
-                    if (isLinkedinFeed(url)){
-                        result.visitId = await addFreshFeedVisit();
-                        sessionItem.myTabs[tabId].visits.push({id: result.visitId, url: url});
-                    }
-
-                    chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-                    result.inject = true;
-
-                }
-                else{
+                if (index != -1){
                     result.visitId = sessionItem.myTabs[tabId].visits[index].id;
                 }
 
@@ -532,26 +506,11 @@ async function handleInterestingTab(tabId, url){
 
         }
         else{
-
             sessionItem.myTabs[tabId] = {badgeText: result.badgeText};
-
-            if (isLinkedinFeed(url)){
-                result.visitId = await addFreshFeedVisit();
-                if (!sessionItem.myTabs[tabId].visits){
-                    sessionItem.myTabs[tabId].visits = [{id: result.visitId, url: url}];
-                }
-                else{
-                    if (sessionItem.myTabs[tabId].visits.map(v => v.url).indexOf(url) == -1){
-                        sessionItem.myTabs[tabId].visits.push({id: result.visitId, url: url});
-                    }
-                }
-            }
-
-            chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-            result.inject = true;
-
         }
     }
+
+    chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
     // if (isLinkedinFeed(url)){ 
     //     createBrowsingOnBehalfMenu();
@@ -566,24 +525,6 @@ async function handleInterestingTab(tabId, url){
     //     });
 
     // }
-
-    async function addFreshFeedVisit(){
-
-        var feedItemsMetrics = {};
-        const dateTime = new Date().toISOString();
-        for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { feedItemsMetrics[category] =  0; }
-
-        var visit = {
-            date: dateTime,
-            url: appParams.LINKEDIN_FEED_URL(),
-            timeCount: 1, 
-            feedItemsMetrics: feedItemsMetrics,
-        };
-
-        await db.visits.add(visit);
-        return (await db.visits.where({date: dateTime}).first()).id;
-
-    }
 
     return result;
 
@@ -664,8 +605,8 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                     chrome.action.setBadgeText({text: result.badgeText});
 
                     // conditionally injecting the script 
-                    if (result.inject){
-                        injectScriptsInTab(activeInfo.tabId, url, result.visitId);
+                    if (!result.visitId){
+                        injectScriptsInTab(activeInfo.tabId, url, null);
                     }
                     else{
                         runTabTimer(result.visitId);
@@ -735,8 +676,27 @@ async function recordFeedVisit(tabData){
     const dateTime = new Date().toISOString();
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
+    sessionItem.myTabs[tabData.tabId].visits = sessionItem.myTabs[tabData.tabId].visits || [];
     const visitIndex = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
-    const visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
+    var visitId = null;
+
+    if (visitIndex == -1){
+        visitId = await addFreshFeedVisit();
+        sessionItem.myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl});
+
+        chrome.tabs.sendMessage(tabData.tabId, {
+                header: messageMeta.header.CS_SETUP_DATA, 
+                data: {visitId: visitId},
+            }, 
+            (response) => {
+                console.log('visitId sent', response, visitId);
+            }
+        );
+
+    }
+    else{
+        visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
+    }
 
     chrome.storage.session.get(["tabTimer"]).then((sessionItem) => {
         if (!sessionItem.tabTimer){
@@ -883,6 +843,7 @@ async function recordFeedVisit(tabData){
         post.viewsCount = 0;
         post.timeCount = 0;
         post.dbId = dbFeedPost.id;
+        post.visitId = visitId;
 
         var popularity = {date: null, value: 0};
         await db.feedPostViews
@@ -949,6 +910,24 @@ async function recordFeedVisit(tabData){
         });  
 
     });
+
+    async function addFreshFeedVisit(){
+
+        var feedItemsMetrics = {};
+        const dateTime = new Date().toISOString();
+        for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { feedItemsMetrics[category] =  0; }
+
+        var visit = {
+            date: dateTime,
+            url: appParams.LINKEDIN_FEED_URL(),
+            timeCount: 1, 
+            feedItemsMetrics: feedItemsMetrics,
+        };
+
+        await db.visits.add(visit);
+        return (await db.visits.where({date: dateTime}).first()).id;
+
+    }
 
 }
 

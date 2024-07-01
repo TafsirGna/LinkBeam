@@ -146,7 +146,6 @@ export default class StatisticsView extends React.Component{
       if (profiles.map(e => e.url).indexOf(visit.url) == -1){
 
         var profile = null;
-        
         try{
           profile = await getProfileDataFrom(db, visit.url);
         }

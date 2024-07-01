@@ -151,11 +151,17 @@ export default class PostViewListItemView extends React.Component{
 
     var count = 0;
     if (this.props.object.category){
-      count = await db.feedPostViews
-                      .filter(feedPostView => feedPostView.category
-                                                && feedPostView.category == this.props.object.category
-                                                && feedPostView.initiator.url == this.props.object.initiator.url)
-                      .count();
+      var uids = [];
+      await db.feedPostViews
+              .filter(feedPostView => feedPostView.category
+                                        && feedPostView.category == this.props.object.category
+                                        && feedPostView.initiator.url == this.props.object.initiator.url)
+              .each(feedPostView => {
+                if (uids.indexOf(feedPostView.uid) == -1){
+                  uids.push(feedPostView.uid);
+                  count++;
+                }
+              });
     }
     else{
       count = await db.feedPosts

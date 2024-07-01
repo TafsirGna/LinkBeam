@@ -234,12 +234,18 @@ export class ScriptAgentBase {
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
           if (!this.tabId){
-
             this.setInitData(message.data, sendResponse);
-
           }
           else{
-            this.isActiveTab = (this.tabId == message.data.tabId); 
+
+            if (Object.hasOwn(message.data, "tabId")){
+              this.isActiveTab = (this.tabId == message.data.tabId); 
+            }
+
+            if (Object.hasOwn(message.data, "visitId")){
+              this.visitId = message.data.visitId; 
+            }
+
           }
 	      }
 

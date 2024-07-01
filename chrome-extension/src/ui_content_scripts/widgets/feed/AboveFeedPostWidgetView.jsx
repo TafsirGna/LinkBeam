@@ -46,6 +46,7 @@ import {
   ReminderIcon,
   BranchIcon,
   DeletionIcon,
+  AlertCircleIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
 import sleeping_icon from '../../../assets/sleeping_icon.png';
@@ -127,6 +128,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
       dbId: null,
       idlePage: false,
       extractedPostData: null,
+      dataExtractionError: false,
+      visitId: null,
     };
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
@@ -144,6 +147,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   componentDidMount() {
+
+    this.setState({visitId: this.props.visitId});
 
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
 
@@ -239,6 +244,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
         }
       }
       else{
+        console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww", this.props.postUid);
         if (this.state.timerInterval){
           this.clearTimer();
         }
@@ -280,8 +286,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
       }
 
       post.initiator = {
-        name: postContainerHeaderElement.querySelector("a.update-components-text-view__mention") 
-                ? postContainerHeaderElement.querySelector("a.update-components-text-view__mention").textContent 
+        name: postContainerHeaderElement.querySelector(".update-components-header__text-view a")
+                ? postContainerHeaderElement.querySelector(".update-components-header__text-view a").textContent 
                 : null,
         url: postContainerHeaderElement.querySelector("a.app-aware-link ") 
               ? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
@@ -290,6 +296,11 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   ? postContainerHeaderElement.querySelector("img").src 
                   : null,
       };
+
+      if (!post.initiator.name && post.initiator.url){
+        this.setState({dataExtractionError: true});
+        return;
+      }
 
     }
 
@@ -527,7 +538,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
             if (this.state.impressionCount == null){
               return;
             }
-            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.props.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
+            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.state.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
               console.log('time count update request sent', response);
             });
           }
@@ -641,8 +652,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   }
 
                   if (Object.hasOwn(post, "timeCount")){
-                    this.setState({fetchedTimeCount: post.timeCount}, () => {
-                    });
+                    this.setState({fetchedTimeCount: post.timeCount});
                   }
 
                   if (Object.hasOwn(post, "dbId")){
@@ -651,6 +661,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                   if (Object.hasOwn(post, "rank")){
                     this.setState({popularityRank: post.rank});
+                  }
+
+                  if (Object.hasOwn(post, "visitId")){
+                    this.setState({visitId: post.visitId});
                   }
                   
                 }
@@ -668,16 +682,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
         case messageMeta.header.CS_SETUP_DATA: {
           if (Object.hasOwn(message.data, "tabId")){
-            if (this.props.tabId){
-              if (this.props.tabId == message.data.tabId){
-                if (!this.state.timerInterval){
-                  this.runTimer();
-                }
+            if (this.props.tabId == message.data.tabId){
+              if (!this.state.timerInterval){
+                this.runTimer();
               }
-              else{
-                if (this.state.timerInterval){
-                  this.clearTimer();
-                }
+            }
+            else{
+              if (this.state.timerInterval){
+                this.clearTimer();
               }
             }
           }
@@ -765,7 +777,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     return <button 
             type="button" 
             title={`${Object.keys(this.state.foundKeywords).length == "0" ? "No" : Object.keys(this.state.foundKeywords).length} keyword${Object.keys(this.state.foundKeywords).length > 1 ? "s" : ""} detected`}
-            class=/*me-1*/"flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
+            class="mx-2 flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800">
             <span class="text-base me-2">({Object.keys(this.state.foundKeywords).length})</span>
             <KeyIcon 
               size="10"/>
@@ -839,10 +851,19 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                     height="20" 
                                     class="mx-2"/>
                               </div> }
+
+                      { this.state.dataExtractionError
+                          && <div 
+                              class="text-red-600 mx-2 flex items-center"
+                              title="Data extraction error">
+                              <AlertCircleIcon 
+                                size="22"
+                                className=""/>
+                          </div> }
         
                       {/* Indication that the post has just been updated */}
                       { this.state.updated 
-                          && <span class="flex items-center bg-green-100 text-green-800 text-lg font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                          && <span class="flex items-center bg-green-100 text-green-800 text-lg font-medium mx-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
                                 Updated
                                 <CheckIcon
                                   size="16"
@@ -936,7 +957,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       <button 
                         onClick={() => {if (this.state.impressionCount != null) {this.showFeedPostDataModal()}}} 
                         type="button" 
-                        class="me-2 flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                        class="mx-2 flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                         title={this.state.impressionCount != null ? `${this.state.impressionCount} impression${this.state.impressionCount <= 1 ? "" : "s"}` : "loading..."}
                         >
       
@@ -947,7 +968,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                     size="xs"
                                   />}
       
-                        { this.state.impressionCount != null && <span class="text-base me-2">({this.state.impressionCount})</span>}
+                        { this.state.impressionCount != null 
+                            && <span class="text-base me-2">({this.state.impressionCount})</span>}
+
                         <BarChartIcon 
                             size="14"
                             className=""/>
@@ -958,7 +981,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                           && <button 
                               onClick={this.showFeedPostRelatedPostsModal} 
                               type="button" 
-                              class="flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
+                              class="mx-2 flex items-center text-blue-800 bg-transparent border border-blue-800 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:hover:bg-blue-600 dark:border-blue-600 dark:text-blue-400 dark:hover:text-white dark:focus:ring-blue-800"
                               title="Previous related posts"
                               >
                               <BranchIcon 
