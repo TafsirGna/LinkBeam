@@ -24,6 +24,9 @@ import React from 'react'
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
 import lodash from 'lodash';
+import { 
+  getHashtagText,
+} from "../../Local_library";
 
 
 const constructTangleLayout = (levels, options={}) => {
@@ -235,7 +238,7 @@ export default class HashtagTangledTreeChart extends React.Component{
     }
 
     var chartData = [
-      [{id: this.props.object.text}],
+      [{id: getHashtagText(this.props.object.text)}],
       []
     ];
 
@@ -245,13 +248,13 @@ export default class HashtagTangledTreeChart extends React.Component{
           continue;
         }
 
-        if (!reference.text.startsWith("#")){
+        if (!reference.text.startsWith("#") && !reference.text.startsWith("hashtag#")){
           continue;
         }
 
-        if (chartData[1].map(o => o.id).indexOf(reference.text) == -1){
+        if (chartData[1].map(o => o.id).indexOf(getHashtagText(reference.text)) == -1){
           chartData[1].push({
-            id: reference.text,
+            id: getHashtagText(reference.text),
             parents: [this.props.object.text],
           });
         }

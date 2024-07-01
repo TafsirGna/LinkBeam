@@ -137,7 +137,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 
 				if (feedPostView.initiator && feedPostView.initiator.name){
 
-					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf("linkedin.com")) == feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf("linkedin.com")));	
+					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf(appParams.LINKEDIN_ROOT_URL)) == feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf(appParams.LINKEDIN_ROOT_URL)));	
 					
 					// i increment the last item's value
 					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 
@@ -148,7 +148,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 
 				if (feedPost.author && feedPost.author.name){
 
-					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf("linkedin.com")) == feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));	
+					const profileIndex = profileData.findIndex(object => object.url.split("?")[0].slice(object.url.indexOf(appParams.LINKEDIN_ROOT_URL)) == feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf(appParams.LINKEDIN_ROOT_URL)));	
 					
 					// i increment the last item's value
 					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 

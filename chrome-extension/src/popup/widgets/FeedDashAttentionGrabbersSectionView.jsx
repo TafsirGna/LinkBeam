@@ -83,7 +83,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
     for (var feedPostView of this.props.objects){
 
       if (feedPostView.initiator && feedPostView.initiator.url){
-        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf("linkedin.com")));
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf(appParams.LINKEDIN_ROOT_URL))).indexOf(feedPostView.initiator.url.split("?")[0].slice(feedPostView.initiator.url.indexOf(appParams.LINKEDIN_ROOT_URL)));
         if (profileIndex == -1){
           attentionGrabbers.push({
             profile: feedPostView.initiator,
@@ -99,7 +99,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       if (feedPostIndex == -1){
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
 
-        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf(appParams.LINKEDIN_ROOT_URL))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf(appParams.LINKEDIN_ROOT_URL)));
         if (profileIndex == -1){
           attentionGrabbers.push({
             profile: feedPost.author,
@@ -114,7 +114,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       }
       else{
         var feedPost = feedPosts[feedPostIndex];
-        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf("linkedin.com"))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf("linkedin.com")));
+        const profileIndex = attentionGrabbers.map(g => g.profile.url.split("?")[0].slice(g.profile.url.indexOf(appParams.LINKEDIN_ROOT_URL))).indexOf(feedPost.author.url.split("?")[0].slice(feedPost.author.url.indexOf(appParams.LINKEDIN_ROOT_URL)));
         attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
       }
 

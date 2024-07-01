@@ -99,12 +99,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 				this.attachPostWidget(postContainerElement, props);
 			}
-			else{
 
-				eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
-				console.log("QQQQQQQQQQQQQQQQQQQQ 1 : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage);
-
-			}
+			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
+			console.log("QQQQQQQQQQQQQQQQQQQQ 1 : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage);
 
 		}
 

@@ -25,6 +25,7 @@ import eventBus from "../EventBus";
 import { 
   appParams,
   highlightText,
+  getHashtagText,
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
@@ -116,7 +117,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
               for (var reference of feedPost.references){
 
-                if (!reference.text.startsWith("#")){
+                if (!reference.text.startsWith("#") && !reference.text.startsWith("hashtag#")){
                   continue;
                 }
 
@@ -200,7 +201,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                                                               >
                                                               <span 
                                                                 class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill`}>
-                                                                {`${object.text} (${object.feedPosts.length})`}
+                                                                {`${getHashtagText(object.text)} (${object.feedPosts.length})`}
                                                               </span>
                                                               </OverlayTrigger>
                                                             </div>

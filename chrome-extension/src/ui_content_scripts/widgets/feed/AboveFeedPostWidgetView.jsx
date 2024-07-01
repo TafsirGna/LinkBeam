@@ -152,7 +152,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
 
-      if (this.props.postUid == data.uid){ console.log("QQQQQQQQQQQQQQQQQQQQ 2 : ", data.uid); }
+      console.log("QQQQQQQQQQQQQQQQQQQQ 2 : ", this.props.postUid, (this.props.postUid == data.uid)); 
 
       this.setState({
         postHtmlElementVisible: (this.props.postUid == data.uid),
@@ -194,7 +194,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
         }
       }
       else{
-        if (!this.state.timerInterval){
+        if (!this.state.timerInterval 
+              && this.state.postHtmlElementVisible){
           this.runTimer();
           this.setState({idlePage: false});
         }
@@ -244,7 +245,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
         }
       }
       else{
-        console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww", this.props.postUid);
+        console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww 1 ", this.props.postUid, this.state.timerInterval);
         if (this.state.timerInterval){
           this.clearTimer();
         }
@@ -257,7 +258,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   clearTimer(){
 
     clearInterval(this.state.timerInterval);
-    this.setState({timerInterval: null});
+    this.setState({timerInterval: null}, () => {console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww 2 ", this.props.postUid, this.state.timerInterval);});
 
   }
 
@@ -521,9 +522,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   runTimer(){
 
-    // clearing the timer in case it's not been done before
-    this.clearTimer();
-
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 
@@ -539,7 +537,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
               return;
             }
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.state.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
-              console.log('time count update request sent', response);
+              console.log('time count update request sent', this.props.postUid, this.state.postHtmlElementVisible, response);
             });
           }
         });

@@ -114,11 +114,11 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
         var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
         console.log('**************** : ', loadingTabs, changeInfo.status);
+        var url = tab.url.split("?")[0];
+
         switch(changeInfo.status){
 
             case "loading":{
-
-                var url = tab.url.split("?")[0];
 
                 // checking that i'm not already processing this signal
                 if (loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
@@ -180,7 +180,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             case "complete": {
 
-                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url);
+                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == url);
                 if (index != -1){
                     loadingTabs.splice(index, 1);
                     await chrome.storage.session.set({ loadingTabs: loadingTabs });
@@ -647,7 +647,7 @@ function processTabData(tabData){
 
 async function enrichProfileSectionData(tabData){
 
-    const url = tabData.tabUrl.slice(tabData.tabUrl.indexOf("linkedin.com"), tabData.tabUrl.indexOf("details/"));
+    const url = tabData.tabUrl.slice(tabData.tabUrl.indexOf(appParams.LINKEDIN_ROOT_URL), tabData.tabUrl.indexOf("details/"));
 
     var profileData = await getProfileDataFrom(db, url);
 
@@ -1122,6 +1122,14 @@ async function processMessageEvent(message, sender, sendResponse){
             
             if (message.data.idleStatus){
                 resetTabTimer();
+
+                chrome.notifications.create(uuidv4(), {
+                  title: 'Linkbeam',
+                  message: "Going inactive",
+                  iconUrl: chrome.runtime.getURL(app_logo_path),
+                  type: 'basic',
+                });
+
             }
             else{
                 runTabTimer(message.data.visitId); // TODO
@@ -1176,7 +1184,7 @@ async function getPreviousRelatedPosts(payload){
 
     if (Object.hasOwn(payload, "url")){
 
-        var url = payload.url.split("?")[0]/*.slice(payload.url.indexOf("linkedin.com"))*/;
+        var url = payload.url.split("?")[0]/*.slice(payload.url.indexOf(appParams.LINKEDIN_ROOT_URL))*/;
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
