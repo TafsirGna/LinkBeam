@@ -47,6 +47,7 @@ import {
   BranchIcon,
   DeletionIcon,
   AlertCircleIcon,
+  DuplicateIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
 import sleeping_icon from '../../../assets/sleeping_icon.png';
@@ -194,9 +195,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
         }
       }
       else{
-        if (!this.state.timerInterval 
-              && this.state.postHtmlElementVisible){
-          this.runTimer();
+        if (!this.state.timerInterval){
+          if (this.state.postHtmlElementVisible){
+            this.runTimer();
+          }
           this.setState({idlePage: false});
         }
       }
@@ -245,7 +247,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
         }
       }
       else{
-        console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww 1 ", this.props.postUid, this.state.timerInterval);
         if (this.state.timerInterval){
           this.clearTimer();
         }
@@ -949,6 +950,15 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
                                         </Dropdown.Item>}
+
+                                <Dropdown.Item 
+                                  onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.postUid}`, '_blank'); }}
+                                  className="">
+                                  <DuplicateIcon
+                                    size="12"
+                                    className="me-2"/>
+                                  Open in a new tab
+                                  </Dropdown.Item>
                               </Dropdown>}
         
                       {/* Indication of the number of this post inpression on the user's feed */}

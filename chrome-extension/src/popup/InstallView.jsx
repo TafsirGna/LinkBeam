@@ -259,6 +259,7 @@ export default class About extends React.Component{
               outdatedProfileReminder: "> 1 year",
               maxTimeAlarm: "1 hour",
               autoTabOpening: true,
+              hidePostViewCount: "Never",
           });
 
           localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
@@ -430,6 +431,31 @@ export default class About extends React.Component{
                                                       {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
                                                             <li>
                                                               <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                                                {value}
+                                                              </a>
+                                                            </li>  
+                                                        ))}
+                                                    </ul>
+                                                  </div>
+                                                </small>
+                                              </div>
+                                            </a>}
+                                        { this.state.settings.notifications 
+                                          && <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                              <div class="d-flex gap-2 w-100 justify-content-between">
+                                                <div>
+                                                  <h6 class="mb-0">Hide post after views</h6>
+                                                  <p class="mb-0 opacity-75 small">It helps you hide posts that you've already seen but that keep showing up in your feed.</p>
+                                                </div>
+                                                <small /*class="opacity-50 text-nowrap"*/>
+                                                  <div class="dropdown">
+                                                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                      <span class="rounded shadow-sm badge border text-primary">{this.state.settings.hidePostViewCount}</span>
+                                                    </div>
+                                                    <ul class="dropdown-menu shadow-lg border">
+                                                      {["Never", "2 views", "3 views"].map((value) => (
+                                                            <li>
+                                                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("hidePostViewCount", value)}}>
                                                                 {value}
                                                               </a>
                                                             </li>  

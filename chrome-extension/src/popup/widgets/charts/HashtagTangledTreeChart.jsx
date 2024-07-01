@@ -255,7 +255,7 @@ export default class HashtagTangledTreeChart extends React.Component{
         if (chartData[1].map(o => o.id).indexOf(getHashtagText(reference.text)) == -1){
           chartData[1].push({
             id: getHashtagText(reference.text),
-            parents: [this.props.object.text],
+            parents: [getHashtagText(this.props.object.text)],
           });
         }
 

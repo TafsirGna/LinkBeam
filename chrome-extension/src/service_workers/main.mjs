@@ -1132,7 +1132,21 @@ async function processMessageEvent(message, sender, sendResponse){
 
             }
             else{
-                runTabTimer(message.data.visitId); // TODO
+
+                const sessionItem = await chrome.storage.session.get(["tabTimer"]);
+                if (!sessionItem.tabTimer){
+
+                    runTabTimer(message.data.visitId);
+
+                    chrome.notifications.create(uuidv4(), {
+                      title: 'Linkbeam',
+                      message: "Resuming activity",
+                      iconUrl: chrome.runtime.getURL(app_logo_path),
+                      type: 'basic',
+                    });
+
+                }
+
             }
 
             break;
@@ -1390,11 +1404,15 @@ async function fetchPostViews(props){
 
 // async function testUpDb(){
 
-//     await db.feedPosts.filter(post => true).modify(post => {
-//         if (post.date){
-//             post.estimatedDate = post.date;
-//             delete post.date;
-//         }
+//     await db.settings.where({id: 1}).modify(settings => {
+//         settings.hidePostViewCount = "Never";
 //     });
+
+//     // await db.feedPosts.filter(post => true).modify(post => {
+//     //     if (post.date){
+//     //         post.estimatedDate = post.date;
+//     //         delete post.date;
+//     //     }
+//     // });
 
 // }

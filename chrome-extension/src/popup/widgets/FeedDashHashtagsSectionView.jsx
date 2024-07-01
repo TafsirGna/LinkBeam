@@ -121,7 +121,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                   continue;
                 }
 
-                const index = references.findIndex(r => r.text == reference.text);
+                const index = references.findIndex(r => getHashtagText(r.text) == getHashtagText(reference.text));
                 if (index == -1){
                   references.push({
                     ...reference,
@@ -233,7 +233,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
         {/*Modals */}
         <Modal show={this.state.hashtagInfosModalShow} onHide={this.handleHashtagInfosModalClose} size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>{`Hashtag: ${this.state.selectedReference ? this.state.selectedReference.text : null}`}</Modal.Title>
+            <Modal.Title>{`Hashtag: ${this.state.selectedReference ? getHashtagText(this.state.selectedReference.text) : null}`}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
@@ -271,7 +271,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                             //             ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`
                             //             : null),
                             // date: views.length ? views[0].date : null,
-                            text: highlightText(post.text, this.state.selectedReference.text),
+                            text: highlightText(post.text, getHashtagText(this.state.selectedReference.text)),
                           }))}
                         variant="list"/>
                   </div> }
