@@ -31,7 +31,6 @@ import {
   appParams,
   setGlobalDataSettings,
   dateBetweenRange,
-  getPostCount,
   getVisitCount,
   getVisitMeanTime,
   getVisitsTotalTime,
@@ -171,7 +170,7 @@ export default class FeedDashView extends React.Component{
             .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
             .each(feedPostView => {
 
-              allPeriodFeedPostViews.push(feedPostView);
+              allPeriodFeedPostViews.push({...feedPostView});
 
               const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
               if (index == -1){
@@ -194,8 +193,6 @@ export default class FeedDashView extends React.Component{
       feedPostView.feedPost.reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
 
     }
-
-    console.log("ffffffffffff : ", allPeriodFeedPostViews, getVisitsTotalTime(allPeriodFeedPostViews));
 
     this.setState({ 
       allPeriodFeedPostViews: allPeriodFeedPostViews,

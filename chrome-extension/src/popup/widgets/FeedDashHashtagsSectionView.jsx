@@ -26,6 +26,7 @@ import {
   appParams,
   highlightText,
   getHashtagText,
+  isReferenceHashtag,
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
@@ -117,7 +118,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
               for (var reference of feedPost.references){
 
-                if (!reference.text.startsWith("#") && !reference.text.startsWith("hashtag#")){
+                if (!isReferenceHashtag(reference)){
                   continue;
                 }
 

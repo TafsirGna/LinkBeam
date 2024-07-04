@@ -207,7 +207,8 @@ export default class FeedProfileDataModal extends React.Component{
 
                       <div class="col">
                         <div class="shadow-sm rounded py-2 h-100">
-                          <HashtagWordCloudChart/>
+                          <HashtagWordCloudChart
+                            objects={this.state.feedPostViews}/>
                         </div>
                       </div>
 

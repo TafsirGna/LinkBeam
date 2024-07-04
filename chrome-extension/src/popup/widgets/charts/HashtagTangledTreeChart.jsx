@@ -26,6 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
 import lodash from 'lodash';
 import { 
   getHashtagText,
+  isReferenceHashtag,
 } from "../../Local_library";
 
 
@@ -248,7 +249,7 @@ export default class HashtagTangledTreeChart extends React.Component{
           continue;
         }
 
-        if (!reference.text.startsWith("#") && !reference.text.startsWith("hashtag#")){
+        if (!isReferenceHashtag(reference)){
           continue;
         }
 

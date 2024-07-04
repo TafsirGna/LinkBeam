@@ -23,6 +23,11 @@
 import React from 'react'
 import { Chart } from 'chart.js';
 import { WordCloudController, WordElement } from 'chartjs-chart-wordcloud';
+import { db } from "../../../db";
+import { 
+  getHashtagText,
+  isReferenceHashtag,
+} from "../../Local_library";
 
 Chart.register(WordCloudController, WordElement);
 
@@ -33,34 +38,79 @@ export default class HashtagWordCloudChart extends React.Component{
     this.state = {
       chartRef: React.createRef(), 
     };
+
+    this.setChartData = this.setChartData.bind(this);
+
   }
 
   componentDidMount() {
 
-    const words = [
-      { key: "word", value: 10 },
-      { key: "words", value: 8 },
-      { key: "sprite", value: 7 },
-      { key: "placed", value: 5 },
-      { key: "layout", value: 4 },
-      { key: "algorithm", value: 4 },
-      { key: "area", value: 4 },
-      { key: "without", value: 3 },
-      { key: "step", value: 3 },
-      { key: "bounding", value: 3 },
-      { key: "retrieve", value: 3 },
-      { key: "operation", value: 3 },
-      { key: "collision", value: 3 },
-    ];
+    this.setChartData();
 
-    const chart = new Chart(/*document.getElementById("experience_cloud_word_canvas")*/this.state.chartRef.current.getContext("2d"), {
+  }
+
+  componentDidUpdate(){
+
+    if (prevProps.objects != this.props.objects){
+      this.setChartData();
+    }
+
+  }
+
+  async setChartData(){
+
+    if (!this.props.objects){
+      return;
+    }
+
+    var hashtags = [],
+        feedPosts = [],
+        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
+
+    for (const feedPostView of feedPostViews){
+
+      var index = feedPosts.findIndex(post => post.id == feedPostView.feedPostId);
+      var feedPost = null;
+      if (index == -1){
+        feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+        feedPosts.push(feedPost);
+      }
+      else{
+        feedPost = feedPosts[index];
+      }
+
+      if (!feedPost.references){
+        continue;
+      }
+
+      for (const reference of feedPost.references){
+
+        if (!isReferenceHashtag(reference)){
+          continue;
+        }
+
+        index = hashtags.findIndex(h => h.key == getHashtagText(reference.text))
+        if (index == -1){
+          hashtags.push({
+            key: getHashtagText(reference.text),
+            value: 1,
+          });
+        }
+        else{
+          hashtags[index].value++;
+        }
+      }
+
+    }
+
+    const chart = new Chart(this.state.chartRef.current.getContext("2d"), {
       type: "wordCloud",
       data: {
-        labels: words.map((d) => d.key),
+        labels: hashtags.map((d) => d.key),
         datasets: [
           {
             label: "",
-            data: words.map((d) => 10 + d.value * 10)
+            data: hashtags.map((d) => 10 + d.value * 10)
           }
         ]
       },
@@ -76,11 +126,6 @@ export default class HashtagWordCloudChart extends React.Component{
         }
       }
     });
-
-
-  }
-
-  componentDidUpdate(){
 
   }
 

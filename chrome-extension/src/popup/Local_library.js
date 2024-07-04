@@ -902,6 +902,8 @@ export const getVisitsTotalTime = feedPostViews => parseFloat((feedPostViews.map
 export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
 export const getVisitMeanTime = feedPostViews => parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
 
+export const isReferenceHashtag = reference => reference.text.startsWith("#") || reference.text.startsWith("hashtag#");
+
 export async function getProfileDataFrom(db, url, properties = null){
 
   const visits = await db.visits
@@ -1111,15 +1113,13 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
           for (const hourString of Object.keys(data[label])){
             objects = objects.concat(data[label][hourString]);
           };
-          console.log("?????????????????? 1 : ", objects, getVisitsTotalTime(objects));
+
           resData[metric].push((await getMetricValue(objects, metric)));
 
         }
         else{
           resData[metric].push(0);
         }
-
-        console.log("?????????????????? 2 : ", resData);
 
       }
 
