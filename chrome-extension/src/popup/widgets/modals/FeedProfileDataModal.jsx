@@ -23,8 +23,10 @@
 import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import FeedMetricsLineChart from "../charts/FeedMetricsLineChart";FeedPostCategoryDonutChart
+import FeedMetricsLineChart from "../charts/FeedMetricsLineChart";
 import FeedPostCategoryDonutChart from "../charts/FeedPostCategoryDonutChart";
+import HashtagWordCloudChart from "../charts/HashtagWordCloudChart";
+import FeedProfileReactionsSubjectsBarChart from "../charts/FeedProfileReactionsSubjectsBarChart";
 import { 
   getFeedDashMetricValue,
   getPostCount,
@@ -39,6 +41,7 @@ import {
 import { 
   PostIcon,
   ClockIcon,
+  FeedIcon,
   DuplicateIcon,
 } from "../SVGs";
 import { db } from "../../../db";
@@ -151,13 +154,26 @@ export default class FeedProfileDataModal extends React.Component{
                           </span>
                         </div>
                       </div>
-                      {/*<div class="col">
-                      </div>*/}
+                      <div class="col">
+                        <div class="alert alert-success py-1 shadow-sm small text-muted mt-2" role="alert">
+                          <FeedIcon
+                            size="18"/>
+                          <span class="ms-2">
+                            { `${this.state.feedPostViews.length} feed occurrences` }
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   
                     <div class="row">
 
                       <div class="col">
+                        <div class="rounded shadow-sm">
+                          <FeedProfileReactionsSubjectsBarChart
+                            objects={this.state.feedPostViews}
+                            profile={this.props.object}
+                          />
+                        </div>
                       </div>
 
                       <div class="col">
@@ -190,6 +206,9 @@ export default class FeedProfileDataModal extends React.Component{
                       </div>
 
                       <div class="col">
+                        <div class="shadow-sm rounded py-2 h-100">
+                          <HashtagWordCloudChart/>
+                        </div>
                       </div>
 
                     </div>

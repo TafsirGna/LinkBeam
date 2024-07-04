@@ -35,6 +35,7 @@ import {
     isLinkedinProfileSectionDetailsPage,
     deactivateTodayReminders,
     popularityValue,
+    getVisitsTotalTime,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
@@ -945,6 +946,9 @@ async function processMessageEvent(message, sender, sendResponse){
                         postView.timeCount = timeCount;
                     });
 
+            // checking if it needs to warning the user about any threshold limit crossing
+            checkDateTimeLeft()
+
             break;
         }
 
@@ -1015,6 +1019,54 @@ async function processMessageEvent(message, sender, sendResponse){
         }
 
     }
+}
+
+async function checkDateTimeLeft(){
+
+    var sessionItem = await chrome.storage.session.get(["dateTimeData"]);
+    if (!sessionItem.dateTimeData){
+        await chrome.storage.session.set({ dateTimeData: { lastUpdate: new Date().toISOString() } });
+        sessionItem = await chrome.storage.session.get(["dateTimeData"]); 
+    }
+
+    if ((Math.abs(new Date() - new Date(sessionItem.dateTimeData.lastUpdate)) / (1000 * 60)) < 5 /* mins */){
+        return;
+    }
+
+    // update this data before proceeding
+    await chrome.storage.session.set({ dateTimeData: { lastUpdate: new Date().toISOString() } });
+
+    const settings = await db.settings
+                             .where({id: 1})
+                             .first();
+
+    if (settings.maxTimeAlarm == "Never"){
+      return;
+    }
+
+    const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
+
+    const visits = await db.visits
+                           .where("date")
+                           .startsWith(new Date().toISOString().split("T")[0])
+                           .toArray();
+
+    var totalTime = 0; // in minutes
+    for (const visit of visits){
+      totalTime += Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.id}).toArray());
+    }
+
+    if (totalTime >= (maxTimeValue * (3/4))){
+    
+        chrome.notifications.create(uuidv4(), {
+          title: 'Linkbeam',
+          message: `Time limit${totalTime >= maxTimeValue ? "" : " almost"} reached`,
+          iconUrl: chrome.runtime.getURL(app_logo_path),
+          type: 'basic',
+        });
+
+    }
+
 }
 
 async function getPreviousRelatedPosts(payload){

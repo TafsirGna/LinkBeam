@@ -202,7 +202,7 @@ export default class FeedProfilesNetworkGraphChart extends React.Component{
                   </div>
                 </div>}
 
-        { this.state.chartData && <div id={`chartTag_${this.state.uuid}`} class="shadow-sm rounded border"></div> }
+        { this.state.chartData && <div id={`chartTag_${this.state.uuid}`} class="shadow-sm rounded border border-2"></div> }
 
       </>
     );

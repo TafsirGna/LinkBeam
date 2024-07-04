@@ -537,6 +537,11 @@ export default class AboveFeedPostWidgetView extends React.Component{
             if (this.state.impressionCount == null){
               return;
             }
+
+            if (!this.state.postHtmlElementVisible){ // for a more accurate count
+              return;
+            }
+
             chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.state.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
               console.log('time count update request sent', this.props.postUid, this.state.postHtmlElementVisible, response);
             });

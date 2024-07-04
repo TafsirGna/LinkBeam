@@ -898,9 +898,9 @@ export async function setFolderProfiles(folderList, db){
 }
 
 export const getPostCount = feedPostViews => feedPostViews.map(view => view.uid).filter((value, index, self) => self.indexOf(value) === index).length;
-export const getVisitsTotalTime = feedPostViews => (feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2);
+export const getVisitsTotalTime = feedPostViews => parseFloat((feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2));
 export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
-export const getVisitMeanTime = feedPostViews => (getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2);
+export const getVisitMeanTime = feedPostViews => parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
 
 export async function getProfileDataFrom(db, url, properties = null){
 
@@ -1111,12 +1111,15 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
           for (const hourString of Object.keys(data[label])){
             objects = objects.concat(data[label][hourString]);
           };
+          console.log("?????????????????? 1 : ", objects, getVisitsTotalTime(objects));
           resData[metric].push((await getMetricValue(objects, metric)));
 
         }
         else{
           resData[metric].push(0);
         }
+
+        console.log("?????????????????? 2 : ", resData);
 
       }
 
