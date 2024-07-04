@@ -15,7 +15,8 @@ import { AlertCircleIcon } from "../SVGs";
 import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import { 
   getChartColors, 
-  getVisitPostCount,
+  getPostCount,
+  getVisitsTotalTime,
 } from "../../Local_library";
 // import { faker } from '@faker-js/faker';
 
@@ -74,7 +75,7 @@ export default class FeedScatterPlot extends React.Component{
 
   }
 
-  setChartData(){
+  async setChartData(){
 
     if (!this.props.objects){
       return;
@@ -84,11 +85,13 @@ export default class FeedScatterPlot extends React.Component{
         datasets: [
           {
             label: '# of posts/Time spent(mins)',
-            data: this.props.objects.map(visit => ({
-                          x: getVisitPostCount(visit),
-                          y: (visit.timeCount / 60),
-                          dateString: visit.date,
-                        })),
+            data: this.props.objects.map(o => o.visitId)
+                                    .filter((value, index, self) => self.indexOf(value) === index)
+                                    .map(visitId => ({
+                                      x: getPostCount(this.props.objects.filter(view => view.visitId == visitId)),
+                                      y: getVisitsTotalTime(this.props.objects.filter(view => view.visitId == visitId)),
+                                      dateString: this.props.objects.filter(view => view.visitId == visitId)[0].date,
+                                    })),
             backgroundColor: getChartColors(1).borders[0],
           },
         ],

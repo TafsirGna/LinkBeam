@@ -159,7 +159,11 @@ export default class HomeView extends React.Component{
       return;
     }
 
-    const totalTime = getVisitsTotalTime(visits); // in minutes
+    var totalTime = 0; // in minutes
+    for (const visit of visits){
+      totalTime += Object.hasOwn(visit, "profileData") ? visit.timeCount : getVisitsTotalTime((await db.feedPostViews.where({visitId: visit.id}).toArray()));
+    }
+
     const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
 
     if (totalTime < maxTimeValue){

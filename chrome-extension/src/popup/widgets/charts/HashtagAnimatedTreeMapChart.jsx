@@ -9,6 +9,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dateBetweenRange,
   periodRange,
+  getHashtagText,
 } from "../../Local_library";
 import eventBus from "../../EventBus";
 
@@ -62,7 +63,7 @@ export default class HashtagAnimatedTreeMapChart extends React.Component{
     			group: null,
     		},
     		hashtagData = this.props.hashtags.map(hashtag => ({
-    			name: hashtag.text,
+    			name: getHashtagText(hashtag.text),
     			values: [],
     		}));
 
@@ -134,7 +135,7 @@ export default class HashtagAnimatedTreeMapChart extends React.Component{
 				}
 
 				for (var reference of feedPost.references){
-					const hashtagIndex = hashtagData.findIndex(hashtag => hashtag.name == reference.text);	
+					const hashtagIndex = hashtagData.findIndex(hashtag => hashtag.name == getHashtagText(reference.text));	
 					if (hashtagIndex != -1){
 						// i increment the last item's value
 						// hashtagData[hashtagIndex].values[hashtagData[hashtagIndex].values.length - 1]++; // or 

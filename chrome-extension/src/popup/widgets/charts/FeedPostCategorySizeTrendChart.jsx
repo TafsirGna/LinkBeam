@@ -4,7 +4,7 @@ import { Line } from 'react-chartjs-2';
 import { 
 	getChartColors,
 	getFeedLineChartsData,
-	getVisitsPostCount,
+	getFeedDashMetricValue,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -21,7 +21,6 @@ import {
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { DateTime as LuxonDateTime } from "luxon";
-import { db } from "../../../db";
 
 ChartJS.register(
   CategoryScale,
@@ -113,12 +112,28 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 	async getMetricValue(objects, metric){
 
 		if (metric == "Post Count") {
-     	return await getVisitsPostCount(objects, db); 
+     	return getFeedDashMetricValue(objects, metric); 
     }
 
-		var value = 0;
-		for (const object of objects){
-			value += object.feedItemsMetrics[metric];
+		var value = 0,
+				uids = [];
+
+		for (const feedPostView of objects){
+			if (uids.indexOf(feedPostView.uid) != -1){
+				continue;
+			}
+
+			if (feedPostView.category){
+				if (feedPostView.category == metric){
+					value++;
+				}
+			}
+			else{
+				if (feedPostView.category == "publications"){
+					value++;
+				}
+			}
+
 		}
 
 		return value;

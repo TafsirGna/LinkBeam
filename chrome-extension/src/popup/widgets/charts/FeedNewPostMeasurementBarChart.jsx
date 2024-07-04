@@ -103,45 +103,37 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
 
   async setChartData(){
 
-    var periodPostUids = [];
-    await db.feedPostViews
-            .filter(postView => dateBetweenRange(this.props.rangeDates.start, this.props.rangeDates.end, postView.date))
-            .each(postView => {
-              if (periodPostUids.indexOf(postView.uid) == -1){
-                periodPostUids.push(postView.uid);
-              }
-            });  
+    if (!this.props.objects){
+      return;
+    }
+
+    const objects = this.props.objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
 
     var results = {
       Old: 0,
       New: 0, 
     }; 
 
-    if (periodPostUids.length){
+    // among those posts, how many of them are not only of this period
+    var olderPostCount = 0;
 
-      // among those posts, how many of them are not only of this period
-      var olderPostCount = 0;
+    for (var object of objects){
 
-      for (var uid of periodPostUids){
+      const postView = await db.feedPostViews
+                                .where({feedPostId: object.feedPostId})
+                                .filter(postView => new Date(postView.date.split("T")[0]) < new Date(this.props.rangeDates.start))
+                                .first();
 
-        const postView = await db.feedPostViews
-                                  .where("uid")
-                                  .equals(uid)
-                                  .filter(postView => new Date(postView.date.split("T")[0]) < new Date(this.props.rangeDates.start))
-                                  .first();
-
-        if (postView){
-          olderPostCount++;
-        }
-
+      if (postView){
+        olderPostCount++;
       }
 
-      results = {
-        Old: ((olderPostCount * 100) / periodPostUids.length).toFixed(1),
-        New:(((periodPostUids.length - olderPostCount) * 100) / periodPostUids.length).toFixed(1), 
-      };
-
     }
+
+    results = {
+      Old: ((olderPostCount * 100) / objects.length).toFixed(1),
+      New:(((objects.length - olderPostCount) * 100) / objects.length).toFixed(1), 
+    };
 
     var colors = getChartColors(1);
 
@@ -165,9 +157,11 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.rangeDates != this.props.rangeDates){
-
       this.setChartData();
+    }
 
+    if (prevProps.objects != this.props.objects){
+      this.setChartData();
     }
 
   }
@@ -211,6 +205,7 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
                     <Modal.Body>
 
                       <FeedPostFreshnessMeasureTrendChart
+                        objects={this.props.objects}
                         category={this.state.selectedCategory}
                         rangeDates={this.props.rangeDates}
                         colors={this.state.barData.datasets[0].borderColor}/>

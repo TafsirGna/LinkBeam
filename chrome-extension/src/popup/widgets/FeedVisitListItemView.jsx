@@ -23,21 +23,27 @@
 import React from 'react';
 import linkedin_icon from '../../assets/linkedin_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
-import { dbDataSanitizer } from "../Local_library";
+import { getPostCount } from "../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { db } from "../../db";
 
 export default class FeedVisitListItemView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      postCount: null,
     };
-
-    this.getPostCount = this.getPostCount.bind(this);
 
   }
 
   componentDidMount() {
+
+    (async () => {
+
+      this.setState({postCount: getPostCount(await db.feedPostViews.where({visitId: this.props.object.id}).toArray())});
+
+    }).bind(this)();
 
   }
 
@@ -47,17 +53,6 @@ export default class FeedVisitListItemView extends React.Component{
   }
 
   componentWillUnmount() {
-
-  }
-
-  getPostCount(){
-
-    var count = 0;
-    Object.keys(this.props.object.feedItemsMetrics).forEach(item => {
-      count += this.props.object.feedItemsMetrics[item];
-    });
-
-    return count;
 
   }
 
@@ -82,7 +77,8 @@ export default class FeedVisitListItemView extends React.Component{
                 { this.props.parentList == "ordinary" && <small class={ this.props.object.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{LuxonDateTime.fromISO(this.props.object.date).toRelative()}</small> }
                 { this.props.parentList == "aggregated" && <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.object.date).toFormat("MM-dd-yyyy")}</small>}
               </div>
-              <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.getPostCount()} viewed posts</p>
+              {this.state.postCount
+                  && <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.state.postCount} viewed posts</p>}
             </div>
           </div>
         </a>

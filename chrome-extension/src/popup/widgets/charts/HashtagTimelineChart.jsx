@@ -26,6 +26,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { 
   getChartColors,
   getFeedLineChartsData,
+  getFeedDashMetricValue,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -112,11 +113,11 @@ export default class HashtagTimelineChart extends React.Component{
 
     const rangeDates = {
       start: feedPostViews[0].date,
-      end: LuxonDateTime.now().plus({days: 1}).toISO(),
+      end: LuxonDateTime.now().toISO(),
     },
-    metric = "count";
+    metric = "Post Count";
 
-    var data = await getFeedLineChartsData(feedPostViews, rangeDates, this.getMetricValue, [metric], LuxonDateTime);
+    var data = await getFeedLineChartsData(feedPostViews, rangeDates, getFeedDashMetricValue, [metric], LuxonDateTime);
 
     const colors = getChartColors(1);
     this.setState({
@@ -133,19 +134,6 @@ export default class HashtagTimelineChart extends React.Component{
         ],
       }
     });
-  }
-
-  getMetricValue(objects, metric){
-
-    var value = null;
-    switch(metric){
-      case "count": {
-        value = objects.length;
-        break;
-      }
-    }
-
-    return value;
   }
 
 

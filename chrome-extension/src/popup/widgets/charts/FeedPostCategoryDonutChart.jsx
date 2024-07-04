@@ -24,7 +24,7 @@ export default class FeedPostCategoryDonutChart extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      data: null,
+      chartData: null,
       categorySizeTrendModalShow: false,
       selectedCategoryIndex: null,
       chartRef: React.createRef(),
@@ -61,31 +61,41 @@ export default class FeedPostCategoryDonutChart extends React.Component{
       return;
     }
 
-    var labels = [], 
-        data = [],
+    var viewsCategoryData = [],
         colors = []; 
 
 
-    labels = Object.keys(categoryVerbMap).concat(["publications"]);
-    
-    data = labels.map(label => 0);
-    colors = getChartColors(labels.length).borders;
+    for (var category of Object.keys(categoryVerbMap).concat(["publications"])){
+      viewsCategoryData[category] = 0;
+    }
 
-    // setting the labels
-    for (var visit of this.props.objects){
-      for (var index = 0; index < labels.length; index++){
-        var metric = labels[index];
-        data[index] += visit.feedItemsMetrics[metric] ? visit.feedItemsMetrics[metric] : 0;
+    colors = getChartColors(Object.keys(viewsCategoryData).length).borders;
+
+    var uids = [];
+    for (var feedPostView of this.props.objects){
+
+      if (uids.indexOf(feedPostView.uid) != -1){
+        continue;
       }
+
+      if (feedPostView.category){
+        viewsCategoryData[feedPostView.category]++;
+      }
+      else{
+        viewsCategoryData["publications"]++;
+      }
+
+      uids.push(feedPostView.uid);
+
     }
 
     this.setState({
-      data: {
-        labels: labels,
+      chartData: {
+        labels: Object.keys(viewsCategoryData),
         datasets: [
           {
             label: 'Post Count',
-            data: data,
+            data: Object.keys(viewsCategoryData).map(category => viewsCategoryData[category]),
             backgroundColor: colors,
             borderColor: colors,
             borderWidth: 1,
@@ -127,27 +137,27 @@ export default class FeedPostCategoryDonutChart extends React.Component{
                       <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>
                     </div>}
                  { this.props.objects.length != 0 
-                    && this.state.data 
+                    && this.state.chartData 
                     && <div>
-                        { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) != 0 /*if the sum of the values isn't zero*/
+                        { this.state.chartData.datasets[0].data.reduce((acc, a) => acc + a, 0) != 0 /*if the sum of the values isn't zero*/
                             && <div>
                                   <Doughnut 
                                     ref={this.state.chartRef}
-                                    data={this.state.data} 
+                                    data={this.state.chartData} 
                                     options={options}
                                     onClick={this.onDonutChartClick} />
 
                                   <Modal show={this.state.categorySizeTrendModalShow} onHide={this.handleCategorySizeTrendModalClose}>
                                     <Modal.Header closeButton>
-                                      <Modal.Title>{this.state.selectedCategoryIndex != null ? `Evolution of the ${this.state.data.labels[this.state.selectedCategoryIndex]} count` : null}</Modal.Title>
+                                      <Modal.Title>{this.state.selectedCategoryIndex != null ? `Evolution of the ${this.state.chartData.labels[this.state.selectedCategoryIndex]} count` : null}</Modal.Title>
                                     </Modal.Header>
                                     <Modal.Body>
 
                                       <FeedPostCategorySizeTrendChart
                                         objects={this.props.objects}
-                                        category={this.state.data.labels[this.state.selectedCategoryIndex]}
+                                        category={this.state.chartData.labels[this.state.selectedCategoryIndex]}
                                         rangeDates={this.props.rangeDates}
-                                        colors={[this.state.data.datasets[0].borderColor[this.state.selectedCategoryIndex]]}/>
+                                        colors={[this.state.chartData.datasets[0].borderColor[this.state.selectedCategoryIndex]]}/>
 
                                     </Modal.Body>
                                     <Modal.Footer>
@@ -157,7 +167,7 @@ export default class FeedPostCategoryDonutChart extends React.Component{
                                     </Modal.Footer>
                                   </Modal>
                                 </div>}
-                        { this.state.data.datasets[0].data.reduce((acc, a) => acc + a, 0) == 0 /*if the sum of the values is zero*/
+                        { this.state.chartData.datasets[0].data.reduce((acc, a) => acc + a, 0) == 0 /*if the sum of the values is zero*/
                             && <div class="text-center m-5 mt-2">
                                 <svg viewBox="0 0 24 24" width="100" height="100" stroke="gray" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 mb-3"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                                 <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Not enough data to show this chart</span></p>

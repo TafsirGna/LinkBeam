@@ -24,6 +24,7 @@ export const appParams = {
   appName: "LinkBeam",
   appVersion: "BETA", // "0.1.0", 
   appDbName: "LinkBeamDB",
+  appYear: "2024",
   appDbVersion: 1,
   keywordCountLimit: 5, 
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
@@ -107,7 +108,7 @@ export const categoryVerbMap = {
   },
   funs: {
     fr: "drôle",
-    en: "funny",
+    en: "finds this funny",
   }
 }
 
@@ -896,17 +897,10 @@ export async function setFolderProfiles(folderList, db){
 
 }
 
-
-export function getVisitPostCount(visit){
-
-  var postCount = 0;
-  Object.keys(visit.feedItemsMetrics).forEach(metric => {
-    postCount += visit.feedItemsMetrics[metric];
-  });
-
-  return postCount;
-
-}
+export const getPostCount = feedPostViews => feedPostViews.map(view => view.uid).filter((value, index, self) => self.indexOf(value) === index).length;
+export const getVisitsTotalTime = feedPostViews => (feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2);
+export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
+export const getVisitMeanTime = feedPostViews => (getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2);
 
 export async function getProfileDataFrom(db, url, properties = null){
 
@@ -984,46 +978,62 @@ export function getNewProfileData(oldProfileData, extractedProfileData){
 
 }
 
-export function getVisitsTotalTime(visits){
+export async function getPostMetricValue(postViews, metric){
 
-  var totalTime = 0;
-  visits.forEach(visit => {
-    totalTime += visit.timeCount;
-  });
+  var value = 0;
+  postViews.sort((a, b) => new Date(a.date) > new Date(b.date));
 
-  return (totalTime / 60).toFixed(2);
+  if (!postViews.length){
+    return 0; 
+  }
+  
+  switch (metric){
+    case "reactions": {
+      value += postViews[postViews.length - 1].reactions ? postViews[postViews.length - 1].reactions : 0;
+      break;
+    }
+
+    case "comments": {
+      value += postViews[postViews.length - 1].commentsCount ? postViews[postViews.length - 1].commentsCount : 0;
+      break;
+    }
+
+    case "reposts": {
+      value += postViews[postViews.length - 1].repostsCount ? postViews[postViews.length - 1].repostsCount : 0;
+      break;
+    }
+  }
+
+  return value;
 
 }
 
+export async function getFeedDashMetricValue(feedPostViews, metric){
 
-export async function getPostMetricValue(postViews, metric){
-
-    var value = 0;
-    postViews.sort((a, b) => new Date(a.date) > new Date(b.date));
-
-    if (!postViews.length){
-      return 0; 
-    }
-    
-    switch (metric){
-      case "reactions": {
-        value += postViews[postViews.length - 1].reactions ? postViews[postViews.length - 1].reactions : 0;
+    var value = null;
+    switch(metric){
+      case "Total time": {
+        value = getVisitsTotalTime(feedPostViews); 
         break;
       }
 
-      case "comments": {
-        value += postViews[postViews.length - 1].commentsCount ? postViews[postViews.length - 1].commentsCount : 0;
+      case "Post Count": {
+        value = getPostCount(feedPostViews); 
         break;
       }
 
-      case "reposts": {
-        value += postViews[postViews.length - 1].repostsCount ? postViews[postViews.length - 1].repostsCount : 0;
+      case "Visit Count": {
+        value = getVisitCount(feedPostViews); 
+        break;
+      }
+
+      case "Mean time": {
+        value = getVisitMeanTime(feedPostViews); 
         break;
       }
     }
 
     return value;
-
   }
 
 export const nRange = (start, stop, step) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + i * step);
@@ -1036,20 +1046,20 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
   var data = {};
 
-  for (var visit of objects){
-    const dateString = visit.date.split("T")[0],
-          hourString = LuxonDateTime.fromISO(visit.date).toFormat("hh a");
+  for (var object of objects){
+    const dateString = object.date.split("T")[0],
+          hourString = LuxonDateTime.fromISO(object.date).toFormat("hh a");
     if (dateString in data){
       if (hourString in data[dateString]){
-        data[dateString][hourString].push(visit);
+        data[dateString][hourString].push(object);
       }
       else{
-        data[dateString][hourString] = [visit];
+        data[dateString][hourString] = [object];
       }
     }
     else{
       data[dateString] = {};
-      data[dateString][hourString] = [visit];
+      data[dateString][hourString] = [object];
     }
   }
 
@@ -1060,7 +1070,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
     resData[metric] = [];
 
-    if (rangeDates.start == rangeDates.end){
+    if (rangeDates.start.split("T")[0] == rangeDates.end.split("T")[0]){
       const dateString = Object.keys(data)[0];
 
       // initializing the labels
@@ -1133,23 +1143,6 @@ export const popularityValue = p => (p.commentsCount + p.repostsCount + p.reacti
 
 export function dateBetweenRange(lower, upper, date){
   return (new Date(lower) <= new Date(date.split("T")[0]) && new Date(date.split("T")[0]) <= new Date(upper));
-}
-
-export async function getVisitsPostCount(visits, db){
-
-  var feedPostIds = [];
-  for (var visit of visits){
-    await db.feedPostViews
-           .where({visitId: visit.id})
-           .each(feedPostView => {
-              if (feedPostIds.indexOf(feedPostView.feedPostId) == -1){
-                feedPostIds.push(feedPostView.feedPostId);
-              }
-           });
-  }
-
-  return feedPostIds.length;
-
 }
 
 export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywordBadgeColors, detected, setHighlightedKeywordView){
@@ -1228,7 +1221,7 @@ export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, pr
   const visits = db.visits
                     .filter(visit => dateBetweenRange(startDate, endDate, visit.date)
                                       && (profileUrl ? visit.url == profileUrl : true)
-                                      && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : Object.hasOwn(visit, "feedItemsMetrics")) )
+                                      && ((category == "profiles") ? Object.hasOwn(visit, "profileData") : !Object.hasOwn(visit, "profileData")) )
                     .toArray();
 
   return visits;

@@ -11,6 +11,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import FeedPostTrendLineChart from "./charts/FeedPostTrendLineChart";
 import ReminderModal from "./modals/ReminderModal";
+import FeedProfileDataModal from "./modals/FeedProfileDataModal";
 import eventBus from "../EventBus";
 import { db } from "../../db";
 import { 
@@ -74,7 +75,9 @@ export default class PostViewListItemView extends React.Component{
       postViewOccurences: null,
       postModalShow: false,
       reminderModalShow: false,
+      feedProfileDataModalShow: false,
       updated: false,
+      selectedFeedProfile: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -123,6 +126,9 @@ export default class PostViewListItemView extends React.Component{
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
 
+  handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
+  handleFeedProfileDataModalShow = (profile) => this.setState({feedProfileDataModalShow: true, selectedFeedProfile: profile});
+
   handlePostModalClose = () => this.setState({postModalShow: false});
   handlePostModalShow = () => this.setState({postModalShow: true}, () => {
     if (this.state.postViewOccurences){
@@ -137,7 +143,7 @@ export default class PostViewListItemView extends React.Component{
 
     const occurences = await db.feedPostViews
                           .where({uid: this.props.object.uid})
-                          .sortBy("date");
+                          .toArray();
 
     this.setState({postViewOccurences: occurences}, () => {
       if (callback){
@@ -218,10 +224,12 @@ export default class PostViewListItemView extends React.Component{
               <div class="mb-2">
                 <a 
                   class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                  href={this.props.object.category 
+                  /*href={this.props.object.category 
                           ? (this.props.object.initiator.url ? this.props.object.initiator.url : appParams.LINKEDIN_FEED_URL())
                           : this.props.object.feedPost.author.url}
-                  target="_blank">
+                  target="_blank"*/
+                  href="#"
+                  onClick={() => { this.handleFeedProfileDataModalShow(this.props.object.category ? this.props.object.initiator : this.props.object.feedPost.author) }}>
                   <OverlayTrigger 
                     trigger="hover" 
                     placement="top" 
@@ -251,7 +259,7 @@ export default class PostViewListItemView extends React.Component{
                   <img class="mx-1" width="16" height="16" src={this.props.object.category ? categoryIconMap[this.props.object.category] : share_icon} alt=""/>
                 </span>
               </OverlayTrigger>
-              this <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.uid}`} target="_blank" class="fst-italic">post</a>
+              this <a href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.object.uid}`} target="_blank" class="fst-italic" title="Click to open in a new tab">post</a>
               { this.props.object.category 
                   && <span class="ms-1"> 
                       of
@@ -266,8 +274,10 @@ export default class PostViewListItemView extends React.Component{
                           alt=""/>
                         <a 
                           class="text-decoration-none text-muted"
-                          href={this.props.object.feedPost.author.url}
-                          target="_blank">
+                          /*href={this.props.object.feedPost.author.url}
+                          target="_blank"*/
+                          href="#"
+                          onClick={() => { this.handleFeedProfileDataModalShow(this.props.object.feedPost.author) }}>
                           {this.props.object.feedPost.author.name}
                         </a>
                       </span>
@@ -344,6 +354,12 @@ export default class PostViewListItemView extends React.Component{
           object={this.props.object.feedPost} 
           show={this.state.reminderModalShow} 
           onHide={this.handleReminderModalClose} />
+
+        <FeedProfileDataModal
+          object={this.state.selectedFeedProfile}
+          show={this.state.feedProfileDataModalShow}
+          onHide={this.handleFeedProfileDataModalClose}
+          globalData={this.props.globalData}/>
 
       </>
     );

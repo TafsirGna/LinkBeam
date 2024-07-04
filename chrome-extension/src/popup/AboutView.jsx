@@ -106,6 +106,11 @@ export default class AboutView extends React.Component{
                 <TagIcon size="24" />
               </a>
             </div>
+
+            <p class="small mb-0 mt-2 text-muted">
+              {appParams.appYear} © Linkeam
+            </p>
+
           </div>
         </div>
       </>

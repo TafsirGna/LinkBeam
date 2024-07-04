@@ -87,7 +87,7 @@ export default class FeedSettingsView extends React.Component{
                     <HideIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Hide posts after
+                    Hide posts (if no change) after
                   </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">

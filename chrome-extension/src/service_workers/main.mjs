@@ -147,17 +147,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
                                     if (tabs[0].id == tabId){
 
-                                        await resetTabTimer();
-
                                         // updating the badge text
                                         chrome.action.setBadgeText({text: result.badgeText});
 
                                         // conditionally injecting the script 
                                         if (!result.visitId){
                                             injectScriptsInTab(tabId, url, null);
-                                        }
-                                        else{
-                                            runTabTimer(result.visitId);
                                         }
 
                                     }
@@ -197,7 +192,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
             console.log("################### : ", tabs, tabs[0]);
             if (tabs[0].id == tabId){
-                resetTabTimer();
                 chrome.action.setBadgeText({text: null});
             }
         });
@@ -206,124 +200,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   }
 );
-
-/** this function counts the time spent on a tab
- * before switching to another one 
- * It only does so when a linkedin page is open on that tab
- */
-
-async function runTabTimer(visitId){
-
-    if (!visitId){
-        return;
-    }
-
-    var url = (await db.visits.where({id: visitId}).first()).url;
-
-    await resetTabTimer();
-
-    const interval = setInterval(async () => {       
-
-        // checking first that the user is still on the page for which the timer has been started before proceeding to the next stage
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-            if (!tabs[0]){
-                console.log("############## no tab 0");
-                return;
-            }
-            var currTabUrl = tabs[0].url.split("?")[0];
-            currTabUrl = isLinkedinProfilePage(currTabUrl) ? currTabUrl.slice(currTabUrl.indexOf(appParams.LINKEDIN_ROOT_URL)) : currTabUrl;
-            if (currTabUrl != url){
-                resetTabTimer();
-            }
-        });
-
-        console.log("///////////////////////////////////////");
-
-        await db.visits
-                .where({id: visitId})
-                .modify(visit => {
-                    visit.timeCount += (appParams.TIMER_VALUE_2 / 1000);
-                });
-
-        // finally, checking periodically if the user's reaching or crossed the time threshold
-        var sessionItem = await chrome.storage.session.get(["totalDayTime"]);
-        const today = (new Date()).toISOString().split("T")[0];
-
-        async function getSessionTotalDayTime(){
-
-            const settings = await db.settings
-                                 .where({id: 1})
-                                 .first();
-
-            if (!settings.notifications || settings["maxTimeAlarm"] == "Never"){
-                return "N/A";
-            }
-
-            var totalTime = 0;
-            await db.visits
-                    .where("date")
-                    .startsWith((new Date()).toISOString().split("T")[0])
-                    .each(visit => {
-                        totalTime += visit.timeCount;
-                    });
-
-            return {
-                date: today, 
-                time: totalTime,
-                max: settings["maxTimeAlarm"] == "1 hour" ? 60 : Number(settings["maxTimeAlarm"].slice(0, 2)),
-                lastCheckedAt: totalTime,
-            };
-        }
-
-        if (!sessionItem.totalDayTime){
-            sessionItem.totalDayTime = await getSessionTotalDayTime();
-        }
-        else{
-
-            if (sessionItem.totalDayTime == "N/A"){
-                return;
-            }
-
-            if (sessionItem.totalDayTime.date != today){
-                sessionItem.totalDayTime = await getSessionTotalDayTime();
-            }
-            else{
-                sessionItem.totalDayTime.time += (appParams.TIMER_VALUE_2 / 1000);
-            }
-        }
-
-        if (sessionItem.totalDayTime == "N/A"){
-            await chrome.storage.session.set({ totalDayTime: sessionItem.totalDayTime });
-            return;
-        }
-
-        const mins = (sessionItem.totalDayTime.time / 60).toFixed(0); 
-
-        if (!(mins % 5) /*every 5 minutes*/ && mins != sessionItem.totalDayTime.lastCheckedAt){
-
-            sessionItem.totalDayTime.lastCheckedAt = mins;
-
-            if (mins >= (sessionItem.totalDayTime.max * (3/4))){
-
-                const uuid = uuidv4();
-                chrome.notifications.create(uuid, {
-                  title: 'Linkbeam',
-                  message: `Time limit ${mins >= sessionItem.totalDayTime.max ? "" : "almost"} reached`,
-                  iconUrl: chrome.runtime.getURL(app_logo_path),
-                  type: 'basic',
-                });
-
-            }
-
-        }
-
-        await chrome.storage.session.set({ totalDayTime: sessionItem.totalDayTime });
-
-    }, (appParams.TIMER_VALUE_2));
-
-    await chrome.storage.session.set({ tabTimer: interval });
-
-}
 
 async function getPostFromPostUrl(url){
 
@@ -454,21 +330,6 @@ async function injectDataExtractorParams(tabId, url, visitId){
 
 };
 
-/** Whenever needed, this function reset the timer
- * for a new timer to start over
- */
-
-async function resetTabTimer(){
-
-    const sessionItem = await chrome.storage.session.get(["tabTimer"]);
-
-    if (sessionItem.tabTimer){
-        clearInterval(sessionItem.tabTimer);
-        await chrome.storage.session.set({ tabTimer: null });
-    }
-
-}
-
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === 'my_menu_item') {
     console.log('hello');
@@ -568,8 +429,6 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
     // console.log(activeInfo.tabId);
     // windowId = info.windowId
 
-    await resetTabTimer();
-
     console.log("changing tab : ", activeInfo.tabId);
 
     chrome.tabs.query({}, function(tabs){
@@ -607,9 +466,6 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                     // conditionally injecting the script 
                     if (!result.visitId){
                         injectScriptsInTab(activeInfo.tabId, url, null);
-                    }
-                    else{
-                        runTabTimer(result.visitId);
                     }
                 }
             });
@@ -697,12 +553,6 @@ async function recordFeedVisit(tabData){
     else{
         visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
     }
-
-    chrome.storage.session.get(["tabTimer"]).then((sessionItem) => {
-        if (!sessionItem.tabTimer){
-            runTabTimer(visitId);
-        }
-    });
 
     db.visits
       .where({id: visitId})
@@ -828,7 +678,7 @@ async function recordFeedVisit(tabData){
             // saving the post view
             await db.feedPostViews.add(postView);
 
-            visit.feedItemsMetrics[post.category ? post.category : "publications"]++;
+            sessionItem.myTabs[tabData.tabId].badgeText = sessionItem.myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(sessionItem.myTabs[tabData.tabId].badgeText) + 1).toString();
             
         }
 
@@ -868,15 +718,9 @@ async function recordFeedVisit(tabData){
                  });
 
         await db.visits.update(visit.id, visit);
-        
-        // display the updated badge text
-        var badgeText = 0;
-        for (var metric in visit.feedItemsMetrics){ badgeText += visit.feedItemsMetrics[metric]; }
-        badgeText = badgeText.toString();
 
-        sessionItem.myTabs[tabData.tabId].badgeText = badgeText;
         chrome.storage.session.set({ myTabs: sessionItem.myTabs }).then(() => {
-            chrome.action.setBadgeText({text: badgeText});
+            chrome.action.setBadgeText({text: sessionItem.myTabs[tabData.tabId].badgeText});
             // console.log("Value was set");
         });
 
@@ -913,15 +757,9 @@ async function recordFeedVisit(tabData){
 
     async function addFreshFeedVisit(){
 
-        var feedItemsMetrics = {};
-        const dateTime = new Date().toISOString();
-        for (var category of Object.keys(categoryVerbMap).concat(["publications"])) { feedItemsMetrics[category] =  0; }
-
         var visit = {
             date: dateTime,
             url: appParams.LINKEDIN_FEED_URL(),
-            timeCount: 1, 
-            feedItemsMetrics: feedItemsMetrics,
         };
 
         await db.visits.add(visit);
@@ -959,8 +797,6 @@ async function recordProfileVisit(tabData){
             url: tabData.tabUrl, 
             profileData: profileData,
         }];
-
-        runTabTimer(visitId);
     }
     else{
         const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
@@ -971,8 +807,6 @@ async function recordProfileVisit(tabData){
                 url: tabData.tabUrl, 
                 profileData: profileData,
             });
-
-            runTabTimer(visitId);
         }
         else{
             profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
@@ -1121,7 +955,6 @@ async function processMessageEvent(message, sender, sendResponse){
             });
             
             if (message.data.idleStatus){
-                resetTabTimer();
 
                 chrome.notifications.create(uuidv4(), {
                   title: 'Linkbeam',
@@ -1133,19 +966,12 @@ async function processMessageEvent(message, sender, sendResponse){
             }
             else{
 
-                const sessionItem = await chrome.storage.session.get(["tabTimer"]);
-                if (!sessionItem.tabTimer){
-
-                    runTabTimer(message.data.visitId);
-
-                    chrome.notifications.create(uuidv4(), {
-                      title: 'Linkbeam',
-                      message: "Resuming activity",
-                      iconUrl: chrome.runtime.getURL(app_logo_path),
-                      type: 'basic',
-                    });
-
-                }
+                chrome.notifications.create(uuidv4(), {
+                  title: 'Linkbeam',
+                  message: "Resuming activity",
+                  iconUrl: chrome.runtime.getURL(app_logo_path),
+                  type: 'basic',
+                });
 
             }
 

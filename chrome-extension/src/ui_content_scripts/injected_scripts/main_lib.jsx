@@ -66,6 +66,7 @@ export class ScriptAgentBase {
     this.mouseMoving = false;
     this.mouseMoveTimeout = null;
     this.scrollTimeout = null;
+    this.idleStatus = false;
 
 
 		// Starting listening to different messages
@@ -86,9 +87,9 @@ export class ScriptAgentBase {
       if (!this.mouseMoving){
         this.mouseMoving = true;
 
-        if (!this.scrolling){
-          eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
-          this.sendTabIdleStatusSignal(false);
+        if (this.idleStatus){
+          this.idleStatus = false;
+          this.sendTabIdleStatusSignal();
         }
 
         // I cancel the timer
@@ -132,9 +133,9 @@ export class ScriptAgentBase {
         
       this.scrolling = true;
 
-      if (!this.mouseMoving){
-        eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: false});
-        this.sendTabIdleStatusSignal(false);
+      if (this.idleStatus){
+        this.idleStatus = false;
+        this.sendTabIdleStatusSignal();
       }
 
       // I cancel the timer
@@ -169,8 +170,8 @@ export class ScriptAgentBase {
   startIdlingTimer(){
 
     this.idlingTimer = setTimeout(() => {
-      eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: true});
-      this.sendTabIdleStatusSignal(true);
+      this.idleStatus = true;
+      this.sendTabIdleStatusSignal();
     }, 
     appParams.IDLING_TIMER_VALUE);
 
@@ -209,11 +210,15 @@ export class ScriptAgentBase {
 
 	}
 
-  sendTabIdleStatusSignal(idleStatus){
-    const data = {idleStatus: idleStatus, visitId: this.visitId }
+  sendTabIdleStatusSignal(){
+
+    eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: this.idleStatus});
+
+    const data = {idleStatus: this.idleStatus, visitId: this.visitId }
     chrome.runtime.sendMessage({header: "TAB_IDLE_STATUS", data: data}, (response) => {
       console.log('tab idle status sent', response, data);
     });
+
   }
 
   // runTabDataExtractionProcess(){

@@ -52,18 +52,18 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
       profilesNetworkChartModalShow: false,
     };
 
-    this.setMostActiveUsers = this.setMostActiveUsers.bind(this);
+    this.setMostRecurrentProfiles = this.setMostRecurrentProfiles.bind(this);
 
   }
 
   componentDidMount() {
-    this.setMostActiveUsers();
+    this.setMostRecurrentProfiles();
   }
 
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.objects != this.props.objects){
-      this.setMostActiveUsers();
+      this.setMostRecurrentProfiles();
     }
 
   }
@@ -75,13 +75,13 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
   handleProfilesNetworkChartModalClose = () => this.setState({profilesNetworkChartModalShow: false});
   handleProfilesNetworkChartModalShow = () => this.setState({profilesNetworkChartModalShow: true});
 
-  async setMostActiveUsers(){
+  async setMostRecurrentProfiles(){
 
     if (!this.props.objects){
       return;
     }
 
-    var mostActiveUsers = [];
+    var mostRecurrentProfiles = [];
 
     function feedItemsMetrics(viewCategory){
       var result = {};
@@ -91,26 +91,32 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
       return result;
     }
 
+    var uids = [];
     for (var feedPostView of this.props.objects){
 
-      if (!feedPostView.initiator){
+      if (uids.indexOf(feedPostView.uid) != -1){
         continue;
       }
 
-      if (feedPostView.initiator.url){
-        const index = mostActiveUsers.map(a => a.url).indexOf(feedPostView.initiator.url);
+      uids.push(feedPostView.uid);
+
+      if (feedPostView.initiator){
+
+        if (!feedPostView.initiator.url){
+          continue;
+        }
+
+        const index = mostRecurrentProfiles.map(a => a.url).indexOf(feedPostView.initiator.url);
         if (index == -1){
-          mostActiveUsers.push({
-            name: feedPostView.initiator.name,
-            url: feedPostView.initiator.url,
-            picture: feedPostView.initiator.picture,
+          mostRecurrentProfiles.push({
+            ...feedPostView.initiator,
             feedItemsMetrics: feedItemsMetrics(feedPostView.category),
           });
         }
         else{
           for (const category of Object.keys(categoryVerbMap)) {
             if (category == feedPostView.category){
-              mostActiveUsers[index].feedItemsMetrics[category]++;
+              mostRecurrentProfiles[index].feedItemsMetrics[category]++;
             }
           }
         }
@@ -120,19 +126,17 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
           var feedPost = await db.feedPosts
                                  .where({id: feedPostView.feedPostId})
                                  .first();
-          const index = mostActiveUsers.map(a => a.url).indexOf(feedPost.author.url);
+          const index = mostRecurrentProfiles.map(a => a.url).indexOf(feedPost.author.url);
           if (index == -1){
-            mostActiveUsers.push({
-              name: feedPost.author.name,
-              url: feedPost.author.url,
-              picture: feedPost.author.picture,
+            mostRecurrentProfiles.push({
+              ...feedPost.author,
               feedItemsMetrics: feedItemsMetrics("publications"),
             });
           }
           else{
             for (const category of Object.keys(categoryVerbMap)) {
               if (category == "publications"){
-                mostActiveUsers[index].feedItemsMetrics["publications"]++;
+                mostRecurrentProfiles[index].feedItemsMetrics["publications"]++;
               }
             }
           }
@@ -140,10 +144,9 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
       }
     }    
 
-    mostActiveUsers.sort((a, b) => totalInteractions(b) - totalInteractions(a));
-    mostActiveUsers = mostActiveUsers.slice(0, 10);
+    mostRecurrentProfiles = mostRecurrentProfiles.toSorted((a, b) => totalInteractions(b) - totalInteractions(a)).slice(0, 10);
 
-    this.setState({profiles: mostActiveUsers});
+    this.setState({profiles: mostRecurrentProfiles});
 
   }
 

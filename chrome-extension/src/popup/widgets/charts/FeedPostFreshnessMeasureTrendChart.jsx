@@ -5,8 +5,7 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { 
 	getChartColors,
 	getFeedLineChartsData,
-	dateBetweenRange,
-	getVisitsPostCount,
+	getFeedDashMetricValue,
 } from "../../Local_library";
 import { db } from "../../../db";
 import {
@@ -55,49 +54,29 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 		super(props);
 		this.state = {
 			lineData: null,
-			feedPostViews: null,
 		};
 
   	this.setChartData = this.setChartData.bind(this);
-  	this.setFeedPostViews = this.setFeedPostViews.bind(this);
 
 	}
 
 	componentDidMount() {
 
-		this.setFeedPostViews();
+		this.setChartData();
 
 	}
 
 	componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.rangeDates != this.props.rangeDates){      
-    	this.setFeedPostViews();
-    }
-
-    if (prevProps.category != this.props.category){
+    if (prevProps.rangeDates != this.props.rangeDates
+    			|| prevProps.category != this.props.category
+    			|| prevProps.objects != this.props.objects){      
     	this.setChartData();
     }
 
   }
 
 	componentWillUnmount(){
-
-  }
-
-  async setFeedPostViews(){
-
-  	if (!this.props.rangeDates){
-  		return;
-  	}
-
-  	var feedPostViews = await db.feedPostViews
-										            .filter(postView => dateBetweenRange(this.props.rangeDates.start, this.props.rangeDates.end, postView.date))
-										            .toArray();
-
-		this.setState({feedPostViews: feedPostViews}, () => {
-			this.setChartData();
-		});
 
   }
 
@@ -111,7 +90,7 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 		const titles = [this.props.category, "Post Count"];
 		const colors = (!this.props.colors) ? getChartColors(titles.length) : {borders: [...this.props.colors, ...getChartColors(1).borders]};
 
-		const data = await getFeedLineChartsData(this.state.feedPostViews, this.props.rangeDates, this.getMetricValue, titles, LuxonDateTime);
+		const data = await getFeedLineChartsData(this.props.objects, this.props.rangeDates, this.getMetricValue, titles, LuxonDateTime);
 
 		const datasets = titles.map((title, index) => 
 			({
@@ -136,32 +115,26 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 
 		if (metric == "Post Count"){
 			// Unique visits ids
-			const visitIds = objects.map(o => o.visitId).filter((value, index, self) => self.indexOf(value) === index);
-			var visits = await db.visits.where('id').anyOf(visitIds).toArray();
-			return await getVisitsPostCount(visits, db); 
+			return getFeedDashMetricValue(objects, metric);
 		}
 
+		var value = 0;
 
-		var value = 0,
-				feedPostIds = [];
+		// objects.sort((a, b) => {
+		// 	if (new Date(a.date) > new Date(b.date)){
+    //     return 1;
+    //   }
+    //   else if (new Date(a.date) < new Date(b.date)){
+    //     return -1;
+    //   }
+    //   else{
+    //     return 0;
+    //   }
+    // });
 
-		objects.sort((a, b) => {
-			if (new Date(a.date) > new Date(b.date)){
-        return 1;
-      }
-      else if (new Date(a.date) < new Date(b.date)){
-        return -1;
-      }
-      else{
-        return 0;
-      }
-    });
+    objects = objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
 			
 		for (var object of objects){
-
-			if (feedPostIds.indexOf(object.feedPostId) != -1){
-				continue;
-			}
 
 			const postView = await db.feedPostViews
                                 .where({feedPostId: object.feedPostId})
@@ -179,11 +152,7 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
       	}
       }
 
-			feedPostIds.push(object.feedPostId);
-
 		}
-
-		// }
 
 		return value;
 

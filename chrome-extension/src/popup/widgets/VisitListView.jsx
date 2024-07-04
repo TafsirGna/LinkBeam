@@ -47,7 +47,7 @@ export default class VisitListView extends React.Component{
                   {
                     this.props.objects.map((visit) => (<>
 
-                        { Object.hasOwn(visit, "feedItemsMetrics") 
+                        { !Object.hasOwn(visit, "profileData")
                           && <FeedVisitListItemView 
                               object={visit} 
                               parentList="ordinary" /> }

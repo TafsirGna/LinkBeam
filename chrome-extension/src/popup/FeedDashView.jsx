@@ -30,11 +30,12 @@ import PostViewListItemView from "./widgets/PostViewListItemView";
 import { 
   appParams,
   setGlobalDataSettings,
-  getChartColors,
-  getVisitsPostCount,
-  getVisitsTotalTime,
   dateBetweenRange,
-  getPeriodVisits,
+  getPostCount,
+  getVisitCount,
+  getVisitMeanTime,
+  getVisitsTotalTime,
+  getFeedDashMetricValue,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -70,22 +71,20 @@ export default class FeedDashView extends React.Component{
     this.state = {
       startDate: null,
       endDate: null,
-      visits: null,
-      feedPostViews: null,
+      allPeriodUniqueFeedPostViews: null,
+      allPeriodFeedPostViews: null,
       allPostsModalShow: false,
       metricLineChartModalShow: false,
       metricLineChartModalTitle: "",
       toastMessage: "",
       toastShow: false,
       activeListIndex: 0,
-      allVisitsPostCount: 0,
       hashtagCount: null,
       postStackedBarChartModalShow: false,
     };
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
     this.handleEndDateInputChange = this.handleEndDateInputChange.bind(this);
-    this.setVisits = this.setVisits.bind(this);
     this.setFeedPostViews = this.setFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
     this.setHashtagCount = this.setHashtagCount.bind(this);
@@ -96,9 +95,9 @@ export default class FeedDashView extends React.Component{
 
     eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
       {
-        const index = this.state.feedPostViews.map(p => p.feedPostId).indexOf(data.post.id);
+        const index = this.state.allPeriodUniqueFeedPostViews.map(p => p.feedPostId).indexOf(data.post.id);
         if (index != -1){
-          this.state.feedPostViews[index].feedPost.reminder = data.reminder;
+          this.state.allPeriodUniqueFeedPostViews[index].feedPost.reminder = data.reminder;
         }
         this.toggleToastShow("Reminder added!");
       }
@@ -106,9 +105,9 @@ export default class FeedDashView extends React.Component{
 
     eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
       {
-        const index = this.state.feedPostViews.map(p => p.id).indexOf(data);
+        const index = this.state.allPeriodUniqueFeedPostViews.map(p => p.id).indexOf(data);
         if (index != -1){
-          this.state.feedPostViews[index].feedPost.reminder = null;
+          this.state.allPeriodUniqueFeedPostViews[index].feedPost.reminder = null;
         }
         this.toggleToastShow("Reminder deleted!");
       }
@@ -159,63 +158,47 @@ export default class FeedDashView extends React.Component{
    
     if ((prevState.startDate != this.state.startDate) 
         || (prevState.endDate != this.state.endDate)){
-
-      this.setVisits();
-
       this.setFeedPostViews();
-
     }
-
-  }
-
-  async setVisits(){
-
-    const visits = await getPeriodVisits({
-                              start: this.state.startDate,
-                              end: this.state.endDate,
-                            }, LuxonDateTime, db, "feed");
-
-    this.setState({ 
-      visits: visits,
-      allVisitsPostCount: await getVisitsPostCount(visits, db), 
-    });
 
   }
 
   async setFeedPostViews(){
 
-    var feedPostViews = [];
+    var allPeriodFeedPostViews = [],
+        allPeriodUniqueFeedPostViews = [];
     await db.feedPostViews
             .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
             .each(feedPostView => {
-              const index = feedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
+
+              allPeriodFeedPostViews.push(feedPostView);
+
+              const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
               if (index == -1){
-                feedPostViews.push(feedPostView);
+                allPeriodUniqueFeedPostViews.push(feedPostView);
               }
               else{
-                if (new Date(feedPostView.date) > new Date(feedPostViews[index].date)){
-                  feedPostView.timeCount += feedPostViews[index].timeCount;
-                  feedPostViews[index] = feedPostView;
+                if (new Date(feedPostView.date) > new Date(allPeriodUniqueFeedPostViews[index].date)){
+                  feedPostView.timeCount += allPeriodUniqueFeedPostViews[index].timeCount;
+                  allPeriodUniqueFeedPostViews[index] = feedPostView;
                 }
                 else{
-                  feedPostViews[index].timeCount += feedPostView.timeCount;
+                  allPeriodUniqueFeedPostViews[index].timeCount += feedPostView.timeCount;
                 }
               }
             });
 
-    await Promise.all (feedPostViews.map (async feedPostView => {
+    for (var feedPostView of allPeriodUniqueFeedPostViews){
 
-      [feedPostView.feedPost] = await Promise.all([
-         db.feedPosts.where({id: feedPostView.feedPostId}).first()
-       ]);
+      feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+      feedPostView.feedPost.reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
 
-      [feedPostView.feedPost.reminder] = await Promise.all([
-         db.reminders.where({objectId: feedPostView.feedPostId}).first()
-       ]);
+    }
 
-    }));
-
-    this.setState({feedPostViews: feedPostViews});
+    this.setState({ 
+      allPeriodFeedPostViews: allPeriodFeedPostViews,
+      allPeriodUniqueFeedPostViews: allPeriodUniqueFeedPostViews,
+    });
 
   }
 
@@ -232,34 +215,6 @@ export default class FeedDashView extends React.Component{
   }
 
   toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));};
-
-  async getMetricValue(visits, metric){
-
-    var value = null;
-    switch(metric){
-      case "Total time": {
-        value = getVisitsTotalTime(visits); 
-        break;
-      }
-
-      case "Post Count": {
-        value = await getVisitsPostCount(visits, db); 
-        break;
-      }
-
-      case "Visit Count": {
-        value = visits.length; 
-        break;
-      }
-
-      case "Mean time": {
-        value = (getVisitsTotalTime(visits) / visits.length).toFixed(2); 
-        break;
-      }
-    }
-
-    return value;
-  }
 
   setActiveListIndex(index){
     this.setState({activeListIndex: index});
@@ -310,28 +265,28 @@ export default class FeedDashView extends React.Component{
           <div class="row mx-2 mt-1">
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Total time")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-primary-emphasis">~{`${getVisitsTotalTime(this.state.visits)} mins`}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-primary-emphasis">~{`${getVisitsTotalTime(this.state.allPeriodFeedPostViews)} mins`}</h6>}
                 <p class="card-text mb-1">Total time spent</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Visit Count")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-danger-emphasis">{this.state.visits.length}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-danger-emphasis">{getVisitCount(this.state.allPeriodFeedPostViews)}</h6>}
                 <p class="card-text mb-1">Visits</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Post Count")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-warning-emphasis">~{this.state.allVisitsPostCount}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-warning-emphasis">~{this.state.allPeriodUniqueFeedPostViews.length}</h6>}
                 <p class="card-text mb-1">Posts</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time")}}>
               <div class="card-body">
-                {this.state.visits && <h6 class="card-title text-info-emphasis">~{this.state.visits.length ? `${(getVisitsTotalTime(this.state.visits)/this.state.visits.length).toFixed(2)} mins` : "0 mins"}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{`${getVisitMeanTime(this.state.allPeriodFeedPostViews)} mins`}</h6>}
                 <p class="card-text mb-1">Mean time per visit</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
@@ -342,10 +297,11 @@ export default class FeedDashView extends React.Component{
             <div class="col p-0">
               <div class="border rounded shadow">
                 <FeedScatterPlot
-                  objects={this.state.visits}/>
+                  objects={this.state.allPeriodFeedPostViews}/>
               </div>
               <div class="border rounded shadow mt-3">
                 <FeedNewPostMeasurementBarChart
+                  objects={this.state.allPeriodFeedPostViews}
                   rangeDates={{
                     start: this.state.startDate,
                     end: this.state.endDate,
@@ -354,7 +310,7 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="col border rounded shadow py-3">
               <FeedPostCategoryDonutChart 
-                objects={this.state.visits}
+                objects={this.state.allPeriodFeedPostViews}
                 rangeDates={{
                   start: this.state.startDate,
                   end: this.state.endDate,
@@ -406,24 +362,24 @@ export default class FeedDashView extends React.Component{
 
                       </h6>
           
-                      { !this.state.feedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                      { !this.state.allPeriodUniqueFeedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                                 {/*<span class="visually-hidden">Loading...</span>*/}
                               </div>
                               <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
                             </div>
                           </div>}
           
-                      { this.state.feedPostViews 
+                      { this.state.allPeriodUniqueFeedPostViews 
                         && <>
-                          {this.state.feedPostViews.length == 0
+                          {this.state.allPeriodUniqueFeedPostViews.length == 0
                             && <div class="text-center m-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
                                   <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
                                 </div>}
           
-                          { this.state.feedPostViews.length  != 0
+                          { this.state.allPeriodUniqueFeedPostViews.length  != 0
                               && <div>
-                                  { this.state.feedPostViews.map(((feedPostView, index) => {
+                                  { this.state.allPeriodUniqueFeedPostViews.map(((feedPostView, index) => {
                                     return index < 3 ? <PostViewListItemView  
                                                         startDate={this.state.startDate}
                                                         endDate={this.state.endDate}
@@ -442,15 +398,15 @@ export default class FeedDashView extends React.Component{
 
           { this.state.activeListIndex == 1
               && <FeedDashRecurrentProfilesSectionView
-                    objects={this.state.feedPostViews}/>}
+                    objects={this.state.allPeriodUniqueFeedPostViews}/>}
 
           { this.state.activeListIndex == 2
               && <FeedDashAttentionGrabbersSectionView
-                  objects={this.state.feedPostViews}/>}
+                  objects={this.state.allPeriodUniqueFeedPostViews}/>}
 
           { this.state.activeListIndex == 3
               && <FeedDashHashtagsSectionView
-                    objects={this.state.feedPostViews}
+                    objects={this.state.allPeriodUniqueFeedPostViews}
                     setCount={this.setHashtagCount}/>}
 
   			</div>
@@ -466,7 +422,7 @@ export default class FeedDashView extends React.Component{
         show={this.state.allPostsModalShow}
         onHide={this.handleAllPostsModalClose}
         globalData={this.props.globalData}
-        objects={this.state.feedPostViews}/>
+        objects={this.state.allPeriodUniqueFeedPostViews}/>
 
 
       <Modal show={this.state.metricLineChartModalShow} onHide={this.handleMetricLineChartModalClose}>
@@ -481,9 +437,9 @@ export default class FeedDashView extends React.Component{
                       start: this.state.startDate,
                       end: this.state.endDate,
                     }}
-                    objects={this.state.visits}
+                    objects={this.state.allPeriodFeedPostViews}
                     metric={this.state.metricLineChartModalTitle}
-                    metricValueFunction={this.getMetricValue}/>}
+                    metricValueFunction={getFeedDashMetricValue}/>}
 
         </Modal.Body>
         <Modal.Footer>
@@ -509,7 +465,7 @@ export default class FeedDashView extends React.Component{
               start: this.state.startDate,
               end: this.state.endDate,
             }}
-            objects={this.state.feedPostViews}/>
+            objects={this.state.allPeriodUniqueFeedPostViews}/>
 
         </Modal.Body>
         <Modal.Footer>
