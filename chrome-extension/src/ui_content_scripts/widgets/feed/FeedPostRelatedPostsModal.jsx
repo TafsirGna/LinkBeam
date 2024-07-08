@@ -178,135 +178,134 @@ export default class FeedPostRelatedPostsModal extends React.Component{
   render(){
     return (
       <>
-        <div class={"modal-container-ac84bbb3728 " + (this.state.show ? "" : "hidden")}>
-          <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-            
-            <div class="p-4">
-              <div onClick={null} class="text-xl pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                <div class="inline-flex items-center">
-                  <img 
-                    width="15" 
-                    height="15" 
-                    src={chrome.runtime.getURL("/assets/app_logo.png")}
-                    class="mx-2"/>
-                  <span>Previous related posts</span>
-                </div>
-              </div>
-            </div>
+        <div class={`modal-container-ac84bbb3728 ${(this.state.show ? "" : "hidden")}`}>
+          {/*<!-- Main modal -->*/}
+          <div class="mx-auto relative p-4 w-full max-w-5xl max-h-full">
+              {/*<!-- Modal content -->*/}
+              <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                  {/*<!-- Modal header -->*/}
+                  <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                          Previous related posts
+                      </h3>
+                      <button onClick={this.handleModalClose} type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="default-modal">
+                          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                          </svg>
+                          <span class="sr-only">Close modal</span>
+                      </button>
+                  </div>
+                  {/*<!-- Modal body -->*/}
+                  <div class="p-4 md:p-5 space-y-4">
 
-            <div class="p-4">
+                    { !this.state.extractedPostData
+                        && <div class="text-center">
+                            <Spinner aria-label="Default status example" />
+                          </div>}
 
-              { !this.state.extractedPostData
-                  && <div class="text-center">
-                      <Spinner aria-label="Default status example" />
-                    </div>}
+                    {/*{ this.state.data
+                          && <div>
+                                
+                            </div> }*/}
 
-              {/*{ this.state.data
-                    && <div>
-                          
-                      </div> }*/}
-
-              { this.state.extractedPostData 
-                  && <div>
-                      <div class="text-lg font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-                        <ul class="flex flex-wrap -mb-px">
-                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(0)}}>
-                                <a
-                                  class={ this.state.viewIndex == 0 
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
-                                  {this.state.extractedPostData.content.author.name}
-                                  { this.state.tabsData[0].items 
-                                      && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[0].items.length}+</span>}
-                                </a>
-                            </li>
-                            { this.state.extractedPostData.initiator
-                                && this.state.extractedPostData.initiator.name 
-                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
-                                    <a 
-                                      class={ this.state.viewIndex == 1
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
-                                      {this.state.extractedPostData.initiator.name}
-                                      { this.state.tabsData[1].items 
-                                        && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[1].items.length}+</span>}
-                                    </a>
-                                </li>}
-                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
-                                <a 
-                                  class={ this.state.viewIndex == 2 
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
-                                  /*aria-current="page"*/>
-                                  Tags
-                                </a>
-                            </li>
-                            {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
-                                <a 
-                                  class={ this.state.viewIndex == 3
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
-                                  >
-                                  Copycats
-                                  <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{this.state.tabsData[3].items.length}+</span>
-                                </a>
-                            </li>*/}
-
-
-                        </ul>
-                    </div>
-
-                    { [0, 1, 3].map(index => <div>
-                                                { this.state.viewIndex == index 
-                                                    && <div>
-                                                
-                                                      { !this.state.tabsData[this.state.viewIndex].items 
-                                                        && <div class="text-center mt-5">
-                                                                            <Spinner aria-label="Default status example" />
-                                                                          </div>}
-    
-                                                      { this.state.tabsData[this.state.viewIndex].items
-                                                          && <div>
-    
-                                                            { this.state.tabsData[this.state.viewIndex].items.length == 0
-                                                                && <AlertWidget
-                                                                      text="Nothing to show."
-                                                                      variant="yellow"
-                                                                      className="mt-5"/>}
-    
-                                                            { this.state.tabsData[this.state.viewIndex].items.length != 0
-                                                                && <PreviousPostsList
-                                                                      objects={this.state.tabsData[this.state.viewIndex].items}
-                                                                      extractedPostData={this.state.extractedPostData}
-                                                                      viewIndex={index}/>}
-                                                          </div> }
-                                                          
-                                                    </div>}
-                                              </div>) }
-
-                    { this.state.viewIndex == 2
+                    { this.state.extractedPostData 
                         && <div>
-                            <AlertWidget
-                              text="Section still in active development."
-                              variant="blue"
-                              className="mt-5"/>
+                            <div class="text-lg font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
+                              <ul class="flex flex-wrap -mb-px">
+                                  <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(0)}}>
+                                      <a
+                                        class={ this.state.viewIndex == 0 
+                                                  ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                                  :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                        {this.state.extractedPostData.content.author.name}
+                                        { this.state.tabsData[0].items 
+                                            && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[0].items.length}+</span>}
+                                      </a>
+                                  </li>
+                                  { this.state.extractedPostData.initiator
+                                      && this.state.extractedPostData.initiator.name 
+                                      && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                                          <a 
+                                            class={ this.state.viewIndex == 1
+                                                  ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                                  :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                            {this.state.extractedPostData.initiator.name}
+                                            { this.state.tabsData[1].items 
+                                              && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[1].items.length}+</span>}
+                                          </a>
+                                      </li>}
+                                  <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
+                                      <a 
+                                        class={ this.state.viewIndex == 2 
+                                                  ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                                  :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
+                                        /*aria-current="page"*/>
+                                        Tags
+                                      </a>
+                                  </li>
+                                  {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
+                                      <a 
+                                        class={ this.state.viewIndex == 3
+                                                  ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                                  :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
+                                        >
+                                        Copycats
+                                        <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{this.state.tabsData[3].items.length}+</span>
+                                      </a>
+                                  </li>*/}
+
+
+                              </ul>
+                          </div>
+
+                          { [0, 1, 3].map(index => <div>
+                                                      { this.state.viewIndex == index 
+                                                          && <div>
+                                                      
+                                                            { !this.state.tabsData[this.state.viewIndex].items 
+                                                              && <div class="text-center mt-5">
+                                                                                  <Spinner aria-label="Default status example" />
+                                                                                </div>}
+          
+                                                            { this.state.tabsData[this.state.viewIndex].items
+                                                                && <div>
+          
+                                                                  { this.state.tabsData[this.state.viewIndex].items.length == 0
+                                                                      && <AlertWidget
+                                                                            text="Nothing to show."
+                                                                            variant="yellow"
+                                                                            className="mt-5"/>}
+          
+                                                                  { this.state.tabsData[this.state.viewIndex].items.length != 0
+                                                                      && <PreviousPostsList
+                                                                            objects={this.state.tabsData[this.state.viewIndex].items}
+                                                                            extractedPostData={this.state.extractedPostData}
+                                                                            viewIndex={index}/>}
+                                                                </div> }
+                                                                
+                                                          </div>}
+                                                    </div>) }
+
+                          { this.state.viewIndex == 2
+                              && <div>
+                                  <AlertWidget
+                                    text="Section still in active development."
+                                    variant="blue"
+                                    className="mt-5"/>
+                              </div>}
+
                         </div>}
 
-                  </div>}
 
-
-            </div>
-
-            <div class="p-4 text-lg">
-              <div 
-                onClick={this.handleModalClose} 
-                class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                <span>Dismiss</span>
-              </div>
-            </div>
-            
-          </div>
-        </div> 
+                      </div>
+                            {/*<!-- Modal footer -->*/}
+                            <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+                              <button data-modal-hide="default-modal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" onClick={this.handleModalClose} >Dismiss</button>
+                              {/*<button data-modal-hide="default-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Decline</button>*/}
+                            </div>
+                        </div>
+                    </div>
+                  </div>
 
       </>
     );

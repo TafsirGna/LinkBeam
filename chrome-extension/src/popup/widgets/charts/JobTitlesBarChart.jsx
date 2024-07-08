@@ -129,9 +129,9 @@ export default class JobTitlesBarChart extends React.Component{
   onChartClick(event){
 
     var elements = getElementAtEvent(this.state.chartRef.current, event);
-    console.log(elements, (elements[0]).index);
 
-    if (elements.length != 0){
+    if (elements.length){
+      console.log(elements, (elements[0]).index);
       this.handleJobModalShow((elements[0]).index);
     }
 

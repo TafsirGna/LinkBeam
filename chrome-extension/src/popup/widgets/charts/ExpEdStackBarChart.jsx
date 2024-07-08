@@ -170,9 +170,9 @@ export default class ExpEdStackBarChart extends React.Component{
   onChartClick(event){
 
     var elements = getElementAtEvent(this.state.chartRef.current, event);
-    console.log(elements, (elements[0]).index);
 
-    if (elements.length != 0){
+    if (elements.length){
+      console.log(elements, (elements[0]).index);
       window.open(`/index.html?view=Profile&data=${this.state.displayedProfiles[(elements[0]).index].url}`, '_blank');
     }
 

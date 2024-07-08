@@ -228,9 +228,11 @@ export default class ProfilesGeoMapChart extends React.Component{
   onChartClick(event){
 
     var elements = getElementAtEvent(this.state.chartRef.current, event);
-    console.log(elements, (elements[0]).index);
 
-    if (elements.length != 0){
+    if (elements.length){
+
+      console.log(elements, (elements[0]).index);
+      
       // either this
       this.handleOffCanvasShow((elements[0]).index);
       // or this

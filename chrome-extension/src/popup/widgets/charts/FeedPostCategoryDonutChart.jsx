@@ -109,9 +109,9 @@ export default class FeedPostCategoryDonutChart extends React.Component{
   onDonutChartClick(event){
 
     var elements = getElementAtEvent(this.state.chartRef.current, event);
-    console.log(elements, (elements[0]).index);
 
-    if (elements.length != 0){
+    if (elements.length){
+      console.log(elements, (elements[0]).index);
       this.setState({selectedCategoryIndex: (elements[0]).index}, () => {
         this.handleCategorySizeTrendModalShow();
       });
