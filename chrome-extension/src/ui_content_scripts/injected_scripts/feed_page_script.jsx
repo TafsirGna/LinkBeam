@@ -22,6 +22,7 @@
 
 import { 
 	ScriptAgentBase,
+	getFeedPostHtmlElement,
 } from "./main_lib";
 import React from 'react';
 import { 
@@ -31,6 +32,7 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 import AboveFeedPostWidgetView from "../widgets/feed/AboveFeedPostWidgetView";
+import FeedPostHiddenMarkerView from "../widgets/feed/FeedPostHiddenMarkerView";
 import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
 import FeedPostRelatedPostsModal from "../widgets/feed/FeedPostRelatedPostsModal";
 import eventBus from "../../popup/EventBus";
@@ -67,6 +69,8 @@ function getElementVisibility(element) {
 export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static activePostContainerElementUid = null;
+	static allPostsHideStatus = {};
+	static allExtensionWidgetsSet = false;
 
 	constructor(){
 		super();
@@ -101,9 +105,10 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			}
 
 			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
-			console.log("QQQQQQQQQQQQQQQQQQQQ 1 : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage);
 
 		}
+
+		this.getAllPostsHideStatus(postContainerElements, props);
 
 	}
 
@@ -139,6 +144,10 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
+		if (this.allExtensionWidgetsSet){
+			return;
+		}
+
 		if (document.querySelector(".scaffold-finite-scroll__content")){
 
 			if (!document.querySelector(".scaffold-finite-scroll__content")
@@ -165,19 +174,56 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		            </React.StrictMode>
 		        );
 
+				this.allExtensionWidgetsSet = true;
+
 			}
 
-			if (!this.getPostContainerElements()[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+			const postContainerElements = this.getPostContainerElements();
+			if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
 				this.attachPostWidget(this.getPostContainerElements()[0], props);
+				this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
 
 			}
+			else{
+				this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
+			}
+
+			this.getAllPostsHideStatus(postContainerElements, props);
 
 		}
 
 	}
 
+	static getAllPostsHideStatus(postContainerElements, props){
+
+		var postUids = postContainerElements.filter(postContainerElement => !(postContainerElement.getAttribute("data-id") in this.allPostsHideStatus))
+										   .map(postContainerElement => {
+										   	const postUid = postContainerElement.getAttribute("data-id");
+										   	this.allPostsHideStatus[postUid] = null;
+										   	return postUid;
+										   });
+
+		chrome.runtime.sendMessage({header: "FEED_POSTS_HIDE_STATUS", data: {tabId: props.tabId, objects: postUids}}, (response) => {
+	      console.log('tab idle status sent', response, postUids);
+	    });		
+
+	}
+
+	static hidePost(postUid){
+
+		var postContainerElement = getFeedPostHtmlElement(postUid);
+		if (postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+			postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)
+								.remove();
+		}
+		this.attachPostWidget(postContainerElement);
+
+	}
+
 	static attachPostWidget(postContainerElement, props){
+
+		const postUid = postContainerElement.getAttribute("data-id");
 
 		// Adding the marker
 		var newDivTag = document.createElement('div');
@@ -185,19 +231,36 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	    postContainerElement.prepend(newDivTag);
 	    newDivTag.attachShadow({ mode: 'open' });
 
-		ReactDOM.createRoot(newDivTag.shadowRoot).render(
-            <React.StrictMode>
-              <style type="text/css">{styles}</style>
-              <AboveFeedPostWidgetView 
-              	postUid={postContainerElement.getAttribute("data-id")}
-              	tabId={props.tabId}
-              	allKeywords={props.allKeywords}
-              	visitId={props.visitId}
-              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
-              	// index={index}
-              	appSettings={props.appSettings}/>
-            </React.StrictMode>
-        );
+		if (this.allPostsHideStatus[postUid] == true){ // then hide the post
+
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <FeedPostHiddenMarkerView 
+	              	postUid={postUid}/>
+	            </React.StrictMode>
+	        );
+
+	        postContainerElement.querySelector(".feed-shared-update-v2").style.cssText = "display: none;";
+
+		}
+		else{
+
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <AboveFeedPostWidgetView 
+	              	postUid={postUid}
+	              	tabId={props.tabId}
+	              	allKeywords={props.allKeywords}
+	              	visitId={props.visitId}
+	              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
+	              	// index={index}
+	              	appSettings={props.appSettings}/>
+	            </React.StrictMode>
+	        );
+
+		}
 
 	}
 

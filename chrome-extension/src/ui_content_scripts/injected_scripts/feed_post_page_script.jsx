@@ -36,11 +36,17 @@ const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
 export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
+	static allExtensionWidgetsSet = false;
+
 	constructor(){
 		super();
 	}
 
 	static checkAndUpdateUi(props){
+
+		if (this.allExtensionWidgetsSet){
+			return;
+		}
 
 		if (!document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 
@@ -51,15 +57,17 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 		    document.body.appendChild(newDivTag);
 		    newDivTag.attachShadow({ mode: 'open' });
 
-				ReactDOM.createRoot(newDivTag.shadowRoot).render(
-		            <React.StrictMode>
-		              <style type="text/css">{styles}</style>
-		              <FeedPostDataModal
-		              	appSettings={props.appSettings}
-		              	tabId={props.tabId}
-		              	/*visitId={props.visitId}*//>
-		            </React.StrictMode>
-		        );
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <FeedPostDataModal
+	              	appSettings={props.appSettings}
+	              	tabId={props.tabId}
+	              	/*visitId={props.visitId}*//>
+	            </React.StrictMode>
+	        );
+
+			this.allExtensionWidgetsSet = true;
 
 		}
 
@@ -69,25 +77,31 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 		if (!postContainerElement.parentNode.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
-				// Adding the marker
-				var newDivTag = document.createElement('div');
-				newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-	      postContainerElement.parentNode.prepend(newDivTag);
-	      newDivTag.attachShadow({ mode: 'open' });
+			// Adding the marker
+			var newDivTag = document.createElement('div');
+			newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
+		    postContainerElement.parentNode.prepend(newDivTag);
+		    newDivTag.attachShadow({ mode: 'open' });
 
-				ReactDOM.createRoot(newDivTag.shadowRoot).render(
-		            <React.StrictMode>
-		              <style type="text/css">{styles}</style>
-		              <AboveFeedPostWidgetView 
-		              	postUid={postContainerElement.getAttribute("data-urn")}
-		              	tabId={props.tabId}
-		              	allKeywords={props.allKeywords}
-		              	postData={props.otherArgs ? props.otherArgs.postData : null}
-		              	/*visitId={props.visitId}*//>
-		            </React.StrictMode>
-		        );
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <AboveFeedPostWidgetView 
+	              	postUid={postContainerElement.getAttribute("data-urn")}
+	              	tabId={props.tabId}
+	              	allKeywords={props.allKeywords}
+	              	postData={props.otherArgs ? props.otherArgs.postData : null}
+	              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
+	              	/*visitId={props.visitId}*//>
+	            </React.StrictMode>
+	        );
 
-			}
+	        this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+
+		}
+		else{
+			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
+		}
 		
 	}
 

@@ -54,6 +54,25 @@ class MainScriptAgent extends ScriptAgentBase {
         
     }
 
+    handleIncomingMessages(message, sender, sendResponse){
+
+        switch(message.header){
+            case "FEED_POSTS_HIDE_STATUS_RESPONSE" :{
+                console.log("~~~~~~~~~~~~~ 1 : ", message.data);
+                for (const postUid in message.data){
+                    FeedPageScriptAgent.allPostsHideStatus[postUid] = message.data[postUid];
+                    console.log("~~~~~~~~~~~~~ 2 : ", postUid, FeedPageScriptAgent.allPostsHideStatus[postUid]);
+                    if (FeedPageScriptAgent.allPostsHideStatus[postUid]){
+                        console.log("~~~~~~~~~~~~~ 3 : ", postUid, FeedPageScriptAgent.allPostsHideStatus[postUid]);
+                        FeedPageScriptAgent.hidePost(postUid);
+                    }
+                }
+                break;
+            }
+        }
+
+    }
+
     scrollEventHandler2(){
 
         var props = {
@@ -100,10 +119,22 @@ class MainScriptAgent extends ScriptAgentBase {
                 otherArgs: this.otherArgs,
             };
 
-            if (isLinkedinFeed(pageUrl)){
+            if (isLinkedinFeedPostPage(pageUrl)){
+
+                if (this.pageUrl != pageUrl){
+                    FeedPageScriptAgent.allExtensionWidgetsSet = false;
+                    this.pageUrl = pageUrl;
+                }
+
+                FeedPostPageScriptAgent.checkAndUpdateUi(props);
+                
+            }
+            else if (isLinkedinFeed(pageUrl)){
 
                 if (this.pageUrl != pageUrl){
                     FeedPageScriptAgent.activePostContainerElementUid = null;
+                    FeedPageScriptAgent.allExtensionWidgetsSet = false;
+                    FeedPageScriptAgent.allPostsHideStatus = {};
                     this.pageUrl = pageUrl;
                 }
 

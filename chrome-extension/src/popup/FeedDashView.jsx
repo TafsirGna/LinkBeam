@@ -397,11 +397,13 @@ export default class FeedDashView extends React.Component{
 
           { this.state.activeListIndex == 1
               && <FeedDashRecurrentProfilesSectionView
-                    objects={this.state.allPeriodUniqueFeedPostViews}/>}
+                    objects={this.state.allPeriodUniqueFeedPostViews}
+                    globalData={this.props.globalData}/>}
 
           { this.state.activeListIndex == 2
               && <FeedDashAttentionGrabbersSectionView
-                  objects={this.state.allPeriodUniqueFeedPostViews}/>}
+                  objects={this.state.allPeriodUniqueFeedPostViews}
+                  globalData={this.props.globalData}/>}
 
           { this.state.activeListIndex == 3
               && <FeedDashHashtagsSectionView

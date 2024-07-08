@@ -55,7 +55,7 @@ export default class AllPostsModal extends React.Component{
 
       if (this.props.show){
         if (!this.state.feedPostViews){
-          this.setState({feedPostViews: this.props.objects}, () => {
+          this.setState({feedPostViews: [...this.props.objects]}, () => {
             this.setSortByValue(0);
           });
         }

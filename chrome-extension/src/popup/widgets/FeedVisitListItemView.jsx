@@ -77,7 +77,7 @@ export default class FeedVisitListItemView extends React.Component{
                 { this.props.parentList == "ordinary" && <small class={ this.props.object.date.split("T")[0] == (new Date()).toISOString().split("T")[0] ? "text-warning text-nowrap" : "opacity-50 text-nowrap"}>{LuxonDateTime.fromISO(this.props.object.date).toRelative()}</small> }
                 { this.props.parentList == "aggregated" && <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.object.date).toFormat("MM-dd-yyyy")}</small>}
               </div>
-              {this.state.postCount
+              {this.state.postCount != null
                   && <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.state.postCount} viewed posts</p>}
             </div>
           </div>

@@ -5,6 +5,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
+import FeedProfileDataModal from "./modals/FeedProfileDataModal";
 
 const bgColors = [
   "bg-primary",
@@ -51,6 +52,7 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
     super(props);
     this.state = {
       totalInteractions: null,
+      feedProfileDataModalShow: false,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -74,6 +76,9 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
   componentWillUnmount(){
 
   }
+
+  handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
+  handleFeedProfileDataModalShow = () => this.setState({feedProfileDataModalShow: true});
 
   onEnteringUserTooltip = async () => {
 
@@ -105,7 +110,9 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
               <div class="mb-2">
                 <a 
                   class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                  href={this.props.object.url}>
+                  href=/*{this.props.object.url}*/"#"
+                  onClick={this.handleFeedProfileDataModalShow}
+                  title="Click to show more infos">
                   <OverlayTrigger 
                     trigger="hover" 
                     placement="top" 
@@ -137,6 +144,12 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
 
           </p>
         </div>
+
+        <FeedProfileDataModal
+          object={this.props.object}
+          show={this.state.feedProfileDataModalShow}
+          onHide={this.handleFeedProfileDataModalClose}
+          globalData={this.props.globalData}/>
 
       </>
     );

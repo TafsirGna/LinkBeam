@@ -88,7 +88,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
         case "PREVIOUS_RELATED_POSTS_LIST":{
 
           switch(message.data.viewIndex){
-            case 1:{
+            case 2:{
               break;
             }
             default:{
@@ -141,17 +141,17 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             break;
           }
           case 1:{
-            // payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.content.author.url};
+            payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.initiator.url};
             break;
           }
           case 2:{
-            if (this.state.extractedPostData.content.text){
-              payload = {viewIndex: index, offset: this.state.tabsData[index].offset, text: this.state.extractedPostData.content.text};
-            }
+            // payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.content.author.url};
             break;
           }
           case 3:{
-            payload = {viewIndex: index, offset: this.state.tabsData[index].offset, url: this.state.extractedPostData.initiator.url};
+            if (this.state.extractedPostData.content.text){
+              payload = {viewIndex: index, offset: this.state.tabsData[index].offset, text: this.state.extractedPostData.content.text};
+            }
             break;
           }
         }
@@ -182,7 +182,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
           <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
             
             <div class="p-4">
-              <div onClick={null} class="text-lg pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
+              <div onClick={null} class="text-xl pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
                 <div class="inline-flex items-center">
                   <img 
                     width="15" 
@@ -220,43 +220,43 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                       && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[0].items.length}+</span>}
                                 </a>
                             </li>
-                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                            { this.state.extractedPostData.initiator
+                                && this.state.extractedPostData.initiator.name 
+                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(1)}}>
+                                    <a 
+                                      class={ this.state.viewIndex == 1
+                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
+                                      {this.state.extractedPostData.initiator.name}
+                                      { this.state.tabsData[1].items 
+                                        && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[1].items.length}+</span>}
+                                    </a>
+                                </li>}
+                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
                                 <a 
-                                  class={ this.state.viewIndex == 1 
+                                  class={ this.state.viewIndex == 2 
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
                                   /*aria-current="page"*/>
                                   Tags
                                 </a>
                             </li>
-                            <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(2)}}>
+                            {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
                                 <a 
-                                  class={ this.state.viewIndex == 2 
+                                  class={ this.state.viewIndex == 3
                                             ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
                                             :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
                                   >
                                   Copycats
-                                  <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{/*{this.state.tabsData[2].items.length}+*/ "Beta"}</span>
+                                  <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{this.state.tabsData[3].items.length}+</span>
                                 </a>
-                            </li>
-                            { this.state.extractedPostData.initiator
-                                && this.state.extractedPostData.initiator.name 
-                                && <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
-                                    <a 
-                                      class={ this.state.viewIndex == 3
-                                            ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                            :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }>
-                                      {this.state.extractedPostData.initiator.name}
-                                      { this.state.tabsData[3].items 
-                                        && <span class="bg-blue-100 text-blue-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300">{this.state.tabsData[3].items.length}+</span>}
-                                    </a>
-                                </li>}
+                            </li>*/}
 
 
                         </ul>
                     </div>
 
-                    { [0, 2, 3].map(index => <div>
+                    { [0, 1, 3].map(index => <div>
                                                 { this.state.viewIndex == index 
                                                     && <div>
                                                 
@@ -284,7 +284,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                                     </div>}
                                               </div>) }
 
-                    { this.state.viewIndex == 1
+                    { this.state.viewIndex == 2
                         && <div>
                             <AlertWidget
                               text="Section still in active development."
@@ -334,11 +334,11 @@ function PreviousPostsList(props){
       case 0:{
         return props.extractedPostData.content.author.picture;
       }
+      case 1:{
+        return props.extractedPostData.initiator.picture;
+      }
       case 2:{
         return object.profile.picture;
-      }
-      case 3:{
-        return props.extractedPostData.initiator.picture;
       }
     }
 
@@ -350,11 +350,11 @@ function PreviousPostsList(props){
       case 0:{
         return props.extractedPostData.content.author.name;
       }
+      case 1:{
+        return props.extractedPostData.initiator.name;
+      }
       case 2:{
         return object.profile.name;
-      }
-      case 3:{
-        return props.extractedPostData.initiator.name;
       }
     }
 
@@ -382,8 +382,8 @@ function PreviousPostsList(props){
                                                   <div>
                                                     <a href={object.link}>
                                                       { (object.media && object.media[0]) && <img class="rounded-lg shadow-lg" src={(object.media[0].src ? object.media[0].src : object.media[0].poster)}/>}
-                                                      <div class="mt-2 handy-cursor p-3 text-xl font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300">
-                                                        {object.text}
+                                                      <div class="mt-2 handy-cursor p-3 text-xl font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300" dangerouslySetInnerHTML={{__html: object.text}}>
+                                                        {/**/}
                                                       </div>
                                                     </a>
                                                   </div>

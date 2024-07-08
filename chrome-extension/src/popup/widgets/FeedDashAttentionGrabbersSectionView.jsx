@@ -39,6 +39,7 @@ import {
 } from "react-bootstrap";
 import { db } from "../../db";
 import AttentionGrabbersAnimatedTreeMapChart from "./charts/AttentionGrabbersAnimatedTreeMapChart";
+import FeedProfileDataModal from "./modals/FeedProfileDataModal";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 
@@ -49,6 +50,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
     this.state = {
       profiles: null,
       animatedTreeMapChartModalShow: false,
+      feedProfileDataModalShow: false,
+      selectedFeedProfile: null,
     };
 
     this.setAttentionGrabbers = this.setAttentionGrabbers.bind(this);
@@ -70,6 +73,9 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
   componentWillUnmount() {
 
   }
+
+  handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
+  handleFeedProfileDataModalShow = (profile) => this.setState({feedProfileDataModalShow: true, selectedFeedProfile: profile});
 
   async setAttentionGrabbers(){
 
@@ -199,7 +205,9 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                               <div class="mb-2">
                                                                                 <a 
                                                                                   class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                                                                                  href={object.profile.url}>
+                                                                                  href=/*{object.profile.url}*/"#"
+                                                                                  onClick={() => {this.handleFeedProfileDataModalShow(object.profile);}}
+                                                                                  title="Click to show more infos">
                                                                                   { object.profile.name } 
                                                                                 </a>
                                                                               </div>
@@ -243,6 +251,12 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
             </Button>
           </Modal.Footer>
         </Modal>
+
+        <FeedProfileDataModal
+          object={this.state.selectedFeedProfile}
+          show={this.state.feedProfileDataModalShow}
+          onHide={this.handleFeedProfileDataModalClose}
+          globalData={this.props.globalData}/>
 
       </>
     );

@@ -1164,7 +1164,7 @@ export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywo
       
       setHighlightedKeywordView(
         newDivTag_B,
-        textItem, 
+        textItem, // TODO
         detected[textItem.toLowerCase()],
         highlightedKeywordBadgeColors[(Object.keys(detected).indexOf(textItem.toLowerCase()) % highlightedKeywordBadgeColors.length)]
       );
@@ -1495,6 +1495,21 @@ export function shuffle(array) {
   }
 
   return array;
+}
+
+export function isUrlOfInterest(url){
+    return testTabBaseUrl(url)
+            && (isLinkedinFeed(url) 
+                || isLinkedinProfilePage(url)
+                || isLinkedinFeedPostPage(url));
+}
+
+export function parseHtmlFromString(someHtmlString){
+
+  var d = document.createElement('div');
+  d.innerHTML = someHtmlString;
+  return d.firstChild;
+
 }
 
 export function highlightText(textContent, keyword){

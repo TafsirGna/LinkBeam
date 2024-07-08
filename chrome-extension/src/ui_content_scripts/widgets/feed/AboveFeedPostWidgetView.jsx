@@ -35,6 +35,7 @@ import{
   sendTabData,
   checkAndHighlightKeywordsInHtmlEl,
   extractPostDate,
+  getFeedPostHtmlElement,
 } from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
@@ -153,8 +154,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
 
-      console.log("QQQQQQQQQQQQQQQQQQQQ 2 : ", this.props.postUid, (this.props.postUid == data.uid)); 
-
       this.setState({
         postHtmlElementVisible: (this.props.postUid == data.uid),
       });
@@ -204,33 +203,28 @@ export default class AboveFeedPostWidgetView extends React.Component{
       }
     });
 
-    const postHtmlElement = isLinkedinFeed(window.location.href) ? document.querySelector(".scaffold-finite-scroll__content")
-                                                                    .querySelector(`div[data-id='${this.props.postUid}']`)
-                                                                    .querySelector(".feed-shared-update-v2")
-                                                                 : null;
+    if (isLinkedinFeedPostPage(window.location.href)){
+      this.setState({
+        impressionCount: this.props.postData.viewsCount,
+        reminder: this.props.postData.reminder ? this.props.postData.reminder : freshReminder(),
+      });
 
-    if (!postHtmlElement){
-      if (isLinkedinFeedPostPage(window.location.href)){
-        this.setState({
-          impressionCount: this.props.postData.viewsCount,
-          reminder: this.props.postData.reminder ? this.props.postData.reminder : freshReminder(),
-        });
+      this.checkAndHighlightKeywordsInPost();
 
-        this.checkAndHighlightKeywordsInPost();
-      }
       return;
     }
+
+    // if it's the main feed, then
+    const postHtmlElement = getFeedPostHtmlElement(this.props.postUid).querySelector(".feed-shared-update-v2");
+
+    this.setState({postHtmlElement: postHtmlElement}, () => {
+      // Screen this post for all contained keywords
+      this.checkAndHighlightKeywordsInPost();
+    });
 
     if (isElVisible(postHtmlElement)){
       this.setState({postHtmlElementVisible: true});
     }
-
-    this.setState({postHtmlElement: postHtmlElement}, () => {
-
-      // Screen this post for all contained keywords
-      this.checkAndHighlightKeywordsInPost();
-
-    });
 
   }
 
@@ -526,7 +520,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 
-          if (window.location.href != appParams.LINKEDIN_FEED_URL()){
+          if (window.location.href != appParams.LINKEDIN_FEED_URL()
+                || (window.getComputedStyle(this.state.postHtmlElement).display === "none" /* in the case the html element has been hidden */ )){
             if (this.state.timerInterval){
               this.clearTimer();
             }
@@ -811,15 +806,16 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                                                      : (this.state.postHtmlElement
                                                                                  .querySelector(".feed-shared-update-v2__description-wrapper")
                                                                         ? this.state.postHtmlElement
-                                                                                 .querySelector(".feed-shared-update-v2__description-wrapper")
-                                                                                 .querySelector(".text-view-model")
+                                                                                 .querySelector(".feed-shared-update-v2__description-wrapper .update-components-update-v2__commentary")
                                                                         : null);
 
     var detected = {};
 
     checkAndHighlightKeywordsInHtmlEl(htmlElement, this.props.allKeywords, detected, this.props.highlightedKeywordBadgeColors);
 
-    this.setState({foundKeywords: this.props.allKeywords.length ? detected : null});                                               
+    if (this.props.allKeywords.length){
+      this.setState({foundKeywords: detected});                                               
+    }
 
   }
 
@@ -827,7 +823,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     return (
       <>
         <div>
-                  <div class={`shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800 `} role="alert">
+                  <div class="shadow w-full inline-flex p-4 mb-4 py-1 text-blue-800 border border-blue-300 rounded-lg bg-blue-50 dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800" role="alert">
                     <div class="flex items-center">
                       <Tooltip content="Proudly yours">
                         <svg class="flex-shrink-0 w-4 h-4 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -956,15 +952,16 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
                                         </Dropdown.Item>}
 
-                                <Dropdown.Item 
-                                  onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.postUid}`, '_blank'); }}
-                                  className="">
-                                  <DuplicateIcon
-                                    size="12"
-                                    className="me-2"/>
-                                  Open in a new tab
-                                  </Dropdown.Item>
-                              </Dropdown>}
+                                { isLinkedinFeedPostPage(window.location.href)
+                                  && <Dropdown.Item 
+                                      onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.postUid}`, '_blank'); }}
+                                      className="">
+                                      <DuplicateIcon
+                                        size="12"
+                                        className="me-2"/>
+                                      Open in a new tab
+                                      </Dropdown.Item>}
+                              </Dropdown> }
         
                       {/* Indication of the number of this post inpression on the user's feed */}
                       <button 

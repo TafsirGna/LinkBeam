@@ -3,7 +3,6 @@ import React from 'react';
 // import { dbDataSanitizer } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
-// import {Swatches} from "@d3/color-legend";
 import { db } from "../../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
@@ -59,8 +58,6 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
   		return;
   	}
 
-    console.log("lllllllllllll 1 : ", this.props.profiles);
-
     var chartData = {
     			keys: [],
     			group: null,
@@ -70,8 +67,6 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
     			values: [],
     			url: object.profile.url,
     		}));
-
-    console.log("lllllllllllll 2 : ", profileData);
 
     var feedPosts = [];
 

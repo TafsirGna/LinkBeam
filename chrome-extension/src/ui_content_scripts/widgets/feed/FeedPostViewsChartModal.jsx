@@ -27,6 +27,7 @@ import {
   messageMeta,
   getFeedLineChartsData,
   getPostMetricValue,
+  isLinkedinFeedPostPage,
 } from "../../../popup/Local_library";
 import { BarChartIcon } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
@@ -70,7 +71,7 @@ export const options = {
     },
     title: {
       display: true,
-      text: 'Chart.js Line Chart',
+      text: 'Post Trending Evolution Line Chart',
     },
   },
 };
@@ -167,6 +168,11 @@ export default class FeedPostViewsChartModal extends React.Component{
   checkPostFreshness(objects){
 
     var fresh = false;
+
+    if (isLinkedinFeedPostPage(window.location.href)){
+      return fresh;
+    }
+
     const today = new Date().toISOString().split("T")[0];
     if (objects.length == 1 
           && objects[0].date.split("T")[0] == today){

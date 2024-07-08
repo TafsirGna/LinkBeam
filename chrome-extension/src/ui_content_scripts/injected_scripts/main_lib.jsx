@@ -72,53 +72,14 @@ export class ScriptAgentBase {
 		// Starting listening to different messages
 		this.startMessageListener();
 
-    // window.onload = (function () { 
-
-    // }).bind(this);
+    // adding the necessary mouse and scroll listeners
 
     document.addEventListener("scroll", (event) => {
-
       this.scrollEventHandler1();
-
     });
 
     document.onmousemove = (event) => {
-
-      if (!this.mouseMoving){
-        this.mouseMoving = true;
-
-        if (this.idleStatus){
-          this.idleStatus = false;
-          this.sendTabIdleStatusSignal();
-        }
-
-        // I cancel the timer
-        if (this.idlingTimer){
-          clearTimeout(this.idlingTimer);
-          this.idlingTimer = null;
-        }
-
-        // if not done yet 
-        if (this.mouseMoveTimeout){
-          return;
-        }
-
-        // i reset the mouseMoving value to false
-        this.mouseMoveTimeout = setTimeout(() => {
-
-          this.mouseMoving = false;
-          // and I reset the timeout 
-          this.mouseMoveTimeout = null;
-
-          if (!this.scrolling){
-            this.startIdlingTimer();
-          }
-
-        }, 
-        appParams.TIMER_VALUE_1);
-
-      }
-
+      this.mouseMoveEventHandler1();
     };
 
     // document.onmouseout = (event) => {
@@ -127,7 +88,56 @@ export class ScriptAgentBase {
 
 	}
 
+  mouseMoveEventHandler1(){
+
+    if (!isLinkedinFeed(this.pageUrl) 
+          && !isLinkedinProfilePage(this.pageUrl)){
+      return;
+    }
+
+    if (!this.mouseMoving){
+      this.mouseMoving = true;
+
+      if (this.idleStatus){
+        this.idleStatus = false;
+        this.sendTabIdleStatusSignal();
+      }
+
+      // I cancel the timer
+      if (this.idlingTimer){
+        clearTimeout(this.idlingTimer);
+        this.idlingTimer = null;
+      }
+
+      // if not done yet 
+      if (this.mouseMoveTimeout){
+        return;
+      }
+
+      // i reset the mouseMoving value to false
+      this.mouseMoveTimeout = setTimeout(() => {
+
+        this.mouseMoving = false;
+        // and I reset the timeout 
+        this.mouseMoveTimeout = null;
+
+        if (!this.scrolling){
+          this.startIdlingTimer();
+        }
+
+      }, 
+      appParams.TIMER_VALUE_1);
+
+    }
+
+  }
+
   scrollEventHandler1(){
+
+    if (!isLinkedinFeed(this.pageUrl) 
+          && !isLinkedinProfilePage(this.pageUrl)){
+      return;
+    }
 
     if (!this.scrolling){
         
@@ -199,18 +209,27 @@ export class ScriptAgentBase {
       this.allKeywords = messageData.allKeywords;
     }
 
-    document.addEventListener("scroll", (event) => {
-      this.scrollEventHandler2();
-    });
+    if (isLinkedinFeed(this.pageUrl) || isLinkedinProfilePage(this.pageUrl)){
 
-    // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
-    this.startIdlingTimer();
+      document.addEventListener("scroll", (event) => {
+        this.scrollEventHandler2();
+      });
+
+      // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
+      this.startIdlingTimer();
+
+    }
 
     this.runTabDataExtractionProcess();
 
 	}
 
   sendTabIdleStatusSignal(){
+
+    if (!isLinkedinFeed(this.pageUrl) 
+          && !isLinkedinProfilePage(this.pageUrl)){
+      return;
+    }
 
     eventBus.dispatch(eventBus.PAGE_IDLE_SIGNAL, {value: this.idleStatus});
 
@@ -255,6 +274,8 @@ export class ScriptAgentBase {
 	      }
 
 		  }
+
+      this.handleIncomingMessages(message, sender, sendResponse);
 
 		}).bind(this));
 
@@ -337,6 +358,10 @@ export function extractPostDate(textContent, LuxonDateTime){
 
   return postDate;
 
+}
+
+export function getFeedPostHtmlElement(postUid) {
+  return document.querySelector(`.scaffold-finite-scroll__content div[data-id='${postUid}']`);
 }
 
 export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detected, highlightedKeywordBadgeColors){

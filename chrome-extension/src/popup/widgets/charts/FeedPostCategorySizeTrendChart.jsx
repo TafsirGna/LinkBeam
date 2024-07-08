@@ -129,9 +129,7 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 				}
 			}
 			else{
-				if (feedPostView.category == "publications"){
-					value++;
-				}
+				value++;
 			}
 
 		}

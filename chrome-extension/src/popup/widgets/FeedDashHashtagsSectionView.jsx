@@ -194,7 +194,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
               { Object.keys(this.state.hashtags).length != 0
                   && <div class="mt-2">
-                     { this.state.hashtags.map(object => (<div class="dropdown bd-gray d-inline">
+                     { this.state.hashtags.map(object => (<span class="dropdown bd-gray">
                                                             <div class="handy-cursor d-inline" data-bs-toggle="dropdown" aria-expanded="false">
                                                               <OverlayTrigger
                                                                 placement="top"
@@ -224,7 +224,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                                                                 </a>
                                                               </li>
                                                             </ul>
-                                                          </div>))}
+                                                          </span>))}
                     </div>}
               </>}
 
@@ -246,7 +246,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                   <button type="button" class={`btn btn-secondary badge ${this.state.hashtagInfosModalSelectedView == 1 ? " active " : ""}`} onClick={() => {this.setHashtagInfosModalSelectedView(1)}}>
                     Posts
                   </button>
-                  <button type="button" class={`btn btn-warning badge ${this.state.hashtagInfosModalSelectedView == 2 ? " active " : ""}`} onClick={() => {this.setHashtagInfosModalSelectedView(2)}}>
+                  <button type="button" class={`btn btn-outline-link badge text-secondary ${this.state.hashtagInfosModalSelectedView == 2 ? " active " : ""}`} onClick={() => {this.setHashtagInfosModalSelectedView(2)}}>
                     Timeline
                   </button>
                 </div>
@@ -272,7 +272,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                             //             ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`
                             //             : null),
                             // date: views.length ? views[0].date : null,
-                            text: highlightText(post.text, getHashtagText(this.state.selectedReference.text)),
+                            text: highlightText(post.innerContentHtml, getHashtagText(this.state.selectedReference.text)),
                           }))}
                         variant="list"/>
                   </div> }

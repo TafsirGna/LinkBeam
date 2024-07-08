@@ -229,7 +229,14 @@ export default class PostViewListItemView extends React.Component{
                           : this.props.object.feedPost.author.url}
                   target="_blank"*/
                   href="#"
-                  onClick={() => { this.handleFeedProfileDataModalShow(this.props.object.category ? this.props.object.initiator : this.props.object.feedPost.author) }}>
+                  title="Click to show more infos"
+                  onClick={() => { 
+                    if (this.props.object.category 
+                          && !this.props.object.initiator.name){ // it's a suggested post
+                      return;
+                    }
+                    this.handleFeedProfileDataModalShow(this.props.object.category ? this.props.object.initiator : this.props.object.feedPost.author);
+                  }}>
                   <OverlayTrigger 
                     trigger="hover" 
                     placement="top" 
@@ -277,6 +284,7 @@ export default class PostViewListItemView extends React.Component{
                           /*href={this.props.object.feedPost.author.url}
                           target="_blank"*/
                           href="#"
+                          title="Click to show more infos"
                           onClick={() => { this.handleFeedProfileDataModalShow(this.props.object.feedPost.author) }}>
                           {this.props.object.feedPost.author.name}
                         </a>

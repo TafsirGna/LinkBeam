@@ -440,7 +440,7 @@ export default class About extends React.Component{
                                                 </small>
                                               </div>
                                             </a>}
-                                        { /*this.state.settings.notifications 
+                                        { this.state.settings.notifications 
                                           && <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                               <div class="d-flex gap-2 w-100 justify-content-between">
                                                 <div>
@@ -464,7 +464,7 @@ export default class About extends React.Component{
                                                   </div>
                                                 </small>
                                               </div>
-                                            </a>*/ }
+                                            </a> }
                                     </div>
                                   </div>}
 

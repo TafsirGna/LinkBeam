@@ -34,6 +34,7 @@ import {
   dbDataSanitizer,
   setReminderObject,
   isLinkedinProfilePage,
+  parseHtmlFromString,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -229,7 +230,7 @@ export default class SearchInputView extends React.Component{
     try{
 
       var matchingPosts = await db.feedPosts
-                                  .filter(feedPost => (feedPost.text 
+                                  .filter(feedPost => (feedPost.innerContentHtml 
                                                           && feedPost.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
                                                         || (feedPost.author.name
                                                               && feedPost.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
@@ -258,7 +259,7 @@ export default class SearchInputView extends React.Component{
                       ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`
                       : null),
           date: views.length ? views[0].date : null,
-          text: post.text,
+          text: post.innerContentHtml,
         });
 
       }

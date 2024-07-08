@@ -49,7 +49,7 @@ export default class HashtagWordCloudChart extends React.Component{
 
   }
 
-  componentDidUpdate(){
+  componentDidUpdate(prevProps, prevState){
 
     if (prevProps.objects != this.props.objects){
       this.setChartData();

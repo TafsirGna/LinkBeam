@@ -159,7 +159,7 @@ export default class FeedProfileDataModal extends React.Component{
                           <FeedIcon
                             size="18"/>
                           <span class="ms-2">
-                            { `${this.state.feedPostViews.length} feed occurrences` }
+                            { `${this.state.feedPostViews.length} feed occurrence${this.state.feedPostViews.length > 1 ? "s" : ""}` }
                           </span>
                         </div>
                       </div>

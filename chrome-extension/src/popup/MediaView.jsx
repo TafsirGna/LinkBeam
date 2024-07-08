@@ -286,7 +286,7 @@ export default class MediaView extends React.Component{
 
       for (var feedPostView of feedPostViews){
 
-        if (feedPosts.map(f => f.id).indexOf(feedPostView.feedPostId) != -1){
+        if (feedPosts.findIndex(f => f.id == feedPostView.feedPostId) != -1){
           continue;
         }
 
@@ -294,7 +294,9 @@ export default class MediaView extends React.Component{
 
         if (feedPost.linkedPostId){
           const linkedPost = await db.feedPosts.where({id: feedPost.linkedPostId}).first();
-          if (linkedPost && linkedPost.media){
+          if (linkedPost 
+                && linkedPost.media
+                && feedPosts.findIndex(f => f.id == linkedPost.id) == -1){
 
             linkedPost.view = feedPostView;
             feedPosts.push(linkedPost);
@@ -500,9 +502,9 @@ class MediaGridView extends React.Component{
                                                                                                           placement="left" 
                                                                                                           overlay={<Popover id="popover-basic">
                                                                                                                       <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: highlightText(feedPost.author.name, this.state.searchText)}}>{/*{feedPost.author.name}*/}</Popover.Header>
-                                                                                                                      {feedPost.text 
-                                                                                                                          && <Popover.Body dangerouslySetInnerHTML={{__html: highlightText(feedPost.text, this.state.searchText)}}>
-                                                                                                                              {/*{feedPost.text}*/}
+                                                                                                                      {feedPost.innerContentHtml 
+                                                                                                                          && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml /*highlightText(feedPost.innerContentHtml, this.state.searchText)*/}}>
+                                                                                                                              {}
                                                                                                                             </Popover.Body>}
                                                                                                                     </Popover>}
                                                                                                           >

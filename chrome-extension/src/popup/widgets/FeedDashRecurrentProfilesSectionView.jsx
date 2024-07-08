@@ -207,7 +207,8 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
               { this.state.profiles.length  != 0
                   && <div>
                      { this.state.profiles.map((object, index) => <FeedRecurrentProfileListItemView  
-                                                                            object={object}/>)}
+                                                                            object={object}                            
+                                                                            globalData={this.props.globalData}/>)}
                     </div>}
               </>}
 
