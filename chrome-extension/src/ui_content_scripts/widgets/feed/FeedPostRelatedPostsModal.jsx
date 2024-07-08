@@ -34,7 +34,7 @@ import eventBus from "../../../popup/EventBus";
 import { Spinner } from "flowbite-react";
 import { DateTime as LuxonDateTime } from "luxon";
 
-const getBlankTabsData = () => Array.from({length: 4}).map((o, index) => { return index != 1 ? {offset: 0, items: null} : {items: null} });
+const getBlankTabsData = () => Array.from({length: 4}).map((o, index) => { return index != 2 ? {offset: 0, items: null} : {items: null} });
 
 export default class FeedPostRelatedPostsModal extends React.Component{
 

@@ -1099,7 +1099,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
         labelsOk = true;
       }
 
-      for (var date = new Date(rangeDates.start); date <= new Date(rangeDates.end); date = incDate(date)){
+      for (var date = new Date(rangeDates.start.split("T")[0]); date <= new Date(rangeDates.end.split("T")[0]); date = incDate(date)){
         
         const label = date.toISOString().split("T")[0];
 

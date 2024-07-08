@@ -800,6 +800,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
   // We're gonna use Deep First Search to pull this off
   checkAndHighlightKeywordsInPost(){
 
+    if (!this.props.allKeywords.length){
+      return;
+    }
+
     var htmlElement = (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
                                                                          .querySelector("div[data-urn]")
                                                                          .querySelector(".feed-shared-update-v2__description-wrapper")
@@ -812,10 +816,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
     var detected = {};
 
     checkAndHighlightKeywordsInHtmlEl(htmlElement, this.props.allKeywords, detected, this.props.highlightedKeywordBadgeColors);
-
-    if (this.props.allKeywords.length){
-      this.setState({foundKeywords: detected});                                               
-    }
+    
+    this.setState({foundKeywords: detected});  
 
   }
 
@@ -952,7 +954,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
                                         </Dropdown.Item>}
 
-                                { isLinkedinFeedPostPage(window.location.href)
+                                { !isLinkedinFeedPostPage(window.location.href)
                                   && <Dropdown.Item 
                                       onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.postUid}`, '_blank'); }}
                                       className="">

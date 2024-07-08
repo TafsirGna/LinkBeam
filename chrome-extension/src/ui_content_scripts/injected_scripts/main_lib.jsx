@@ -209,15 +209,13 @@ export class ScriptAgentBase {
       this.allKeywords = messageData.allKeywords;
     }
 
+    document.addEventListener("scroll", (event) => {
+      this.scrollEventHandler2();
+    });
+
     if (isLinkedinFeed(this.pageUrl) || isLinkedinProfilePage(this.pageUrl)){
-
-      document.addEventListener("scroll", (event) => {
-        this.scrollEventHandler2();
-      });
-
       // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
       this.startIdlingTimer();
-
     }
 
     this.runTabDataExtractionProcess();

@@ -107,6 +107,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     if (isUrlOfInterest(tab.url)){
 
+        await refreshAppSettingsObject();
+
         var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
         console.log('**************** : ', loadingTabs, changeInfo.status);
         var url = tab.url.split("?")[0];
@@ -346,8 +348,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 async function handleInterestingTab(tabId, url){
 
-    refreshAppSettingsObject();
-
     // a little bit of formatting if the url is the one of a linkedin profile
     url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
 
@@ -370,12 +370,11 @@ async function handleInterestingTab(tabId, url){
                 result.inject = false;
             }
 
-            sessionItem.myTabs[tabId].prevTabUrlInterestStatus = true;
-
         }
         else{
             sessionItem.myTabs[tabId] = {badgeText: result.badgeText, prevTabUrlInterestStatus: true};
         }
+
     }
 
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
@@ -466,7 +465,8 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                     chrome.action.setBadgeText({text: result.badgeText});
 
                     // conditionally injecting the script 
-                    if (result.inject/* == true*/){
+                    if (result.inject){
+                        console.log("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>> : ", url);
                         injectScriptsInTab(activeInfo.tabId, url);
                     }
                 }
@@ -575,8 +575,6 @@ async function recordFeedVisit(tabData){
             return;
         }
 
-        console.log("dddddddddddddddd 1 : ");
-
         var post = tabData.extractedData;
 
         const newFeedPost = {
@@ -597,8 +595,6 @@ async function recordFeedVisit(tabData){
                             : null,
         };
 
-        console.log("dddddddddddddddd 2 : ");
-
         if (post.content.subPost){
 
             var subPost = {
@@ -618,8 +614,6 @@ async function recordFeedVisit(tabData){
                                         : null)
                                 : null,
             }
-
-            console.log("dddddddddddddddd 3 : ");
 
             var dbSubPost = await db.feedPosts
                                    .filter(entry => areFeedPostsTheSame(entry, subPost))
@@ -642,14 +636,9 @@ async function recordFeedVisit(tabData){
 
             }
 
-            console.log("dddddddddddddddd 4 : ");
-
             newFeedPost["linkedPostId"] = dbSubPost.id;
             
         }
-
-        console.log("dddddddddddddddd 4-1 : ", newFeedPost.innerContentHtml);
-
 
         function areFeedPostsTheSame(entry, newFeedPost){
             return (newFeedPost.uid && entry.uid && newFeedPost.uid == entry.uid)
@@ -658,13 +647,9 @@ async function recordFeedVisit(tabData){
                                                                 && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20));
         }
 
-        console.log("dddddddddddddddd 4-4 : ");
-
         var dbFeedPost = await db.feedPosts
                                    .filter(entry => areFeedPostsTheSame(entry, newFeedPost))
                                    .first();
-
-        console.log("dddddddddddddddd 5 : ");
 
         if (dbFeedPost){
 
@@ -682,8 +667,6 @@ async function recordFeedVisit(tabData){
                     });
 
         }
-
-        console.log("dddddddddddddddd 6 : ");
 
         var postView = await db.feedPostViews
                                .where({uid: post.id, visitId: visitId})
@@ -710,8 +693,6 @@ async function recordFeedVisit(tabData){
             sessionItem.myTabs[tabData.tabId].badgeText = sessionItem.myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(sessionItem.myTabs[tabData.tabId].badgeText) + 1).toString();
             
         }
-
-        console.log("dddddddddddddddd 7 : ");
 
 
         post.reminder = await db.reminders
@@ -747,8 +728,6 @@ async function recordFeedVisit(tabData){
                     }
 
                  });
-
-        console.log("dddddddddddddddd 8 : ");
 
         await db.visits.update(visit.id, visit);
 
@@ -1069,7 +1048,10 @@ async function processMessageEvent(message, sender, sendResponse){
 
 async function refreshAppSettingsObject(){
 
-    (await chrome.storage.session.get(["appSettings"])).appSettings = await db.settings.where({id: 1}).first();
+    var sessionItem = await chrome.storage.session.get(["appSettings"]);
+    sessionItem.appSettings = await db.settings.where({id: 1}).first();
+    await chrome.storage.session.set({ appSettings: sessionItem.appSettings });
+    // console.log(await db.settings.where({id: 1}).first(), (await chrome.storage.session.get(["appSettings"])).appSettings);
 
 }
 
@@ -1147,7 +1129,7 @@ async function checkDateTimeLeft(){
 async function getPreviousRelatedPosts(payload){
 
     var posts = [];
-    const limit = 10;
+    const limit = 5;
 
     if (Object.hasOwn(payload, "url")){
 
@@ -1185,10 +1167,10 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                  .filter(view => view.initiator && view.initiator.url == url && view.uid != payload.uid)
-                                  .offset(payload.offset)
-                                  .limit(limit)
-                                  .toArray();
+                                      .filter(view => view.initiator && view.initiator.url == url && view.uid != payload.uid)
+                                      .offset(payload.offset)
+                                      .limit(limit)
+                                      .toArray();
     
         var uids = [];
         for (const feedPostView of feedPostViews){

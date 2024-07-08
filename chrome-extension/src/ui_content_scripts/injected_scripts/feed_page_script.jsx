@@ -84,7 +84,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		const postContainerElements = this.getPostContainerElements();
 
-		if (!postContainerElements){
+		if (!postContainerElements || !postContainerElements.length){
 			return;
 		}
 
@@ -94,6 +94,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		}));
 
 		postContainerElementsExposurePercentage.sort((a, b) => (b.exposurePercentage - a.exposurePercentage));
+		console.log("<<<<<<<<<<<<<<<<<<<< : ", postContainerElementsExposurePercentage);
 
 		if (this.activePostContainerElementUid != postContainerElementsExposurePercentage[0].uid){
 

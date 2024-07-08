@@ -88,12 +88,12 @@ class MainScriptAgent extends ScriptAgentBase {
             FeedPageScriptAgent.scrollEventHandler(props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
-            if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
-                // ProfileSectionDetailsPageScriptAgent.scrollEventHandler(props);
-            }
-            else{
-                // ProfilePageScriptAgent.scrollEventHandler(props);
-            }
+            // if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
+            //     ProfileSectionDetailsPageScriptAgent.scrollEventHandler(props);
+            // }
+            // else{
+            //     ProfilePageScriptAgent.scrollEventHandler(props);
+            // }
         }
         else if (isLinkedinFeedPostPage(this.pageUrl)){
             // FeedPostPageScriptAgent.scrollEventHandler(props);
