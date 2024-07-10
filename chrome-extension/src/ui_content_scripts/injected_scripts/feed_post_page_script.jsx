@@ -30,7 +30,7 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 import AboveFeedPostWidgetView from "../widgets/feed/AboveFeedPostWidgetView";
-import FeedPostDataModal from "../widgets/feed/FeedPostViewsChartModal";
+import FeedPostViewsChartModal from "../widgets/feed/FeedPostViewsChartModal";
 
 const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 
@@ -60,10 +60,9 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 			ReactDOM.createRoot(newDivTag.shadowRoot).render(
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
-	              <FeedPostDataModal
+	              <FeedPostViewsChartModal
 	              	appSettings={props.appSettings}
-	              	tabId={props.tabId}
-	              	/*visitId={props.visitId}*//>
+	              	tabId={props.tabId}/>
 	            </React.StrictMode>
 	        );
 

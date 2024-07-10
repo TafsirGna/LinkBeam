@@ -107,9 +107,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
 
-		}
+			this.getAllPostsHideStatus(postContainerElements, props);
 
-		this.getAllPostsHideStatus(postContainerElements, props);
+		}
 
 	}
 
@@ -151,11 +151,10 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		if (document.querySelector(".scaffold-finite-scroll__content")){
 
-			if (!document.querySelector(".scaffold-finite-scroll__content")
-					 	.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
+			if (!document.querySelector(`.scaffold-finite-scroll__content .${LINKBEAM_ALL_FEED_MODALS}`)){
 
 				var newDivTag = document.createElement('div');
-				newDivTag.classList.add("LINKBEAM_ALL_FEED_MODALS");
+				newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
 			    document.querySelector(".scaffold-finite-scroll__content")
 			    		.prepend(newDivTag);
 			    newDivTag.attachShadow({ mode: 'open' });

@@ -85,6 +85,7 @@ export default class FeedPostViewsChartModal extends React.Component{
       data: null,
       freshPost: false,
       metricChangeValues: null, 
+      pageUrl: window.location.href,
     };
 
     this.startListening = this.startListening.bind(this);
@@ -99,6 +100,10 @@ export default class FeedPostViewsChartModal extends React.Component{
     this.startListening();
 
     eventBus.on(eventBus.SHOW_FEED_POST_DATA_MODAL, (data) => {
+
+        if (data.from.split("?")[0] != this.state.pageUrl.split("?")[0]){
+          return;
+        }
         
         this.setState({
           show: true, 

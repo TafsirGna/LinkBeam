@@ -50,8 +50,6 @@ const termLanguageVariants = {
 
 export class ScriptAgentBase {
 
-  static EXTRACTION_PROCESS_INTERVAL_TIME = 3000;
-
 	constructor(){
 
     this.tabId = null;
@@ -224,8 +222,9 @@ export class ScriptAgentBase {
 
   sendTabIdleStatusSignal(){
 
-    if (!isLinkedinFeed(this.pageUrl) 
-          && !isLinkedinProfilePage(this.pageUrl)){
+    if ((!isLinkedinFeed(this.pageUrl) 
+            && !isLinkedinProfilePage(this.pageUrl))
+          || !this.isActiveTab){
       return;
     }
 
@@ -400,12 +399,12 @@ export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detecte
                 <React.StrictMode>
                   <style type="text/css">{styles}</style>
                     <HighlightedKeywordView
-                          keyword={textItem}
-                          // allDetected={detected}
-                          // highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
-                          order={order}
-                          color={color}
-                          />
+                      keyword={textItem}
+                      // allDetected={detected}
+                      // highlightedKeywordBadgeColors={highlightedKeywordBadgeColors}
+                      order={order}
+                      color={color}
+                      />
                 </React.StrictMode>
               );
             }
@@ -775,6 +774,7 @@ export const DataExtractor = {
           entity:{
             name: (educationLiTag.querySelector("h3") ? educationLiTag.querySelector("h3").textContent : null),
             url: (educationLiTag.querySelector("h3 a") ? educationLiTag.querySelector("h3 a").href : null), 
+            picture: null,
           },
           title: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           period: (educationLiTag.querySelector(".date-range") ? educationLiTag.querySelector(".date-range").textContent : null),
@@ -879,8 +879,8 @@ export const DataExtractor = {
               title: (positionLiTag.querySelector(".experience-item__title") ? positionLiTag.querySelector(".experience-item__title").textContent : null),
               entity: {
                 name: featuredExperienceEntityName,
-                url: null,
-                picture: null,
+                url: experienceLiTag.querySelector("a") ? experienceLiTag.querySelector("a").href : null,
+                picture: experienceLiTag.querySelector("img") ? experienceLiTag.querySelector("img").src : null,
               },
               period: (positionLiTag.querySelector(".date-range") ? positionLiTag.querySelector(".date-range").textContent : null),
               location: (positionLiTag.querySelectorAll(".experience-item__meta-item")[1] ? positionLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
@@ -896,8 +896,8 @@ export const DataExtractor = {
             title: (experienceLiTag.querySelector(".experience-item__title") ? experienceLiTag.querySelector(".experience-item__title").textContent : null),
             entity: {
               name: (experienceLiTag.querySelector(".experience-item__subtitle") ? experienceLiTag.querySelector(".experience-item__subtitle").textContent : null),
-              url: null,
-              picture: null,
+              url: experienceLiTag.querySelector("a") ? experienceLiTag.querySelector("a").href : null,
+              picture: experienceLiTag.querySelector("img") ? experienceLiTag.querySelector("img").src : null,
             },
             period: (experienceLiTag.querySelector(".date-range") ? experienceLiTag.querySelector(".date-range").textContent : null),
             location: (experienceLiTag.querySelectorAll(".experience-item__meta-item")[1] ? experienceLiTag.querySelectorAll(".experience-item__meta-item")[1].textContent : null),
@@ -984,7 +984,8 @@ export const DataExtractor = {
           title: (certificationLiTag.querySelector("h3") ? certificationLiTag.querySelector("h3").textContent : null),
           entity: {
             name: (certificationLiTag.querySelector("h4 a") ? certificationLiTag.querySelector("h4 a").textContent : null),
-            url: null,
+            url: certificationLiTag.querySelector("a") ? certificationLiTag.querySelector("a").href : null,
+            picture: certificationLiTag.querySelector("img") ? certificationLiTag.querySelector("img").src : null,
           },
           period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
           // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
@@ -1011,6 +1012,7 @@ export const DataExtractor = {
                     ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
                     : null),
             url: null,
+            picture: null,
           }, 
           period: (certificationLiTag.querySelectorAll(".visually-hidden")[2] && certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
                     ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 

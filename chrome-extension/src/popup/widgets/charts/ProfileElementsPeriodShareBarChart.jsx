@@ -29,20 +29,23 @@ import {
   saveCanvas,
   getPeriodLabel
 } from "../../Local_library";
-import { Bar, getElementAtEvent } from 'react-chartjs-2';
+import { Bar, PolarArea, getElementAtEvent } from 'react-chartjs-2';
 import { stringSimilarity } from "string-similarity-js";
 import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
+import { languagesNaming } from "../../languagesNamingFile";
 import { Offcanvas } from "react-bootstrap";
 import { DateTime as LuxonDateTime } from "luxon";
 import { saveAs } from 'file-saver';
 import {
   Chart as ChartJS,
   CategoryScale,
+  RadialLinearScale,
   LinearScale,
   PointElement,
   LineElement,
   BarElement,
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -53,9 +56,11 @@ import ProfileListItemView from "../ProfileListItemView";
 ChartJS.register(
   CategoryScale,
   LinearScale,
+  RadialLinearScale,
   PointElement,
   LineElement,
-  BarElement,
+  BarElement, 
+  ArcElement,
   Title,
   Tooltip,
   Legend,
@@ -94,14 +99,14 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
     super(props);
     this.state = {
       chartRef: React.createRef(),
-      barData: null,
+      chartData: null,
       items: null,
       offCanvasShow: false,
       selectedChartElementIndex: null,
       uuid: uuidv4(),
     };
 
-    this.setBarData = this.setBarData.bind(this);
+    this.setChartData = this.setChartData.bind(this);
     this.getChartTitle = this.getChartTitle.bind(this);
     this.onChartClick = this.onChartClick.bind(this);
   }
@@ -118,19 +123,19 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
       }
     );
 
-    this.setBarData();
+    this.setChartData();
 
   }
 
   componentDidUpdate(prevProps, prevState){
 
     if (prevProps.profiles != this.props.profiles){
-      this.setBarData();
+      this.setChartData();
     }
 
   }
 
-  setBarData(){
+  setChartData(){
 
     if (!this.props.profiles){
       return;
@@ -154,6 +159,10 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
 
         if (this.props.profilePropertyName == "languages"){
           elementName = dbDataSanitizer.preSanitize(element.name);
+          const index = languagesNaming.findIndex(item => Object.values(item).findIndex(i => elementName.toLowerCase().indexOf(i) != -1) != -1);
+          if (index != -1){
+            elementName = languagesNaming[index].en;
+          }
         }
         else{
           if (this.props.profilePropertyName == "jobTitles" || this.props.profilePropertyName == "certifications"){
@@ -168,19 +177,19 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
             }
           } 
 
-          if (!isProfilePropertyLabelInList(elementName, items.map(i => i.label), this.props.profilePropertyName, stringSimilarity)){
-            items.push({
-              label: elementName,
-              profiles: [profile],
-            });
-          }
-          else{
-            const index = items.findIndex(i => stringSimilarity(i.label, elementName) > 0.8);
-            if (items[index].profiles.findIndex(o => o.url == profile.url) == -1){
-              items[index].profiles.push(profile);
-            }
-          }
+        }
 
+        const index = isProfilePropertyLabelInList(elementName, items.map(i => i.label), this.props.profilePropertyName, stringSimilarity);
+        if (index == -1){
+          items.push({
+            label: elementName,
+            profiles: [profile],
+          });
+        }
+        else{
+          if (items[index].profiles.findIndex(o => o.url == profile.url) == -1){
+            items[index].profiles.push(profile);
+          }
         }
 
       }
@@ -188,10 +197,13 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
     }
 
     items.sort((a, b) => (b.profiles.length - a.profiles.length));
-    var colors = getChartColors(1);
-    barOptions.plugins.title.text = `${this.getChartTitle()} bar chart`;
+    var colors =  getChartColors(this.props.chartType == "polar" ? items.length : 1);
 
-    this.setState({barData: {
+    if (this.props.chartType == "bar"){
+      barOptions.plugins.title.text = `${this.getChartTitle()} bar chart`;
+    }
+
+    this.setState({chartData: {
         labels: items.map(object => object.label),
         datasets: [
           {
@@ -265,18 +277,28 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
     return (
       <>
 
-        { !this.state.barData && <div class="spinner-border spinner-border-sm" role="status">
+        { !this.state.chartData && <div class="spinner-border spinner-border-sm" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                           </div> }
 
-        { this.state.barData && 
+        { this.state.chartData && 
                     <div>
-                      <Bar 
-                        ref={this.state.chartRef}
-                        id={"chartTag_"+this.state.uuid} 
-                        options={barOptions} 
-                        data={this.state.barData} 
-                        onClick={this.onChartClick} />
+
+                      { this.props.chartType == "bar"  
+                          && <Bar 
+                              ref={this.state.chartRef}
+                              id={"chartTag_"+this.state.uuid} 
+                              options={barOptions} 
+                              data={this.state.chartData} 
+                              onClick={this.onChartClick} />}
+
+                      { this.props.chartType == "polar"
+                          && <PolarArea
+                                ref={this.state.chartRef}
+                                id={"chartTag_"+this.state.uuid} 
+                                data={this.state.chartData} 
+                                onClick={this.onChartClick}/> }
+
                       { this.props.displayLegend 
                           && this.props.displayLegend == true 
                           && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">

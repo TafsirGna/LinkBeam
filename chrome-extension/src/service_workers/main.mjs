@@ -1007,6 +1007,17 @@ async function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case "PROFILE_VISIT_PING":{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+
+            incProfileVisitTimeCount(message.data);
+
+            break;
+        }
+
         case "PREVIOUS_RELATED_POSTS":{
 
             const posts = await getPreviousRelatedPosts(message.data.payload);
@@ -1044,6 +1055,27 @@ async function processMessageEvent(message, sender, sendResponse){
         }
 
     }
+}
+
+async function incProfileVisitTimeCount(tabData){
+
+    var sessionItem = await chrome.storage.session.get(["myTabs"]);
+            
+    if (!sessionItem.myTabs[tabData.tabId].visits){
+        return;
+    }
+    
+    const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+    if (index == -1){
+        return;
+    }
+
+    await db.visits
+            .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
+            .modify(visit => {
+                visit.timeCount += (appParams.TIMER_VALUE_2 / 1000);
+            });
+
 }
 
 async function refreshAppSettingsObject(){

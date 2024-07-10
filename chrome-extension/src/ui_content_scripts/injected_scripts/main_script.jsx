@@ -29,6 +29,7 @@ import {
     isLinkedinFeedPostPage,
     isLinkedinProfileSectionDetailsPage,
     shuffle,
+    appParams,
 } from "../../popup/Local_library";
 import FeedPageScriptAgent from "./feed_page_script";
 import ProfilePageScriptAgent from "./profile_page_script";
@@ -171,7 +172,7 @@ class MainScriptAgent extends ScriptAgentBase {
 
             }
 
-        }, ScriptAgentBase.EXTRACTION_PROCESS_INTERVAL_TIME);
+        }, appParams.TIMER_VALUE_2);
 
     }
 

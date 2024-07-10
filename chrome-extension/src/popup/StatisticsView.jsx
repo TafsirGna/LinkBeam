@@ -409,12 +409,13 @@ export default class StatisticsView extends React.Component{
                         }}/>}
             </Carousel.Item>
 
-            { ["education", "experience", "jobTitles", "certifications"].map((profilePropertyName, index) => (<Carousel.Item> 
+            { ["education", "experience", "jobTitles", "certifications", "languages"].map((profilePropertyName, index) => (<Carousel.Item> 
                                       { this.state.carrouselActiveItemIndex == (7 + index)
                                           && <ProfileElementsPeriodShareBarChart 
                                                 profiles={this.state.periodProfiles}
                                                 profilePropertyName={profilePropertyName}
-                                                carrouselIndex={(7 + index)}/>}
+                                                carrouselIndex={(7 + index)}
+                                                chartType={index == 4 ? "polar" : "bar"}/>}
                                     </Carousel.Item>))}
 
           </Carousel>

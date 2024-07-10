@@ -32,7 +32,10 @@ import AboutDataChartWidget from "../widgets/profile/AboutDataChartWidget";
 import EducationDataChartWidget from "../widgets/profile/EducationDataChartWidget";
 import ExperienceDataChartWidget from "../widgets/profile/ExperienceDataChartWidget";
 import React from 'react';
-// import { } from "../../popup/Local_library";
+import elevator_tone from "../../assets/audio/elevator-tone.mp3";
+import {
+  appParams,
+} from "../../popup/Local_library";
 
 const aboveProfileSectionWidgetClassName = "LinkbeamAboveProfileSectionWidgetClassName";
 const keywordHighlightMark= "linkbeam-extension-keyword-highlight";
@@ -55,8 +58,6 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
         continue;
       }
 
-      // console.log("bbbbbbbbbbbbb : ", htmlElement);
-
       if (htmlElement.getAttribute(keywordHighlightMark)){
         continue;
       }
@@ -68,6 +69,9 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
     if (!Object.keys(this.detectedKeywords).length){
       return;
     }
+
+    // play a ringtone to notify the user
+    (new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"))).play();
 
     if (appSettings.notifications && !this.keywordDetected){
       this.keywordDetected = true;
@@ -173,6 +177,9 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     }
 
+    // Pinging the background no matter what
+    this.pgPing(props);
+
     if (!webPageData){
       return;
     }
@@ -181,6 +188,16 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     sendTabData(props.tabId, webPageData);  
 
+  }
+
+  static pgPing(props){
+
+    var pageUrl = window.location.href.split("?")[0];
+    pageUrl = pageUrl.slice(pageUrl.indexOf(appParams.LINKEDIN_ROOT_URL));
+
+    chrome.runtime.sendMessage({header: "PROFILE_VISIT_PING", data: {tabId: props.tabId, tabUrl: pageUrl}}, (response) => {
+      console.log('profile visit ping sent', response);
+    });
   }
 
   static extractData(mainHtmlElements, context){

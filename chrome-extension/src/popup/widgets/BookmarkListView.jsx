@@ -45,7 +45,7 @@ export default class BookmarkListView extends React.Component{
                                     <div class="d-flex gap-2 w-100 justify-content-between">
                                       <div>
                                         <h6 class="mb-0">{bookmark.profile.fullName}</h6>
-                                        <p class="mb-0 opacity-75">{bookmark.profile.title}</p>
+                                        <p class="mb-0 opacity-75 small">{bookmark.profile.title}</p>
                                         {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
                                           <OverlayTrigger
                                             placement="top"

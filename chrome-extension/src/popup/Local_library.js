@@ -29,7 +29,7 @@ export const appParams = {
   keywordCountLimit: 5, 
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE_1: 5000,
-  TIMER_VALUE_2: 5000, // to be increased to 10000
+  TIMER_VALUE_2: 3000,
   IDLING_TIMER_VALUE: 60000,
   appAuthor: "Stoic Beaver",
 
@@ -381,19 +381,11 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 export function isProfilePropertyLabelInList(name, list, type, stringSimilarity){
 
-  for (const itemName of list){
-    if (type == "languages"){
-
-    }
-    else{
-      console.log("!!!!!!!!!!!!!!!!!!! : ", itemName, name);
-      if (stringSimilarity(itemName, name) > 0.8){
-        return true;
-      }
-    }
+  if (type == "languages"){    
+    return list.indexOf(name);
   }
 
-  return false;
+  return list.findIndex(item => stringSimilarity(item, name) > 0.8);
 
 }
 

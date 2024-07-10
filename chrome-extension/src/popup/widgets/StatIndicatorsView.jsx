@@ -7,6 +7,7 @@ import {
 } from "../Local_library";
 import badge_icon from '../../assets/badge_icon.png';
 import { stringSimilarity } from "string-similarity-js";
+import { languagesNaming } from "../languagesNamingFile";
 
 export default class StatIndicatorsView extends React.Component{
 
@@ -128,7 +129,7 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.education){
         for (const education of profile.education){
-          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(education.entity.name), edEntities, "education", stringSimilarity)){
+          if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(education.entity.name), edEntities, "education", stringSimilarity) == -1){
             edEntities.push(dbDataSanitizer.preSanitize(education.entity.name));
           }
         }
@@ -136,10 +137,10 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.experience){
         for (const experience of profile.experience){
-          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.entity.name), expEntities, "experience", stringSimilarity)){
+          if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.entity.name), expEntities, "experience", stringSimilarity) == -1){
             expEntities.push(dbDataSanitizer.preSanitize(experience.entity.name));
           }
-          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.title), jobTitles, "jobTitles", stringSimilarity)){
+          if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.title), jobTitles, "jobTitles", stringSimilarity) == -1){
             jobTitles.push(dbDataSanitizer.preSanitize(experience.title));
           }
         }
@@ -147,15 +148,23 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.languages){
         for (const language of profile.languages){
-          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(language.name), languages, "languages", stringSimilarity)){
-            languages.push(dbDataSanitizer.preSanitize(language.name));
+
+          var elementName = dbDataSanitizer.preSanitize(language.name);
+          const index = languagesNaming.findIndex(item => Object.values(item).findIndex(i => elementName.toLowerCase().indexOf(i) != -1) != -1);
+          if (index != -1){
+            elementName = languagesNaming[index].en;
           }
+
+          if (isProfilePropertyLabelInList(elementName, languages, "languages", stringSimilarity) == -1){
+            languages.push(elementName);
+          }
+          
         }
       }
 
       if (profile.certifications){
         for (const certification of profile.certifications){
-          if (!isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(certification.title), certifications, "certifications", stringSimilarity)){
+          if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(certification.title), certifications, "certifications", stringSimilarity) == -1){
             certifications.push(dbDataSanitizer.preSanitize(certification.title));
           }
         }

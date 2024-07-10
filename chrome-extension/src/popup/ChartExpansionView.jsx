@@ -206,13 +206,14 @@ export default class ChartExpansionView extends React.Component{
                           end: this.state.offCanvasFormEndDate,
                         }}/>}
 
-              { nRange(7, 10, 1).indexOf(this.state.carrouselActiveItemIndex) != -1
+              { nRange(7, 11, 1).indexOf(this.state.carrouselActiveItemIndex) != -1
                     && <ProfileElementsPeriodShareBarChart 
                           profiles={this.state.periodProfiles}
-                          profilePropertyName={["education", "experience", "jobTitles", "certifications"][this.state.carrouselActiveItemIndex - 7]}
+                          profilePropertyName={["education", "experience", "jobTitles", "certifications", "languages"][this.state.carrouselActiveItemIndex - 7]}
                           carrouselIndex={this.state.carrouselActiveItemIndex}
                           displayLegend={true}
                           view={this.state.carrouselChartView} 
+                          chartType={this.state.carrouselActiveItemIndex == 11 ? "polar" : "bar"}
                           periodRangeLimits={{
                             start: this.state.offCanvasFormStartDate,
                             end: this.state.offCanvasFormEndDate,

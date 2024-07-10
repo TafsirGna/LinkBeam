@@ -521,7 +521,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 
           if (window.location.href != appParams.LINKEDIN_FEED_URL()
-                || (window.getComputedStyle(this.state.postHtmlElement).display === "none" /* in the case the html element has been hidden */ )){
+                || (this.state.postHtmlElement && window.getComputedStyle(this.state.postHtmlElement).display === "none" /* in the case the html element has been hidden */ )){
             if (this.state.timerInterval){
               this.clearTimer();
             }
@@ -563,7 +563,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   showFeedPostDataModal(){
 
-    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { postUid: this.props.postUid });
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { postUid: this.props.postUid, from: window.location.href });
 
   }
 
