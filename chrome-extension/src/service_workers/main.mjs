@@ -533,7 +533,6 @@ async function recordFeedVisit(tabData){
 
     if (await isPostToBeHidden(tabData.extractedData.id)){
 
-        console.log("kkkkkkkkkkkkkk : ", tabData.extractedData.id);
         /*chrome.tabs.sendMessage(message.data.tabId, {header: "FEED_POSTS_HIDE_STATUS_RESPONSE", data: [tabData.extractedData.id]}, (response) => {
             console.log('Individual feed post hide status response sent', response, tabData.extractedData.id);
         });*/
@@ -706,6 +705,12 @@ async function recordFeedVisit(tabData){
         post.timeCount = 0;
         post.dbId = dbFeedPost.id;
         post.visitId = visitId;
+        post.bookmarked = (await db.bookmarks.where("url").anyOf([post.content.author.url, encodeURI(post.content.author.url), decodeURI(post.content.author.url)]).first())
+                            || (post.initiator 
+                                    && post.initiator.url 
+                                    && await db.bookmarks.where("url").anyOf([post.initiator.url, encodeURI(post.initiator.url), decodeURI(post.initiator.url)]).first())
+                            || (post.content.subPost
+                                    && await db.bookmarks.where("url").anyOf([post.content.subPost.author.url, encodeURI(post.content.subPost.author.url), decodeURI(post.content.subPost.author.url)]).first());
 
         var popularity = {date: null, value: 0};
         await db.feedPostViews

@@ -40,7 +40,7 @@ export default class BookmarkListView extends React.Component{
               { this.props.objects.length != 0 && 
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map(bookmark => (<a href={"/index.html?view=Profile&data=" + bookmark.url} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                    this.props.objects.map(bookmark => (<a href={ bookmark.feed == true ? bookmark.url : `/index.html?view=Profile&data=${bookmark.url}`} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                     <img src={(bookmark.profile.avatar ? bookmark.profile.avatar : default_user_icon)} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                     <div class="d-flex gap-2 w-100 justify-content-between">
                                       <div>

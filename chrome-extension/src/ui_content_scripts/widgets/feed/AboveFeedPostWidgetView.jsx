@@ -665,6 +665,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   if (Object.hasOwn(post, "visitId")){
                     this.setState({visitId: post.visitId});
                   }
+
+                  if (post.bookmarked){
+                    this.state.postHtmlElement.style.cssText = "border-color: #0dcaf0 !important; border-width: 2px !important; border-style: solid !important;"
+                  }
                   
                 }
 

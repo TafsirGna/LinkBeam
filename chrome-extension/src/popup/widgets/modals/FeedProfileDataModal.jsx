@@ -43,8 +43,10 @@ import {
   ClockIcon,
   FeedIcon,
   DuplicateIcon,
+  BookmarkIcon,
 } from "../SVGs";
 import { db } from "../../../db";
+import { liveQuery } from "dexie";
 
 export default class FeedProfileDataModal extends React.Component{
 
@@ -52,9 +54,12 @@ export default class FeedProfileDataModal extends React.Component{
     super(props);
     this.state = {
       feedPostViews: null,
+      bookmark: null,
     };
 
     this.setFeedPostViews = this.setFeedPostViews.bind(this);
+    this.handleModalClose = this.handleModalClose.bind(this);
+    this.bookmarkProfile = this.bookmarkProfile.bind(this);
 
   }
 
@@ -96,29 +101,79 @@ export default class FeedProfileDataModal extends React.Component{
 
     this.setState({feedPostViews: feedPostViews});
 
+    // setting bookmark property value
+    const profileBookmarkStatusObservable = liveQuery(() => db.bookmarks.where({url: this.props.object.url}).first());
+
+    this.profileBookmarkStatusSubscription = profileBookmarkStatusObservable.subscribe(
+      result => this.setState({bookmark: result}),
+      error => this.setState({error})
+    );
+
+  }
+
+  handleModalClose(){
+
+    if (this.profileBookmarkStatusSubscription) {
+      this.profileBookmarkStatusSubscription.unsubscribe();
+      this.profileBookmarkStatusSubscription = null;
+    }
+
+    this.props.onHide();
+
+  }
+
+  async bookmarkProfile(){
+
+    if (this.state.bookmark){
+      await db.bookmarks.delete(this.state.bookmark.id);
+    }
+    else{
+      await db.bookmarks.add({
+        url: this.props.object.url,
+        createdOn: new Date().toISOString(),
+      })
+    }
+
   }
 
   render(){
     return (
       <>
-        <Modal show={this.props.show} onHide={this.props.onHide} size="lg">
+        <Modal show={this.props.show} onHide={this.handleModalClose} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>
               {this.props.object 
                 && <span>
-                    <img 
-                      src={this.props.object.picture}
-                      class="shadow rounded-circle"
-                      width="50" height="50"/>
-                    <span class="ms-2">{this.props.object.name}</span>
-                    <a 
-                      href={this.props.object.url} 
-                      target="_blank" 
-                      title="Open profile in a new tab"
-                      class="ms-3">
-                      <DuplicateIcon
-                          size="20"/>
-                    </a>
+                    <span>
+                      <img 
+                        src={this.props.object.picture}
+                        class="shadow rounded-circle"
+                        width="50" height="50"/>
+                      <span class="ms-2">{this.props.object.name}</span>
+                      <a 
+                        href={this.props.object.url} 
+                        target="_blank" 
+                        title="Open profile in a new tab"
+                        class="ms-3">
+                        <DuplicateIcon
+                            size="20"/>
+                      </a>
+                    </span>
+                    <span 
+                      class={`handy-cursor mx-2 ${this.state.bookmark ? "text-success" : "text-muted"}`}
+                      onClick={this.bookmarkProfile}>
+                      <OverlayTrigger
+                        placement="top"
+                        overlay={<ReactTooltip id="tooltip1">{this.state.bookmark ? "Bookmarked" : "Not bookmarked"}</ReactTooltip>}
+                      >
+                        <span>
+                          <BookmarkIcon
+                            size="20"
+                            className="ms-2"
+                            strokeWidth={3}/>
+                        </span>
+                      </OverlayTrigger>
+                    </span>
                 </span>}
             </Modal.Title>
           </Modal.Header>
@@ -218,7 +273,7 @@ export default class FeedProfileDataModal extends React.Component{
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.props.onHide} className="shadow">
+            <Button variant="secondary" size="sm" onClick={this.handleModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

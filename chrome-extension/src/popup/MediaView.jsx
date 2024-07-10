@@ -155,6 +155,7 @@ export default class MediaView extends React.Component{
               feedPost.view = await db.feedPostViews
                                        .where({feedPostId: feedPost.id})
                                        .last(); 
+              feedPost.bookmarked = (await db.bookmarks.where("url").anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)]).first());
 
               if (!feedPost.view){
                 continue;
@@ -299,6 +300,8 @@ export default class MediaView extends React.Component{
                 && feedPosts.findIndex(f => f.id == linkedPost.id) == -1){
 
             linkedPost.view = feedPostView;
+            linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf([linkedPost.author.url, encodeURI(linkedPost.author.url), decodeURI(linkedPost.author.url)]).first());
+
             feedPosts.push(linkedPost);
 
             var imgVideo = separateVideoAndImage(linkedPost);
@@ -321,6 +324,10 @@ export default class MediaView extends React.Component{
         }
 
         feedPost.view = feedPostView;
+        feedPost.bookmarked = (await db.bookmarks.where("url").anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)]).first())
+                                || (feedPostView.initiator
+                                      && feedPostView.initiator.url
+                                      && await db.bookmarks.where("url").anyOf([feedPostView.initiator.url, encodeURI(feedPostView.initiator.url), decodeURI(feedPostView.initiator.url)]).first());
         feedPosts.push(feedPost);
 
         var imgVideo = separateVideoAndImage(feedPost);
@@ -512,7 +519,7 @@ class MediaGridView extends React.Component{
                                                                                                             href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
                                                                                                             target="_blank" 
                                                                                                             title="View on linkedin">
-                                                                                                            <div class="card shadow">
+                                                                                                            <div class={`card shadow ${feedPost.bookmarked ? "border border-4 border-info" : ""}`}>
                                                                                                               { feedPost.media.length == 1
                                                                                                                   && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
                                                                                                                   && <ImageLoader
