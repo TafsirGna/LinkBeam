@@ -129,3 +129,7 @@ export const HideIcon = (props) => {
 export const PostIcon = (props) => {
   return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>;
 }
+
+export const CompassIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>;
+}

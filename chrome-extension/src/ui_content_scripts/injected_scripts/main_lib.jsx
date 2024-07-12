@@ -175,9 +175,21 @@ export class ScriptAgentBase {
 
   }
 
+  isOneVideoPlaying(){
+
+    return Array.from(document.querySelectorAll("video")).filter(htmlElement => !htmlElement.paused).length;
+
+  } 
+
   startIdlingTimer(){
 
     this.idlingTimer = setTimeout(() => {
+
+      if (this.isOneVideoPlaying()){
+        this.startIdlingTimer();
+        return;
+      }
+
       this.idleStatus = true;
       this.sendTabIdleStatusSignal();
     }, 
@@ -260,7 +272,8 @@ export class ScriptAgentBase {
           else{
 
             if (Object.hasOwn(message.data, "tabId")){
-              this.isActiveTab = (this.tabId == message.data.tabId); 
+              this.isActiveTab = (this.tabId == message.data.tabId);
+              this.idleStatus = false; 
             }
 
             if (Object.hasOwn(message.data, "visitId")){
@@ -988,7 +1001,7 @@ export const DataExtractor = {
             picture: certificationLiTag.querySelector("img") ? certificationLiTag.querySelector("img").src : null,
           },
           period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
-          // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          // url: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
         certificationData.push(certification);
@@ -1017,7 +1030,7 @@ export const DataExtractor = {
           period: (certificationLiTag.querySelectorAll(".visually-hidden")[2] && certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
                     ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
                     : null),
-          // link: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          // url: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
         certificationData.push(certification);
@@ -1081,7 +1094,7 @@ export const DataExtractor = {
         var profileSuggestion = {
           name: (suggestionLiTag.querySelector(".base-aside-card__title") ? suggestionLiTag.querySelector(".base-aside-card__title").textContent : null),
           location: (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-          link: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
+          url: (suggestionLiTag.querySelector(".base-card") ? suggestionLiTag.querySelector(".base-card").href : null),        
           picture: (suggestionLiTag.querySelector(".bg-clip-content") ? suggestionLiTag.querySelector(".bg-clip-content").style : null),
           title: (suggestionLiTag.querySelector(".base-aside-card__subtitle") ? suggestionLiTag.querySelector(".base-aside-card__subtitle").textContent : null),
         };
@@ -1097,18 +1110,8 @@ export const DataExtractor = {
       var profileSuggestions = [];
 
       Array.from(htmlElements.suggestions.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
-        var profileSuggestion = {
-          name: (suggestionLiTag.querySelectorAll(".visually-hidden")[0] && suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                  ? suggestionLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                  : null),
-          location: null, // (suggestionLiTag.querySelector(".base-aside-card__metadata") ? suggestionLiTag.querySelector(".base-aside-card__metadata").textContent : null),
-          link: (suggestionLiTag.querySelector("a") ? suggestionLiTag.querySelector("a").href.split("?")[0] : null),        
-          picture: (suggestionLiTag.querySelector("img") ? suggestionLiTag.querySelector("img").src : null),
-          title: (suggestionLiTag.querySelectorAll(".visually-hidden")[2] && suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
-                    ? suggestionLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
-                    : null),
-        };
-        profileSuggestions.push(profileSuggestion);
+        profileSuggestions.push(extractProfileSuggestionItemData(suggestionLiTag));
+
       });
 
       return profileSuggestions
@@ -1124,6 +1127,87 @@ export const DataExtractor = {
   },
 
 };
+
+export function extractProfileSuggestionItemData(htmlElement){
+
+  var profileSuggestionItemData = {
+        name: null,
+        location: null,
+        url: null,
+        picture: null,
+        title: null,
+      }, 
+      counter = 0;
+
+  extractItemData(htmlElement, hydrateItemObject);
+
+  function hydrateItemObject(nodeValue, nodeTagName){
+
+    // console.log("###############-------------- : ", nodeValue, nodeTagName, counter);
+
+    switch(nodeTagName){
+      case "IMG":{
+        // picture
+        if (!profileSuggestionItemData.picture){
+          profileSuggestionItemData.picture = nodeValue;
+        }
+        return;
+        // break;
+      }
+      case "A":{
+        // entity url
+        if (!profileSuggestionItemData.url){
+          profileSuggestionItemData.url = nodeValue;
+        }
+        return;
+        // break;
+      }
+    }
+
+    if (nodeValue == "profile-component-entity"){
+      return;
+    }
+
+    switch(counter){
+      case 0: {
+        // name
+        profileSuggestionItemData.name = nodeValue;
+        counter++;
+        return;
+        // break;
+      }
+      case 1:{
+        counter++;
+        return;
+        // break;
+      }
+      case 2: {
+        // title
+        profileSuggestionItemData.title = nodeValue;
+        counter++;
+        return;
+        // break;
+      }
+    }
+
+    // location
+    // if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+    //   const lastPhrase = nodeValue.split(", ").toReversed()[0];
+    //   for (const countryObject of countriesNaming){
+    //     if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
+    //         || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
+    //       educationItemData.location = nodeValue;
+    //       // counter++;
+    //       return;
+    //     }
+    //   }
+    // }
+
+  }
+
+  return profileSuggestionItemData;
+
+}
 
 
 export function extractEducationItemData(htmlElement){
@@ -1156,7 +1240,7 @@ export function extractEducationItemData(htmlElement){
         // break;
       }
       case "A":{
-        // entity link
+        // entity url
         if (!educationItemData.entity.url){
           educationItemData.entity.url = nodeValue;
         }
@@ -1256,9 +1340,9 @@ export function extractExperienceItemData(htmlElement){
         // break;
       }
       case "A":{
-        // entity link
+        // entity url
         if (!experienceItemData.entity.url){
-          experienceItemData.entity.url = nodeValue;
+          experienceItemData.entity.url = nodeValue.split("?")[0];
         }
         return;
         // break;

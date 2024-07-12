@@ -235,6 +235,7 @@ export default class ProfilesGeoMapChart extends React.Component{
       
       // either this
       this.handleOffCanvasShow((elements[0]).index);
+
       // or this
       if (this.state.badgeRefs){
         const index = this.state.badgeRefs.findIndex(b => b.country == this.state.chartCountries[(elements[0]).index].properties.name);
@@ -258,6 +259,19 @@ export default class ProfilesGeoMapChart extends React.Component{
       this.setState({offCanvasShow: true});
     }
   )};
+
+  getLocationBadge(key, badgeRef, clickable){
+
+    return <span 
+            class="handy-cursor mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
+            title={ clickable ? "Click to see details" : null}
+            ref={badgeRef}>
+            {key}
+            { clickable
+                && <AlertCircleIcon size="16" className="rounded-circle mx-1"/> }
+          </span>
+
+  }
 
   render(){
     return (
@@ -298,43 +312,37 @@ export default class ProfilesGeoMapChart extends React.Component{
                 { this.props.context == appParams.COMPONENT_CONTEXT_NAMES.PROFILE 
                     && <p class="shadow-sm mt-3 border p-2 rounded">
                         { Object.keys(this.state.locationsData)
-                                .filter(key => this.state.locationsData[key].profiles.length > 0)
-                                .map((key, index) => <OverlayTrigger 
-                                  trigger="click" 
-                                  placement="left" 
-                                  overlay={<Popover id="popover-basic" className="shadow-lg">
-                                            <Popover.Header as="h3">Details</Popover.Header>
-                                            <Popover.Body className="ps-0">
-                                              { Object.keys(this.state.locationsData[key].activities).length == 0
-                                                  && <div class="text-center m-5 mt-2">
-                                                      <img 
-                                                        src={sorry_icon} 
-                                                        width="80" />
-                                                      <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow">Nothing to show</span></p>
-                                                    </div> }
+                                .filter(key => this.state.locationsData[key].profiles.length)
+                                .map((key, index) => <span>
 
-                                              { Object.keys(this.state.locationsData[key].activities).length != 0 
-                                                  && <div>
-                                                      { Object.keys(this.state.locationsData[key].activities).map(url => {
-                                                        return <div>
-                                                                { this.state.locationsData[key].activities[url].map(locationActivity => <div>
-                                                                                                                                          <h6 class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.entity.name)}</h6>
-                                                                                                                                          <p class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.title)}</p>
-                                                                                                                                          <p class="small fst-italic text-muted">{`${locationActivity.period.startDateRange.toFormat("MMMM yyyy")} - ${locationActivity.period.endDateRange.toFormat("MMMM yyyy")}`}</p>
-                                                                                                                                      </div>) }
-                                                            </div>
-                                                      }) }
-                                                    </div>}
-                                            </Popover.Body>
-                                          </Popover>}>
-                                  <span 
-                                    class="handy-cursor mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
-                                    title="Click to see details"
-                                    ref={this.state.badgeRefs[index].ref}>
-                                    {key}
-                                    <AlertCircleIcon size="16" className="rounded-circle mx-1"/>
-                                </span>
-                              </OverlayTrigger>)}
+                                  { Object.keys(this.state.locationsData[key].activities).length == 0
+                                      && this.getLocationBadge(key, this.state.badgeRefs[index].ref, false) }
+
+                                  { Object.keys(this.state.locationsData[key].activities).length != 0 
+                                      && <OverlayTrigger 
+                                          trigger="click" 
+                                          placement="left" 
+                                          overlay={<Popover id="popover-basic" className="shadow-lg">
+                                                    <Popover.Header as="h3">Details</Popover.Header>
+                                                    <Popover.Body>      
+                                                      <div>
+                                                        { Object.keys(this.state.locationsData[key].activities).map(url => {
+                                                          return <div>
+                                                                  { this.state.locationsData[key].activities[url]
+                                                                      .map(locationActivity => <div>
+                                                                                                <h6 class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.entity.name)}</h6>
+                                                                                                <p class="mb-1">{dbDataSanitizer.preSanitize(locationActivity.title)}</p>
+                                                                                                <p class="small fst-italic text-muted">{`${locationActivity.period.startDateRange.toFormat("MMMM yyyy")} - ${locationActivity.period.endDateRange.toFormat("MMMM yyyy")}`}</p>
+                                                                                            </div>) }
+                                                              </div>
+                                                        }) }
+                                                      </div>
+                                                    </Popover.Body>
+                                                  </Popover>}>
+                                          { this.getLocationBadge(key, this.state.badgeRefs[index].ref, Object.keys(this.state.locationsData[key].activities).length != 0) }
+                                        </OverlayTrigger>}
+                                        
+                                </span>)}
                       </p>}
 
                 { this.props.displayLegend 

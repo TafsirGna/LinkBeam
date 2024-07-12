@@ -109,60 +109,64 @@ export default class ProfileViewBody extends React.Component{
                                                     <li class="nav-item">
                                                       <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>
                                                         {tabTitle} 
-                                                        { index == 1 && <span>
-                                                                          { !this.props.profile.info && <span class="badge ms-1 text-warning px-0">
-                                                                                                                <OverlayTrigger
-                                                                                                                  placement="top"
-                                                                                                                  overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
-                                                                                                                >
-                                                                                                                  <AlertCircleIcon
-                                                                                                                    size="16"/>
-                                                                                                                </OverlayTrigger>
-                                                                                                              </span>}
-                                                                        </span>}
-                                                        { index == 2 && <span>
-                                                                          { this.props.profile.experience && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
-                                                                                                                {this.props.profile.experience.length}
-                                                                                                            </span>}
-                                                                          { !this.props.profile.experience && <span class="badge ms-1 text-warning px-0">
-                                                                                                                <OverlayTrigger
-                                                                                                                  placement="top"
-                                                                                                                  overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
-                                                                                                                >
-                                                                                                                  <AlertCircleIcon
-                                                                                                                    size="16"/>
-                                                                                                                </OverlayTrigger>
-                                                                                                              </span>}
-                                                                        </span>} 
-                                                        { index == 3 && <span>
-                                                                          { this.props.profile.education && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
-                                                                                                                {this.props.profile.education.length}
-                                                                                                            </span>}
-                                                                          { !this.props.profile.education && <span class="badge ms-1 text-warning px-0">
-                                                                                                                <OverlayTrigger
-                                                                                                                  placement="top"
-                                                                                                                  overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
-                                                                                                                >
-                                                                                                                  <AlertCircleIcon
-                                                                                                                    size="16"/>
-                                                                                                                </OverlayTrigger>
-                                                                                                              </span>}
-                                                                        </span>} 
-                                                        { index == 4 && <span>
-                                                                          { this.props.profile.activity && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
-                                                                                                                {this.props.profile.activity.length}
-                                                                                                            </span>}
-                                                                          { !this.props.profile.activity && <span class="badge ms-1 text-warning px-0">
-                                                                                                                <OverlayTrigger
-                                                                                                                  placement="top"
-                                                                                                                  overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
-                                                                                                                >
-                                                                                                                  <AlertCircleIcon
-                                                                                                                    size="16"/>
-                                                                                                                </OverlayTrigger>
-                                                                                                              </span>}
-                                                                        </span>}
-                                                        { index == 5 && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">{this.props.profile.profileSuggestions ? this.props.profile.profileSuggestions.length : ""}</span>}
+                                                        { index == 1 
+                                                            && <span>
+                                                                { !this.props.profile.info && <span class="badge ms-1 text-warning px-0">
+                                                                                                      <OverlayTrigger
+                                                                                                        placement="top"
+                                                                                                        overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                      >
+                                                                                                        <span>
+                                                                                                          <AlertCircleIcon
+                                                                                                            size="16"/>
+                                                                                                        </span>
+                                                                                                      </OverlayTrigger>
+                                                                                                    </span>}
+                                                              </span>}
+                                                        { index == 2 
+                                                            && <span>
+                                                                { this.props.profile.experience && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                                                      {this.props.profile.experience.length}
+                                                                                                  </span>}
+                                                                { !this.props.profile.experience && <span class="badge ms-1 text-warning px-0">
+                                                                                                      <OverlayTrigger
+                                                                                                        placement="top"
+                                                                                                        overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                      >
+                                                                                                        <span>
+                                                                                                          <AlertCircleIcon
+                                                                                                            size="16"/>
+                                                                                                        </span>
+                                                                                                      </OverlayTrigger>
+                                                                                                    </span>}
+                                                              </span>} 
+                                                        { index == 3 
+                                                            && <span>
+                                                                  { this.props.profile.education && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                                                        {this.props.profile.education.length}
+                                                                                                    </span>}
+                                                                  { !this.props.profile.education && <span class="badge ms-1 text-warning px-0">
+                                                                                                        <OverlayTrigger
+                                                                                                          placement="top"
+                                                                                                          overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
+                                                                                                        >
+                                                                                                          <span>
+                                                                                                            <AlertCircleIcon
+                                                                                                              size="16"/>
+                                                                                                          </span>
+                                                                                                        </OverlayTrigger>
+                                                                                                      </span>}
+                                                              </span>} 
+                                                        { index == 4 
+                                                            && this.props.profile.activity
+                                                            && this.props.profile.activity.length != 0
+                                                            && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                  {this.props.profile.activity.length}
+                                                              </span>}
+                                                        { index == 5 
+                                                            && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
+                                                                {this.props.profile.profileSuggestions ? this.props.profile.profileSuggestions.length : ""}
+                                                              </span>}
                                                       </a>
                                                     </li>
                                                   ))}
@@ -170,43 +174,51 @@ export default class ProfileViewBody extends React.Component{
           </div>
           <div class="card-body">
 
-            { this.state.currentTabIndex == 0 && <div class="">
-                                                    <ProfileOverviewSectionView 
-                                                      profile={this.props.profile} 
-                                                      switchToTab={this.switchToTabIndex}
-                                                      localDataObject={{
-                                                        profileComputedData: this.state.profileComputedData,
-                                                        profiles: this.props.localDataObject.profiles,
-                                                      }} />
-                                                </div>}
+            { this.state.currentTabIndex == 0 
+                && <div class="">
+                      <ProfileOverviewSectionView 
+                        profile={this.props.profile} 
+                        switchToTab={this.switchToTabIndex}
+                        localDataObject={{
+                          profileComputedData: this.state.profileComputedData,
+                          profiles: this.props.localDataObject.profiles,
+                        }} />
+                  </div>}
 
-            { this.state.currentTabIndex == 1 && <div class="">
-                                                    <ProfileAboutSectionView 
-                                                      profile={this.props.profile} 
-                                                      localDataObject={this.props.localDataObject}/>
-                                                </div>}
+            { this.state.currentTabIndex == 1 
+                && <div class="">
+                      <ProfileAboutSectionView 
+                        profile={this.props.profile} 
+                        localDataObject={this.props.localDataObject}/>
+                  </div>}
 
-            { this.state.currentTabIndex == 2 && <div class="">
-                                                  { <ProfileExperienceSectionView 
-                                                      profile={this.props.profile} 
-                                                      localDataObject={{profileComputedData: this.state.profileComputedData}} />}
-                                                </div>}
+            { this.state.currentTabIndex == 2 
+                && <div class="">
+                    <ProfileExperienceSectionView 
+                        profile={this.props.profile} 
+                        localDataObject={{profileComputedData: this.state.profileComputedData}} />
+                  </div>}
 
-            { this.state.currentTabIndex == 3 && <div class="">
-                                                  { <ProfileEducationSectionView 
-                                                      profile={this.props.profile} 
-                                                      localDataObject={{profileComputedData: this.state.profileComputedData}} />}
-                                                </div>}
+            { this.state.currentTabIndex == 3 
+                && <div class="">
+                    <ProfileEducationSectionView 
+                        profile={this.props.profile} 
+                        localDataObject={{profileComputedData: this.state.profileComputedData}} />
+                  </div>}
 
-            { this.state.currentTabIndex == 4 && <div class="">
-                                                  <ProfileActivitySectionView profile={this.props.profile} />
-                                                </div>}
+            { this.state.currentTabIndex == 4
+                && this.props.profile.activity
+                && this.props.profile.activity.length != 0
+                && <div class="">
+                    <ProfileActivitySectionView profile={this.props.profile} />
+                  </div>}
 
-            { this.state.currentTabIndex == 5 && <div class="">
-                                                  <ProfileNetworkSectionView 
-                                                    profile={this.props.profile} 
-                                                    localDataObject={this.props.localDataObject} />
-                                                </div>}
+            { this.state.currentTabIndex == 5 
+                && <div class="">
+                    <ProfileNetworkSectionView 
+                      profile={this.props.profile} 
+                      localDataObject={this.props.localDataObject} />
+                  </div>}
 
           </div>
         </div>

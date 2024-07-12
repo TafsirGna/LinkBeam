@@ -762,33 +762,37 @@ export default class ProfilesGraphChart extends React.Component{
     return (
       <>
 
-        { !this.props.objects && <div class="text-center"><div class="mt-4"><div class="spinner-border spinner-border-sm text-primary" role="status">
-                      <span class="visually-hidden">Loading...</span>
-                    </div>
-                    {/*<p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>*/}
+        { !this.props.objects 
+            && <div class="text-center"><div class="mt-4"><div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                   </div>
-                </div> }
+                  {/*<p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>*/}
+                </div>
+              </div> }
 
-        { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-4">
-                      <AlertCircleIcon size="100" className="text-muted"/>
-                      <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
-                    </div> }
+        { this.props.objects 
+            && this.props.objects.length == 0 
+            && <div class="text-center m-5 mt-4">
+                <AlertCircleIcon size="100" className="text-muted"/>
+                <p><span class="badge text-bg-primary fst-italic shadow">No data to show.</span></p>
+              </div> }
 
-        { this.props.objects && 
-                  <div>
+        { this.props.objects 
+            && <div>
 
-                    <div id={`chartTag_${this.state.uuid}`} class=""></div> 
+                <div id={`chartTag_${this.state.uuid}`} class=""></div> 
 
-                    { this.props.displayLegend 
-                        && this.props.displayLegend == true 
-                        && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
-                            Chart of profiles with their relationships ({this.props.displayCriteria} | {getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
-                          </p> }
+                { this.props.displayLegend 
+                    && this.props.displayLegend == true 
+                    && <p class="mt-4 fst-italic fw-bold text-muted border rounded shadow-sm small text-center">
+                        Chart of profiles with their relationships ({this.props.displayCriteria} | {getPeriodLabel(this.props.view, this.props.periodRangeLimits, LuxonDateTime)})
+                      </p> }
 
-                  </div> }
+              </div> }
 
 
-        { this.props.handleOffCanvasClose && <Offcanvas show={this.props.offCanvasShow} onHide={this.props.handleOffCanvasClose}>
+        { this.props.handleOffCanvasClose 
+            && <Offcanvas show={this.props.offCanvasShow} onHide={this.props.handleOffCanvasClose}>
                   <Offcanvas.Header closeButton>
                     <Offcanvas.Title>
                       Linked Profiles: 
@@ -801,63 +805,82 @@ export default class ProfilesGraphChart extends React.Component{
                   </Offcanvas.Header>
                   <Offcanvas.Body>
         
-                    { !this.state.linkedObjects && <div class="text-center"><div class="mb-5 mt-3"><div class="spinner-border text-primary" role="status">
-                          </div>
-                          <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                        </div>
-                      </div> }
+                    { !this.state.linkedObjects 
+                        && <div class="text-center">
+                              <div class="mb-5 mt-3">
+                                <div class="spinner-border text-primary" role="status">
+                                </div>
+                                <p>
+                                  <span class="badge text-bg-primary fst-italic shadow">Loading...</span>
+                                </p>
+                              </div>
+                          </div> }
         
-                    { this.state.linkedObjects && this.state.linkedObjects.length == 0 && <div class="text-center m-5 mt-4">
-                          <AlertCircleIcon size="100" className="mb-3 text-muted" />
-                          <p><span class="badge text-bg-primary fst-italic shadow">No linked objects found </span></p>
-                        </div>}
+                    { this.state.linkedObjects 
+                        && this.state.linkedObjects.length == 0 
+                        && <div class="text-center m-5 mt-4">
+                            <AlertCircleIcon size="100" className="mb-3 text-muted" />
+                            <p>
+                              <span class="badge text-bg-primary fst-italic shadow">No linked objects found </span>
+                            </p>
+                          </div>}
         
-                    { this.state.linkedObjects && this.state.linkedObjects.length != 0 && <div>
-                                                  {/*Suggestions*/}
-                                                  { this.props.displayCriteria == "suggestions" && this.state.linkedObjects.map((object, index) => (object.name.indexOf(":") == -1 && <div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
-                                                              <div class="position-relative shadow rounded">
-                                                                <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
-                                                                  {/*<p class="mt-0 mb-2">
-                                                                                                                              <span class="border shadow-sm rounded text-primary badge border-warning-subtle">Linkedin suggestions</span>
-                                                                                                                            </p>*/}
-                                                                  <a href={object.link ? object.link : "#"}>
-                                                                    <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                                      <img class="rounded-circle me-1" width="24" height="24" src={object.picture 
-                                                                                                                                    ? (object.picture.backgroundImage
-                                                                                                                                        ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) 
-                                                                                                                                        : object.picture) 
-                                                                                                                                    : default_user_icon} alt=""/>
-                                                                      {dbDataSanitizer.preSanitize(object.name)}
-                                                                    </span>
-                                                                  </a>
-                                                                  {/*<strong class="fw-semibold">{dbDataSanitizer.suggestionName(object.name)}</strong>*/}
-                                                                  { object.location && <span class="d-block small opacity-75 mt-2 fw-bold">
-                                                                                        <LocationIcon size="12" className="me-1"/>
-                                                                                        {dbDataSanitizer.preSanitize(object.location)}
-                                                                                      </span>}
-                                                                </label>
-                                                              </div>
-                                                            </div>))}
-        
-                                                  {/*Experience*/}
-                                                  { (this.props.displayCriteria == "experience" 
-                                                      || this.props.displayCriteria == "education"
-                                                      || this.props.displayCriteria == "languages"
-                                                      || this.props.displayCriteria == "certifications") && this.state.linkedObjects.map((object, index) => (Object.hasOwn(object, "profile") && <div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
-                                                              <div class="position-relative shadow rounded">
-                                                                <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
-                                                                  <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
-                                                                    <img class="rounded-circle me-1" width="24" height="24" src={object.profile.avatar ? object.profile.avatar : default_user_icon} alt=""/>
-                                                                    {dbDataSanitizer.preSanitize(object.profile.fullName)}
-                                                                  </span>
-                                                                  { object.profile.title && <p class="d-block small opacity-75 mt-2">{ dbDataSanitizer.preSanitize(object.profile.title)}</p> }
-                                                                  <p class="mt-2 mb-0">
-                                                                    { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle mx-1">{link}</span>)) }                                                            
-                                                                  </p>
-                                                                </label>
-                                                              </div>
-                                                            </div>))}
-                                                  </div>}
+                    { this.state.linkedObjects 
+                        && this.state.linkedObjects.length != 0 
+                        && <div>
+                            {/*Suggestions*/}
+                            { this.props.displayCriteria == "suggestions" 
+                                && this.state.linkedObjects.map((object, index) => (object.name.indexOf(":") == -1 
+                                                                                      && <div class={`list-group list-group-radio d-grid gap-2 border-0 small ${index == 0 ? "" : "mt-3"}`}>
+                                                                                          <div class="position-relative shadow rounded">
+                                                                                            <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                                                                              {/*<p class="mt-0 mb-2">
+                                                                                                <span class="border shadow-sm rounded text-primary badge border-warning-subtle">Linkedin suggestions</span>
+                                                                                              </p>*/}
+                                                                                              <a href={object.url || "#"}>
+                                                                                                <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                                                                  <img class="rounded-circle me-1" width="24" height="24" src={object.picture 
+                                                                                                                                                                ? (object.picture.backgroundImage
+                                                                                                                                                                    ? object.picture.backgroundImage.slice(object.picture.backgroundImage.indexOf("http"), (object.picture.backgroundImage.length - 2)) 
+                                                                                                                                                                    : object.picture) 
+                                                                                                                                                                : default_user_icon} alt=""/>
+                                                                                                  {dbDataSanitizer.preSanitize(object.name)}
+                                                                                                </span>
+                                                                                              </a>
+                                                                                              { object.title && 
+                                                                                                  <span class="d-block small opacity-75 mt-2">
+                                                                                                      | { object.title }
+                                                                                                </span> }
+                                                                                              { object.location 
+                                                                                                  && <span class="d-block small opacity-75 mt-2 fw-bold">
+                                                                                                      <LocationIcon size="12" className="me-1"/>
+                                                                                                      {dbDataSanitizer.preSanitize(object.location)}
+                                                                                                    </span>}
+                                                                                            </label>
+                                                                                          </div>
+                                                                                        </div>))}
+
+                            {/*Experience*/}
+                            { (this.props.displayCriteria == "experience" 
+                                  || this.props.displayCriteria == "education"
+                                  || this.props.displayCriteria == "languages"
+                                  || this.props.displayCriteria == "certifications") 
+                                && this.state.linkedObjects.map((object, index) => (Object.hasOwn(object, "profile") 
+                                                                                      && <div class={"list-group list-group-radio d-grid gap-2 border-0 small " + (index == 0 ? "" : "mt-3")}>
+                                                                                          <div class="position-relative shadow rounded">
+                                                                                            <label class="list-group-item py-3 pe-5" for="listGroupRadioGrid1">
+                                                                                              <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">
+                                                                                                <img class="rounded-circle me-1" width="24" height="24" src={object.profile.avatar ? object.profile.avatar : default_user_icon} alt=""/>
+                                                                                                {dbDataSanitizer.preSanitize(object.profile.fullName)}
+                                                                                              </span>
+                                                                                              { object.profile.title && <p class="d-block small opacity-75 mt-2">{ dbDataSanitizer.preSanitize(object.profile.title)}</p> }
+                                                                                              <p class="mt-2 mb-0">
+                                                                                                { object.links.map((link) => (<span class="border shadow-sm rounded text-primary badge border-warning-subtle mx-1">{link}</span>)) }                                                            
+                                                                                              </p>
+                                                                                            </label>
+                                                                                          </div>
+                                                                                        </div>))}
+                            </div>}
                     
                   </Offcanvas.Body>
                 </Offcanvas>}

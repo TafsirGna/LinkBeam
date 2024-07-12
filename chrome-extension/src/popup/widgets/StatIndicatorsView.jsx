@@ -129,20 +129,32 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.education){
         for (const education of profile.education){
+
+          if (education == "incomplete"){
+            continue;
+          }
           if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(education.entity.name), edEntities, "education", stringSimilarity) == -1){
             edEntities.push(dbDataSanitizer.preSanitize(education.entity.name));
           }
+
         }
       }
 
       if (profile.experience){
         for (const experience of profile.experience){
+
+          if (experience == "incomplete"){
+            continue;
+          }
+
           if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.entity.name), expEntities, "experience", stringSimilarity) == -1){
             expEntities.push(dbDataSanitizer.preSanitize(experience.entity.name));
           }
+          
           if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(experience.title), jobTitles, "jobTitles", stringSimilarity) == -1){
             jobTitles.push(dbDataSanitizer.preSanitize(experience.title));
           }
+
         }
       }
 

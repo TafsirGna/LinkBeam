@@ -1081,6 +1081,8 @@ async function incProfileVisitTimeCount(tabData){
                 visit.timeCount += (appParams.TIMER_VALUE_2 / 1000);
             });
 
+    checkDateTimeLeft();
+
 }
 
 async function refreshAppSettingsObject(){

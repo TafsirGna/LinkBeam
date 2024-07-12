@@ -177,8 +177,10 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     }
 
-    // Pinging the background no matter what
-    this.pgPing(props);
+    // Pinging the background regularly when not idle
+    if (!props.idleStatus){
+      this.pgPing(props);
+    }
 
     if (!webPageData){
       return;

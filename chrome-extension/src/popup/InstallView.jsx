@@ -440,11 +440,10 @@ export default class About extends React.Component{
                                                 </small>
                                               </div>
                                             </a>}
-                                        { this.state.settings.notifications 
-                                          && <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
                                               <div class="d-flex gap-2 w-100 justify-content-between">
                                                 <div>
-                                                  <h6 class="mb-0">Hide post (if no change) after views</h6>
+                                                  <h6 class="mb-0">Hide post {/*(if no change)*/} after N views</h6>
                                                   <p class="mb-0 opacity-75 small">It helps you hide posts that you've already seen but that keep showing up in your feed.</p>
                                                 </div>
                                                 <small>
@@ -464,7 +463,7 @@ export default class About extends React.Component{
                                                   </div>
                                                 </small>
                                               </div>
-                                            </a> }
+                                            </a>
                                     </div>
                                   </div>}
 

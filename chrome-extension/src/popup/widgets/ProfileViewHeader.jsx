@@ -265,7 +265,7 @@ export default class ProfileViewHeader extends React.Component{
               class="shadow-sm card-text fst-italic opacity-50 badge bg-light-sbtle text-light-emphasis rounded-pill border border-warning" 
               /*onClick={this.handleConnectionModalShow} 
               title="Click to see more infos"*/>
-              <small class="text-body-secondary handy-cursor" >
+              <small class="text-body-secondary" /*handy-cursor*/ >
                 {(this.props.profile.nFollowers ? dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nFollowers) : "") + (this.props.profile.nConnections ? " · " : "")} 
                 {this.props.profile.nConnections ? dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nConnections) : ""}
                 { !this.props.profile.nFollowers && !this.props.profile.nConnections && <OverlayTrigger
@@ -300,7 +300,7 @@ export default class ProfileViewHeader extends React.Component{
                   ·
                   <OverlayTrigger
                     placement="bottom"
-                    overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
+                    overlay={<ReactTooltip id="tooltip1">Bookmarked on {LuxonDateTime.fromISO(this.props.profile.bookmark.createdOn).toFormat('MMMM dd yyyy, hh:mm a')}</ReactTooltip>}
                   >
                     <span>
                       <BookmarkIcon size="24" className="mx-2"/>

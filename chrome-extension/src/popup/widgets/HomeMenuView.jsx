@@ -37,6 +37,7 @@ import {
   BellIcon,
   HelpIcon,
   MediaIcon,
+  CompassIcon,
 } from "./SVGs";
 import eventBus from "../EventBus";
 
@@ -215,6 +216,18 @@ export default class HomeMenu extends React.Component{
                 Settings
               </a>
             </li>
+            {/*<li>
+              <a 
+                class="dropdown-item small" 
+                href="#" 
+                onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.ABOUT)}}
+                title="About the app">
+                <CompassIcon
+                  size="15"
+                  className="me-2 text-muted"/>
+                Did you know ... ?
+              </a>
+            </li>*/}
             <li>
               <a 
                 class="dropdown-item small" 

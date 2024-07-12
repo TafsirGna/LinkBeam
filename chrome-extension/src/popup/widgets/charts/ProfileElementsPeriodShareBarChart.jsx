@@ -87,7 +87,7 @@ var barOptions = {
   scales: {
     x: {
       ticks: {
-           display: false,
+        display: false,
       },
     },
   },
@@ -165,16 +165,16 @@ export default class ProfileElementsPeriodShareBarChart extends React.Component{
           }
         }
         else{
+
+          if (element == "incomplete"){
+            continue;
+          }
+          
           if (this.props.profilePropertyName == "jobTitles" || this.props.profilePropertyName == "certifications"){
             elementName = dbDataSanitizer.preSanitize(element.title);
           }
           else{
-            if (element != "incomplete"){
-              elementName = dbDataSanitizer.preSanitize(element.entity.name);
-            }
-            else{
-              continue;
-            }
+            elementName = dbDataSanitizer.preSanitize(element.entity.name);
           } 
 
         }

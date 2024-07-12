@@ -48,27 +48,25 @@ export default class MainProfileView extends React.Component{
 
   componentDidMount() {
 
-    eventBus.on(eventBus.SET_PROFILE_DATA, (data) =>
-      {
-        this.setState(prevState => {
-          let profile = Object.assign({}, prevState.profile);
-          profile[data.property] = data.value;
-          return { profile };
-        });
-      }
-    );
-
     setGlobalDataSettings(db, eventBus, liveQuery);
 
   }
 
   componentWillUnmount(){
 
-    eventBus.remove(eventBus.SET_PROFILE_DATA);
-
     if (this.profileSubscription) {
       this.profileSubscription.unsubscribe();
       this.profileSubscription = null;
+    }
+
+    if (this.bookmarkSubscription) {
+      this.bookmarkSubscription.unsubscribe();
+      this.bookmarkSubscription = null;
+    }
+
+    if (this.reminderSubscription) {
+      this.reminderSubscription.unsubscribe();
+      this.reminderSubscription = null;
     }
 
   }
@@ -82,7 +80,31 @@ export default class MainProfileView extends React.Component{
           error => this.setState({error})
         );
 
-        this.setState({profile: payload.profileObject});
+        this.setState({profile: payload.profileObject}, () => {
+
+          this.bookmarkSubscription = liveQuery(() => db.bookmarks
+                                                        .where({url: (new URLSearchParams(window.location.search)).get("data")})
+                                                        .first()).subscribe(
+            result => this.setState(prevState => {
+                        let profile = Object.assign({}, prevState.profile);
+                        profile.bookmark = result;
+                        return { profile };
+                      }),
+            error => this.setState({error})
+          );
+
+          this.reminderSubscription = liveQuery(() => db.reminders
+                                                        .where({objectId: (new URLSearchParams(window.location.search)).get("data")})
+                                                        .first()).subscribe(
+            result => this.setState(prevState => {
+                        let profile = Object.assign({}, prevState.profile);
+                        profile.reminder = result;
+                        return { profile };
+                      }),
+            error => this.setState({error})
+          );
+
+        });
       }
     });
   }

@@ -63,31 +63,7 @@ export default class ReminderModal extends React.Component{
     // this.refs.form;
     var callback = null;
     if (document.getElementById(this.state.formTagId).checkValidity()) {
-
-      callback = async () => {
-
-                    var reminder = null;
-                    try{
-                      await db.reminders.add(this.state.reminder);
-
-                      reminder = await db.reminders
-                                         .where("objectId")
-                                         .equals(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.id)
-                                         .first();
-                    }
-                    catch(error){
-                      console.error("Error : ", error);
-                    }
-
-                    if (isLinkedinProfilePage(reminder.objectId)){
-                      eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: reminder});
-                    }
-                    else{
-                      eventBus.dispatch(eventBus.POST_REMINDER_ADDED, {post: this.props.object, reminder: reminder});
-                    }
-
-                  };
-
+      callback = async () => { await db.reminders.add(this.state.reminder); };
     }
     
     this.setState({validated: true}, callback);
@@ -102,7 +78,7 @@ export default class ReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        var reminder = this.props.object.reminder ? this.props.object.reminder : freshReminder(Object.hasOwn(this.props.object, "url") ? this.props.object.url : this.props.object.id);
+        var reminder = this.props.object.reminder || freshReminder(this.props.object.url || this.props.object.id);
         this.setState({reminder: reminder, validated: false});
       }
     }

@@ -66,15 +66,6 @@ export default class ProfileView extends React.Component{
       }
     );
 
-    eventBus.on(eventBus.SET_PROFILE_DATA, (data) =>
-      {
-        if (data.property == "reminder" && data.value){
-          this.handleReminderModalClose();
-          this.toggleToastShow("Reminder added !");
-        }
-      }
-    );
-
     eventBus.on(eventBus.SET_PROFILE_LOCAL_DATA, (data) =>
       {
         var stateSlice = {};
@@ -85,10 +76,39 @@ export default class ProfileView extends React.Component{
 
   }
 
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.profile != this.props.profile){
+      if (prevProps.profile.reminder != this.props.profile.reminder){
+        if (!prevProps.profile.reminder){
+          this.handleReminderModalClose();
+          this.toggleToastShow("Reminder added !");
+        }
+        else{
+          if (!this.props.profile.reminder){
+            this.toggleToastShow("Reminder deleted !");
+          }
+        }
+      }
+
+      if (prevProps.profile.bookmark != this.props.profile.bookmark){
+        if (!prevProps.profile.bookmark){
+          this.toggleToastShow("Profile bookmarked !");
+        }
+        else{
+          if (!this.props.profile.bookmark){
+            this.toggleToastShow("Profile unbookmarked !");
+          }
+        }
+      }
+
+    }
+
+  }
+
   componentWillUnmount() {
 
     eventBus.remove(eventBus.PROFILE_SHOW_REMINDER_OBJECT);
-    eventBus.remove(eventBus.SET_PROFILE_DATA);
     eventBus.remove(eventBus.SET_PROFILE_LOCAL_DATA);
 
   }
@@ -112,18 +132,7 @@ export default class ProfileView extends React.Component{
       if (response){
 
         (async () => {
-
-          try{
-            await db.reminders.delete(this.props.profile.reminder.id);
-          }
-          catch(error){
-            console.error("Error : ", error);
-          }
-
-          eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "reminder", value: null});
-
-          this.toggleToastShow("Reminder deleted !");
-
+          await db.reminders.delete(this.props.profile.reminder.id);
         }).bind(this)();
 
       }
@@ -138,13 +147,7 @@ export default class ProfileView extends React.Component{
     try{
 
       if (this.props.profile.bookmark){
-      
         await db.bookmarks.delete(this.props.profile.bookmark.id);
-
-        eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: null});
-
-        this.toggleToastShow("Profile unbookmarked !");
-
       }
       else{
         
@@ -152,12 +155,6 @@ export default class ProfileView extends React.Component{
           url: this.props.profile.url,
           createdOn: (new Date()).toISOString(),
         });
-
-        const bookmark = await db.bookmarks.where("url").equals(this.props.profile.url).first();
-
-        eventBus.dispatch(eventBus.SET_PROFILE_DATA, {property: "bookmark", value: bookmark});
-
-        this.toggleToastShow("Profile bookmarked !");
 
       }
 

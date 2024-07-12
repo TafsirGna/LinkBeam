@@ -118,6 +118,7 @@ class MainScriptAgent extends ScriptAgentBase {
                 appSettings: this.appSettings,
                 visitId: this.visitId,
                 otherArgs: this.otherArgs,
+                idleStatus: this.idleStatus,
             };
 
             if (isLinkedinFeedPostPage(pageUrl)){

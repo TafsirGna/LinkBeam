@@ -92,26 +92,6 @@ export default class FeedDashView extends React.Component{
 
   componentDidMount() {
 
-    eventBus.on(eventBus.POST_REMINDER_ADDED, (data) =>
-      {
-        const index = this.state.allPeriodUniqueFeedPostViews.map(p => p.feedPostId).indexOf(data.post.id);
-        if (index != -1){
-          this.state.allPeriodUniqueFeedPostViews[index].feedPost.reminder = data.reminder;
-        }
-        this.toggleToastShow("Reminder added!");
-      }
-    );
-
-    eventBus.on(eventBus.POST_REMINDER_DELETED, (data) =>
-      {
-        const index = this.state.allPeriodUniqueFeedPostViews.map(p => p.id).indexOf(data);
-        if (index != -1){
-          this.state.allPeriodUniqueFeedPostViews[index].feedPost.reminder = null;
-        }
-        this.toggleToastShow("Reminder deleted!");
-      }
-    );
-
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
@@ -137,9 +117,6 @@ export default class FeedDashView extends React.Component{
   }
 
   componentWillUnmount(){
-
-    eventBus.remove(eventBus.POST_REMINDER_ADDED);
-    eventBus.remove(eventBus.POST_REMINDER_DELETED);
 
   }
 
@@ -190,7 +167,7 @@ export default class FeedDashView extends React.Component{
     for (var feedPostView of allPeriodUniqueFeedPostViews){
 
       feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-      feedPostView.feedPost.reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
+      // feedPostView.feedPost.reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
 
     }
 
