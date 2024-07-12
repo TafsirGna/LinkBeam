@@ -165,9 +165,7 @@ export default class FeedDashView extends React.Component{
             });
 
     for (var feedPostView of allPeriodUniqueFeedPostViews){
-
       feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-
     }
 
     this.setState({ 

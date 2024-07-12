@@ -45,6 +45,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
   static webPageData = null;
   static detectedKeywords = {};
   static keywordDetected = false;
+  static allExtensionWidgetsSet = false;
 
   constructor(){
     super();
@@ -88,6 +89,10 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     this.checkAndHighlightKeywords(result.htmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
     
+    if (this.allExtensionWidgetsSet){
+      return;
+    }
+
     Object.keys(result.htmlElements).forEach(htmlElementTitle => {
 
       if (["about", "experience", "education"].indexOf(htmlElementTitle) != -1){
@@ -100,9 +105,13 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
         if (result.context == "auth"){
           htmlElement = htmlElement.previousElementSibling;
+          if (!htmlElement){
+            return;
+          }
         }
 
         if (htmlElement.querySelector(`.${aboveProfileSectionWidgetClassName}`)){
+          this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
           return;
         }
 
@@ -132,6 +141,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
                 </React.StrictMode>
             );
+
+        this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
 
       }
 
@@ -177,6 +188,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     }
 
+    this.checkAndUpdateUi(props);
+
     // Pinging the background regularly when not idle
     if (!props.idleStatus){
       this.pgPing(props);
@@ -185,8 +198,6 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
     if (!webPageData){
       return;
     }
-
-    this.checkAndUpdateUi(props);
 
     sendTabData(props.tabId, webPageData);  
 

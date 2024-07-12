@@ -128,7 +128,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       fetchedTimeCount: 0,
       popularityRank: null,
       dbId: null,
-      idlePage: false,
       extractedPostData: null,
       dataExtractionError: false,
       visitId: null,
@@ -190,7 +189,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       if (data.value){
         if (this.state.timerInterval){
           this.clearTimer();
-          this.setState({idlePage: true});
         }
       }
       else{
@@ -198,7 +196,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
           if (this.state.postHtmlElementVisible){
             this.runTimer();
           }
-          this.setState({idlePage: false});
         }
       }
     });
@@ -270,7 +267,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     if (postContainerHeaderElement){
 
       const headerText = postContainerHeaderElement.textContent.toLowerCase();
-      for (var category in categoryVerbMap){
+      for (const category in categoryVerbMap){
 
         for (var lang in categoryVerbMap[category]){
           if (headerText.indexOf(categoryVerbMap[category][lang]) != -1){
@@ -293,7 +290,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   : null,
       };
 
-      if (!post.initiator.name && post.initiator.url){
+      if (post.category 
+            && post.category != "suggestions"
+            && (!post.initiator.name || !post.initiator.url /*|| !post.initiator.picture*/)){
+        console.log("[[[[[[[[[[[[[[[[[[[[[[[ 1 : ", post.category, post.initiator.name, post.initiator.url);
         this.setState({dataExtractionError: true});
         return;
       }
@@ -508,6 +508,15 @@ export default class AboveFeedPostWidgetView extends React.Component{
                 }
                 : null,
     };
+
+    if (!post.content.author.url 
+          || !post.content.author.name
+          /*|| post.content.author.picture*/
+          || !post.content.estimatedDate){
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent, post.content.estimatedDate);
+      this.setState({dataExtractionError: true});
+      return;
+    }
 
     this.setState({extractedPostData: post});
 
@@ -838,7 +847,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                             </span>}*/}
 
                       {/* Indication that the page has gone idle after some time of inactivity */}
-                      { this.state.idlePage 
+                      { !this.state.timerInterval
                           && <div class="flex items-center">
                                   <img 
                                     src={chrome.runtime.getURL("/assets/sleeping_icon.png")} 
