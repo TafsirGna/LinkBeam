@@ -84,11 +84,7 @@ export default class App extends React.Component{
 
       getTodayReminders(db, reminders => {
 
-        this.setState(prevState => {
-          let globalData = Object.assign({}, prevState.globalData);
-          globalData.todayReminderList = reminders;
-          return { globalData };
-        });
+        this.setState({globalData: {...this.state.globalData, todayReminderList: reminders}});
         
       });
 

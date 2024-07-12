@@ -167,7 +167,6 @@ export default class FeedDashView extends React.Component{
     for (var feedPostView of allPeriodUniqueFeedPostViews){
 
       feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-      // feedPostView.feedPost.reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
 
     }
 

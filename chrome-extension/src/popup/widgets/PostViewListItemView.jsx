@@ -72,7 +72,6 @@ export default class PostViewListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      allFeedOccurences: null,
       postModalShow: false,
       reminderModalShow: false,
       feedProfileDataModalShow: false,
@@ -99,11 +98,7 @@ export default class PostViewListItemView extends React.Component{
       this.reminderSubscription = liveQuery(() => db.reminders
                                                     .where({objectId: this.state.feedPostView.feedPost.id})
                                                     .first()).subscribe(
-        result => this.setState(prevState => {
-                    let feedPostView = Object.assign({}, prevState.feedPostView);
-                    feedPostView.feedPost.reminder = result;
-                    return { feedPostView };
-                  }),
+        result => this.setState({feedPostView: {...this.state.feedPostView, feedPost: {...this.state.feedPostView.feedPost, reminder: result}}}),
         error => this.setState({error})
       );
 
@@ -115,10 +110,11 @@ export default class PostViewListItemView extends React.Component{
 
     if (prevState.feedPostView != this.state.feedPostView){
       if (prevState.feedPostView
+            && prevState.feedPostView.feedPost != this.state.feedPostView.feedPost
             && prevState.feedPostView.feedPost.reminder != this.state.feedPostView.feedPost.reminder){
+        this.registerUpdateEvent();
         if (!prevState.feedPostView.feedPost.reminder){
           this.handleReminderModalClose();
-          this.registerUpdateEvent();
         }
       }
     }
@@ -150,7 +146,7 @@ export default class PostViewListItemView extends React.Component{
 
   handlePostModalClose = () => this.setState({postModalShow: false});
   handlePostModalShow = () => this.setState({postModalShow: true}, () => {
-    if (this.state.allFeedOccurences){
+    if (this.state.feedPostView.allFeedOccurences){
       return;
     }
 
@@ -158,17 +154,13 @@ export default class PostViewListItemView extends React.Component{
 
   });
 
-  async setAllFeedOccurences(callback = null){
+  async setAllFeedOccurences(){
 
     const occurences = await db.feedPostViews
                           .where({uid: this.state.feedPostView.uid})
                           .toArray();
 
-    this.setState({allFeedOccurences: occurences}, () => {
-      if (callback){
-        callback();
-      }
-    });
+    this.setState({feedPostView: {...this.state.feedPostView, allFeedOccurences: occurences}});
 
   }
 
@@ -210,15 +202,11 @@ export default class PostViewListItemView extends React.Component{
   async onReminderActionClick(){
 
     if (this.state.feedPostView.feedPost.reminder){
-
       // deleting the reminder
-      await db.reminders
-              .delete(this.state.feedPostView.feedPost.reminder.id);
-
-      eventBus.dispatch(eventBus.POST_REMINDER_DELETED, this.state.feedPostView.id);
-
-      this.registerUpdateEvent();
-
+      if (confirm("Do you confirm the deletion of the reminder ?")){
+        await db.reminders
+                .delete(this.state.feedPostView.feedPost.reminder.id);
+      }
     }
     else{
       this.handleReminderModalShow();
@@ -318,8 +306,8 @@ export default class PostViewListItemView extends React.Component{
                         <span 
                           onClick={this.handlePostModalShow} 
                           class="handy-cursor mx-1 text-primary small"
-                          title={`${this.state.allFeedOccurences ? `${this.state.allFeedOccurences.length} impression${this.state.allFeedOccurences.length > 1 ? "s" : ""} |` : ""} see metrics`}>
-                          {this.state.allFeedOccurences ? `(${this.state.allFeedOccurences.length})` : null}
+                          title={`${this.state.feedPostView.allFeedOccurences ? `${this.state.feedPostView.allFeedOccurences.length} impression${this.state.feedPostView.allFeedOccurences.length > 1 ? "s" : ""} |` : ""} see metrics`}>
+                          {this.state.feedPostView.allFeedOccurences ? `(${this.state.feedPostView.allFeedOccurences.length})` : null}
                           <BarChartIcon size="14" className="ms-1"/>
                         </span>
                       </span>
@@ -339,8 +327,10 @@ export default class PostViewListItemView extends React.Component{
                             <a 
                               class={"dropdown-item small handy-cursor " + (this.state.feedPostView.feedPost.reminder ? "text-danger" : "text-muted")} 
                               onClick={this.onReminderActionClick}>
-                              {this.state.feedPostView.feedPost.reminder && <DeletionIcon size="15" className="me-2"/>}
-                              {!this.state.feedPostView.feedPost.reminder && <PlusIcon size="15" className="me-2 text-muted"/>}
+                              { this.state.feedPostView.feedPost.reminder 
+                                && <DeletionIcon size="15" className="me-2"/> }
+                              { !this.state.feedPostView.feedPost.reminder 
+                                  && <PlusIcon size="15" className="me-2 text-muted"/> }
                               { this.state.feedPostView.feedPost.reminder ? "Delete " : "Add "} reminder
                             </a>
                             </li>
@@ -366,7 +356,7 @@ export default class PostViewListItemView extends React.Component{
 
               { this.state.postModalShow 
                   && <FeedPostTrendLineChart
-                      objects={this.state.allFeedOccurences}
+                      objects={this.state.feedPostView.allFeedOccurences}
                       globalData={this.props.globalData}
                       metricValueFunction={getPostMetricValue}/> }
 

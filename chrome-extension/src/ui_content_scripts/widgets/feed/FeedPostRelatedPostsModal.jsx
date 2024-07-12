@@ -289,7 +289,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                           { this.state.viewIndex == 2
                               && <div>
                                   <AlertWidget
-                                    text="Section still in active development."
+                                    text="To be released soon."
                                     variant="blue"
                                     className="mt-5"/>
                               </div>}

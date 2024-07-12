@@ -87,21 +87,13 @@ export default class ReminderModal extends React.Component{
 
   handleReminderTextAreaChange(event) {
 
-    this.setState(prevState => {
-      let reminder = Object.assign({}, prevState.reminder);
-      reminder.text = event.target.value;
-      return { reminder };
-    }); 
+    this.setState({reminder: {...this.state.reminder, text: event.target.value}}); 
 
   }
 
   handleReminderDateInputChange(event) {
 
-    this.setState(prevState => {
-      let reminder = Object.assign({}, prevState.reminder);
-      reminder.date = event.target.value;
-      return { reminder };
-    }); 
+    this.setState({reminder: {...this.state.reminder, date: event.target.value}}); 
 
   }
 

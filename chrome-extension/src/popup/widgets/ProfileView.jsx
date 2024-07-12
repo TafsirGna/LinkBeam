@@ -128,8 +128,7 @@ export default class ProfileView extends React.Component{
 
   onReminderMenuActionClick(){
     if (this.props.profile.reminder){
-      var response = confirm("Do you confirm the deletion of the reminder ?");
-      if (response){
+      if (confirm("Do you confirm the deletion of the reminder ?")){
 
         (async () => {
           await db.reminders.delete(this.props.profile.reminder.id);

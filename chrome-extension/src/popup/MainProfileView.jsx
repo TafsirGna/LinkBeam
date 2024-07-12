@@ -85,22 +85,14 @@ export default class MainProfileView extends React.Component{
           this.bookmarkSubscription = liveQuery(() => db.bookmarks
                                                         .where({url: (new URLSearchParams(window.location.search)).get("data")})
                                                         .first()).subscribe(
-            result => this.setState(prevState => {
-                        let profile = Object.assign({}, prevState.profile);
-                        profile.bookmark = result;
-                        return { profile };
-                      }),
+            result => this.setState({profile: {...this.state.profile, bookmark: result}}),
             error => this.setState({error})
           );
 
           this.reminderSubscription = liveQuery(() => db.reminders
                                                         .where({objectId: (new URLSearchParams(window.location.search)).get("data")})
                                                         .first()).subscribe(
-            result => this.setState(prevState => {
-                        let profile = Object.assign({}, prevState.profile);
-                        profile.reminder = result;
-                        return { profile };
-                      }),
+            result => this.setState({profile: {...this.state.profile, reminder: result}}),
             error => this.setState({error})
           );
 
