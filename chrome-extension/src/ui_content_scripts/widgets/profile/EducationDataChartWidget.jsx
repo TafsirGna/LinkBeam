@@ -135,7 +135,7 @@ export default class EducationDataChartWidget extends React.Component{
 
                             <DataApproximationAlert/>
 
-                            { this.state.profileData.education.indexOf("incomplete")
+                            { this.state.profileData.education.indexOf("incomplete") != -1
                                 && <div class="mt-3">
                                     <OnProfileIncompleteSectionAlert
                                       sectionName="Education"/>

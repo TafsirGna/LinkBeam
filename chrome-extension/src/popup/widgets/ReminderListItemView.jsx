@@ -37,26 +37,26 @@ export default class ReminderListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      link: null,
+      url: null,
     };
 
-    this.getObjectLink = this.getObjectLink.bind(this);
+    this.getObjectUrl = this.getObjectUrl.bind(this);
 
   }
 
   componentDidMount() {
-    this.getObjectLink();
+    this.getObjectUrl();
   }
 
   componentDidUpdate(prevProps, prevState){
 
   }
 
-  async getObjectLink(){
+  async getObjectUrl(){
 
-    var link = null
+    var url = null
     if (isLinkedinProfilePage(this.props.object.objectId)){
-      link = `/index.html?view=Profile&data=${this.props.object.objectId}`;
+      url = `/index.html?view=Profile&data=${this.props.object.objectId}`;
     }
     else{
 
@@ -64,10 +64,10 @@ export default class ReminderListItemView extends React.Component{
                                            .where({feedPostId: this.props.object.objectId})
                                            .sortBy("date")).toReversed()[0];
 
-      link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`;
+      url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`;
     }
 
-    this.setState({link: link});
+    this.setState({url: url});
 
   }
 
@@ -88,7 +88,7 @@ export default class ReminderListItemView extends React.Component{
             <div>
               <h6 class="mb-0 d-flex gap-2 w-100">
                 <a 
-                  href={this.state.link} 
+                  href={this.state.url} 
                   target="_blank" 
                   class="text-decoration-none text-muted w-100">
                   {this.getItemTitle()}

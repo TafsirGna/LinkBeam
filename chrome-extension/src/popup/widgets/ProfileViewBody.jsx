@@ -35,6 +35,7 @@ import { appParams, computePeriodTimeSpan } from "../Local_library";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AlertCircleIcon } from "./SVGs";
+import IncompleteSectionMessageView from "./IncompleteSectionMessageView";
 
 
 export default class ProfileViewBody extends React.Component{
@@ -60,20 +61,14 @@ export default class ProfileViewBody extends React.Component{
     };
 
     this.switchToTabIndex = this.switchToTabIndex.bind(this);
+    this.displayTabTitle = this.displayTabTitle.bind(this);
+    this.setProfileComputedData = this.setProfileComputedData.bind(this);
     
   }
 
   componentDidMount() {
 
-    var experienceTime = computePeriodTimeSpan(this.props.profile.experience, "experience", LuxonDateTime);
-    var educationTime = computePeriodTimeSpan(this.props.profile.education, "education", LuxonDateTime);
-
-    this.setState(prevState => {
-      let profileComputedData = Object.assign({}, prevState.profileComputedData);
-      profileComputedData.experienceTime = experienceTime;
-      profileComputedData.educationTime = educationTime;
-      return { profileComputedData };
-    });
+    this.setProfileComputedData();
 
     // Setting the data for the chart
     eventBus.on(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL, (data) =>
@@ -85,8 +80,30 @@ export default class ProfileViewBody extends React.Component{
   }
 
   componentWillUnmount(){
-
     eventBus.remove(eventBus.SHOW_ED_EXP_TIME_CHART_MODAL);
+  }
+
+  componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.profile != this.props.profile){
+      if (prevProps.profile.experience != this.props.profile.experience
+            || prevProps.profile.education != this.props.profile.education)
+      this.setProfileComputedData();
+    }
+
+  }
+
+  setProfileComputedData(){
+
+    var experienceTime = computePeriodTimeSpan(this.props.profile.experience, "experience", LuxonDateTime);
+    var educationTime = computePeriodTimeSpan(this.props.profile.education, "education", LuxonDateTime);
+
+    this.setState(prevState => {
+      let profileComputedData = Object.assign({}, prevState.profileComputedData);
+      profileComputedData.experienceTime = experienceTime;
+      profileComputedData.educationTime = educationTime;
+      return { profileComputedData };
+    });
 
   }
 
@@ -99,19 +116,38 @@ export default class ProfileViewBody extends React.Component{
   handleEdExpTimeChartModalClose = () => this.setState({edExpTimeChartModalShow: false});
   handleEdExpTimeChartModalShow = () => this.setState({edExpTimeChartModalShow: true});
 
+  displayTabTitle(index){
+
+    switch(index){
+      // case 0:{
+      //   break;
+      // }
+      case 4:{
+        if (!this.props.profile.activity
+              || (this.props.profile.activity && !this.props.profile.activity.length)){
+          return false;
+        }
+        break;
+      }
+    }
+
+    return true;
+
+  }
+
   render(){
     return (
       <>
         <div class="card mt-4 shadow pb-3">
           <div class="card-header">
             <ul class="nav nav-tabs card-header-tabs">
-              {this.state.navTabTitles.map((tabTitle, index) => (
-                                                    <li class="nav-item">
+              {this.state.navTabTitles.map((tabTitle, index) => ( this.displayTabTitle(index)
+                                                &&  <li class="nav-item">
                                                       <a class={"nav-link " + (this.state.currentTabIndex == index ? "active" : "")} aria-current={this.state.currentTabIndex == index ? "true" : ""} href="#" onClick={() => {this.switchToTabIndex(index)}}>
                                                         {tabTitle} 
                                                         { index == 1 
                                                             && <span>
-                                                                { !this.props.profile.info && <span class="badge ms-1 text-warning px-0">
+                                                                { !this.props.profile.info && <span class="ms-1 text-warning px-0">
                                                                                                       <OverlayTrigger
                                                                                                         placement="top"
                                                                                                         overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
@@ -128,7 +164,7 @@ export default class ProfileViewBody extends React.Component{
                                                                 { this.props.profile.experience && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
                                                                                                       {this.props.profile.experience.length}
                                                                                                   </span>}
-                                                                { !this.props.profile.experience && <span class="badge ms-1 text-warning px-0">
+                                                                { !this.props.profile.experience && <span class="ms-1 text-warning px-0">
                                                                                                       <OverlayTrigger
                                                                                                         placement="top"
                                                                                                         overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
@@ -145,7 +181,7 @@ export default class ProfileViewBody extends React.Component{
                                                                   { this.props.profile.education && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
                                                                                                         {this.props.profile.education.length}
                                                                                                     </span>}
-                                                                  { !this.props.profile.education && <span class="badge ms-1 text-warning px-0">
+                                                                  { !this.props.profile.education && <span class="ms-1 text-warning px-0">
                                                                                                         <OverlayTrigger
                                                                                                           placement="top"
                                                                                                           overlay={<Tooltip id="tooltip1">No data for this section</Tooltip>}
@@ -158,8 +194,6 @@ export default class ProfileViewBody extends React.Component{
                                                                                                       </span>}
                                                               </span>} 
                                                         { index == 4 
-                                                            && this.props.profile.activity
-                                                            && this.props.profile.activity.length != 0
                                                             && <span class="badge text-bg-light ms-1 border shadow-sm text-muted">
                                                                   {this.props.profile.activity.length}
                                                               </span>}
@@ -179,10 +213,7 @@ export default class ProfileViewBody extends React.Component{
                       <ProfileOverviewSectionView 
                         profile={this.props.profile} 
                         switchToTab={this.switchToTabIndex}
-                        localDataObject={{
-                          profileComputedData: this.state.profileComputedData,
-                          profiles: this.props.localDataObject.profiles,
-                        }} />
+                        localDataObject={{profileComputedData: this.state.profileComputedData}} />
                   </div>}
 
             { this.state.currentTabIndex == 1 
@@ -232,6 +263,11 @@ export default class ProfileViewBody extends React.Component{
             <Modal.Title>Education & Experience</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
+            { ["experience", "education"].filter(sectionName => this.props.profile[sectionName][this.props.profile[sectionName].length - 1] == "incomplete")
+                                         .map(sectionName => (<IncompleteSectionMessageView
+                                                                sectionName={sectionName}
+                                                                profile={this.props.profile}/>))}
 
             <ProfileGanttChartWidget
               profile={this.props.profile} 

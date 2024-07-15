@@ -379,7 +379,7 @@ function PreviousPostsList(props){
                                                       </div>
                                                   </div>
                                                   <div>
-                                                    <a href={object.link}>
+                                                    <a href={object.url}>
                                                       { (object.media && object.media[0]) && <img class="rounded-lg shadow-lg" src={(object.media[0].src ? object.media[0].src : object.media[0].poster)}/>}
                                                       <div class="mt-2 handy-cursor p-3 text-xl font-normal text-gray-500 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-300" dangerouslySetInnerHTML={{__html: object.text}}>
                                                         {/**/}

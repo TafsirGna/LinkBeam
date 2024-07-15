@@ -21,7 +21,6 @@ export default class ProfileNetworkSectionView extends React.Component{
     this.state = {
       offCanvasShow: false,
       formSelectInputVal: "suggestions",
-      allProfilesReadiness: false,
     };
 
     this.handleFormSelectInputChange = this.handleFormSelectInputChange.bind(this);
@@ -84,7 +83,6 @@ export default class ProfileNetworkSectionView extends React.Component{
                 <ProfilesGraphChart 
                   objects={[this.props.profile]} 
                   displayCriteria={this.state.formSelectInputVal} 
-                  profiles={this.props.localDataObject.profiles}
                   offCanvasShow={this.state.offCanvasShow}
                   handleOffCanvasClose={this.handleOffCanvasClose}/>
 

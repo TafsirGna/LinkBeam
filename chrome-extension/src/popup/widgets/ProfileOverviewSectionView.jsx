@@ -51,7 +51,6 @@ export default class ProfileOverviewSectionView extends React.Component{
       donutChartModalShow: false,
       donutChartModalTitle: null,
       donutChartModalItemData: null,
-      allProfilesReadiness: false,
     };
 
     this.getPeriodTimeSpan = this.getPeriodTimeSpan.bind(this);
@@ -62,14 +61,6 @@ export default class ProfileOverviewSectionView extends React.Component{
   }
 
   componentDidUpdate(prevProps, prevState){
-
-    if (prevProps.localDataObject != this.props.localDataObject){
-      if (prevProps.localDataObject.profiles != this.props.localDataObject.profiles){
-        if (this.state.donutChartModalShow){
-          this.setDonutChartModalItemData();
-        }
-      }
-    }
 
   }
 

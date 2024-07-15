@@ -325,7 +325,7 @@ export function DataApproximationAlert(props) {
 }
 
 export function OnProfileIncompleteSectionAlert(props) {
-  return <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
+  return <div id="alert-border-4" class="flex items-center p-4 mb-4 text-gray-800 border-t-4 border-gray-300 bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:border-gray-800" role="alert">
             <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
             </svg>
@@ -567,7 +567,7 @@ function getProfileAuthViewMainHtmlElements(){
     experience: document.getElementById('experience') ? document.getElementById('experience').nextElementSibling.nextElementSibling : null,
     languages: document.getElementById('languages') ? document.getElementById('languages').nextElementSibling.nextElementSibling : null,
     certifications: document.getElementById('licenses_and_certifications') ? document.getElementById('licenses_and_certifications').nextElementSibling.nextElementSibling : null,
-    projects: null,
+    projects: document.getElementById('projects') ? document.getElementById('projects').nextElementSibling.nextElementSibling : null,
     suggestions: document.getElementById('browsemap_recommendation') ? document.getElementById('browsemap_recommendation').nextElementSibling.nextElementSibling : null,
     activity: null,
   };
@@ -670,8 +670,8 @@ export const DataExtractor = {
       if (featuredExperienceEntityTagContainer){
         return {
           name: (featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
-          logo: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
-          link: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
+          picture: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
+          url: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
         };
       }
 
@@ -692,8 +692,8 @@ export const DataExtractor = {
       if (featuredExperienceEntityTagContainer){
         return {
           name: featuredExperienceEntityTagContainer.textContent,
-          logo: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
-          link: null,
+          picture: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
+          url: null,
         };
       }
 
@@ -716,8 +716,8 @@ export const DataExtractor = {
       if (featuredEducationEntityTagContainer){
         return {
           name: (featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
-          logo: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
-          link: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
+          picture: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
+          url: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
         };
       }
 
@@ -738,8 +738,8 @@ export const DataExtractor = {
       if (featuredEducationEntityTagContainer){
         return {
           name: featuredEducationEntityTagContainer.textContent,
-          logo: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
-          link: null,
+          picture: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
+          url: null,
         };
       }
 
@@ -939,8 +939,8 @@ export const DataExtractor = {
 
       var experienceData = [];
 
-      Array.from(htmlElements.experience.querySelectorAll("li.artdeco-list__item")).forEach((experienceLiTag) => {
-        experienceData = experienceData.concat(extractExperienceItemData(experienceLiTag));
+      Array.from(htmlElements.experience.querySelectorAll(/*"li.artdeco-list__item"*/"[data-view-name='profile-component-entity']")).forEach((experienceLiTag) => {
+        experienceData = experienceData.concat(extractExperienceItemData(experienceLiTag, htmlElements.experience));
 
       });
 
@@ -968,7 +968,7 @@ export const DataExtractor = {
 
       Array.from(htmlElements.activity.querySelectorAll("li")).forEach((activityLiTag) => {
         var article = {
-          link: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
+          url: (activityLiTag.querySelector("a") ? activityLiTag.querySelector("a").href : null),
           picture: (activityLiTag.querySelector(".main-activity-card__img") ? activityLiTag.querySelector(".main-activity-card__img").src : null),
           title: (activityLiTag.querySelector(".base-main-card__title") ? activityLiTag.querySelector(".base-main-card__title").textContent : null),        
           action: (activityLiTag.querySelector(".base-main-card__subtitle") ? activityLiTag.querySelector(".base-main-card__subtitle").textContent : null),
@@ -1010,7 +1010,7 @@ export const DataExtractor = {
             picture: certificationLiTag.querySelector("img") ? certificationLiTag.querySelector("img").src : null,
           },
           period: (certificationLiTag.querySelector("div.not-first-middot") ? certificationLiTag.querySelector("div.not-first-middot").textContent : null),
-          // url: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
+          url: null,
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
         certificationData.push(certification);
@@ -1024,26 +1024,13 @@ export const DataExtractor = {
 
       var certificationData = [];
 
-      Array.from(htmlElements.certifications.querySelectorAll("li.artdeco-list__item")).forEach((certificationLiTag) => {
-        var certification = {
-          title: (certificationLiTag.querySelectorAll(".visually-hidden")[0] && certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling 
-                    ? certificationLiTag.querySelectorAll(".visually-hidden")[0].previousElementSibling.textContent 
-                    : null),
-          entity: {
-            name: (certificationLiTag.querySelectorAll(".visually-hidden")[1] && certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling 
-                    ? certificationLiTag.querySelectorAll(".visually-hidden")[1].previousElementSibling.textContent 
-                    : null),
-            url: null,
-            picture: null,
-          }, 
-          period: (certificationLiTag.querySelectorAll(".visually-hidden")[2] && certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling 
-                    ? certificationLiTag.querySelectorAll(".visually-hidden")[2].previousElementSibling.textContent 
-                    : null),
-          // url: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-          // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-        };
-        certificationData.push(certification);
+      Array.from(htmlElements.certifications.querySelectorAll("[data-view-name='profile-component-entity']")).forEach((certificationLiTag) => {
+        certificationData.push(extractCertificationItemData(certificationLiTag));
       });
+
+      if (htmlElements.certifications.querySelector(".pvs-list__footer-wrapper")){
+        certificationData.push("incomplete");
+      }
 
       return certificationData;
 
@@ -1068,7 +1055,7 @@ export const DataExtractor = {
           name: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").textContent : null),
           period: (projectLiTag.querySelector("h4 span") ? projectLiTag.querySelector("h4 span").textContent : null),
           // date: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
-          link: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").href : null),
+          url: (projectLiTag.querySelector("h3 a") ? projectLiTag.querySelector("h3 a").href : null),
           // credentialID: (educationLiTag.querySelector("h4") ? educationLiTag.querySelector("h4").textContent : null),
         };
         projectData.push(project);
@@ -1081,6 +1068,15 @@ export const DataExtractor = {
     function extractAuthData(){
 
       var projectData = [];
+
+      Array.from(htmlElements.projects.querySelectorAll("[data-view-name='profile-component-entity']")).forEach((projectLiTag) => {
+        projectData.push(extractProjectItemData(projectLiTag));
+      });
+
+      if (htmlElements.projects.querySelector(".pvs-list__footer-wrapper")){
+        projectData.push("incomplete");
+      }
+
       return projectData;
 
     }
@@ -1120,7 +1116,6 @@ export const DataExtractor = {
 
       Array.from(htmlElements.suggestions.querySelectorAll("li.artdeco-list__item")).forEach((suggestionLiTag) => {
         profileSuggestions.push(extractProfileSuggestionItemData(suggestionLiTag));
-
       });
 
       return profileSuggestions
@@ -1137,6 +1132,147 @@ export const DataExtractor = {
 
 };
 
+export function extractProjectItemData(htmlElement){
+
+  var projectItemData = {
+          name: null,
+          period: null,
+          url: null,
+          description: null,
+        }, 
+      counter = 0;
+
+  extractItemData(htmlElement, hydrateItemObject);
+
+  function hydrateItemObject(node){
+
+    // console.log("###############-------------- : ", node, node.tagName, counter);
+
+    switch(node.tagName){
+      case "A":{
+        // entity url
+        if (!projectItemData.url){
+          projectItemData.url = node.getAttribute("href");
+        }
+        return;
+        // break;
+      }
+    }
+
+    if (isNodeProfileComponentEntityElement(node)){
+      return;
+    }
+
+    if ([0, 3, 4].indexOf(counter) != -1){
+      counter++;
+      return;
+    }
+
+    switch(counter){
+      case 1: {
+        // name
+        projectItemData.name = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+      case 2:{
+        projectItemData.period = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+      case 5: {
+        // title
+        projectItemData.description = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+    }
+
+  }
+
+  return projectItemData;
+
+}
+
+export function extractCertificationItemData(htmlElement){
+
+  var certificationItemData = {
+          title: null,
+          url: null,
+          entity: {
+            name: null,
+            url: null,
+            picture: null,
+          },
+          period: null,
+          // credentialID: null,
+        }, 
+      counter = 0;
+
+  extractItemData(htmlElement, hydrateItemObject);
+
+  function hydrateItemObject(node){
+
+    // console.log("###############-------------- : ", node, node.tagName, counter);
+
+    switch(node.tagName){
+      case "IMG":{
+        // picture
+        if (!certificationItemData.entity.picture){
+          certificationItemData.entity.picture = node.getAttribute("src");
+        }
+        return;
+        // break;
+      }
+      case "A":{
+        // entity url
+        if (!certificationItemData.entity.url){
+          certificationItemData.entity.url = node.getAttribute("href");
+        }
+        else{
+          certificationItemData.url = node.getAttribute("href");
+        }
+        return;
+        // break;
+      }
+    }
+
+    if (isNodeProfileComponentEntityElement(node)){
+      return;
+    }
+
+    switch(counter){
+      case 0: {
+        // name
+        certificationItemData.title = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+      case 1:{
+        certificationItemData.entity.name = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+      case 2: {
+        // title
+        certificationItemData.period = node.textContent;
+        counter++;
+        return;
+        // break;
+      }
+    }
+
+  }
+
+  return certificationItemData;
+
+}
+
 export function extractProfileSuggestionItemData(htmlElement){
 
   var profileSuggestionItemData = {
@@ -1150,15 +1286,15 @@ export function extractProfileSuggestionItemData(htmlElement){
 
   extractItemData(htmlElement, hydrateItemObject);
 
-  function hydrateItemObject(nodeValue, nodeTagName){
+  function hydrateItemObject(node){
 
-    // console.log("###############-------------- : ", nodeValue, nodeTagName, counter);
+    // console.log("###############-------------- : ", node, node.tagName, counter);
 
-    switch(nodeTagName){
+    switch(node.tagName){
       case "IMG":{
         // picture
         if (!profileSuggestionItemData.picture){
-          profileSuggestionItemData.picture = nodeValue;
+          profileSuggestionItemData.picture = node.getAttribute("src");
         }
         return;
         // break;
@@ -1166,21 +1302,21 @@ export function extractProfileSuggestionItemData(htmlElement){
       case "A":{
         // entity url
         if (!profileSuggestionItemData.url){
-          profileSuggestionItemData.url = nodeValue;
+          profileSuggestionItemData.url = node.getAttribute("href");
         }
         return;
         // break;
       }
     }
 
-    if (nodeValue == "profile-component-entity"){
+    if (isNodeProfileComponentEntityElement(node)){
       return;
     }
 
     switch(counter){
       case 0: {
         // name
-        profileSuggestionItemData.name = nodeValue;
+        profileSuggestionItemData.name = node.textContent;
         counter++;
         return;
         // break;
@@ -1192,25 +1328,12 @@ export function extractProfileSuggestionItemData(htmlElement){
       }
       case 2: {
         // title
-        profileSuggestionItemData.title = nodeValue;
+        profileSuggestionItemData.title = node.textContent;
         counter++;
         return;
         // break;
       }
     }
-
-    // location
-    // if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
-    //   const lastPhrase = nodeValue.split(", ").toReversed()[0];
-    //   for (const countryObject of countriesNaming){
-    //     if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
-    //         || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-    //       educationItemData.location = nodeValue;
-    //       // counter++;
-    //       return;
-    //     }
-    //   }
-    // }
 
   }
 
@@ -1235,15 +1358,15 @@ export function extractEducationItemData(htmlElement){
 
   extractItemData(htmlElement, hydrateItemObject);
 
-  function hydrateItemObject(nodeValue, nodeTagName){
+  function hydrateItemObject(node){
 
-    console.log("###############-------------- : ", nodeValue, nodeTagName, counter);
+    // console.log("###############-------------- : ", node, node.tagName, counter);
 
-    switch(nodeTagName){
+    switch(node.tagName){
       case "IMG":{
         // picture
         if (!educationItemData.entity.picture){
-          educationItemData.entity.picture = nodeValue;
+          educationItemData.entity.picture = node.getAttribute("src");
         }
         return;
         // break;
@@ -1251,7 +1374,7 @@ export function extractEducationItemData(htmlElement){
       case "A":{
         // entity url
         if (!educationItemData.entity.url){
-          educationItemData.entity.url = nodeValue;
+          educationItemData.entity.url = node.getAttribute("href");
         }
         return;
         // break;
@@ -1261,17 +1384,17 @@ export function extractEducationItemData(htmlElement){
     switch(counter){
       case 0: {
         // name
-        if (nodeValue == "profile-component-entity"){
+        if (isNodeProfileComponentEntityElement(node)){
           return;
         }
-        educationItemData.entity.name = nodeValue;
+        educationItemData.entity.name = node.textContent;
         counter++;
         return;
         // break;
       }
       case 1: {
         // title
-        educationItemData.title = nodeValue;
+        educationItemData.title = node.textContent;
         counter++;
         return;
         
@@ -1280,20 +1403,20 @@ export function extractEducationItemData(htmlElement){
     }
 
     // period
-    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)
-          || nodeValue.match(/^([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)$/g)){
-      educationItemData.period = nodeValue;
+    if (node.textContent.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)
+          || node.textContent.match(/^([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)$/g)){
+      educationItemData.period = node.textContent;
       // counter++;
       return;
     }
 
     // location
-    if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
-      const lastPhrase = nodeValue.split(", ").toReversed()[0];
+    if (node.textContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = node.textContent.split(", ").toReversed()[0];
       for (const countryObject of countriesNaming){
         if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
             || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-          educationItemData.location = nodeValue;
+          educationItemData.location = node.textContent;
           // counter++;
           return;
         }
@@ -1301,7 +1424,7 @@ export function extractEducationItemData(htmlElement){
     }
 
     // description
-    educationItemData.description = nodeValue;
+    educationItemData.description = node.textContent;
 
     // console.log("###############-------------- : N ", educationItemData);
   }
@@ -1310,7 +1433,11 @@ export function extractEducationItemData(htmlElement){
 
 }
 
-export function extractExperienceItemData(htmlElement){
+export function extractExperienceItemData(htmlElement, encompassingParent){
+
+  if (!isProfileComponentEntityElementLegit(htmlElement, encompassingParent)){
+    return [];
+  }
 
   var experienceItemDataList = [], 
       counter = null;
@@ -1334,16 +1461,16 @@ export function extractExperienceItemData(htmlElement){
 
   extractItemData(htmlElement, hydrateItemObject);
 
-  function hydrateItemObject(nodeValue, nodeTagName){
+  function hydrateItemObject(node){
 
-    console.log("###############-------------- : ", nodeValue, nodeTagName, counter, htmlElement.querySelector("ul") == null);
+    console.log("###############-------------- : ", node, node.tagName, counter, experienceItemDataList.length);
     var experienceItemData = experienceItemDataList[experienceItemDataList.length -1];
 
-    switch(nodeTagName){
+    switch(node.tagName){
       case "IMG":{
         // picture
         if (!experienceItemData.entity.picture){
-          experienceItemData.entity.picture = nodeValue;
+          experienceItemData.entity.picture = node.getAttribute("src");
         }
         return;
         // break;
@@ -1351,7 +1478,7 @@ export function extractExperienceItemData(htmlElement){
       case "A":{
         // entity url
         if (!experienceItemData.entity.url){
-          experienceItemData.entity.url = nodeValue.split("?")[0];
+          experienceItemData.entity.url = node.getAttribute("href").split("?")[0];
         }
         return;
         // break;
@@ -1362,7 +1489,7 @@ export function extractExperienceItemData(htmlElement){
       //   // break;
       // }
       default:{
-        if (nodeValue == "profile-component-entity"){
+        if (isNodeProfileComponentEntityElement(node)){
             addNewToList();
             return;
             // break;
@@ -1374,14 +1501,14 @@ export function extractExperienceItemData(htmlElement){
       case 0: {
         // title
         if (!htmlElement.querySelector(".pvs-entity__sub-components [data-view-name='profile-component-entity']")){
-          experienceItemData.title = nodeValue;
+          experienceItemData.title = node.textContent;
         }
         else{
           if (experienceItemDataList.length == 1){
-            experienceItemData.entity.name = nodeValue.split(" · ")[0];
+            experienceItemData.entity.name = node.textContent.split(" · ")[0];
           }
           else{
-            experienceItemData.title = nodeValue;
+            experienceItemData.title = node.textContent;
           }
         }
         counter++;
@@ -1391,7 +1518,7 @@ export function extractExperienceItemData(htmlElement){
       case 1: {
         // name
         if (!htmlElement.querySelector(".pvs-entity__sub-components [data-view-name='profile-component-entity']")){ 
-          experienceItemData.entity.name = nodeValue;
+          experienceItemData.entity.name = node.textContent.split(" · ")[0];
           counter++;
           return;
         }
@@ -1401,19 +1528,19 @@ export function extractExperienceItemData(htmlElement){
     }
 
     // period
-    if (nodeValue.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?)|Less than a year)$/g)){
-      experienceItemData.period = nodeValue;
+    if (node.textContent.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?)|Less than a year)$/g)){
+      experienceItemData.period = node.textContent;
       // counter++;
       return;
     }
 
     // location
-    if (nodeValue.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
-      const lastPhrase = nodeValue.split(", ").toReversed()[0];
+    if (node.textContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = node.textContent.split(", ").toReversed()[0];
       for (const countryObject of countriesNaming){
         if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
             || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-          experienceItemData.location = nodeValue;
+          experienceItemData.location = node.textContent;
           // counter++;
           return;
         }
@@ -1421,7 +1548,7 @@ export function extractExperienceItemData(htmlElement){
     }
 
     // description
-    experienceItemData.description = nodeValue;
+    experienceItemData.description = node.textContent;
 
     // console.log("###############-------------- : N ", experienceItemData);
   }
@@ -1430,7 +1557,40 @@ export function extractExperienceItemData(htmlElement){
 
 }
 
+function isNodeProfileComponentEntityElement(node){
+
+  try{
+    if (node.getAttribute("data-view-name") == "profile-component-entity"){
+      return true;
+    }
+  }
+  catch(error){
+    // console.log("*** : ", node);
+    // console.log("Error : ", error);
+    return false;
+  }
+
+  return false;
+
+}
+
 function extractItemData(htmlElement, callback){
+
+  function isNodeSpanWithAriaHiddenAttribute(node){
+
+    try{
+      if ((node.tagName == "SPAN") && node.getAttribute("aria-hidden")){
+        return true;
+      }
+    }
+    catch(error){
+      // console.log("Error : ", error);
+      return false;
+    }
+
+    return false;
+
+  }
 
   var pipe = [...htmlElement.childNodes];
   while (pipe.length){
@@ -1441,60 +1601,35 @@ function extractItemData(htmlElement, callback){
       continue;
     }
 
+    if (["IMG", "A"].indexOf(node.tagName) != -1
+          || isNodeProfileComponentEntityElement(node)
+          || isNodeSpanWithAriaHiddenAttribute(node)){
+      callback(node);
+    }
+
     const children = node.childNodes;
-    var nodeValue = null;
-    switch(node.tagName){
-      case "IMG":{
-        nodeValue = node.getAttribute("src");
-        break;
-      }
-      case "A":{
-        nodeValue = node.getAttribute("href");
-        break;
-      }
-      // case "LI":{
-      //   nodeValue = "###";
-      //   break;
-      // }
-      default: {
-        try{
-          if (node.getAttribute("data-view-name") == "profile-component-entity"){
-            nodeValue = "profile-component-entity";
-          }
-        }
-        catch(error){
-          // console.log("*** : ", node);
-          // console.log("Error : ", error);
-        }
-      }
-    }
-
-    if (nodeValue){
-      callback(nodeValue, node.tagName);
-      if (children.length){
-        pipe = [...children].concat(pipe);
-      }
-      continue;
-    }
-
-    var nodePropValue = null;
-    try{
-      nodePropValue = (node.tagName == "SPAN") && node.getAttribute("aria-hidden");
-    }
-    catch(error){
-      // console.log("Error : ", error);
-      continue;
-    }
-
-    if (nodePropValue){
-      callback(node.textContent, node.tagName);
-      continue;
-    }
-
     if (children.length){
       pipe = [...children].concat(pipe);
     }
 
   } 
+
+}
+
+function isProfileComponentEntityElementLegit(node, encompassingParent){
+
+  // Checking if this component entity element has another component entity element as parent
+  var htmlParent = node.parentNode/*, 
+    liCounter = 0*/;
+  while(htmlParent != encompassingParent){
+    if (isNodeProfileComponentEntityElement(htmlParent)){
+      // liCounter++;
+      // if (liCounter == 2){ return false; }
+      return false;
+    }
+    htmlParent = htmlParent.parentNode;
+  }
+
+  return true;
 
 }

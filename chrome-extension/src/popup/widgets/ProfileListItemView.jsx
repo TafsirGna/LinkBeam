@@ -60,7 +60,7 @@ export default class ProfileListItemView extends React.Component{
                   <a class="text-decoration-none text-black" href={`/index.html?view=Profile&data=${this.props.profile.url}`} target="_blank">{dbDataSanitizer.preSanitize(this.props.profile.fullName)}</a> 
                 </h6>
                 
-                <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.profile.lastVisitDate).toFormat("MM-dd-yyyy")}</small>
+                <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.profile.lastVisit.date).toFormat("MM-dd-yyyy")}</small>
               </div>
               {this.props.profile.title && <p class="mb-0 opacity-75 small">{dbDataSanitizer.preSanitize(this.props.profile.title)}</p>}
               <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nFollowers)} · {dbDataSanitizer.profileRelationDataPreproc(this.props.profile.nConnections)}</p>

@@ -50,8 +50,8 @@ export default class ProfileActivitySectionView extends React.Component{
         picture: this.props.profile.avatar,
         name: this.props.profile.fullName,
       },
-      link: activity.link,
-      date: this.props.profile.lastVisitDate,
+      url: activity.url,
+      date: this.props.profile.lastVisit.date,
       text: activity.title,
     }));
 

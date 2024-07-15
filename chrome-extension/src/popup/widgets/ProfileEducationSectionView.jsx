@@ -32,9 +32,15 @@ export default class ProfileEducationSectionView extends React.Component{
         wordCloudData = []*/;
     for (var education of this.props.profile.education){
 
+      if (education == "incomplete"){
+        continue;
+      }
+
       if (!education.period){
         continue
       }
+
+      console.log("dddddddddddddd ed : ", education, education.period);
 
       var entityName = dbDataSanitizer.preSanitize(education.entity.name),
           edTime = ((education.period.endDateRange.toJSDate() - education.period.startDateRange.toJSDate()) / this.props.localDataObject.profileComputedData.educationTime) * 100;

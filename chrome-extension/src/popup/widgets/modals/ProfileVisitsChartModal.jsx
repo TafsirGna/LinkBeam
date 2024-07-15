@@ -34,6 +34,7 @@ import {
 } from "../../Local_library";
 import { db } from "../../../db";
 import { CheckIcon } from "../SVGs";
+import { liveQuery } from "dexie"; 
 
 export default class ProfileVisitsChartModal extends React.Component{
 
@@ -57,7 +58,19 @@ export default class ProfileVisitsChartModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        this.setPeriodVisits();
+        // this.setPeriodVisits();
+
+        this.timeCountSubscription = liveQuery(() => db.visits.where({url: this.props.profile.url}).last()).subscribe(
+          result => { this.setPeriodVisits(); },
+          error => this.setState({error})
+        );
+
+      }
+      else{
+        if (this.timeCountSubscription) {
+          this.timeCountSubscription.unsubscribe();
+          this.timeCountSubscription = null;
+        }
       }
     }
 
@@ -73,9 +86,7 @@ export default class ProfileVisitsChartModal extends React.Component{
   onViewChange(index){
 
     this.setState({view: index}, () => {
-
       this.setPeriodVisits();
-
     });
 
   }

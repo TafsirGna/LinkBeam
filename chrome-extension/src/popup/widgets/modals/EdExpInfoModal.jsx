@@ -53,9 +53,9 @@ export default class EdExpInfoModal extends React.Component{
             { this.props.label && <div>
                                 <span class="shadow badge bg-secondary-subtle border border-info-subtle text-info-emphasis rounded-pill">{this.props.label}</span>
                                 <ul class="timeline mt-4 mx-2 small">
-                                  { this.props.profile[this.props.section].map((object) => (
+                                  { this.props.profile[this.props.section].filter(object => object != "incomplete").map((object) => (
                                       ((this.props.labelName == "title" && dbDataSanitizer.preSanitize(object.title).toLowerCase() == this.props.label.toLowerCase())
-                                        || (this.props.labelName == "entityName" && object != "incomplete" && dbDataSanitizer.preSanitize(object.entity.name).toLowerCase() == this.props.label.toLowerCase()))
+                                        || (this.props.labelName == "entityName"  && dbDataSanitizer.preSanitize(object.entity.name).toLowerCase() == this.props.label.toLowerCase()))
                                         &&  <li class="timeline-item mb-5 small">
                                               <h6 class="fw-bold">
                                                 <span class="shadow-sm badge align-items-center p-1 pe-3 text-secondary-emphasis bg-secondary-subtle border border-secondary-subtle rounded-pill">

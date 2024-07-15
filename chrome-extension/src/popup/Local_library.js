@@ -947,9 +947,120 @@ export async function getProfileDataFrom(db, url, properties = null){
   }
 
   profileData.url = url;
-  profileData.lastVisitDate = visits[0].date;
+  profileData.lastVisit = visits[0];
 
   return profileData;
+
+}
+
+function isExperienceListSubsetOf(extractedProfileData, oldProfileData){
+
+  const property = "experience";
+  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+
+  for (var i = 0; i < minLength - 1; i++){
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].title) != dbDataSanitizer.preSanitize(oldProfileData[property][i].title)
+          || extractedProfileData[property][i].entity.url != oldProfileData[property][i].entity.url
+          || dbDataSanitizer.preSanitize(extractedProfileData[property][i].period) != dbDataSanitizer.preSanitize(oldProfileData[property][i].period)
+          || dbDataSanitizer.preSanitize(extractedProfileData[property][i].location) != dbDataSanitizer.preSanitize(oldProfileData[property][i].location)){
+      return false;
+    }
+
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].description) != dbDataSanitizer.preSanitize(oldProfileData[property][i].description)){
+      oldProfileData[property][i].description = extractedProfileData[property][i].description;
+    }
+
+  }
+
+  return true;
+
+}
+
+function isEducationListSubsetOf(extractedProfileData, oldProfileData){
+    
+  const property = "education";
+  const minLength = numberMin(extractedProfileData[property].length < oldProfileData[property].length);
+
+  for (var i = 0; i < minLength - 1; i++){
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].title) != dbDataSanitizer.preSanitize(oldProfileData[property][i].title)
+          || extractedProfileData[property][i].entity.url != oldProfileData[property][i].entity.url
+          || dbDataSanitizer.preSanitize(extractedProfileData[property][i].period) != dbDataSanitizer.preSanitize(oldProfileData[property][i].period)){
+      return false;
+    }
+
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].description) != dbDataSanitizer.preSanitize(oldProfileData[property][i].description)){
+      oldProfileData[property][i].description = extractedProfileData[property][i].description;
+    }
+
+  }
+
+  return true;
+
+}
+
+function isProjectListSubsetOf(extractedProfileData, oldProfileData){
+    
+  const property = "projects";
+  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+
+  for (var i = 0; i < minLength - 1; i++){
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].name) != dbDataSanitizer.preSanitize(oldProfileData[property][i].name)
+          || extractedProfileData[property][i].url != oldProfileData[property][i].url
+          || dbDataSanitizer.preSanitize(extractedProfileData[property][i].period) != dbDataSanitizer.preSanitize(oldProfileData[property][i].period)){
+      return false;
+    }
+
+    if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].description) != dbDataSanitizer.preSanitize(oldProfileData[property][i].description)){
+      oldProfileData[property][i].description = extractedProfileData[property][i].description;
+    }
+
+  }
+
+  return true;
+
+}  
+
+function isCertificationListSubsetOf(extractedProfileData, oldProfileData){
+
+  const property = "certifications";
+  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+
+  return areProfileDataObjectsDifferent[property](extractedProfileData[property].slice(0, minLength), oldProfileData[property].slice(0, minLength));
+
+}  
+
+function numberMin(a, b){
+  return a < b ? a : b;
+}
+
+function isEntityListSubsetOf(extractedProfileData, oldProfileData, property){
+
+  if (!oldProfileData[property]){
+    return false;
+  }
+
+  if (!extractedProfileData[property]){
+    return true;
+  }
+
+  switch(property){
+    case "education":{
+      return isEducationListSubsetOf(extractedProfileData, oldProfileData);
+      // break;
+    }
+    case "experience":{
+      return isExperienceListSubsetOf(extractedProfileData, oldProfileData);
+      // break;
+    }
+    case "projects":{
+      return isProjectListSubsetOf(extractedProfileData, oldProfileData);
+      // break;
+    }
+    case "certifications":{
+      return isCertificationListSubsetOf(extractedProfileData, oldProfileData);
+      // break;
+    }
+  }
 
 }
 
@@ -960,15 +1071,332 @@ export function getNewProfileData(oldProfileData, extractedProfileData){
   }
 
   var newProfileData = {};
+  const properties = Object.keys(oldProfileData).concat(Object.keys(extractedProfileData)).filter((value, index, self) => self.indexOf(value) === index);
   
-  for (var property in extractedProfileData){
-    newProfileData[property] = (JSON.stringify(oldProfileData[property]) == JSON.stringify(extractedProfileData[property]))  
-                                ? null
-                                : extractedProfileData[property];
-    
+  for (const property of properties){
+
+    if (["experience", "education", "projects", "certifications"].indexOf(property) != -1){
+      const oldProfileDataCopy = {...oldProfileData};
+      if (isEntityListSubsetOf(extractedProfileData, oldProfileData, property)){
+        newProfileData[property] =  (areProfileDataObjectsDifferent[property])(oldProfileDataCopy[property], oldProfileData[property])
+                                      ? oldProfileData[property]
+                                      : null;
+      }
+      else{
+        newProfileData[property] = extractedProfileData[property];
+      }
+    }
+    else{
+      newProfileData[property] = (JSON.stringify(oldProfileData[property]) == JSON.stringify(extractedProfileData[property]))  
+                                    ? null
+                                    : extractedProfileData[property];
+    }
+
   }
 
   return newProfileData;
+
+}
+
+export const areProfileDataObjectsDifferent = {
+
+  avatar: function(avatar1, avatar2){
+    return avatar1 != avatar2;
+  },
+
+  coverImage: function(coverImage1, coverImage2){
+    return coverImage1 != coverImage2;
+  },
+
+  fullName: function(fullName1, fullName2){
+    return dbDataSanitizer.preSanitize(fullName1) != dbDataSanitizer.preSanitize(fullName2);
+  },
+
+  info: function(info1, info2){
+    return dbDataSanitizer.preSanitize(info1) != dbDataSanitizer.preSanitize(info2);
+  },
+
+  title: function(title1, title2){
+    return dbDataSanitizer.preSanitize(title1) != dbDataSanitizer.preSanitize(title2);
+  },
+
+  location: function(location1, location2){
+    return dbDataSanitizer.preSanitize(location1) != dbDataSanitizer.preSanitize(location2);
+  },
+
+  nFollowers: function(nFollowers1, nFollowers2){
+    return dbDataSanitizer.preSanitize(nFollowers1) != dbDataSanitizer.preSanitize(nFollowers2);
+  },
+
+  nConnections: function(nConnections1, nConnections2){
+    return dbDataSanitizer.preSanitize(nConnections1) != dbDataSanitizer.preSanitize(nConnections2);
+  },
+
+  location: function(location1, location2){
+    return dbDataSanitizer.preSanitize(location1) != dbDataSanitizer.preSanitize(location2);
+  },
+
+  educationItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.description) != dbDataSanitizer.preSanitize(itemObject2.description)
+            || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
+            || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
+            || itemObject1.entity.url != itemObject2.entity.url
+            || itemObject1.entity.picture != itemObject2.entity.picture
+            || dbDataSanitizer.preSanitize(itemObject1.entity.name) != dbDataSanitizer.preSanitize(itemObject2.entity.name)
+  },
+
+  education: function(education1, education2){
+
+    if (!education1 && education2
+        || !education2 && education1){
+      return true;
+    }
+
+    if (education1.length != education2.length){
+      return true;
+    }
+
+    for (var i = 0; i < education1.length; i++){
+
+      if (this.educationItemObject(education1[i], education2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  experienceItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.description) != dbDataSanitizer.preSanitize(itemObject2.description)
+            || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
+            || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
+            || dbDataSanitizer.preSanitize(itemObject1.location) != dbDataSanitizer.preSanitize(itemObject2.location)
+            || itemObject1.entity.url != itemObject2.entity.url
+            || itemObject1.entity.picture != itemObject2.entity.picture
+            || dbDataSanitizer.preSanitize(itemObject1.entity.name) != dbDataSanitizer.preSanitize(itemObject2.entity.name)
+  },
+
+  experience: function(experience1, experience2){
+
+    if (!experience1 && experience2
+        || !experience2 && experience1){
+      return true;
+    }
+
+    if (experience1.length != experience2.length){
+      return true;
+    }
+
+    for (var i = 0; i < experience1.length; i++){
+
+      if (this.experienceItemObject(experience1[i], experience2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+
+  certificationItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
+            || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
+            || itemObject1.entity.url != itemObject2.entity.url
+            || itemObject1.url != itemObject2.url
+            || itemObject1.entity.picture != itemObject2.entity.picture
+            || dbDataSanitizer.preSanitize(itemObject1.entity.name) != dbDataSanitizer.preSanitize(itemObject2.entity.name)
+  },
+
+  certifications: function(certifications1, certifications2){
+
+    if (!certifications1 && certifications2
+        || !certifications2 && certifications1){
+      return true;
+    }
+
+    if (certifications1.length != certifications2.length){
+      return true;
+    }
+
+    for (var i = 0; i < certifications1.length; i++){
+
+      if (this.certificationItemObject(certifications1[i], certifications2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  projectItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.name) != dbDataSanitizer.preSanitize(itemObject2.name)
+            || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
+            || itemObject1.url != itemObject2.url
+            || itemObject1.description != itemObject2.description;
+  },
+
+  projects: function(projects1, projects2){
+
+    if (!projects1 && projects2
+        || !projects2 && projects1){
+      return true;
+    }
+
+    if (projects1.length != projects2.length){
+      return true;
+    }
+
+    for (var i = 0; i < projects1.length; i++){
+
+      if (this.projectItemObject(projects1[i], projects2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  languageItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.name) != dbDataSanitizer.preSanitize(itemObject2.name)
+            || dbDataSanitizer.preSanitize(itemObject1.proficiency) != dbDataSanitizer.preSanitize(itemObject2.proficiency);
+  },
+
+  languages: function(languages1, languages2){
+
+    if (!languages1 && languages2
+        || !languages2 && languages1){
+      return true;
+    }
+
+    if (languages1.length != languages2.length){
+      return true;
+    }
+
+    for (var i = 0; i < languages1.length; i++){
+
+      if (this.languageItemObject(languages1[i], languages2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  activityItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.url) != dbDataSanitizer.preSanitize(itemObject2.url)
+            || dbDataSanitizer.preSanitize(itemObject1.picture) != dbDataSanitizer.preSanitize(itemObject2.picture)
+            || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
+            || dbDataSanitizer.preSanitize(itemObject1.action) != dbDataSanitizer.preSanitize(itemObject2.action);
+  },
+
+  activity: function(activity1, activity2){
+
+    if (!activity1 && activity2
+        || !activity2 && activity1){
+      return true;
+    }
+
+    if (activity1.length != activity2.length){
+      return true;
+    }
+
+    for (var i = 0; i < activity1.length; i++){
+
+      if (this.activityItemObject(activity1[i], activity2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  profileSuggestionItemObject: function(itemObject1, itemObject2){
+    return dbDataSanitizer.preSanitize(itemObject1.url) != dbDataSanitizer.preSanitize(itemObject2.url)
+            || dbDataSanitizer.preSanitize(itemObject1.picture) != dbDataSanitizer.preSanitize(itemObject2.picture)
+            || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
+            || dbDataSanitizer.preSanitize(itemObject1.location) != dbDataSanitizer.preSanitize(itemObject2.location)
+            || dbDataSanitizer.preSanitize(itemObject1.name) != dbDataSanitizer.preSanitize(itemObject2.name);
+  },
+
+  profileSuggestions: function(profileSuggestions1, profileSuggestions2){
+
+    if (!profileSuggestions1 && profileSuggestions2
+        || !profileSuggestions2 && profileSuggestions1){
+      return true;
+    }
+
+    if (profileSuggestions1.length != profileSuggestions2.length){
+      return true;
+    }
+
+    for (var i = 0; i < profileSuggestions1.length; i++){
+
+      if (this.profileSuggestionItemObject(profileSuggestions1[i], profileSuggestions2[i])){
+        return true;
+      }
+
+    }
+
+    return false;
+
+  },
+
+  featuredExperienceEntity: function(featuredExperienceEntity1, featuredExperienceEntity2){
+
+    if (!featuredExperienceEntity1 && featuredExperienceEntity2
+        || !featuredExperienceEntity2 && featuredExperienceEntity1){
+      return true;
+    }
+
+    return dbDataSanitizer.preSanitize(featuredExperienceEntity1.name) != dbDataSanitizer.preSanitize(featuredExperienceEntity2.name)
+            || dbDataSanitizer.preSanitize(featuredExperienceEntity1.picture) != dbDataSanitizer.preSanitize(featuredExperienceEntity2.picture)
+            || dbDataSanitizer.preSanitize(featuredExperienceEntity1.url) != dbDataSanitizer.preSanitize(featuredExperienceEntity2.url);
+  },
+
+  featuredEducationEntity: function(featuredEducationEntity1, featuredEducationEntity2){
+
+    if (!featuredEducationEntity1 && featuredEducationEntity2
+        || !featuredEducationEntity2 && featuredEducationEntity1){
+      return true;
+    }
+
+    return dbDataSanitizer.preSanitize(featuredEducationEntity1.name) != dbDataSanitizer.preSanitize(featuredEducationEntity2.name)
+            || dbDataSanitizer.preSanitize(featuredEducationEntity1.picture) != dbDataSanitizer.preSanitize(featuredEducationEntity2.picture)
+            || dbDataSanitizer.preSanitize(featuredEducationEntity1.url) != dbDataSanitizer.preSanitize(featuredEducationEntity2.url);
+  },
+
+  wholeObjects: function(profileData1, profileData2){
+
+    return this.avatar(profileData1.avatar, profileData2.avatar)
+              || this.title(profileData1.title, profileData2.title)
+              || this.fullName(profileData1.fullName, profileData2.fullName)
+              || this.location(profileData1.location, profileData2.location)
+              || this.coverImage(profileData1.coverImage, profileData2.coverImage)
+              || this.featuredEducationEntity(profileData1.featuredEducationEntity, profileData2.featuredEducationEntity)
+              || this.featuredExperienceEntity(profileData1.featuredExperienceEntity, profileData2.featuredExperienceEntity)
+              || this.education(profileData1.education, profileData2.education)
+              || this.experience(profileData1.experience, profileData2.experience)
+              || this.activity(profileData1.activity, profileData2.activity)
+              || this.profileSuggestions(profileData1.profileSuggestions, profileData2.profileSuggestions)
+              || this.certifications(profileData1.certifications, profileData2.certifications)
+              || this.projects(profileData1.projects, profileData2.projects)
+              || this.languages(profileData1.languages, profileData2.languages)
+              || this.nFollowers(profileData1.nFollowers, profileData2.nFollowers)
+              || this.nConnections(profileData1.nConnections, profileData2.nConnections);
+
+  },
 
 }
 
@@ -1289,31 +1717,6 @@ export async function deactivateTodayReminders(db){
   }
 
 }
-
-// export const registerParseUser = async function (Parse, usernameValue, passwordValue, callback, errCallback = null) {
-
-//   try {
-//     // Since the signUp method returns a Promise, we need to call it using await
-//     const createdUser = await Parse.User.signUp(usernameValue, passwordValue);
-//     console.log(
-//       `Success! User ${createdUser.getUsername()} was successfully created!`
-//     );
-
-//     callback(createdUser);
-
-//     return true;
-//   } catch (error) {
-//     // signUp can fail if any parameter is blank or failed an uniqueness check on the server
-//     console.log(`Error! ${error}`);
-
-//     if (errCallback){
-//       errCallback();
-//     }
-
-//     return false;
-//   }
-
-// };
 
 export const testTabBaseUrl = (url) => {
 

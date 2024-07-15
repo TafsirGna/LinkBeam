@@ -24,7 +24,6 @@ export default class ProfileAboutSectionView extends React.Component{
 			wordsData: null,
 			donutChartModalShow: false,
 			donutChartModalItemData: null,
-			allProfilesReadiness: false,
 		};
 
 		this.setDonutChartData = this.setDonutChartData.bind(this);
@@ -53,14 +52,6 @@ export default class ProfileAboutSectionView extends React.Component{
 	}
 
 	componentDidUpdate(prevProps, prevState){
-
-		if (prevProps.localDataObject != this.props.localDataObject){
-			if (prevProps.localDataObject.profiles != this.props.localDataObject.profiles){
-				if (this.state.donutChartModalShow){
-					this.setDonutChartData();
-				}
-			}
-		}
 
 	}
 

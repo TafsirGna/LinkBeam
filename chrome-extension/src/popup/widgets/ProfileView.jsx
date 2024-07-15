@@ -49,7 +49,6 @@ export default class ProfileView extends React.Component{
       reminderModalShow: false,
       visitsChartModalShow: false,
       toastMessage: "",
-      allProfiles: null,
       folderPickModalShow: false,
     };
 
@@ -215,11 +214,11 @@ export default class ProfileView extends React.Component{
         <ProfileViewHeader 
           profile={this.props.profile} 
           globalData={this.props.globalData}
-          localDataObject={{profiles: this.state.allProfiles}}/>
+          /*localDataObject={{}}*//>
 
         <ProfileViewBody 
           profile={this.props.profile} 
-          localDataObject={{profiles: this.state.allProfiles}}/>
+          /*localDataObject={{}}*//>
 
         <ReminderModal 
           object={this.props.profile} 

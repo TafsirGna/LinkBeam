@@ -266,7 +266,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                               picture: post.author.picture,
                               name: post.author.name,
                             },
-                            // link: post.uid 
+                            // url: post.uid 
                             //         ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.uid}`
                             //         : (views.length
                             //             ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`

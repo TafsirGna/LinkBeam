@@ -135,7 +135,7 @@ export default class ExperienceDataChartWidget extends React.Component{
 
                             <DataApproximationAlert/>
 
-                            { this.state.profileData.experience.indexOf("incomplete")
+                            { this.state.profileData.experience.indexOf("incomplete") != -1
                                 && <div class="mt-3">
                                     <OnProfileIncompleteSectionAlert
                                       sectionName="Experience"/>

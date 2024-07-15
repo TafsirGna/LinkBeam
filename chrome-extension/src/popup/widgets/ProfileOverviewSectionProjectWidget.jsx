@@ -23,7 +23,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-
+import IncompleteSectionMessageView from "./IncompleteSectionMessageView";
 import { 
   dbDataSanitizer,  
 } from "../Local_library";
@@ -58,9 +58,12 @@ export default class ProfileOverviewSectionProjectWidget extends React.Component
   render(){
     return (
       <>
-        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleProjectsModalShow}>
+        <div 
+          class={`handy-cursor card mb-3 shadow small text-muted col mx-2 border ${this.props.profile.projects && this.props.profile.projects.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`} 
+          onClick={this.handleProjectsModalShow}
+          title={this.props.profile.projects && this.props.profile.projects.indexOf("incomplete") != -1 ? "Incomplete data" : null}>
           <div class="card-body">
-            <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.length : 0}</h6>
+            <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.filter(project => project != "incomplete").length : 0}</h6>
             <p class="card-text">Projects</p>
           </div>
         </div>
@@ -76,22 +79,31 @@ export default class ProfileOverviewSectionProjectWidget extends React.Component
             <Modal.Title>Projects</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
+            { this.props.profile.projects
+                && this.props.profile.projects[this.props.profile.projects.length - 1] == "incomplete"
+                && <IncompleteSectionMessageView
+                    sectionName="projects"
+                    profile={this.props.profile}/> }
             
-            { this.props.profile.projects && <div class="list-group small mt-1 shadow-sm border-0">
-              { this.props.profile.projects.map((project, index) => (<a href="#" class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" >
-                                            <div class="d-flex gap-2 w-100 justify-content-between">
-                                              <div>
-                                                <p class="mb-1">
-                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-secondary-subtle border border-secondary rounded-pill mb-2">
-                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {project.name ? dbDataSanitizer.preSanitize(project.name) : "Missing data"}
-                                                  </span>
-                                                </p>
-                                                <p class="text-muted mb-2 small ms-2 fst-italic">{project.period ? dbDataSanitizer.preSanitize(project.period) : "Missing period data"}</p>
-                                              </div>
-                                              {/*<small class="opacity-50 text-nowrap">{moment(new Date()).fromNow()}</small>*/}
-                                            </div>
-                                          </a>))}
+            { this.props.profile.projects 
+                && <div class="list-group small mt-1 shadow-sm border-0">
+                    { this.props.profile.projects
+                                .filter(project => project != "incomplete")
+                                .map((project, index) => (<a href={ project.url || "#" } class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" >
+                                                            <div class="d-flex gap-2 w-100 justify-content-between">
+                                                              <div>
+                                                                <p class="mb-1">
+                                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-secondary-subtle border border-secondary rounded-pill mb-2">
+                                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
+                                                                    {project.name ? dbDataSanitizer.preSanitize(project.name) : "Missing data"}
+                                                                  </span>
+                                                                </p>
+                                                                <p class="text-muted mb-2 small ms-2 fst-italic">{project.period ? dbDataSanitizer.preSanitize(project.period) : "Missing period data"}</p>
+                                                              </div>
+                                                              {/*<small class="opacity-50 text-nowrap">{moment(new Date()).fromNow()}</small>*/}
+                                                            </div>
+                                                          </a>)) }
               </div>}
 
           </Modal.Body>

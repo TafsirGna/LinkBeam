@@ -24,6 +24,7 @@ import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { DateTime as LuxonDateTime } from "luxon";
+import IncompleteSectionMessageView from "./IncompleteSectionMessageView";
 import { 
   dbDataSanitizer,  
   appParams, 
@@ -107,8 +108,9 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
     return (
       <>
         <div 
-          class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" 
-          onClick={this.handleCertificationsModalShow}>
+          class={`handy-cursor card mb-3 shadow small text-muted col mx-2 border ${this.props.profile.certifications && this.props.profile.certifications.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`}
+          onClick={this.handleCertificationsModalShow}
+          title={this.props.profile.certifications && this.props.profile.certifications.indexOf("incomplete") != -1 ? "Incomplete data" : null}>
           <div class="card-body">
             <h6 class="card-title text-success-emphasis">
               {this.props.profile.certifications 
@@ -130,40 +132,48 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
             <Modal.Title>Certifications</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+
+            { this.props.profile.certifications
+                && this.props.profile.certifications[this.props.profile.certifications.length - 1] == "incomplete"
+                && <IncompleteSectionMessageView
+                    sectionName="certifications"
+                    profile={this.props.profile}/> }
             
-            { this.state.certificationsList && <div class="list-group small mt-1 shadow-sm border-0">
-              { this.state.certificationsList.map((certification, index) => (<a 
-                                                                                href="#" 
-                                                                                class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" 
-                                                                                aria-current="true" 
-                                                                                onClick={() => {/*this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)*/}} 
-                                                                                title="Click to show more data">
-                                            <div class="d-flex gap-2 w-100 justify-content-between">
-                                              <div>
-                                                <p class="mb-1">
-                                                  <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
-                                                    {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
-                                                    {certification.entity.name 
-                                                      ? dbDataSanitizer.preSanitize(certification.entity.name) 
-                                                      : "Missing data"}
-                                                  </span>
-                                                </p>
-                                                <p class="text-muted mb-2">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>
-                                                { certification.linkedProfiles != null && <p class="bg-light fw-light mb-0 opacity-75 border border-warning small p-2 rounded shadow-sm fw-bold">
-                                                                                                  {/*<AlertCircleIcon size="14"/>*/}
-                                                                                                  It seems like 
-                                                                                                  <OverlayTrigger
-                                                                                                    placement="top"
-                                                                                                    overlay={<Tooltip id="tooltip1">{(certification.linkedProfiles.length * 100) / this.props.localDataObject.profiles.length} %</Tooltip>}
-                                                                                                  >
-                                                                                                    <span class="badge text-bg-primary shadow-sm px-1 mx-1"> {(certification.linkedProfiles.length * 100) / this.props.localDataObject.profiles.length} </span> 
-                                                                                                  </OverlayTrigger>
-                                                                                                  % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
-                                                                                                </p>}
-                                              </div>
-                                              { certification.period && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromFormat(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM yyyy").toRelative()}</small>}
-                                            </div>
-                                          </a>))}
+            { this.state.certificationsList 
+                && <div class="list-group small mt-1 shadow-sm border-0">
+                    { this.state.certificationsList.map((certification, index) => (<a 
+                                                                                      href={ certification.url || certification.entity.url || "#" } 
+                                                                                      class="border-0 list-group-item list-group-item-action d-flex gap-3 py-3" 
+                                                                                      aria-current="true" 
+                                                                                      onClick={() => {/*this.showCertComparisonData(certification.title ? dbDataSanitizer.preSanitize(certification.title) : null, index)*/}} 
+                                                                                      title="Click to show more data">
+                                                  <div class="d-flex gap-2 w-100 justify-content-between">
+                                                    <div>
+                                                      <p class="mb-1">
+                                                        <span class="shadow badge align-items-center p-1 px-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-pill mb-2">
+                                                          {/*<img class="rounded-circle me-1" width="24" height="24" src={profileActivityObject.profile.avatar ? profileActivityObject.profile.avatar : default_user_icon} alt=""/>*/}
+                                                          {certification.entity.name 
+                                                            ? dbDataSanitizer.preSanitize(certification.entity.name) 
+                                                            : "Missing data"}
+                                                        </span>
+                                                      </p>
+                                                      <p class="text-muted mb-2 fst-italic">{certification.title ? dbDataSanitizer.preSanitize(certification.title) : "Missing data"}</p>
+                                                      { certification.linkedProfiles != null 
+                                                          && <p class="bg-light fw-light mb-0 opacity-75 border border-warning small p-2 rounded shadow-sm fw-bold">
+                                                              {/*<AlertCircleIcon size="14"/>*/}
+                                                              It seems like 
+                                                              <OverlayTrigger
+                                                                placement="top"
+                                                                overlay={<Tooltip id="tooltip1">{(certification.linkedProfiles.length * 100) / this.props.localDataObject.profiles.length} %</Tooltip>}
+                                                              >
+                                                                <span class="badge text-bg-primary shadow-sm px-1 mx-1"> {(certification.linkedProfiles.length * 100) / this.props.localDataObject.profiles.length} </span> 
+                                                              </OverlayTrigger>
+                                                              % of all the profiles you've visited so far, got this certification { certification.linkedProfiles.length > 0 ? <span class="badge text-bg-primary" onClick={() => {alert("ok");}} >SHOW</span> : ""}
+                                                            </p>}
+                                                    </div>
+                                                    { certification.period && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromFormat(dbDataSanitizer.preSanitize(certification.period).replace("Issued ", ""), "MMM yyyy").toRelative()}</small>}
+                                                  </div>
+                                                </a>))}
               </div>}
 
           </Modal.Body>

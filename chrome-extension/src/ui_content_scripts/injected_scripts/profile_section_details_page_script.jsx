@@ -24,6 +24,7 @@ import {
 	ScriptAgentBase,
 	extractEducationItemData,
 	extractExperienceItemData,
+	extractProjectItemData,
 	sendTabData,
 } from "./main_lib";
 import React from 'react';
@@ -37,6 +38,7 @@ import styles from "../styles.min.css";
 export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBase {
 
 	static webPageData = null;
+	static allExtensionWidgetsSet = false;
 
 	constructor(){
 		super();
@@ -83,35 +85,35 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 		Array.from(document.querySelectorAll(".scaffold-layout__main [data-view-name='profile-component-entity']")).forEach((liElement) => {
 
 			if (window.location.href.indexOf("/experience") != -1){
+
 				if (!extractedData.label){
 					extractedData.label = "experience";
 				}
 
-				// checking if this liElement is a child of a higher level li and then should be passed on
-				var htmlParent = liElement.parentNode, 
-					liCounter = 0;
-				while(!htmlParent.classList.contains("scaffold-layout__main")){
-					if (htmlParent.tagName == "LI"){
-						liCounter++;
-						if (liCounter == 2){ return; }
-					}
-					htmlParent = htmlParent.parentNode;
-				}
-
-				// if not process the liElement
-				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement));
-				return;
+				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement, document.querySelector(".scaffold-layout__main")));
 			}
+			else if (window.location.href.indexOf("/education") != -1){
 
-			if (window.location.href.indexOf("/education") != -1){
 				if (!extractedData.label){
 					extractedData.label = "education";
 				}
+
 				extractedData.list.push(extractEducationItemData(liElement));
-				return;
+			}
+			else if (window.location.href.indexOf("/projects") != -1){
+
+				if (!extractedData.label){
+					extractedData.label = "projects";
+				}
+
+				extractedData.list.push(extractProjectItemData(liElement));
 			}
 
 		});
+
+		if (!extractedData.label){
+			return null;
+		}
 
 		return extractedData;
 

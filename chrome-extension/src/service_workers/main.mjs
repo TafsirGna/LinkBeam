@@ -36,6 +36,7 @@ import {
     popularityValue,
     getVisitsTotalTime,
     isUrlOfInterest,
+    areProfileDataObjectsDifferent,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
@@ -513,6 +514,28 @@ async function enrichProfileSectionData(tabData){
         return;
     }
 
+    // updating the profiledata object in the session myTabs property
+    var sessionItem = await chrome.storage.session.get(["myTabs"]);
+    if (sessionItem.myTabs){
+
+        for (const tabId in sessionItem.myTabs){
+            if (sessionItem.myTabs[tabId].visits){
+                var index = 0;
+                for (const visit of sessionItem.myTabs[tabId].visits){
+                    if (visit.url == url){
+                        console.log("&&&&&&&&&&&&&&&& 0 : ", sessionItem.myTabs, tabId);
+                        sessionItem.myTabs[tabId].visits[index].profileData[tabData.extractedData.label] = tabData.extractedData.list;
+                    }
+                    index++;
+                }
+
+            }
+        }
+
+    }
+    chrome.storage.session.set({ myTabs: sessionItem.myTabs });
+
+    // updating the last view object in the browser indexeddb
     var lastView = await db.visits.where("url").anyOf([url, encodeURI(url), decodeURI(url)]).last();
     lastView.profileData[tabData.extractedData.label] = tabData.extractedData.list;
 
@@ -774,29 +797,22 @@ async function recordFeedVisit(tabData){
 
     async function addFreshFeedVisit(){
 
-        var visit = {
+        const visit = {
             date: dateTime,
             url: appParams.LINKEDIN_FEED_URL(),
         };
 
-        await db.visits.add(visit);
-        return (await db.visits.where({date: dateTime}).first()).id;
+        var visitId = null;
+        await db.visits.add(visit).then(id => {
+            visitId = id;
+        });
+        return visitId;
 
     }
 
 }
 
 async function recordProfileVisit(tabData){
-
-    const openNewTab = (url) => {
-        // open new tab
-
-        chrome.tabs.create({
-          active: true,
-          url:  `/index.html?view=Profile&data=${url}`,
-        }, null);
-
-    }
 
     const dateTime = new Date().toISOString(),
           badgeText = "1";
@@ -828,11 +844,15 @@ async function recordProfileVisit(tabData){
         else{
             profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
 
-            await db.visits
-                    .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
-                    .modify(visit => {
-                        visit.profileData = getNewProfileData(profileData, tabData.extractedData);
-                    });
+            if (areProfileDataObjectsDifferent.wholeObjects(profileData, tabData.extractedData)){
+
+                await db.visits
+                        .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
+                        .modify(visit => {
+                            visit.profileData = getNewProfileData(profileData, tabData.extractedData);
+                        });
+
+            }
 
         }
     }
@@ -853,9 +873,8 @@ async function recordProfileVisit(tabData){
     async function processPrimeVisit(){
 
         const profileVisits = await db.visits
-                                      .where('url')
-                                      .equals(tabData.tabUrl)
-                                      .sortBy("date");
+                                      .where({url: tabData.tabUrl})
+                                      .toArray();
 
         var visit = {
                 date: dateTime,
@@ -868,18 +887,24 @@ async function recordProfileVisit(tabData){
             visit.profileData = getNewProfileData(profileData, tabData.extractedData);
         }
         else{
-            visit.profileData = tabData.extractedData;
+            profileData = tabData.extractedData;
+            visit.profileData = profileData;
         }
 
-        await db.visits.add(visit);
+        var visitId = null;
+        await db.visits.add(visit).then(id => {
+            visitId = id;
+        });
 
-        const settings = await getAppSettingsObject();
-
-        if (settings.autoTabOpening){
-            openNewTab(tabData.tabUrl);
+        if ((await getAppSettingsObject()).autoTabOpening){
+            // Opening a new tab
+            chrome.tabs.create({
+              active: true,
+              url:  `/index.html?view=Profile&data=${tabData.tabUrl}`,
+            }, null);
         }
 
-        return (await db.visits.where({"date": dateTime}).first()).id;
+        return visitId;
 
     }
     
@@ -1181,24 +1206,24 @@ async function getPreviousRelatedPosts(payload){
                                   .limit(limit)
                                   .toArray();
 
-        var link = null;
+        var url = null;
 
         for (const feedPost of feedPosts){
 
             if (feedPost.uid){
-                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
                 if (view.uid == payload.uid){
                     continue;
                 }
-                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
             }
 
             posts.push({
                 text: feedPost.innerContentHtml,
-                link: link,
+                url: url,
                 date: feedPost.estimatedDate,
                 media: feedPost.media,
             });
@@ -1221,7 +1246,7 @@ async function getPreviousRelatedPosts(payload){
             const feedPost = (await db.feedPosts.where({id: feedPostView.feedPostId}).first());
             posts.push({
                 text: feedPost.innerContentHtml,
-                link: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`,
+                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`,
                 date: feedPostView.date,
                 media: feedPost.media,
             });
@@ -1238,24 +1263,24 @@ async function getPreviousRelatedPosts(payload){
                                   .limit(limit)
                                   .toArray();
 
-        var link = null;
+        var url = null;
 
         for (const feedPost of feedPosts){
 
             if (feedPost.uid){
-                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
                 if (view.uid == payload.uid){
                     continue;
                 }
-                link = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
             }
 
             posts.push({
                 text: feedPost.innerContentHtml,
-                link: link,
+                url: url,
                 date: feedPost.estimatedDate,
                 media: feedPost.media,
                 profile: feedPost.author,

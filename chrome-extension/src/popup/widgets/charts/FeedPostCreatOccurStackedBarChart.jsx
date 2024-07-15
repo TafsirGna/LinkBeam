@@ -277,7 +277,7 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                                                     picture: this.state.feedPosts[this.state.selectedFeedPostIndex].author.picture,
                                                     name: this.state.feedPosts[this.state.selectedFeedPostIndex].author.name,
                                                   },
-                                                  link: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
+                                                  url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
                                                   // date: views.length ? views[0].date : null,
                                                   text: this.state.feedPosts[this.state.selectedFeedPostIndex].innerContentHtml,
                                                 }]}

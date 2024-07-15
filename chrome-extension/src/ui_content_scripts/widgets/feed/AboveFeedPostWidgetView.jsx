@@ -848,6 +848,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                       {/* Indication that the page has gone idle after some time of inactivity */}
                       { !this.state.timerInterval
+                          && isLinkedinFeed(window.location.href)
                           && <div class="flex items-center">
                                   <img 
                                     src={chrome.runtime.getURL("/assets/sleeping_icon.png")} 

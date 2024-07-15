@@ -55,9 +55,15 @@ export default class ProfileExperienceSectionView extends React.Component{
         jobTitlesBarData = [];
     for (var experience of this.props.profile.experience){
 
+      if (experience == "incomplete"){
+        continue;
+      }
+
       if (!experience.period){
         continue;
       }
+
+      console.log("dddddddddddddd exp : ", experience, experience.period);
 
       var featuredExperienceEntityName = dbDataSanitizer.preSanitize(experience.entity.name),
           title = dbDataSanitizer.preSanitize(experience.title),

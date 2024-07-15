@@ -96,7 +96,7 @@ export default class ActivityListView extends React.Component{
                     { this.props.variant == "list" 
                         && <div>
                               <div class="list-group small mt-1 shadow-sm">
-                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ !object.link ? null : object.link } target="_blank">
+                                { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ object.url } target="_blank">
                                   <div class="d-flex gap-2 w-100 justify-content-between">
                                     <div>
                                       <p class="mb-1">
@@ -157,7 +157,7 @@ export default class ActivityListView extends React.Component{
                                         <a 
                                           title="See post on linkedin" 
                                           class="mx-1" 
-                                          href={ object.link }>
+                                          href={ object.url }>
                                           <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
                                         </a>
                                         <span title="Image" class="mx-1">

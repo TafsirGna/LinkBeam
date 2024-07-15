@@ -150,6 +150,7 @@ class MainScriptAgent extends ScriptAgentBase {
 
                     if (this.pageUrl != pageUrl){
                         ProfileSectionDetailsPageScriptAgent.webPageData = null;
+                        ProfileSectionDetailsPageScriptAgent.allExtensionWidgetsSet = false;
                         // ProfileSectionDetailsPageScriptAgent.checkAndUpdateUi(props);
                         this.pageUrl = pageUrl;
                     }

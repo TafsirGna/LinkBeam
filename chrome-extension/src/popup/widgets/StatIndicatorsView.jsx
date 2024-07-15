@@ -94,7 +94,7 @@ export default class StatIndicatorsView extends React.Component{
       // listing all visited profiles' activities
       if (visit.profileData.activity){
         for (var activity of visit.profileData.activity){
-          index = activityList.map(e => e.link).indexOf(activity.link);
+          index = activityList.map(e => e.url).indexOf(activity.url);
           if (index == -1 || (index != -1 && activityList[index].action != activity.action)){
             activityList.push(activity);
           }
