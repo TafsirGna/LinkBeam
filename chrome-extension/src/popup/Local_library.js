@@ -1137,6 +1137,17 @@ export const areProfileDataObjectsDifferent = {
   },
 
   educationItemObject: function(itemObject1, itemObject2){
+
+    if (itemObject1 == "incomplete" 
+          && itemObject2 == "incomplete"){
+      return false;
+    }
+
+    if ((itemObject1 == "incomplete" && itemObject2 != "incomplete")
+          || (itemObject2 == "incomplete" && itemObject1 != "incomplete")){
+      return true;
+    }
+
     return dbDataSanitizer.preSanitize(itemObject1.description) != dbDataSanitizer.preSanitize(itemObject2.description)
             || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
             || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
@@ -1147,8 +1158,12 @@ export const areProfileDataObjectsDifferent = {
 
   education: function(education1, education2){
 
-    if (!education1 && education2
-        || !education2 && education1){
+    if (!education1 && !education2){
+      return false;
+    }
+
+    if ((!education1 && education2)
+        || (!education2 && education1)){
       return true;
     }
 
@@ -1169,6 +1184,18 @@ export const areProfileDataObjectsDifferent = {
   },
 
   experienceItemObject: function(itemObject1, itemObject2){
+
+    if (itemObject1 == "incomplete" 
+          && itemObject2 == "incomplete"){
+      return false;
+    }
+
+    if ((itemObject1 == "incomplete" && itemObject2 != "incomplete")
+          || (itemObject2 == "incomplete" && itemObject1 != "incomplete")){
+      return true;
+    }
+
+    console.log("&&&&&&&&&&&&&&&& 2 : ", itemObject1, itemObject2);
     return dbDataSanitizer.preSanitize(itemObject1.description) != dbDataSanitizer.preSanitize(itemObject2.description)
             || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
             || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
@@ -1180,8 +1207,12 @@ export const areProfileDataObjectsDifferent = {
 
   experience: function(experience1, experience2){
 
-    if (!experience1 && experience2
-        || !experience2 && experience1){
+    if (!experience1 && !experience2){
+      return false;
+    }
+
+    if ((!experience1 && experience2)
+        || (!experience2 && experience1)){
       return true;
     }
 
@@ -1203,6 +1234,17 @@ export const areProfileDataObjectsDifferent = {
 
 
   certificationItemObject: function(itemObject1, itemObject2){
+
+    if (itemObject1 == "incomplete" 
+          && itemObject2 == "incomplete"){
+      return false;
+    }
+
+    if ((itemObject1 == "incomplete" && itemObject2 != "incomplete")
+          || (itemObject2 == "incomplete" && itemObject1 != "incomplete")){
+      return true;
+    }
+
     return dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
             || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
             || itemObject1.entity.url != itemObject2.entity.url
@@ -1213,8 +1255,12 @@ export const areProfileDataObjectsDifferent = {
 
   certifications: function(certifications1, certifications2){
 
-    if (!certifications1 && certifications2
-        || !certifications2 && certifications1){
+    if (!certifications1 && !certifications2){
+      return false;
+    }
+
+    if ((!certifications1 && certifications2)
+        || (!certifications2 && certifications1)){
       return true;
     }
 
@@ -1235,6 +1281,17 @@ export const areProfileDataObjectsDifferent = {
   },
 
   projectItemObject: function(itemObject1, itemObject2){
+
+    if (itemObject1 == "incomplete" 
+          && itemObject2 == "incomplete"){
+      return false;
+    }
+
+    if ((itemObject1 == "incomplete" && itemObject2 != "incomplete")
+          || (itemObject2 == "incomplete" && itemObject1 != "incomplete")){
+      return true;
+    }
+
     return dbDataSanitizer.preSanitize(itemObject1.name) != dbDataSanitizer.preSanitize(itemObject2.name)
             || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
             || itemObject1.url != itemObject2.url
@@ -1243,8 +1300,12 @@ export const areProfileDataObjectsDifferent = {
 
   projects: function(projects1, projects2){
 
-    if (!projects1 && projects2
-        || !projects2 && projects1){
+    if (!projects1 && !projects2){
+      return false;
+    }
+
+    if ((!projects1 && projects2)
+        || (!projects2 && projects1)){
       return true;
     }
 
@@ -1265,14 +1326,29 @@ export const areProfileDataObjectsDifferent = {
   },
 
   languageItemObject: function(itemObject1, itemObject2){
+
+    if (itemObject1 == "incomplete" 
+          && itemObject2 == "incomplete"){
+      return false;
+    }
+
+    if ((itemObject1 == "incomplete" && itemObject2 != "incomplete")
+          || (itemObject2 == "incomplete" && itemObject1 != "incomplete")){
+      return true;
+    }
+    
     return dbDataSanitizer.preSanitize(itemObject1.name) != dbDataSanitizer.preSanitize(itemObject2.name)
             || dbDataSanitizer.preSanitize(itemObject1.proficiency) != dbDataSanitizer.preSanitize(itemObject2.proficiency);
   },
 
   languages: function(languages1, languages2){
 
-    if (!languages1 && languages2
-        || !languages2 && languages1){
+    if (!languages1 && !languages2){
+      return false;
+    }
+
+    if ((!languages1 && languages2)
+        || (!languages2 && languages1)){
       return true;
     }
 
@@ -1301,8 +1377,12 @@ export const areProfileDataObjectsDifferent = {
 
   activity: function(activity1, activity2){
 
-    if (!activity1 && activity2
-        || !activity2 && activity1){
+    if (!activity1 && !activity2){
+      return false;
+    }
+
+    if ((!activity1 && activity2)
+        || (!activity2 && activity1)){
       return true;
     }
 
@@ -1332,8 +1412,12 @@ export const areProfileDataObjectsDifferent = {
 
   profileSuggestions: function(profileSuggestions1, profileSuggestions2){
 
-    if (!profileSuggestions1 && profileSuggestions2
-        || !profileSuggestions2 && profileSuggestions1){
+    if (!profileSuggestions1 && !profileSuggestions2){
+      return false;
+    }
+
+    if ((!profileSuggestions1 && profileSuggestions2)
+        || (!profileSuggestions2 && profileSuggestions1)){
       return true;
     }
 
@@ -1355,8 +1439,12 @@ export const areProfileDataObjectsDifferent = {
 
   featuredExperienceEntity: function(featuredExperienceEntity1, featuredExperienceEntity2){
 
-    if (!featuredExperienceEntity1 && featuredExperienceEntity2
-        || !featuredExperienceEntity2 && featuredExperienceEntity1){
+    if (!featuredExperienceEntity1 && !featuredExperienceEntity2){
+      return false;
+    }
+
+    if ((!featuredExperienceEntity1 && featuredExperienceEntity2)
+        || (!featuredExperienceEntity2 && featuredExperienceEntity1)){
       return true;
     }
 
@@ -1367,8 +1455,12 @@ export const areProfileDataObjectsDifferent = {
 
   featuredEducationEntity: function(featuredEducationEntity1, featuredEducationEntity2){
 
-    if (!featuredEducationEntity1 && featuredEducationEntity2
-        || !featuredEducationEntity2 && featuredEducationEntity1){
+    if (!featuredEducationEntity1 && !featuredEducationEntity2){
+      return false;
+    }
+
+    if ((!featuredEducationEntity1 && featuredEducationEntity2)
+        || (!featuredEducationEntity2 && featuredEducationEntity1)){
       return true;
     }
 

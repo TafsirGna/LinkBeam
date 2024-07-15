@@ -516,6 +516,7 @@ async function enrichProfileSectionData(tabData){
 
     // updating the profiledata object in the session myTabs property
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
+    console.log(":::::::::::::::::::::: : ", sessionItem.myTabs);
     if (sessionItem.myTabs){
 
         for (const tabId in sessionItem.myTabs){
@@ -523,8 +524,12 @@ async function enrichProfileSectionData(tabData){
                 var index = 0;
                 for (const visit of sessionItem.myTabs[tabId].visits){
                     if (visit.url == url){
-                        console.log("&&&&&&&&&&&&&&&& 0 : ", sessionItem.myTabs, tabId);
                         sessionItem.myTabs[tabId].visits[index].profileData[tabData.extractedData.label] = tabData.extractedData.list;
+                        // signaling the related tabs of the change
+                        console.log(":::::::::::::::::::::: : ", tabId);
+                        chrome.tabs.sendMessage(parseInt(tabId), {header: "PROFILE_ENRICHED_SECTION_DATA", data: {sectionName: tabData.extractedData.label, sectionData: tabData.extractedData.list}}, (response) => {
+                            console.log('profile enriched section data sent', response);
+                        }); 
                     }
                     index++;
                 }
@@ -842,14 +847,22 @@ async function recordProfileVisit(tabData){
             });
         }
         else{
-            profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
 
-            if (areProfileDataObjectsDifferent.wholeObjects(profileData, tabData.extractedData)){
+            if (areProfileDataObjectsDifferent.wholeObjects(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData)){
+
+                var newProfileData = null;
+                if ((await db.visits.where({url: tabData.tabUrl}).toArray()).length == 1){
+                    newProfileData = tabData.extractedData;
+                    sessionItem.myTabs[tabData.tabId].visits[index].profileData = newProfileData;;
+                }
+                else{
+                    newProfileData = getNewProfileData(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData);
+                }
 
                 await db.visits
                         .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
                         .modify(visit => {
-                            visit.profileData = getNewProfileData(profileData, tabData.extractedData);
+                            visit.profileData = newProfileData;
                         });
 
             }
@@ -898,10 +911,14 @@ async function recordProfileVisit(tabData){
 
         if ((await getAppSettingsObject()).autoTabOpening){
             // Opening a new tab
-            chrome.tabs.create({
-              active: true,
-              url:  `/index.html?view=Profile&data=${tabData.tabUrl}`,
-            }, null);
+            setTimeout(() => {
+
+                chrome.tabs.create({
+                  active: true,
+                  url:  `/index.html?view=Profile&data=${tabData.tabUrl}`,
+                }, null);
+
+            }, appParams.TIMER_VALUE_2);
         }
 
         return visitId;

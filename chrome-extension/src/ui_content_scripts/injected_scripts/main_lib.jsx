@@ -1146,7 +1146,7 @@ export function extractProjectItemData(htmlElement){
 
   function hydrateItemObject(node){
 
-    // console.log("###############-------------- : ", node, node.tagName, counter);
+    console.log("###############-------------- projects : ", node, node.tagName, counter);
 
     switch(node.tagName){
       case "A":{
@@ -1163,28 +1163,26 @@ export function extractProjectItemData(htmlElement){
       return;
     }
 
-    if ([0, 3, 4].indexOf(counter) != -1){
-      counter++;
-      return;
-    }
-
     switch(counter){
-      case 1: {
+      case 0: {
         // name
         projectItemData.name = node.textContent;
+        // console.log("###############-------------- : name ", projectItemData.name);
         counter++;
         return;
         // break;
       }
-      case 2:{
+      case 1:{
         projectItemData.period = node.textContent;
+        // console.log("###############-------------- : period ", projectItemData.period);
         counter++;
         return;
         // break;
       }
-      case 5: {
+      case 2: {
         // title
         projectItemData.description = node.textContent;
+        // console.log("###############-------------- : description ", projectItemData.description);
         counter++;
         return;
         // break;
@@ -1192,6 +1190,8 @@ export function extractProjectItemData(htmlElement){
     }
 
   }
+
+  // console.log("###############-------------- : Final ", projectItemData);
 
   return projectItemData;
 
@@ -1216,7 +1216,7 @@ export function extractCertificationItemData(htmlElement){
 
   function hydrateItemObject(node){
 
-    // console.log("###############-------------- : ", node, node.tagName, counter);
+    console.log("###############-------------- certifications : ", node, node.tagName, counter);
 
     switch(node.tagName){
       case "IMG":{
@@ -1288,7 +1288,7 @@ export function extractProfileSuggestionItemData(htmlElement){
 
   function hydrateItemObject(node){
 
-    // console.log("###############-------------- : ", node, node.tagName, counter);
+    console.log("###############-------------- profileSuggestions : ", node, node.tagName, counter);
 
     switch(node.tagName){
       case "IMG":{
@@ -1360,7 +1360,7 @@ export function extractEducationItemData(htmlElement){
 
   function hydrateItemObject(node){
 
-    // console.log("###############-------------- : ", node, node.tagName, counter);
+    console.log("###############-------------- education : ", node, node.tagName, counter);
 
     switch(node.tagName){
       case "IMG":{
@@ -1426,7 +1426,6 @@ export function extractEducationItemData(htmlElement){
     // description
     educationItemData.description = node.textContent;
 
-    // console.log("###############-------------- : N ", educationItemData);
   }
 
   return educationItemData;
@@ -1463,7 +1462,7 @@ export function extractExperienceItemData(htmlElement, encompassingParent){
 
   function hydrateItemObject(node){
 
-    console.log("###############-------------- : ", node, node.tagName, counter, experienceItemDataList.length);
+    console.log("###############-------------- experience: ", node, node.tagName, counter, experienceItemDataList.length);
     var experienceItemData = experienceItemDataList[experienceItemDataList.length -1];
 
     switch(node.tagName){

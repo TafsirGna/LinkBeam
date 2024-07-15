@@ -263,7 +263,7 @@ export default class ProfilesGeoMapChart extends React.Component{
   getLocationBadge(key, badgeRef, clickable){
 
     return <span 
-            class="handy-cursor mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill"
+            class={`${clickable ? "handy-cursor" : null} mx-1 shadow badge bg-secondary-subtle border border-secondary-subtle text-secondary-emphasis rounded-pill`}
             title={ clickable ? "Click to see details" : null}
             ref={badgeRef}>
             {key}

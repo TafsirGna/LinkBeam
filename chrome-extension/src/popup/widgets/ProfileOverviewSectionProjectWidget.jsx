@@ -100,6 +100,8 @@ export default class ProfileOverviewSectionProjectWidget extends React.Component
                                                                   </span>
                                                                 </p>
                                                                 <p class="text-muted mb-2 small ms-2 fst-italic">{project.period ? dbDataSanitizer.preSanitize(project.period) : "Missing period data"}</p>
+                                                                { project.description 
+                                                                    &&  <p class="text-muted mb-2 small ms-2">{dbDataSanitizer.preSanitize(project.description)}</p>}
                                                               </div>
                                                               {/*<small class="opacity-50 text-nowrap">{moment(new Date()).fromNow()}</small>*/}
                                                             </div>

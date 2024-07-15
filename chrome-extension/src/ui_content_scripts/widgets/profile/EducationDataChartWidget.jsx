@@ -69,7 +69,9 @@ export default class EducationDataChartWidget extends React.Component{
         // Retrieving the tabId variable
         chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
         
-            if (message.header == "SAVED_PROFILE_OBJECT") {
+            switch(message.header){
+
+              case "SAVED_PROFILE_OBJECT":{
 
                 // Acknowledge the message
                 sendResponse({
@@ -77,8 +79,29 @@ export default class EducationDataChartWidget extends React.Component{
                 });
                       
                 if (!this.state.profileData){
-                  this.setState({profileData: this.procProfileData(message.data) });
+                  this.setState({profileData: this.procProfileData(message.data)});
                 }
+
+                break;
+
+              }
+
+              case "PROFILE_ENRICHED_SECTION_DATA":{
+
+                // Acknowledge the message
+                sendResponse({
+                    status: "ACK"
+                });
+
+                if (message.data.sectionName == "education"){
+                  var profileData = this.state.profileData;
+                  profileData[message.data.sectionName] = message.data.sectionData;
+                  this.setState({profileData: this.procProfileData(profileData)});
+                }
+
+                break;
+              }
+
             }
             
         }).bind(this));
@@ -92,7 +115,6 @@ export default class EducationDataChartWidget extends React.Component{
   procProfileData(profileData){
 
     // education
-    console.log("EEEEEEEEEEEEEEducation : ", profileData.education);
     for (var education of profileData.education){
       if (education == "incomplete"){
         continue;

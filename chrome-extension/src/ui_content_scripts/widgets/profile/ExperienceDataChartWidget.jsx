@@ -69,7 +69,9 @@ export default class ExperienceDataChartWidget extends React.Component{
       // Retrieving the tabId variable
       chrome.runtime.onMessage.addListener((function(message, sender, sendResponse) {
       
-          if (message.header == "SAVED_PROFILE_OBJECT") {
+          switch(message.header){
+
+            case "SAVED_PROFILE_OBJECT":{
 
               // Acknowledge the message
               sendResponse({
@@ -79,6 +81,28 @@ export default class ExperienceDataChartWidget extends React.Component{
               if (!this.state.profileData){
                 this.setState({profileData: this.procProfileData(message.data) });
               }
+
+              break;
+
+            }
+
+            case "PROFILE_ENRICHED_SECTION_DATA":{
+
+              // Acknowledge the message
+              sendResponse({
+                  status: "ACK"
+              });
+                    
+              if (message.data.sectionName == "experience"){
+                var profileData = this.state.profileData;
+                profileData[message.data.sectionName] = message.data.sectionData;
+                this.setState({profileData: this.procProfileData(profileData)});
+              }
+
+              break;
+
+            }
+
           }
           
       }).bind(this));
