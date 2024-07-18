@@ -71,44 +71,44 @@ export const appParams = {
 
 export const categoryVerbMap = {
   likes: {
-    fr: "adore",
-    en: "likes",
+    fr: " adore",
+    en: " likes",
   },
   loves: {
-    fr: "aime",
-    en: "loves",
+    fr: " aime",
+    en: " loves",
   },
   contributions: {
-    fr: "contribué",
-    en: "contributed",
+    fr: " contribué",
+    en: " contributed",
   },
   supports: {
-    fr: "soutient",
-    en: "supports",
+    fr: " soutient",
+    en: " supports",
   },
   celebrations: {
-    fr: "salue",
-    en: "celebrates",
+    fr: " salue",
+    en: " celebrates",
   },
   comments: {
-    fr: "commenté",
-    en: "commented",
+    fr: " commenté",
+    en: " commented",
   },
   reposts: {
-    fr: "republié",
-    en: "reposted",
+    fr: " republié",
+    en: " reposted",
   },
   suggestions: {
     fr: "suggestions",
     en: "suggested",
   },
   insights: {
-    fr: "intructif",
-    en: "finds this insightful",
+    fr: " intructif",
+    en: " finds this insightful",
   },
   funs: {
-    fr: "drôle",
-    en: "finds this funny",
+    fr: " drôle",
+    en: " finds this funny",
   }
 }
 
@@ -264,8 +264,24 @@ export const dbDataSanitizer = {
     return this.preSanitize(str).replace(/[^a-zA-Z ]/g, "");
 
   },
+
+  procExtractedPeriodDateString: function(dateString, LuxonDateTime){
+
+    for (var locale of appParams.supportedTimeLocales){
+      dateString = ["aujourd’hui", "Present"].indexOf(dateString) != -1
+                    ? LuxonDateTime.now()
+                    : LuxonDateTime.fromFormat(dateString, `${isNaN(dateString) ? "MMM yyyy" : "yyyy"}`, { locale: locale });
+
+      if (dateString.isValid){
+        return dateString;
+      }
+    }
+
+    return null;
+
+  },
   
-  periodDates: function(expPeriod, LuxonDateTime){
+  preProcExtractedPeriodString: function(expPeriod, LuxonDateTime){
 
     // handling date range
     var dateRange = this.preSanitize(expPeriod); 
@@ -282,22 +298,14 @@ export const dbDataSanitizer = {
       return null;
     }
 
-    var startDateRange = this.preSanitize(dateRange[0]), 
-        endDateRange = this.preSanitize(dateRange[1]);
+    var startDateRange = this.procExtractedPeriodDateString(this.preSanitize(dateRange[0]), LuxonDateTime), 
+        endDateRange = this.procExtractedPeriodDateString(this.preSanitize(dateRange[1]), LuxonDateTime);
 
-    for (var locale of appParams.supportedTimeLocales){
-      var start = LuxonDateTime.fromFormat(startDateRange, `${isNaN(startDateRange) ? "MMM yyyy" : "yyyy"}`, { locale: locale }),
-          end = ["aujourd’hui", "Present"].indexOf(endDateRange) != -1
-                  ? LuxonDateTime.now()
-                  : LuxonDateTime.fromFormat(endDateRange, `${isNaN(endDateRange) ? "MMM yyyy" : "yyyy"}`, { locale: locale });
-
-      if (start.isValid && end.isValid){
-        return {
-          startDateRange: start, 
-          endDateRange: end,
-        };
-      }
-
+    if (startDateRange && endDateRange){
+      return {
+        startDateRange: startDateRange,
+        endDateRange: endDateRange,
+      };
     }
 
     console.log("Not compatible date time locale!");
@@ -385,6 +393,7 @@ export function isProfilePropertyLabelInList(name, list, type, stringSimilarity)
     return list.indexOf(name);
   }
 
+  // console.log("JJJJJJJJJJJJJJ 2 ; : ", name, list);
   return list.findIndex(item => stringSimilarity(item, name) > 0.8);
 
 }
@@ -478,7 +487,7 @@ export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTim
     }
 
     if (typeof object.period == "string"){
-      object.period = dbDataSanitizer.periodDates(object.period, LuxonDateTime);
+      object.period = dbDataSanitizer.preProcExtractedPeriodString(object.period, LuxonDateTime);
       if (!object.period){
         continue;
       }
@@ -1071,9 +1080,14 @@ export function getNewProfileData(oldProfileData, extractedProfileData){
   }
 
   var newProfileData = {};
-  const properties = Object.keys(oldProfileData).concat(Object.keys(extractedProfileData)).filter((value, index, self) => self.indexOf(value) === index);
+  var properties = Object.keys(oldProfileData).concat(Object.keys(extractedProfileData)).filter((value, index, self) => self.indexOf(value) === index);
   
   for (const property of properties){
+
+    // remove some useless properties
+    if (["lastVisit", "url"].indexOf(property) != -1){
+      continue;
+    }
 
     if (["experience", "education", "projects", "certifications"].indexOf(property) != -1){
       const oldProfileDataCopy = {...oldProfileData};
@@ -1696,7 +1710,7 @@ export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywo
 }
 
 export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
-export const isLinkedinProfilePage = (url) => url.toString().indexOf("/in/") != -1;
+export const isLinkedinProfilePage = (value) => value.toString().match(/linkedin.com\/in\/[\w\d-]+/g);
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
 export const isLinkedinProfileSectionDetailsPage = (url) => url.match(/linkedin.com\/in\/[\w\d-]+\/details\//g);
 
@@ -1879,7 +1893,7 @@ export function saveCurrentPageTitle(pageTitle){
 
 export async function getTodayReminders(db, callback){
 
-  var reminders = await getReminders(db, "today");
+  const reminders = await getReminders(db, "today");
 
   if (reminders){
     callback(reminders);  
@@ -1909,9 +1923,7 @@ async function getReminders(db, criteria){
     for (var reminder of reminders){
 
       try{
-
         await setReminderObject(db, reminder);
-
       }
       catch(error){
         console.error("Error : ", error);

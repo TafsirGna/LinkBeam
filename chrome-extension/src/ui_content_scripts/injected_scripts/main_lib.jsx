@@ -24,12 +24,13 @@ import HighlightedKeywordView from "../widgets/HighlightedKeywordView";
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 import {
-    isLinkedinFeed,
-    isLinkedinProfilePage,
-    messageMeta,
-    appParams,
-    breakHtmlElTextContentByKeywords,
-    insertHtmlTagsIntoEl,
+  isLinkedinFeed,
+  isLinkedinProfilePage,
+  messageMeta,
+  appParams,
+  breakHtmlElTextContentByKeywords,
+  insertHtmlTagsIntoEl,
+  isLinkedinProfileSectionDetailsPage,
 } from "../../popup/Local_library";
 import { countriesNaming } from "../../popup/countriesNamingFile";
 import eventBus from "../../popup/EventBus";
@@ -88,8 +89,9 @@ export class ScriptAgentBase {
 
   mouseMoveEventHandler1(){
 
-    if (!isLinkedinFeed(this.pageUrl) 
-          && !isLinkedinProfilePage(this.pageUrl)){
+    if ((!isLinkedinFeed(this.pageUrl) 
+              && !isLinkedinProfilePage(this.pageUrl))
+          || isLinkedinProfileSectionDetailsPage(this.pageUrl)){
       return;
     }
 
@@ -132,8 +134,9 @@ export class ScriptAgentBase {
 
   scrollEventHandler1(){
 
-    if (!isLinkedinFeed(this.pageUrl) 
-          && !isLinkedinProfilePage(this.pageUrl)){
+    if ((!isLinkedinFeed(this.pageUrl) 
+              && !isLinkedinProfilePage(this.pageUrl))
+          || isLinkedinProfileSectionDetailsPage(this.pageUrl)){
       return;
     }
 
@@ -205,12 +208,6 @@ export class ScriptAgentBase {
       this.appSettings = messageData.settings;
     }
 
-    if (Object.hasOwn(messageData, "visitId")){
-      if (messageData.visitId){
-        this.visitId = messageData.visitId;
-      }
-    }
-
     if (Object.hasOwn(messageData, "postData")){
         this.otherArgs.postData = messageData.postData;
     }
@@ -223,11 +220,6 @@ export class ScriptAgentBase {
       this.scrollEventHandler2();
     });
 
-    if (isLinkedinFeed(this.pageUrl) || isLinkedinProfilePage(this.pageUrl)){
-      // The following timer is triggered everytime the tab page goes idle to stop all counter in this tab
-      this.startIdlingTimer();
-    }
-
     this.runTabDataExtractionProcess();
 
 	}
@@ -236,6 +228,7 @@ export class ScriptAgentBase {
 
     if ((!isLinkedinFeed(this.pageUrl) 
             && !isLinkedinProfilePage(this.pageUrl))
+          || isLinkedinProfileSectionDetailsPage(this.pageUrl)
           || !this.isActiveTab){
       return;
     }
@@ -264,6 +257,13 @@ export class ScriptAgentBase {
         sendResponse({
             status: "ACK"
         });
+
+
+        if (Object.hasOwn(message.data, "visitId")){
+          this.visitId = message.data.visitId; 
+          this.startIdlingTimer();
+        }
+        
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
           if (!this.tabId){
@@ -274,10 +274,6 @@ export class ScriptAgentBase {
             if (Object.hasOwn(message.data, "tabId")){
               this.isActiveTab = (this.tabId == message.data.tabId);
               this.idleStatus = false; 
-            }
-
-            if (Object.hasOwn(message.data, "visitId")){
-              this.visitId = message.data.visitId; 
             }
 
           }
@@ -297,10 +293,10 @@ export class ScriptAgentBase {
 export function sendTabData(tabId, data, callback = null){
 
   var pageUrl = window.location.href.split("?")[0];
-  pageUrl = isLinkedinFeed(pageUrl)
+  pageUrl = (isLinkedinFeed(pageUrl) || isLinkedinProfileSectionDetailsPage(pageUrl))
               ? pageUrl 
               : (isLinkedinProfilePage(pageUrl)
-                  ? pageUrl.slice(pageUrl.indexOf(appParams.LINKEDIN_ROOT_URL))
+                  ? isLinkedinProfilePage(pageUrl)[0]
                   : null);
 
   chrome.runtime.sendMessage({header: "EXTRACTED_DATA", data: {extractedData: data, tabId: tabId, tabUrl: pageUrl }}, (response) => {
@@ -340,6 +336,8 @@ export function extractPostDate(textContent, LuxonDateTime){
   if (!textContent){
     return null;
   }
+
+  console.log("hhhhhhhhhhhhhhhhhhh : ", textContent);
 
   // english version
   var timeTerm = "ago";
@@ -939,7 +937,7 @@ export const DataExtractor = {
 
       var experienceData = [];
 
-      Array.from(htmlElements.experience.querySelectorAll(/*"li.artdeco-list__item"*/"[data-view-name='profile-component-entity']")).forEach((experienceLiTag) => {
+      Array.from(htmlElements.experience.querySelectorAll("[data-view-name='profile-component-entity']")).forEach((experienceLiTag) => {
         experienceData = experienceData.concat(extractExperienceItemData(experienceLiTag, htmlElements.experience));
 
       });
@@ -1403,20 +1401,22 @@ export function extractEducationItemData(htmlElement){
     }
 
     // period
-    if (node.textContent.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?$/g)
-          || node.textContent.match(/^([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)$/g)){
-      educationItemData.period = node.textContent;
+    var nodeTextContent = node.textContent.toLowerCase();
+    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?$/g)
+          || nodeTextContent.match(/^([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)$/g)){
+      educationItemData.period = nodeTextContent;
       // counter++;
       return;
     }
 
     // location
-    if (node.textContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
-      const lastPhrase = node.textContent.split(", ").toReversed()[0];
+    nodeTextContent = node.textContent.indexOf(" · ") ? node.textContent.split(" · ")[0] : node.textContent;
+    if (nodeTextContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = nodeTextContent.split(", ").toReversed()[0];
       for (const countryObject of countriesNaming){
         if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
             || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-          educationItemData.location = node.textContent;
+          educationItemData.location = nodeTextContent;
           // counter++;
           return;
         }
@@ -1527,19 +1527,21 @@ export function extractExperienceItemData(htmlElement, encompassingParent){
     }
 
     // period
-    if (node.textContent.match(/^(([A-Z][a-z]{2}\s)?\d{4}\s-\s((([A-Z][a-z]{2}\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,3}(\s\d{1,2}\s[a-z]{2,3})?)|Less than a year)$/g)){
-      experienceItemData.period = node.textContent;
+    var nodeTextContent = node.textContent.toLowerCase();
+    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?)|Less than a year)$/g)){
+      experienceItemData.period = nodeTextContent; 'juil. 2023 - aujourd’hui · 1 an 1 mois'
       // counter++;
       return;
     }
 
     // location
-    if (node.textContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
-      const lastPhrase = node.textContent.split(", ").toReversed()[0];
+    nodeTextContent = node.textContent.indexOf(" · ") ? node.textContent.split(" · ")[0] : node.textContent;
+    if (nodeTextContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+      const lastPhrase = nodeTextContent.split(", ").toReversed()[0];
       for (const countryObject of countriesNaming){
         if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
             || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-          experienceItemData.location = node.textContent;
+          experienceItemData.location = nodeTextContent;
           // counter++;
           return;
         }

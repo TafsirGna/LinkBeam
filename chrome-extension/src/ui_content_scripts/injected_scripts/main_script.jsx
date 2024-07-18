@@ -59,16 +59,32 @@ class MainScriptAgent extends ScriptAgentBase {
 
         switch(message.header){
             case "FEED_POSTS_HIDE_STATUS_RESPONSE" :{
-                console.log("~~~~~~~~~~~~~ 1 : ", message.data);
+
+                // Acknowledge the message
+                sendResponse({
+                    status: "ACK"
+                });
+
                 for (const postUid in message.data){
                     FeedPageScriptAgent.allPostsHideStatus[postUid] = message.data[postUid];
-                    console.log("~~~~~~~~~~~~~ 2 : ", postUid, FeedPageScriptAgent.allPostsHideStatus[postUid]);
                     if (FeedPageScriptAgent.allPostsHideStatus[postUid]){
-                        console.log("~~~~~~~~~~~~~ 3 : ", postUid, FeedPageScriptAgent.allPostsHideStatus[postUid]);
                         FeedPageScriptAgent.hidePost(postUid);
                     }
                 }
                 break;
+            }
+
+            case "SAVED_PROFILE_OBJECT":{
+
+                // Acknowledge the message
+                sendResponse({
+                    status: "ACK"
+                });
+                      
+                ProfilePageScriptAgent.profileData = message.data;
+
+                break;
+
             }
         }
 
@@ -165,6 +181,7 @@ class MainScriptAgent extends ScriptAgentBase {
                         ProfilePageScriptAgent.detectedKeywords = {};
                         ProfilePageScriptAgent.keywordDetected = false;
                         ProfilePageScriptAgent.allExtensionWidgetsSet = false;
+                        ProfilePageScriptAgent.profileData = null;
                         this.pageUrl = pageUrl;
                     }
 

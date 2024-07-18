@@ -161,6 +161,10 @@ export default class StatIndicatorsView extends React.Component{
       if (profile.languages){
         for (const language of profile.languages){
 
+          if (language == "incomplete"){
+            continue;
+          }
+
           var elementName = dbDataSanitizer.preSanitize(language.name);
           const index = languagesNaming.findIndex(item => Object.values(item).findIndex(i => elementName.toLowerCase().indexOf(i) != -1) != -1);
           if (index != -1){
@@ -176,6 +180,12 @@ export default class StatIndicatorsView extends React.Component{
 
       if (profile.certifications){
         for (const certification of profile.certifications){
+
+          if (certification == "incomplete"){
+            continue;
+          }
+
+          // console.log("JJJJJJJJJJJJJJ 1 ; : ", certification.title, certifications);
           if (isProfilePropertyLabelInList(dbDataSanitizer.preSanitize(certification.title), certifications, "certifications", stringSimilarity) == -1){
             certifications.push(dbDataSanitizer.preSanitize(certification.title));
           }

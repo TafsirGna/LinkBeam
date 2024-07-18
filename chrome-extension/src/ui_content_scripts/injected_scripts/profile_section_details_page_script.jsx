@@ -25,6 +25,7 @@ import {
 	extractEducationItemData,
 	extractExperienceItemData,
 	extractProjectItemData,
+	extractCertificationItemData,
 	sendTabData,
 } from "./main_lib";
 import React from 'react';
@@ -107,6 +108,14 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 				}
 
 				extractedData.list.push(extractProjectItemData(liElement));
+			}
+			else if (window.location.href.indexOf("/certifications") != -1){
+
+				if (!extractedData.label){
+					extractedData.label = "certifications";
+				}
+
+				extractedData.list.push(extractCertificationItemData(liElement));
 			}
 
 		});

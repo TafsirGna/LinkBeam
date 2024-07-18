@@ -24,9 +24,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { 
-  isLinkedinProfilePage,
-} from "../../Local_library";
+// import { } from "../../Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "../../../db";
 import eventBus from "../../EventBus";

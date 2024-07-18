@@ -21,9 +21,9 @@
 
 /*import './ImageLoader.css'*/
 import React from 'react';
-// import { OverlayTrigger, Tooltip } from "react-bootstrap";
-// import { 
-// } from "./Local_library";
+import { 
+  appParams,
+} from "../Local_library";
 import picture_icon from '../../assets/picture_icon.png';
 
 export default class ImageLoader extends React.Component{
@@ -32,7 +32,8 @@ export default class ImageLoader extends React.Component{
     super(props);
     this.state = {
       imageLoaded: false,
-      errorLoading: false,
+      // errorLoading: false,
+      imageShow: true,
     };
   }
 
@@ -40,21 +41,38 @@ export default class ImageLoader extends React.Component{
 
   }
 
+  onLoadingError(){
+
+    this.setState({imageShow: false}, () => {
+
+      setTimeout(() => {
+        this.setState({imageShow: true});
+      }, appParams.TIMER_VALUE_2);
+
+    });
+
+  }
+
   render(){
     return (
       <>
         
-        {!this.state.imageLoaded && <div class="mt-1 text-center">
-                                          <div class={`spinner-border text-secondary ${this.props.spinnerSize && this.props.spinnerSize == "small" ? "spinner-border-sm" : ""}`} role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                          </div>
-                                        </div>}
+        {!this.state.imageLoaded 
+            && <div>
+                {this.props.spinnerTemplate
+                    || <div class="mt-1 text-center">
+                        <div class={`spinner-border text-secondary ${this.props.spinnerSize && this.props.spinnerSize == "small" ? "spinner-border-sm" : ""}`} role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                      </div>}
+              </div>}
         
-        <img 
-          src={!this.state.errorLoading ? this.props.imgSrc : (this.props.errorSrc || picture_icon)} 
-          class={this.props.imgClass} 
-          onLoad={() => {this.setState({imageLoaded: true});}} 
-          onerror={() => {this.setState({errorLoading: true})}}/>
+        { this.state.imageShow 
+            && <img 
+                src={ this.props.imgSrc /*!this.state.errorLoading ? this.props.imgSrc : (this.props.errorSrc || picture_icon)*/} 
+                class={this.props.imgClass} 
+                onLoad={() => {this.setState({imageLoaded: true});}} 
+                onerror={this.onLoadingError}/>}
 
       </>
     );

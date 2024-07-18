@@ -56,6 +56,10 @@ export default class ExperienceDataChartWidget extends React.Component{
 
   componentDidMount() {
 
+    if (this.props.profileData){
+      this.setState({profileData: this.procProfileData(this.props.profileData)});
+    }
+
     this.startMessageListener();
 
   }
@@ -78,9 +82,9 @@ export default class ExperienceDataChartWidget extends React.Component{
                   status: "ACK"
               });
                     
-              if (!this.state.profileData){
+              // if (!this.state.profileData){
                 this.setState({profileData: this.procProfileData(message.data) });
-              }
+              // }
 
               break;
 
@@ -116,12 +120,11 @@ export default class ExperienceDataChartWidget extends React.Component{
   procProfileData(profileData){
 
     // experience
-    console.log("EEEEEEEEEEEEEExperience : ", profileData.experience);
     for (var experience of profileData.experience){
       if (experience == "incomplete"){
         continue;
       }
-      experience.period = dbDataSanitizer.periodDates(experience.period, LuxonDateTime);
+      experience.period = dbDataSanitizer.preProcExtractedPeriodString(experience.period, LuxonDateTime);
     }
 
     return profileData;

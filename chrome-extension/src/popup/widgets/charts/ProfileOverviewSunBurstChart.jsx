@@ -109,6 +109,10 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     if (this.props.profile.languages){
       for (var language of this.props.profile.languages){
 
+        if (language == "incomplete"){
+          continue;
+        }
+
         var languageName = dbDataSanitizer.preSanitize(language.name);
         var itemIndex = langChildren.map(e => e.fullName).indexOf(languageName);
         if (itemIndex == -1){
@@ -135,6 +139,10 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     // Certifications
     if (this.props.profile.certifications){
       for (var certification of this.props.profile.certifications){
+
+        if (certification == "incomplete"){
+          continue;
+        }
 
         if (!certification.entity.name || !certification.title){
           continue;
@@ -169,6 +177,10 @@ export default class ProfileOverviewSunBurstChart extends React.Component{
     // Projects
     if (this.props.profile.projects){
       for (var project of this.props.profile.projects){
+
+        if (project == "incomplete"){
+          continue;
+        }
 
         if (!project.name){
           continue;

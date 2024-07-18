@@ -84,6 +84,8 @@ export default class FeedDashView extends React.Component{
 
     this.handleStartDateInputChange = this.handleStartDateInputChange.bind(this);
     this.handleEndDateInputChange = this.handleEndDateInputChange.bind(this);
+    this.addFeedPostViewSubscription = this.addFeedPostViewSubscription.bind(this);
+    this.deleteFeedPostViewSubscription = this.deleteFeedPostViewSubscription.bind(this);
     this.setFeedPostViews = this.setFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
     this.setHashtagCount = this.setHashtagCount.bind(this);
@@ -118,6 +120,17 @@ export default class FeedDashView extends React.Component{
 
   componentWillUnmount(){
 
+    this.deleteFeedPostViewSubscription();
+
+  }
+
+  deleteFeedPostViewSubscription(){
+
+    if (this.feedPostViewSubscription) {
+      this.feedPostViewSubscription.unsubscribe();
+      this.feedPostViewSubscription = null;
+    }
+
   }
 
   handleAllPostsModalClose = () => this.setState({allPostsModalShow: false});
@@ -134,35 +147,49 @@ export default class FeedDashView extends React.Component{
    
     if ((prevState.startDate != this.state.startDate) 
         || (prevState.endDate != this.state.endDate)){
-      this.setFeedPostViews();
+
+      this.deleteFeedPostViewSubscription();
+      this.addFeedPostViewSubscription();
+
     }
 
   }
 
-  async setFeedPostViews(){
+  async addFeedPostViewSubscription(){
+
+    this.feedPostViewSubscription = liveQuery(() => db.feedPostViews
+                                                      .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
+                                                      .toArray()).subscribe(
+      result => this.setFeedPostViews(result),
+      error => this.setState({error})
+    );
+
+  }
+
+  async setFeedPostViews(feedPostViews){
 
     var allPeriodFeedPostViews = [],
         allPeriodUniqueFeedPostViews = [];
-    await db.feedPostViews
-            .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
-            .each(feedPostView => {
 
-              allPeriodFeedPostViews.push({...feedPostView});
+    for (var feedPostView of feedPostViews){
 
-              const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
-              if (index == -1){
-                allPeriodUniqueFeedPostViews.push(feedPostView);
-              }
-              else{
-                if (new Date(feedPostView.date) > new Date(allPeriodUniqueFeedPostViews[index].date)){
-                  feedPostView.timeCount += allPeriodUniqueFeedPostViews[index].timeCount;
-                  allPeriodUniqueFeedPostViews[index] = feedPostView;
-                }
-                else{
-                  allPeriodUniqueFeedPostViews[index].timeCount += feedPostView.timeCount;
-                }
-              }
-            });
+      allPeriodFeedPostViews.push({...feedPostView});
+
+      const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
+      if (index == -1){
+        allPeriodUniqueFeedPostViews.push(feedPostView);
+      }
+      else{
+        if (new Date(feedPostView.date) > new Date(allPeriodUniqueFeedPostViews[index].date)){
+          feedPostView.timeCount += allPeriodUniqueFeedPostViews[index].timeCount;
+          allPeriodUniqueFeedPostViews[index] = feedPostView;
+        }
+        else{
+          allPeriodUniqueFeedPostViews[index].timeCount += feedPostView.timeCount;
+        }
+      }
+
+    }
 
     for (var feedPostView of allPeriodUniqueFeedPostViews){
       feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();

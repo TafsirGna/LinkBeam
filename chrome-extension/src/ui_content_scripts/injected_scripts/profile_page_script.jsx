@@ -35,6 +35,7 @@ import React from 'react';
 import elevator_tone from "../../assets/audio/elevator-tone.mp3";
 import {
   appParams,
+  isLinkedinProfilePage,
 } from "../../popup/Local_library";
 
 const aboveProfileSectionWidgetClassName = "LinkbeamAboveProfileSectionWidgetClassName";
@@ -46,6 +47,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
   static detectedKeywords = {};
   static keywordDetected = false;
   static allExtensionWidgetsSet = false;
+  static profileData = null;
 
   constructor(){
     super();
@@ -127,17 +129,20 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
                   { htmlElementTitle == "about" 
                       && <AboutDataChartWidget
                           appSettings={props.appSettings}
-                          tabId={props.tabId}/>}
+                          tabId={props.tabId}
+                          profileData={this.profileData}/>}
 
                   { htmlElementTitle == "education" 
                       && <EducationDataChartWidget
                           appSettings={props.appSettings}
-                          tabId={props.tabId}/>}
+                          tabId={props.tabId}
+                          profileData={this.profileData}/>}
 
                   { htmlElementTitle == "experience" 
                       && <ExperienceDataChartWidget
                           appSettings={props.appSettings}
-                          tabId={props.tabId}/>}
+                          tabId={props.tabId}
+                          profileData={this.profileData}/>}
 
                 </React.StrictMode>
             );
@@ -205,8 +210,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
   static pgPing(props){
 
-    var pageUrl = window.location.href.split("?")[0];
-    pageUrl = pageUrl.slice(pageUrl.indexOf(appParams.LINKEDIN_ROOT_URL));
+    const pageUrl = isLinkedinProfilePage(window.location.href)[0];
 
     chrome.runtime.sendMessage({header: "PROFILE_VISIT_PING", data: {tabId: props.tabId, tabUrl: pageUrl}}, (response) => {
       console.log('profile visit ping sent', response);

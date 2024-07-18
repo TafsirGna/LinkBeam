@@ -135,7 +135,11 @@ export default class ProfileGanttChart extends React.Component{
       // Setting the minDate object
       if (object.period.startDateRange < minDate){ minDate = object.period.startDateRange; }
       
-      data.push({x: [object.period.startDateRange.toFormat("yyyy-MM-dd"), object.period.endDateRange.toFormat("yyyy-MM-dd")], y: label});
+      data.push({
+        x: [object.period.startDateRange.toFormat("yyyy-MM-dd"), object.period.endDateRange.toFormat("yyyy-MM-dd")], 
+        y: label,
+        title: object.title || "",
+      });
 
     }
 
@@ -169,7 +173,7 @@ export default class ProfileGanttChart extends React.Component{
             callbacks: {
               label: ((tooltipItem, data) => {
                 // console.log(tooltipItem);
-                return `[${LuxonDateTime.fromFormat(tooltipItem.raw.x[0], 'yyyy-MM-dd').toFormat("MMM yyyy")} - ${LuxonDateTime.fromFormat(tooltipItem.raw.x[1], 'yyyy-MM-dd').toFormat("MMM yyyy")}]`;
+                return `${tooltipItem.raw.title} [${LuxonDateTime.fromFormat(tooltipItem.raw.x[0], 'yyyy-MM-dd').toFormat("MMM yyyy")} - ${LuxonDateTime.fromFormat(tooltipItem.raw.x[1], 'yyyy-MM-dd').toFormat("MMM yyyy")}]`;
               })
             }
           }

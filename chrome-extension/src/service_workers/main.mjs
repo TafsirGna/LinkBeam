@@ -112,7 +112,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
         var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
         console.log('**************** : ', loadingTabs, changeInfo.status);
+        
         var url = tab.url.split("?")[0];
+        url = isLinkedinProfilePage(url) && !isLinkedinProfileSectionDetailsPage(url) ? isLinkedinProfilePage(url)[0] : url; 
 
         switch(changeInfo.status){
 
@@ -349,9 +351,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 async function handleInterestingTab(tabId, url){
 
-    // a little bit of formatting if the url is the one of a linkedin profile
-    url = isLinkedinProfilePage(url) ? url.slice(url.indexOf(appParams.LINKEDIN_ROOT_URL)) : url;
-
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
         result = { badgeText: "!", inject: true };
 
@@ -458,7 +457,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
         if (url && isUrlOfInterest(url)){
 
             url = url.split("?")[0];
-            Dexie.exists(appParams.appDbName).then(async function (exists) {
+            Dexie.exists(appParams.appDbName).then(async function(exists) {
                 if (exists) {
                     var result = await handleInterestingTab(activeInfo.tabId, url);
 
@@ -506,9 +505,9 @@ function processTabData(tabData){
 
 async function enrichProfileSectionData(tabData){
 
-    const url = tabData.tabUrl.slice(tabData.tabUrl.indexOf(appParams.LINKEDIN_ROOT_URL), tabData.tabUrl.indexOf("details/"));
+    tabData.tabUrl = isLinkedinProfilePage(tabData.tabUrl)[0];
 
-    var profileData = await getProfileDataFrom(db, url);
+    var profileData = await getProfileDataFrom(db, tabData.tabUrl);
 
     if (!profileData || (profileData && JSON.stringify(profileData[tabData.extractedData.label]) == JSON.stringify(tabData.extractedData.list))){
         return;
@@ -516,17 +515,15 @@ async function enrichProfileSectionData(tabData){
 
     // updating the profiledata object in the session myTabs property
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
-    console.log(":::::::::::::::::::::: : ", sessionItem.myTabs);
     if (sessionItem.myTabs){
 
         for (const tabId in sessionItem.myTabs){
             if (sessionItem.myTabs[tabId].visits){
                 var index = 0;
                 for (const visit of sessionItem.myTabs[tabId].visits){
-                    if (visit.url == url){
+                    if (visit.url == tabData.tabUrl){
                         sessionItem.myTabs[tabId].visits[index].profileData[tabData.extractedData.label] = tabData.extractedData.list;
                         // signaling the related tabs of the change
-                        console.log(":::::::::::::::::::::: : ", tabId);
                         chrome.tabs.sendMessage(parseInt(tabId), {header: "PROFILE_ENRICHED_SECTION_DATA", data: {sectionName: tabData.extractedData.label, sectionData: tabData.extractedData.list}}, (response) => {
                             console.log('profile enriched section data sent', response);
                         }); 
@@ -541,7 +538,7 @@ async function enrichProfileSectionData(tabData){
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
     // updating the last view object in the browser indexeddb
-    var lastView = await db.visits.where("url").anyOf([url, encodeURI(url), decodeURI(url)]).last();
+    var lastView = await db.visits.where("url").anyOf([tabData.tabUrl, encodeURI(tabData.tabUrl), decodeURI(tabData.tabUrl)]).last();
     lastView.profileData[tabData.extractedData.label] = tabData.extractedData.list;
 
     await db.visits.update(lastView.id, lastView);
@@ -680,7 +677,7 @@ async function recordFeedVisit(tabData){
 
         if (dbFeedPost){
 
-            newFeedPost.uid = dbFeedPost.uid ? dbFeedPost.uid : newFeedPost.uid; // avoid overwritting a previous valid uid
+            newFeedPost.uid = dbFeedPost.uid || newFeedPost.uid; // avoid overwritting a previous valid uid
             await db.feedPosts
                     .update(dbFeedPost.id, newFeedPost);
 
@@ -821,7 +818,8 @@ async function recordProfileVisit(tabData){
 
     const dateTime = new Date().toISOString(),
           badgeText = "1";
-    var profileData = null;
+    var profileData = null,
+        visitId = null;
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
 
     if (sessionItem.myTabs[tabData.tabId].badgeText != badgeText){
@@ -829,7 +827,7 @@ async function recordProfileVisit(tabData){
     }
 
     if (!sessionItem.myTabs[tabData.tabId].visits){
-        const visitId = await processPrimeVisit();
+        visitId = await processPrimeVisit();
         sessionItem.myTabs[tabData.tabId].visits = [{
             id: visitId, 
             url: tabData.tabUrl, 
@@ -839,7 +837,7 @@ async function recordProfileVisit(tabData){
     else{
         const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
         if (index == -1){
-            const visitId = await processPrimeVisit();
+            visitId = await processPrimeVisit();
             sessionItem.myTabs[tabData.tabId].visits.push({
                 id: visitId, 
                 url: tabData.tabUrl, 
@@ -850,17 +848,19 @@ async function recordProfileVisit(tabData){
 
             if (areProfileDataObjectsDifferent.wholeObjects(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData)){
 
-                var newProfileData = null;
+                var newProfileData = null,
+                    visitId = sessionItem.myTabs[tabData.tabId].visits[index].id;
+                    
                 if ((await db.visits.where({url: tabData.tabUrl}).toArray()).length == 1){
                     newProfileData = tabData.extractedData;
-                    sessionItem.myTabs[tabData.tabId].visits[index].profileData = newProfileData;;
+                    sessionItem.myTabs[tabData.tabId].visits[index].profileData = newProfileData;
                 }
                 else{
                     newProfileData = getNewProfileData(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData);
                 }
 
                 await db.visits
-                        .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
+                        .where({id: visitId})
                         .modify(visit => {
                             visit.profileData = newProfileData;
                         });
@@ -879,8 +879,17 @@ async function recordProfileVisit(tabData){
         }
     });
 
-    chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData ? profileData : tabData.extractedData}, (response) => {
-        console.log('profile data response sent', response, profileData ? profileData : tabData.extractedData);
+    chrome.tabs.sendMessage(tabData.tabId, {
+            header: messageMeta.header.CS_SETUP_DATA, 
+            data: {visitId: visitId},
+        }, 
+        (response) => {
+            console.log('visitId sent', response, visitId);
+        }
+    );
+
+    chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData}, (response) => {
+        console.log('profile data response sent', response, profileData);
     }); 
 
     async function processPrimeVisit(){
@@ -1214,7 +1223,7 @@ async function getPreviousRelatedPosts(payload){
 
     if (Object.hasOwn(payload, "url")){
 
-        var url = payload.url.split("?")[0]/*.slice(payload.url.indexOf(appParams.LINKEDIN_ROOT_URL))*/;
+        var url = payload.url;
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
@@ -1352,10 +1361,29 @@ async function saveReminder(reminder){
 
     try{
 
+        // const feedPostView = await db.feedPostViews
+        //                              .where({uid: postUid})
+        //                              .first();
+
+        // if (!feedPostView.category){
+        //     reminder.objectId = feedPostView.uid;
+        // }
+        // else{
+        //     if (feedPostView.category == "suggestions"){
+        //         reminder.objectId = feedPostView.uid;
+        //     }
+        //     else{
+        //         const feedPost = await db.feedPosts
+        //                                  .where({id: feedPostView.feedPostId})
+        //                                  .first();
+        //         reminder.objectId = feedPost.uid || feedPostView.uid;
+        //     }
+        // }
+
         reminder.objectId = (await db.feedPostViews
                                      .where({uid: reminder.objectId})
                                      .first()).feedPostId;
-
+        
         await db.reminders
                 .add(reminder)
                 .then(function(id){
@@ -1363,10 +1391,7 @@ async function saveReminder(reminder){
                 });
 
         reminder.postUid = postUid;
-        return reminder;/*await db.reminders
-                       .where("objectId")
-                       .equals(reminder.objectId)
-                       .first()*/;
+        return reminder;
 
     }
     catch(error){

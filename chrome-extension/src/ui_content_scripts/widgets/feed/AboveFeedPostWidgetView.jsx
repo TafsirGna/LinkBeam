@@ -30,6 +30,9 @@ import {
   isLinkedinFeed,
   nRange,
   popularityValue,
+  isLinkedinProfilePage,
+  isLinkedinCompanyPage,
+  dbDataSanitizer,
 } from "../../../popup/Local_library";
 import{
   sendTabData,
@@ -143,7 +146,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
     this.extractSendPostObject = this.extractSendPostObject.bind(this);
     this.clearTimer = this.clearTimer.bind(this);
     this.checkAndHighlightKeywordsInPost = this.checkAndHighlightKeywordsInPost.bind(this);
-    this.getPostHtmlElTextContent = this.getPostHtmlElTextContent.bind(this);
     
   }
 
@@ -266,29 +268,28 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     if (postContainerHeaderElement){
 
-      const headerText = postContainerHeaderElement.textContent.toLowerCase();
+      post.initiator = {
+        name: null,
+        url: this.getEntityHtmlElHref(postContainerHeaderElement.querySelector("a")),
+        picture: this.getHtmlElImageSource(postContainerHeaderElement.querySelector("img")),
+      };
+
+      const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.textContent);
+      console.log("yyyyyyyyyyyyyyyyy : ", headerText);
       for (const category in categoryVerbMap){
 
         for (var lang in categoryVerbMap[category]){
-          if (headerText.indexOf(categoryVerbMap[category][lang]) != -1){
+          const categoryVerbIndex = headerText.toLowerCase().indexOf(categoryVerbMap[category][lang]);
+          if (categoryVerbIndex != -1){
             post.category = category;
+            if (category != "suggestions"){
+              post.initiator.name = headerText.slice(0, categoryVerbIndex);
+            }
             break;
           }
         }
 
       }
-
-      post.initiator = {
-        name: postContainerHeaderElement.querySelector(".update-components-header__text-view a")
-                ? postContainerHeaderElement.querySelector(".update-components-header__text-view a").textContent 
-                : null,
-        url: postContainerHeaderElement.querySelector("a.app-aware-link ") 
-              ? postContainerHeaderElement.querySelector("a.app-aware-link ").href.split("?")[0]
-              : null,
-        picture: postContainerHeaderElement.querySelector("img")
-                  ? postContainerHeaderElement.querySelector("img").src 
-                  : null,
-      };
 
       if (post.category 
             && post.category != "suggestions"
@@ -300,9 +301,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     }
 
-    var reactionsTagContent = this.state.postHtmlElement.querySelector(".social-details-social-counts") 
-                  ? this.state.postHtmlElement.querySelector(".social-details-social-counts").textContent
-                  : null ;
+    var reactionsTagContent = this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".social-details-social-counts"));
 
     const getPostReactionsValues = metric => {
 
@@ -392,119 +391,51 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     post.content = {
       author:{
-        name: this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden")
-               ? this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden").textContent
-               : null,
-        url: this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
-              ? this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link").href.split("?")[0]
-              : null,
-        picture: this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")
-                  ? this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img").src
-                  : null,
+        name: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden")),
+        url: this.getEntityHtmlElHref(this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link")),
+        picture: this.getHtmlElImageSource(this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")),
       },
-      text: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
-              ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").textContent
-              : null,
-      innerHtml: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
-                  ? this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").innerHTML
-                  : null,
-      media: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content") 
-              ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content").querySelectorAll("img, video"))
-                     .map(htmlEl => ({
-                        type: htmlEl.tagName,
-                        src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
-                        poster: htmlEl.poster ? htmlEl.poster : null,
-                      }))
-              : null,
-      estimatedDate: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
-                    ? this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent
-                    : null, LuxonDateTime),
-
+      text: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
+      innerHtml: this.getHtmlElInnerHTML(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
+      media: this.getPostMediaArray(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content")),
+      estimatedDate: extractPostDate(this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), LuxonDateTime),
       reactions: getPostReactionsValues("reaction"),
       commentsCount: getPostReactionsValues("comment"),               
       repostsCount: getPostReactionsValues("repost"),
-
-      references: this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")
-                    ? Array.from(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper").querySelectorAll("a[href]"))
-                        .map(htmlEl => ({
-                          url: htmlEl.getAttribute("href"),
-                          text: htmlEl.textContent,
-                        }))
-                    : null,
+      references: this.getPostReferenceArray(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
 
       subPost: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                 ? {
                   author: {
-                    name: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__name .visually-hidden")
-                            ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__name .visually-hidden")
-                                                    .textContent
-                            : null,
-                    url: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
-                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")
-                                                    .href.split("?")[0]
-                          : null,
-                    picture: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__image img")
-                              ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".update-components-actor__image img")
-                                                    .src
-                              : null,
+                    name: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                              .querySelector(".update-components-actor__name .visually-hidden")),
+                    url: this.getEntityHtmlElHref(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                           .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")),
+                    picture: this.getHtmlElImageSource(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                                 .querySelector(".update-components-actor__image img")),
                   },
-                  text: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".feed-shared-update-v2__description")
-                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".feed-shared-update-v2__description")
-                                                  .textContent
-                          : null ,
-                  innerHtml: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                        .querySelector(".feed-shared-update-v2__description")
-                                ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                        .querySelector(".feed-shared-update-v2__description")
-                                                        .innerHTML
-                                : null ,
-                  media: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".update-components-mini-update-v2__reshared-content")
-                          ? Array.from(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".update-components-mini-update-v2__reshared-content")
-                                                  .querySelectorAll("img, video"))
-                                 .map(htmlEl => ({
-                                    type: htmlEl.tagName,
-                                    src: htmlEl.tagName.toLowerCase() == "video" ? null : htmlEl.src,
-                                    poster: htmlEl.poster ? htmlEl.poster : null,
-                                 }))
-                          : null,
-                  estimatedDate: extractPostDate(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                  .querySelector(".update-components-actor__sub-description-link .visually-hidden")
-                                          ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                  .querySelector(".update-components-actor__sub-description-link .visually-hidden")
-                                                                  .textContent
-                                          : null, LuxonDateTime),
+                  text: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                            .querySelector(".feed-shared-update-v2__description")) ,
+                  innerHtml: this.getHtmlElInnerHTML(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                               .querySelector(".feed-shared-update-v2__description")),
+                  media: this.getPostMediaArray(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                          .querySelector(".update-components-mini-update-v2__reshared-content")),
+                  estimatedDate: extractPostDate(this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                           .querySelector(".update-components-actor__sub-description-link .visually-hidden"))
+                                                  , LuxonDateTime),
                   uid: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".feed-shared-update-v2__description")
-                        ? (this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                      .querySelector(".feed-shared-update-v2__description")
-                                                      .parentNode.tagName.toLowerCase() ==  "a"
-                            ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                      .querySelector(".feed-shared-update-v2__description")
-                                                      .parentNode.getAttribute("href").slice(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                 .querySelector(".feed-shared-update-v2__description")
+                          && this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                       .querySelector(".feed-shared-update-v2__description")
+                                                       .parentNode.tagName == "A"
+                        ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                    .querySelector(".feed-shared-update-v2__description")
+                                                    .parentNode.getAttribute("href").slice(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
                                                                                                 .querySelector(".feed-shared-update-v2__description")
                                                                                                 .parentNode.getAttribute("href").indexOf("urn:li")).replaceAll("/", "")
-                            : null)
                         : null,
-                  references: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                  .querySelector(".feed-shared-update-v2__description")
-                                ? Array.from(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                              .querySelector(".feed-shared-update-v2__description")
-                                                              .querySelectorAll("a[href]"))
-                                    .map(htmlEl => ({
-                                      url: htmlEl.getAttribute("href"),
-                                      text: htmlEl.textContent,
-                                    }))
-                                : null,
+                  references: this.getPostReferenceArray(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
+                                                                                   .querySelector(".feed-shared-update-v2__description")),
                 }
                 : null,
     };
@@ -512,8 +443,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
     if (!post.content.author.url 
           || !post.content.author.name
           /*|| post.content.author.picture*/
-          || !post.content.estimatedDate){
-      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden").textContent, post.content.estimatedDate);
+          || !post.content.estimatedDate
+          || (post.content.subPost
+                && (!post.content.subPost.author.url
+                      || !post.content.subPost.author.name
+                      /*|| !post.content.subPost.author.picture*/
+                      || !post.content.subPost.estimatedDate))){
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
       this.setState({dataExtractionError: true});
       return;
     }
@@ -555,6 +491,59 @@ export default class AboveFeedPostWidgetView extends React.Component{
     );
 
     this.setState({timerInterval: timerInterval});
+
+  }
+
+  getEntityHtmlElHref(htmlElement){
+
+    if (!htmlElement){
+      return null;
+    }
+
+    const result = isLinkedinProfilePage(htmlElement.href); /*|| isLinkedinCompanyPage(htmlElement.href)*/
+    return result ? result[0] : htmlElement.href.split("?")[0];
+
+  }
+
+  getHtmlElImageSource(htmlElement){
+    return htmlElement && htmlElement.tagName == "IMG" ? htmlElement.src : null;
+  }
+
+  getHtmlElTextContent(htmlElement){
+    return htmlElement ? htmlElement.textContent : null;
+  }
+
+  getHtmlElInnerHTML(htmlElement){
+    return htmlElement ? htmlElement.innerHTML : null;
+  }
+
+  getPostMediaArray(htmlElement){
+
+    if (!htmlElement){
+      return null;
+    }
+
+    return Array.from(htmlElement.querySelectorAll("img, video"))
+               .map(htmlEl => ({
+                  type: htmlEl.tagName,
+                  src: htmlEl.tagName == "VIDEO" ? null : htmlEl.src,
+                  poster: htmlEl.poster ? htmlEl.poster : null,
+               }));
+
+  }
+
+  getPostReferenceArray(htmlElement){
+
+    if (!htmlElement){
+      return null;
+    }
+
+    
+    return Array.from(htmlElement.querySelectorAll("a[href]"))
+                .map(htmlEl => ({
+                  url: htmlEl.getAttribute("href"),
+                  text: htmlEl.textContent,
+                }));
 
   }
 
@@ -784,19 +773,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
             <KeyIcon 
               size="10"/>
           </button>;
-
-  }
-
-  getPostHtmlElTextContent(){
-
-    return (isLinkedinFeedPostPage(window.location.href)) ? document.querySelector(".scaffold-layout__main")
-                                                                     .querySelector("div[data-urn]")
-                                                                     .textContent.toLowerCase()
-                                                          : this.state.postHtmlElement
-                                                                      .querySelector(".feed-shared-update-v2__description-wrapper")
-                                                                      .querySelector(".text-view-model")
-                                                                      .textContent
-                                                                      .toLowerCase();
 
   }
 

@@ -59,7 +59,7 @@ export default class ProfileOverviewSectionProjectWidget extends React.Component
     return (
       <>
         <div 
-          class={`handy-cursor card mb-3 shadow small text-muted col mx-2 border ${this.props.profile.projects && this.props.profile.projects.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`} 
+          class={`${this.props.profile.projects && this.props.profile.projects.length ? "handy-cursor" : null} card mb-3 shadow small text-muted col mx-2 border ${this.props.profile.projects && this.props.profile.projects.toReversed()[0] == "incomplete" ? "border-danger-subtle border-2" : "border-1"}`} 
           onClick={this.handleProjectsModalShow}
           title={this.props.profile.projects && this.props.profile.projects.indexOf("incomplete") != -1 ? "Incomplete data" : null}>
           <div class="card-body">

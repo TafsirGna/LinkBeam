@@ -41,6 +41,7 @@ export default class AboutDataChartWidget extends React.Component{
         };
 
         this.startMessageListener = this.startMessageListener.bind(this);
+        this.setWordsData = this.setWordsData.bind(this);
 
     }
 
@@ -49,11 +50,30 @@ export default class AboutDataChartWidget extends React.Component{
 
     componentDidMount() {
 
+        if (this.props.profileData){
+            this.setWordsData(this.props.profileData);
+        }
+
         this.startMessageListener();
 
     }
 
     componentDidUpdate(prevProps, prevState){
+
+    }
+
+    setWordsData(profileData){
+
+        var wordsData = {};
+        for (var word of dbDataSanitizer.profileAbout(profileData.info).split(" ")){
+            if (!word.length){
+                continue;
+            }
+
+            wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
+        }
+
+        this.setState({wordsData: wordsData, profileData: profileData});
 
     }
 
@@ -70,20 +90,8 @@ export default class AboutDataChartWidget extends React.Component{
                 });
                       
                 if (!this.state.wordsData){
-
                     const profileData = message.data;
-
-                    var wordsData = {};
-                    for (var word of dbDataSanitizer.profileAbout(profileData.info).split(" ")){
-                        if (!word.length){
-                            continue;
-                        }
-
-                        wordsData[word] = !(word in wordsData) ? 1 : wordsData[word] + 1;
-                    }
-
-                    this.setState({wordsData: wordsData, profileData: profileData});
-
+                    this.setWordsData(profileData);
                 }
             }
             

@@ -84,14 +84,37 @@ export default class HomeMenu extends React.Component{
                               
                               { (this.props.globalData.todayReminderList 
                                     && this.props.globalData.todayReminderList.length > 0) 
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Reminders")}}>{this.props.globalData.todayReminderList.length} unchecked reminder(s)</a></li>}
+                                  && <li>
+                                      <a 
+                                        class="dropdown-item small" 
+                                        onClick={() => {this.props.handleOffCanvasShow("Reminders")}}
+                                        title="Click to see more">
+                                        {this.props.globalData.todayReminderList.length} unchecked reminder(s)
+                                      </a>
+                                    </li>}
                               
                               { this.props.args.previousDaySavedTime 
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Saved time")}} href="#">Time saved notification</a></li>}
+                                  && <li>
+                                      <a 
+                                        class="dropdown-item small" 
+                                        onClick={() => {this.props.handleOffCanvasShow("Saved time")}} 
+                                        title="Click to see more"
+                                        href="#">
+                                        Time saved yesterday
+                                      </a>
+                                    </li>}
 
                               { this.props.args.outdatedProfiles 
                                   && this.props.args.outdatedProfiles.length != 0
-                                  && <li><a class="dropdown-item small" onClick={() => {this.props.handleOffCanvasShow("Outdated profiles")}} href="#">Some outdated profiles</a></li>}
+                                  && <li>
+                                      <a 
+                                        class="dropdown-item small" 
+                                        onClick={() => {this.props.handleOffCanvasShow("Outdated profiles")}} 
+                                        title="Click to see more"
+                                        href="#">
+                                        Some outdated profiles
+                                      </a>
+                                    </li>}
 
                             </ul>
                           </div>}

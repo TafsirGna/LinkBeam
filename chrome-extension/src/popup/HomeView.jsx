@@ -22,6 +22,9 @@
 import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
 import VisitListView from "./widgets/VisitListView";
+import { 
+  ClockIcon,
+} from "./widgets/SVGs";
 import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
 import ProfileListItemView from "./widgets/ProfileListItemView";
 import { Offcanvas } from "react-bootstrap";
@@ -37,10 +40,13 @@ import {
   setGlobalDataHomeAllVisitsList,
   getProfileDataFrom,
   getVisitsTotalTime,
+  secondsToHms,
+  setGlobalDataSettings,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { DateTime as LuxonDateTime } from "luxon";
+import { liveQuery } from "dexie"; 
 
 export default class HomeView extends React.Component{
 
@@ -52,6 +58,7 @@ export default class HomeView extends React.Component{
       offCanvasTitle: null,
       previousDaySavedTime: null, 
       outdatedProfiles: null,
+      timeCountSubscriptionResults: {"0": 0, "1": 0},
     };
 
     // Binding all the needed functions
@@ -59,6 +66,10 @@ export default class HomeView extends React.Component{
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.checkPreviousDaySavedTime = this.checkPreviousDaySavedTime.bind(this);
     this.checkOutdatedProfiles = this.checkOutdatedProfiles.bind(this);
+    this.setTimeCountSubscriptionResults = this.setTimeCountSubscriptionResults.bind(this);
+    this.addTimeCountSubscription = this.addTimeCountSubscription.bind(this);
+    this.fromMaxTimeThresholdToNumeric = this.fromMaxTimeThresholdToNumeric.bind(this);
+    this.getTimeCount = this.getTimeCount.bind(this);
 
   }
 
@@ -70,10 +81,19 @@ export default class HomeView extends React.Component{
       this.getVisitList("today");
     }
 
-    // check if the previous day, the user has been able to stick to its goal of saving time through the extension
-    this.checkPreviousDaySavedTime();
+    if (!this.props.globalData.settings){
+      setGlobalDataSettings(db, eventBus, liveQuery);
+    }
+    else{
+      // check if the previous day, the user has been able to stick to its goal of saving time through the extension
+      this.checkPreviousDaySavedTime();
 
-    this.checkOutdatedProfiles();
+      this.checkOutdatedProfiles();
+
+      this.addTimeCountSubscription();
+
+    }
+    
     
   }
 
@@ -81,11 +101,7 @@ export default class HomeView extends React.Component{
 
     var tippingPoint = null;
 
-    const settings = await db.settings
-                             .where({id: 1})
-                             .first();
-
-    if (settings.outdatedProfileReminder == "Never"){
+    if (this.props.globalData.settings.outdatedProfileReminder == "Never"){
       return;
     }
 
@@ -94,7 +110,7 @@ export default class HomeView extends React.Component{
       return;
     }
 
-    switch(settings.outdatedProfileReminder){
+    switch(this.props.globalData.settings.outdatedProfileReminder){
 
       case "> 1 month":{
         tippingPoint = LuxonDateTime.now().minus({months:1}).toJSDate();
@@ -135,13 +151,47 @@ export default class HomeView extends React.Component{
 
   }
 
+  addTimeCountSubscription(){
+
+    this.timeCountSubscription = {
+
+      "0": liveQuery(() => db.visits
+                              .filter(visit => Object.hasOwn(visit, "profileData")
+                                                && visit.date.startsWith(LuxonDateTime.now().toISO().split("T")[0]))
+                              .toArray()).subscribe(
+          result => this.setTimeCountSubscriptionResults({data: result, label: "visits"}),
+          error => this.setState({error})
+        ),
+
+      "1": liveQuery(() => db.feedPostViews
+                             .where("date")
+                             .startsWith(LuxonDateTime.now().toISO().split("T")[0])
+                             .toArray()).subscribe(
+          result => this.setTimeCountSubscriptionResults({data: result, label: "feedPostViews"}),
+          error => this.setState({error})
+        ),
+
+    };
+
+  }
+
+  getTimeCount(){
+    return Object.values(this.state.timeCountSubscriptionResults).reduce((acc, a) => acc + a, 0);
+  }
+
+  async setTimeCountSubscriptionResults(results){
+
+    var timeCountSubscriptionResults = this.state.timeCountSubscriptionResults;
+
+    timeCountSubscriptionResults[results.label == "visits" ? "0" : "1"] = results.data.map(object => object.timeCount).reduce((acc, a) => acc + a, 0);
+
+    this.setState({timeCountSubscriptionResults: timeCountSubscriptionResults});
+
+  }
+
   async checkPreviousDaySavedTime(){
 
-    const settings = await db.settings
-                             .where({id: 1})
-                             .first();
-
-    if (settings.maxTimeAlarm == "Never"){
+    if (this.props.globalData.settings.maxTimeAlarm == "Never"){
       return;
     }
 
@@ -164,7 +214,7 @@ export default class HomeView extends React.Component{
       totalTime += Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.id}).toArray());
     }
 
-    const maxTimeValue = settings.maxTimeAlarm == "1 hour" ? 60 : Number(settings.maxTimeAlarm.slice(0, 2));
+    const maxTimeValue = this.fromMaxTimeThresholdToNumeric();
 
     if (totalTime < maxTimeValue){
       this.setState({previousDaySavedTime: (maxTimeValue - totalTime)});
@@ -172,11 +222,41 @@ export default class HomeView extends React.Component{
 
   }
 
+  fromMaxTimeThresholdToNumeric(){ // in minutes
+    return this.props.globalData.settings.maxTimeAlarm == "1 hour" ? 60 : Number(this.props.globalData.settings.maxTimeAlarm.slice(0, 2));
+  }
+
   componentDidUpdate(prevProps, prevState){
+
+    if (prevProps.globalData != this.props.globalData){
+      if (prevProps.globalData.settings != this.props.globalData.settings){
+        // check if the previous day, the user has been able to stick to its goal of saving time through the extension
+        
+        if (!this.state.previousDaySavedTime){
+          this.checkPreviousDaySavedTime();
+        }
+
+        if (!this.state.previousDaySavedTime){
+          this.checkOutdatedProfiles();
+        }
+
+        if (!this.timeCountSubscription){
+          this.addTimeCountSubscription();
+        }
+
+      }
+    }
 
   }
 
   componentWillUnmount() {
+
+    if (this.timeCountSubscription) {
+      Object.values(this.timeCountSubscription).forEach(subscription => {
+        subscription.unsubscribe();
+      });
+      this.timeCountSubscription = null;
+    }
 
   }
 
@@ -312,6 +392,24 @@ export default class HomeView extends React.Component{
             }}
             />
         </div>
+        { this.getTimeCount() != 0
+            && <div class="clearfix mb-3">
+                  <span class={`me-3 float-end badge 
+                                  ${ this.props.globalData.settings.maxTimeAlarm != "Never" 
+                                      ? (this.getTimeCount() > (this.fromMaxTimeThresholdToNumeric() * 60)
+                                          ? " bg-danger-subtle border-danger-subtle text-danger-emphasis " 
+                                          : (this.getTimeCount() > ((this.fromMaxTimeThresholdToNumeric() * 60) * (3/4))
+                                              ? " bg-warning-subtle border-warning-subtle text-warning-emphasis "
+                                              : " bg-info-subtle border-info-subtle text-info-emphasis ")) 
+                                      : " bg-info-subtle border-info-subtle text-info-emphasis " } border rounded`}>
+                    {this.props.globalData.settings.maxTimeAlarm != "Never"
+                      && <ClockIcon
+                            size="14"
+                            className="me-1"
+                          />}
+                    {secondsToHms(this.getTimeCount())}
+                  </span>
+                </div>}
         <div class="text-center">
           <div class="btn-group btn-group-sm mb-2 shadow" role="group" aria-label="Small button group">
             <button type="button" class={"btn btn-primary badge" + (this.state.currentTabIndex == 0 ? " active " : "") } title="Today's visits" onClick={() => {this.switchCurrentTab(0)}} >
@@ -324,7 +422,7 @@ export default class HomeView extends React.Component{
         </div>
 
         {/* Today visits List Tab */}
-        { this.state.currentTabIndex == 0 && <div class="mt-4">
+        { this.state.currentTabIndex == 0 && <div class="mt-2">
                                                 <VisitListView 
                                                   objects={this.props.globalData.homeTodayVisitsList}/>
                                               </div>}

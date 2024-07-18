@@ -56,6 +56,10 @@ export default class EducationDataChartWidget extends React.Component{
 
   componentDidMount() {
 
+    if (this.props.profileData){
+      this.setState({profileData: this.procProfileData(this.props.profileData)});
+    }
+
     this.startMessageListener();
 
   }
@@ -78,9 +82,9 @@ export default class EducationDataChartWidget extends React.Component{
                     status: "ACK"
                 });
                       
-                if (!this.state.profileData){
+                // if (!this.state.profileData){
                   this.setState({profileData: this.procProfileData(message.data)});
-                }
+                // }
 
                 break;
 
@@ -119,7 +123,7 @@ export default class EducationDataChartWidget extends React.Component{
       if (education == "incomplete"){
         continue;
       }
-      education.period = dbDataSanitizer.periodDates(education.period, LuxonDateTime);
+      education.period = dbDataSanitizer.preProcExtractedPeriodString(education.period, LuxonDateTime);
     }
 
     return profileData;

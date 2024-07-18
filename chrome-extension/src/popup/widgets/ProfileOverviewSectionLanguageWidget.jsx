@@ -53,7 +53,7 @@ export default class ProfileOverviewSectionLanguageWidget extends React.Componen
   render(){
     return (
       <>
-        <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={this.handleLanguageListModalShow}>
+        <div class={`${this.props.profile.languages && this.props.profile.languages.length ? "handy-cursor" : null} card mb-3 shadow small text-muted col mx-2 border border-1`} onClick={this.handleLanguageListModalShow}>
           <div class="card-body">
             <h6 class="card-title text-info-emphasis">{this.props.profile.languages ? this.props.profile.languages.length : 0}</h6>
             <p class="card-text">Languages</p>
