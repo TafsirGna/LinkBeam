@@ -307,9 +307,36 @@ async function injectDataExtractorParams(tabId, url){
     ); 
 
     if (settings.notifications){
-        getTodayReminders(db, (reminders) => {
+        getTodayReminders(db, async (reminders) => {
             if (reminders.length){
 
+                // making sure not to bother the user with to much reminder notification
+                var sessionItem = await chrome.storage.session.get(["reminderSessionData"]);
+                const today = new Date().toISOString().split("T")[0];
+                if (!sessionItem.reminderSessionData 
+                        || (sessionItem.reminderSessionData 
+                                && sessionItem.reminderSessionData.date != today)){
+                    sessionItem.reminderSessionData = { date: today, alertDisplayCount: 1, reminders: reminders};
+                }
+                else{
+                    if (sessionItem.reminderSessionData 
+                            && sessionItem.reminderSessionData.date == today){
+
+                        if (JSON.stringify(reminders.map(r => r.id).toSorted()) != JSON.stringify(sessionItem.reminderSessionData.reminders.map(r => r.id).toSorted())){
+                            sessionItem.reminderSessionData.alertDisplayCount = 1;
+                            sessionItem.reminderSessionData.reminders = reminders;
+                        }
+                        else{
+                            if (sessionItem.reminderSessionData.alertDisplayCount == appParams.REMINDER_ALERT_DISPLAY_LIMIT){
+                                return;
+                            }
+                            sessionItem.reminderSessionData.alertDisplayCount++;
+                        }
+                    }
+                }
+                chrome.storage.session.set({ reminderSessionData: sessionItem.reminderSessionData });
+
+                // if everything's ok, then proceed to notify the user
                 const uuid = uuidv4();
                 chrome.notifications.create(uuid, {
                     title: 'Linkbeam',
@@ -1221,35 +1248,35 @@ async function getPreviousRelatedPosts(payload){
     var posts = [];
     const limit = 5;
 
+    var postUrl = null;
+
     if (Object.hasOwn(payload, "url")){
 
-        var url = payload.url;
+        const profileUrl = payload.url;
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.author.url == url && ((post.uid && post.uid != payload.uid) || (!post.uid && true)))
+                                  .filter(post => post.author.url == profileUrl && ((post.uid && (post.uid != payload.uid)) || (!post.uid && true)))
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
 
-        var url = null;
-
         for (const feedPost of feedPosts){
 
             if (feedPost.uid){
-                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
                 if (view.uid == payload.uid){
                     continue;
                 }
-                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
             }
 
             posts.push({
                 text: feedPost.innerContentHtml,
-                url: url,
+                url: postUrl,
                 date: feedPost.estimatedDate,
                 media: feedPost.media,
             });
@@ -1257,7 +1284,7 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                      .filter(view => view.initiator && view.initiator.url == url && view.uid != payload.uid)
+                                      .filter(view => view.initiator && view.initiator.url == profileUrl && view.uid != payload.uid)
                                       .offset(payload.offset)
                                       .limit(limit)
                                       .toArray();
@@ -1289,24 +1316,22 @@ async function getPreviousRelatedPosts(payload){
                                   .limit(limit)
                                   .toArray();
 
-        var url = null;
-
         for (const feedPost of feedPosts){
 
             if (feedPost.uid){
-                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
                 if (view.uid == payload.uid){
                     continue;
                 }
-                url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
             }
 
             posts.push({
                 text: feedPost.innerContentHtml,
-                url: url,
+                url: postUrl,
                 date: feedPost.estimatedDate,
                 media: feedPost.media,
                 profile: feedPost.author,

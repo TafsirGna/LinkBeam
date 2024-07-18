@@ -115,14 +115,14 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
         periodEnd = null;
 
     period = period.replace("Issued ", "")
-                   .replace("Émise le ", "");
+                   .replace("Émise le ", "")
+                   .replace("Date de délivrance : ", "");
 
     if (period.indexOf(" · ") != -1){ 
 
       period = period.replace("Expired ", "")
                      .replace("Expire le ", "")
                      .split(" · ");
-                     console.log("@@@@@@@@@@@@@ : ", period);
       periodStart = dbDataSanitizer.procExtractedPeriodDateString(period[0], LuxonDateTime);
       periodEnd = dbDataSanitizer.procExtractedPeriodDateString(period[1], LuxonDateTime);
 

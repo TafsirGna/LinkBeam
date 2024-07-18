@@ -50,7 +50,7 @@ const proficiencyLanguageKeywordsVariants = {
 
   full_professional: {
     lang: {
-      fr: "professionnelle complète",
+      fr: "compétence professionnelle",
       en: "full professional",
     },
     value: 4,

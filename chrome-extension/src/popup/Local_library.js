@@ -31,6 +31,7 @@ export const appParams = {
   TIMER_VALUE_1: 5000,
   TIMER_VALUE_2: 3000,
   IDLING_TIMER_VALUE: 60000,
+  REMINDER_ALERT_DISPLAY_LIMIT: 3,
   appAuthor: "Stoic Beaver",
 
   extShadowHostId: "linkBeamExtensionMainRoot",
@@ -79,7 +80,7 @@ export const categoryVerbMap = {
     en: " loves",
   },
   contributions: {
-    fr: " contribué",
+    fr: " a contribué",
     en: " contributed",
   },
   supports: {
@@ -91,11 +92,11 @@ export const categoryVerbMap = {
     en: " celebrates",
   },
   comments: {
-    fr: " commenté",
+    fr: " a commenté",
     en: " commented",
   },
   reposts: {
-    fr: " republié",
+    fr: " a republié",
     en: " reposted",
   },
   suggestions: {
@@ -103,11 +104,11 @@ export const categoryVerbMap = {
     en: "suggested",
   },
   insights: {
-    fr: " intructif",
+    fr: " trouve ceci intructif",
     en: " finds this insightful",
   },
   funs: {
-    fr: " drôle",
+    fr: " trouve ceci drôle",
     en: " finds this funny",
   }
 }

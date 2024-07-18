@@ -31,7 +31,6 @@ import {
   nRange,
   popularityValue,
   isLinkedinProfilePage,
-  isLinkedinCompanyPage,
   dbDataSanitizer,
 } from "../../../popup/Local_library";
 import{
@@ -56,16 +55,12 @@ import {
 import eventBus from "../../../popup/EventBus";
 import sleeping_icon from '../../../assets/sleeping_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
+import FeedPostReminderModal from "./FeedPostReminderModal";
 import { 
   Dropdown, 
   Spinner, 
   Tooltip, 
   Popover, 
-  Badge,
-  Button, 
-  Label, 
-  TextInput, 
-  Textarea 
 } from "flowbite-react";
 import ReactDOM from 'react-dom/client';
 import styles from "../../styles.min.css";
@@ -88,14 +83,6 @@ const termLanguageVariants = {
   repost: {
     fr: "republication",
     en: "repost",
-  },
-  other: {
-    fr: "autres",
-    en: "other",
-  },
-  and: {
-    fr: "et",
-    en: "and",
   },
 
 }
@@ -138,9 +125,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     this.showFeedPostDataModal = this.showFeedPostDataModal.bind(this);
     this.showFeedPostRelatedPostsModal = this.showFeedPostRelatedPostsModal.bind(this);
-    this.sendReminderData = this.sendReminderData.bind(this);
-    this.handleReminderTextAreaChange = this.handleReminderTextAreaChange.bind(this);
-    this.handleReminderDateInputChange = this.handleReminderDateInputChange.bind(this);
     this.updateReminder = this.updateReminder.bind(this);
     this.runTimer = this.runTimer.bind(this);
     this.extractSendPostObject = this.extractSendPostObject.bind(this);
@@ -252,7 +236,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   clearTimer(){
 
     clearInterval(this.state.timerInterval);
-    this.setState({timerInterval: null}, () => {console.log("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww : wwwww 2 ", this.props.postUid, this.state.timerInterval);});
+    this.setState({timerInterval: null}, () => {console.log("w : wwwww 2 ", this.props.postUid, this.state.timerInterval);});
 
   }
 
@@ -275,7 +259,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       };
 
       const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.textContent);
-      console.log("yyyyyyyyyyyyyyyyy : ", headerText);
       for (const category in categoryVerbMap){
 
         for (var lang in categoryVerbMap[category]){
@@ -301,142 +284,17 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     }
 
-    var reactionsTagContent = this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".social-details-social-counts"));
 
-    const getPostReactionsValues = metric => {
-
-      var value = null;
-
-      if (!reactionsTagContent){
-        return value;
-      }
-
-      if (["comment", "repost"].indexOf(metric) != -1){
-
-        for (var variant of Object.values(termLanguageVariants[metric])){
-          if (reactionsTagContent.indexOf(variant) != -1){
-            
-            for (var arrayItem of reactionsTagContent.split("\n")){
-              var index = arrayItem.indexOf(variant);
-              if (index != -1){
-                value = Number(arrayItem.slice(0, index).replaceAll(",", "").replaceAll(/\s/g,""));
-                break;
-              }
-            }
-
-            break;
-          }
-        }
-
-      }
-
-      if (metric == "reaction"){
-
-        var lang = null, otherTermIndex = null;
-        for (var language of Object.keys(termLanguageVariants["other"])){
-          otherTermIndex = reactionsTagContent.indexOf(termLanguageVariants["other"][language]);
-          if (otherTermIndex != -1){
-            lang = language;
-            break;
-          }
-        }
-
-        if (lang){
-          value = Number(reactionsTagContent.slice((reactionsTagContent.indexOf(` ${termLanguageVariants["and"][lang]} `) + (` ${termLanguageVariants["and"][lang]} `).length), otherTermIndex).replaceAll(",", "").replaceAll(/\s/g,""));
-          value++;
-        }
-        else{
-
-          var count = reactionsTagContent.replaceAll("\n", "").replaceAll(",", "").replaceAll(/\s/g,"");
-          if (!isNaN(count)){
-            value = count;
-          }
-          else{
-
-            for (var language of Object.keys(termLanguageVariants["comment"])){
-              if (reactionsTagContent.indexOf(termLanguageVariants["repost"][language]) != -1
-                    || reactionsTagContent.indexOf(termLanguageVariants["comment"][language]) != -1){
-
-                var index1 = -1, index2 = -1, arrayItems = reactionsTagContent.split("\n");
-                arrayItems.forEach((arrayItem, index) => {
-                  index1 = arrayItem.indexOf(termLanguageVariants["comment"][language]) != -1 ? index : index1;
-                  index2 = arrayItem.indexOf(termLanguageVariants["repost"][language]) != -1 ? index : index2;
-                });
-
-                if (index1 != -1){
-                  arrayItems.splice(index1, 1);
-                }
-
-                if (index2 != -1){
-                  arrayItems.splice(index1 != -1 ? index2 - 1 : index2, 1);
-                }
-
-                const val = Number(arrayItems.join("").replaceAll(",", "").replaceAll(/\s/g,"")); 
-                if (!isNaN(val)){
-                  value = val;
-                }
-
-                break;
-              }
-            }
-
-          }
-
-        }
-
-      }
-      
-      return value;
-    };
+    const postReactionsData = this.getPostReactionsData();
+    const subPostHtmlEl = this.state.postHtmlElement.querySelector(".update-components-mini-update-v2");
 
     post.content = {
-      author:{
-        name: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__name .visually-hidden")),
-        url: this.getEntityHtmlElHref(this.state.postHtmlElement.querySelector(".update-components-actor__meta a.update-components-actor__meta-link")),
-        picture: this.getHtmlElImageSource(this.state.postHtmlElement.querySelector(".update-components-actor__container .update-components-actor__image img")),
-      },
-      text: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
-      innerHtml: this.getHtmlElInnerHTML(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
-      media: this.getPostMediaArray(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__content")),
-      estimatedDate: extractPostDate(this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), LuxonDateTime),
-      reactions: getPostReactionsValues("reaction"),
-      commentsCount: getPostReactionsValues("comment"),               
-      repostsCount: getPostReactionsValues("repost"),
-      references: this.getPostReferenceArray(this.state.postHtmlElement.querySelector(".feed-shared-update-v2__description-wrapper")),
-
-      subPost: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                ? {
-                  author: {
-                    name: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                              .querySelector(".update-components-actor__name .visually-hidden")),
-                    url: this.getEntityHtmlElHref(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                           .querySelector(".update-components-actor__meta a.update-components-actor__meta-link")),
-                    picture: this.getHtmlElImageSource(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                                 .querySelector(".update-components-actor__image img")),
-                  },
-                  text: this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                            .querySelector(".feed-shared-update-v2__description")) ,
-                  innerHtml: this.getHtmlElInnerHTML(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                               .querySelector(".feed-shared-update-v2__description")),
-                  media: this.getPostMediaArray(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                          .querySelector(".update-components-mini-update-v2__reshared-content")),
-                  estimatedDate: extractPostDate(this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                           .querySelector(".update-components-actor__sub-description-link .visually-hidden"))
-                                                  , LuxonDateTime),
-                  uid: this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                 .querySelector(".feed-shared-update-v2__description")
-                          && this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                       .querySelector(".feed-shared-update-v2__description")
-                                                       .parentNode.tagName == "A"
-                        ? this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                    .querySelector(".feed-shared-update-v2__description")
-                                                    .parentNode.getAttribute("href").slice(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                                                .querySelector(".feed-shared-update-v2__description")
-                                                                                                .parentNode.getAttribute("href").indexOf("urn:li")).replaceAll("/", "")
-                        : null,
-                  references: this.getPostReferenceArray(this.state.postHtmlElement.querySelector(".update-components-mini-update-v2")
-                                                                                   .querySelector(".feed-shared-update-v2__description")),
-                }
+      ...this.getPostData(this.state.postHtmlElement),
+      reactions: postReactionsData.reactions,
+      commentsCount: postReactionsData.comments,               
+      repostsCount: postReactionsData.reposts,
+      subPost: subPostHtmlEl
+                ? this.getPostData(subPostHtmlEl)
                 : null,
     };
 
@@ -457,6 +315,82 @@ export default class AboveFeedPostWidgetView extends React.Component{
     this.setState({extractedPostData: post});
 
     sendTabData(this.props.tabId, post);
+
+  }
+
+  isPostDataValid(post){
+
+  }
+
+  getPostReactionsData(){
+
+    var result = {
+      reactions: null,
+      comments: null,
+      reposts: null,
+    };
+
+    const postReactionsSectionHtmlEl = this.state.postHtmlElement.querySelector(".social-details-social-counts");
+
+    if (!postReactionsSectionHtmlEl){
+      return result;
+    }
+
+    var postReactionsSectionHtmlElTextContent = this.getHtmlElTextContent(postReactionsSectionHtmlEl);
+    console.log("BBBBBBBBBBBBB : ", postReactionsSectionHtmlElTextContent);
+    var reactionsDataString = postReactionsSectionHtmlElTextContent.replaceAll("\n", "").match(/\s{2,}\d+([\s,]\d+)?\s{2,}/g)[0].replaceAll(/\s{2,}/g, "");
+    result.reactions = Number(reactionsDataString.replaceAll(",", "").replaceAll(/\s/g, ""));
+
+    for (const language in termLanguageVariants["comment"]){ // fr && en
+
+      // resetting the result
+      for (const key in result){ if (key == "reactions") { continue; } result[key] = null; }
+
+      var commentsDataString = (new RegExp(String.raw`\s\d+([\s,]\d+)?\s${termLanguageVariants["comment"][language]}`, "g")).exec(postReactionsSectionHtmlElTextContent);
+      if (commentsDataString){
+        result.comments = Number(commentsDataString[0].match(/\d+([\s,]\d+)?/g)[0].replaceAll(",", "").replaceAll(/\s/g, ""));
+      }
+
+      var repostsDataString = (new RegExp(String.raw`\s\d+\s${termLanguageVariants["repost"][language]}`, "g")).exec(postReactionsSectionHtmlElTextContent);
+      if (repostsDataString){
+        result.reposts = Number(repostsDataString[0].match(/\d+([\s,]\d+)?/g)[0].replaceAll(",", "").replaceAll(/\s/g, ""));
+      }
+
+      if ((result.comments && result.comments != 0)
+            || (result.reposts && result.reposts != 0)){
+        break;
+      }
+
+    }
+
+    return result;
+
+  }
+
+  getPostData(postHtmlEl, subPost){
+
+    const postAuthorHtmlEl = postHtmlEl.querySelector(".update-components-actor");
+    const postContentHtmlEl = postHtmlEl.querySelector(`.feed-shared-update-v2__description${subPost ? "-wrapper" : ""}`);
+
+    var result = {
+      author: this.getPostProfileData(postAuthorHtmlEl),
+      text: this.getHtmlElTextContent(postContentHtmlEl),
+      innerHtml: this.getHtmlElInnerHTML(postContentHtmlEl),
+      estimatedDate: extractPostDate(this.getHtmlElTextContent(this.getEstimatedDateHtmlEl(postHtmlEl)), LuxonDateTime),
+      references: this.getPostReferenceArray(postContentHtmlEl),
+      media: this.getPostMediaArray(postHtmlEl.querySelector(subPost ? ".update-components-mini-update-v2__reshared-content" : ".feed-shared-update-v2__content")),
+    };
+
+    if (subPost){
+      result = {
+        ...result,
+        uid: postContentHtmlEl && postContentHtmlEl.parentNode.tagName == "A"
+              ? postContentHtmlEl.parentNode.getAttribute("href").match(/urn:li:activity:\d+/g)[0]
+              : null
+      };
+    }
+
+    return result;
 
   }
 
@@ -545,6 +479,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   text: htmlEl.textContent,
                 }));
 
+  }
+
+  getPostProfileData(htmlElement){
+    return {
+      name: this.getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
+      url: this.getEntityHtmlElHref(htmlElement.querySelector("a")),
+      picture: this.getHtmlElImageSource(htmlElement.querySelector("img")),
+    };
+  }
+
+  getEstimatedDateHtmlEl(htmlElement){
+    return htmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")
   }
 
   componentWillUnmount(){
@@ -705,38 +651,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   handleReminderModalClose = () => this.setState({reminderModalShow: false});
   handleReminderModalShow = () => this.setState({reminderModalShow: true});
-
-  sendReminderData(){
-
-    this.setState({processing: true}, () => {
-
-      this.setState({
-        reminder: {...this.state.reminder, objectId: this.props.postUid},
-      }, () => {
-
-        // Send message to the background
-        chrome.runtime.sendMessage({header: messageMeta.header.CRUD_OBJECT, data: {tabId: this.props.tabId, objectStoreName: "reminders", action: "add", object: this.state.reminder}}, (response) => {
-          // Got an asynchronous response with the data from the service worker
-          console.log("Post reminder data Request sent !");
-        });
-
-      }); 
-
-    });
-
-  }
-
-  handleReminderTextAreaChange(event) {
-
-    this.setState({reminder: {...this.state.reminder, text: event.target.value}}); 
-
-  }
-
-  handleReminderDateInputChange(event) {
-
-    this.setState({reminder: {...this.state.reminder, date: event.target.value}}); 
-
-  }
 
   updateReminder(){
 
@@ -986,92 +900,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     </div>
                   </div>
         
-        
-        
-                  { this.state.reminderModalShow 
-                      && <div class={"modal-container-ac84bbb3728 "}>
-                            <div class="w-1/2 m-auto divide-y divide-slate-400/20 rounded-lg bg-white text-[0.8125rem] leading-5 text-slate-900 shadow-xl shadow-black/5 ring-1 ring-slate-700/10">
-                              
-                              <div class="p-4">
                   
-                                <form className="flex flex-col gap-4">
-                                  <div>
-                                    <div className="mb-2 block">
-                                      <Label 
-                                        htmlFor="date" 
-                                        value="Remind at" 
-                                        className="text-lg"/>
-                                    </div>
-                                    <TextInput 
-                                      id="date" 
-                                      type="date" 
-                                      value={this.state.reminder.date}
-                                      onChange={this.handleReminderDateInputChange} 
-                                      min={(new Date()).toISOString().split('T')[0]}
-                                      /*placeholder=""*/ 
-                                      disabled={Object.hasOwn(this.state.reminder, "id")}
-                                      className="text-lg"
-                                      required />
-                                  </div>
-                                  <div>
-                                    <div className="mb-2 block">
-                                      <Label 
-                                        htmlFor="content" 
-                                        value="Content"
-                                        className="text-lg" />
-                                    </div>
-                                    <Textarea 
-                                      id="content" 
-                                      rows={4} 
-                                      value={this.state.reminder.text} 
-                                      onChange={this.handleReminderTextAreaChange}
-                                      disabled={Object.hasOwn(this.state.reminder, "id")}
-                                      className="text-lg"
-                                      required />
-                                  </div>
-                  
-                                  { this.state.processing 
-                                      && <div  
-                                            class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                            <Spinner aria-label="Default status example" className="mx-auto" />
-                                          </div>}
-                                          
-                                  { !this.state.processing 
-                                      && <div>
-                  
-                                          { !Object.hasOwn(this.state.reminder, "id") 
-                                              && <button 
-                                                    type="button" 
-                                                    onClick={this.sendReminderData}
-                                                    class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                                    Submit
-                                                  </button> }
-                  
-                                          { Object.hasOwn(this.state.reminder, "id") 
-                                            && <div  
-                                                  class="text-green-500 pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                                  <span>
-                                                    <CheckIcon
-                                                      size="18"
-                                                      className="mx-auto"/>
-                                                  </span>
-                                                </div> }
-                  
-                                        </div>  }
-                                </form>
-                  
-                              </div>
-                  
-                              <div class="p-4 text-lg">
-                                <div 
-                                  onClick={this.handleReminderModalClose} 
-                                  class="handy-cursor pointer-events-auto rounded-md px-4 py-2 text-center font-medium shadow-sm ring-1 ring-slate-700/10 hover:bg-slate-50">
-                                  <span>Dismiss</span>
-                                </div>
-                              </div>
-                              
-                            </div>
-                          </div> }
+                  <FeedPostReminderModal
+                    show={this.state.reminderModalShow }
+                    onHide={this.handleReminderModalClose}
+                    reminder={this.state.reminder}/>
+
                 </div>
 
       </>

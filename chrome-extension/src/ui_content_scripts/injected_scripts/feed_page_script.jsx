@@ -71,6 +71,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	static activePostContainerElementUid = null;
 	static allPostsHideStatus = {};
 	static allExtensionWidgetsSet = false;
+	static mainHtmlEl = document.querySelector(".scaffold-finite-scroll__content");
 
 	constructor(){
 		super();
@@ -115,13 +116,11 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static getPostContainerElements(){
 
-		const mainSectionHtmlEl = document.querySelector(".scaffold-finite-scroll__content");
-
-		if (!mainSectionHtmlEl){
+		if (!this.mainHtmlEl){
 			return null;
 		}
 
-		return Array.from(mainSectionHtmlEl.querySelectorAll("div[data-id]")).filter(htmlElement => {
+		return Array.from(this.mainHtmlEl.querySelectorAll("div[data-id]")).filter(htmlElement => {
 
 			if (htmlElement.querySelector(".feed-shared-update-v2")){
 				if (window.getComputedStyle(htmlElement.querySelector(".feed-shared-update-v2")).display === "none"){
@@ -145,53 +144,48 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
-		if (this.allExtensionWidgetsSet){
+		if (this.allExtensionWidgetsSet || !this.mainHtmlEl){
 			return;
 		}
 
-		if (document.querySelector(".scaffold-finite-scroll__content")){
+		if (!this.mainHtmlEl.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
 
-			if (!document.querySelector(`.scaffold-finite-scroll__content .${LINKBEAM_ALL_FEED_MODALS}`)){
+			var newDivTag = document.createElement('div');
+			newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
+		    this.mainHtmlEl.prepend(newDivTag);
+		    newDivTag.attachShadow({ mode: 'open' });
 
-				var newDivTag = document.createElement('div');
-				newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
-			    document.querySelector(".scaffold-finite-scroll__content")
-			    		.prepend(newDivTag);
-			    newDivTag.attachShadow({ mode: 'open' });
+			ReactDOM.createRoot(newDivTag.shadowRoot).render(
+	            <React.StrictMode>
+	              <style type="text/css">{styles}</style>
+	              <div>
+	              	<FeedPostViewsChartModal
+	                  appSettings={props.appSettings}
+	                  tabId={props.tabId}/>
 
-				ReactDOM.createRoot(newDivTag.shadowRoot).render(
-		            <React.StrictMode>
-		              <style type="text/css">{styles}</style>
-		              <div>
-		              	<FeedPostViewsChartModal
-		                  appSettings={props.appSettings}
-		                  tabId={props.tabId}/>
+	                <FeedPostRelatedPostsModal
+	                  appSettings={props.appSettings}
+	                  tabId={props.tabId}/>
+	              </div>
+	            </React.StrictMode>
+	        );
 
-		                <FeedPostRelatedPostsModal
-		                  appSettings={props.appSettings}
-		                  tabId={props.tabId}/>
-		              </div>
-		            </React.StrictMode>
-		        );
-
-				this.allExtensionWidgetsSet = true;
-
-			}
-
-			const postContainerElements = this.getPostContainerElements();
-			if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
-
-				this.attachPostWidget(this.getPostContainerElements()[0], props);
-				this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
-
-			}
-			else{
-				this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
-			}
-
-			this.getAllPostsHideStatus(postContainerElements, props);
+			this.allExtensionWidgetsSet = true;
 
 		}
+
+		const postContainerElements = this.getPostContainerElements();
+		if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+
+			this.attachPostWidget(this.getPostContainerElements()[0], props);
+			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+
+		}
+		else{
+			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
+		}
+
+		this.getAllPostsHideStatus(postContainerElements, props);
 
 	}
 

@@ -57,13 +57,10 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     for (var htmlElement of Object.values(mainHtmlElements)){
 
-      if (!htmlElement){
+      if (!htmlElement || (htmlElement && htmlElement.getAttribute(keywordHighlightMark))){
         continue;
       }
 
-      if (htmlElement.getAttribute(keywordHighlightMark)){
-        continue;
-      }
       htmlElement.setAttribute(keywordHighlightMark, true);
 
       checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, this.detectedKeywords, highlightedKeywordBadgeColors);

@@ -40,13 +40,37 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 
 	static webPageData = null;
 	static allExtensionWidgetsSet = false;
+	static detectedKeywords = {};
+	static mainHtmlEl = document.querySelector(".scaffold-layout__main");
 
 	constructor(){
 		super();
 	}
 
+	static checkAndHighlightKeywords(keywords, highlightedKeywordBadgeColors, appSettings){
+
+		if (!this.mainHtmlEl 
+				|| (this.mainHtmlEl && this.mainHtmlEl.getAttribute(keywordHighlightMark))){
+			return;
+		}
+
+		this.mainHtmlEl.setAttribute(keywordHighlightMark, true);
+
+		checkAndHighlightKeywordsInHtmlEl(this.mainHtmlEl, keywords, this.detectedKeywords, highlightedKeywordBadgeColors);
+
+		if (!Object.keys(this.detectedKeywords).length){
+	      return;
+	    }
+
+	    // play a ringtone to notify the user
+	    (new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"))).play();
+
+	}
+
 	static checkAndUpdateUi(props){
 		
+		this.checkAndHighlightKeywords(props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
+
 	}
 
 	static runTabDataExtractionProcess(props){
@@ -56,20 +80,22 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 		if (!this.webPageData){
 
 			webPageData = this.extractData();
-			this.webPageData = document.querySelector(".scaffold-layout__main") 
-								? document.querySelector(".scaffold-layout__main").innerHTML
+			this.webPageData = this.mainHtmlEl 
+								? this.mainHtmlEl.innerHTML
 								: null;
 
 		}
 		else{
 
-			if (document.querySelector(".scaffold-layout__main")
-					&& document.querySelector(".scaffold-layout__main").innerHTML != this.webPageData){
+			if (this.mainHtmlEl
+					&& this.mainHtmlEl.innerHTML != this.webPageData){
 				webPageData = this.extractData();
-				this.webPageData = document.querySelector(".scaffold-layout__main").innerHTML;
+				this.webPageData = this.mainHtmlEl.innerHTML;
 			}
 
 		}
+
+		this.checkAndUpdateUi(props);
 
 		if (!webPageData){
 	      return;
@@ -83,7 +109,7 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 
 		var extractedData = {label: null, list: []};
 
-		Array.from(document.querySelectorAll(".scaffold-layout__main [data-view-name='profile-component-entity']")).forEach((liElement) => {
+		Array.from(this.mainHtmlEl.querySelectorAll("[data-view-name='profile-component-entity']")).forEach((liElement) => {
 
 			if (window.location.href.indexOf("/experience") != -1){
 
@@ -91,7 +117,7 @@ export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBas
 					extractedData.label = "experience";
 				}
 
-				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement, document.querySelector(".scaffold-layout__main")));
+				extractedData.list = extractedData.list.concat(extractExperienceItemData(liElement, this.mainHtmlEl));
 			}
 			else if (window.location.href.indexOf("/education") != -1){
 
