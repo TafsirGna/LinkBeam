@@ -274,14 +274,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       }
 
-      if (post.category 
-            && post.category != "suggestions"
-            && (!post.initiator.name || !post.initiator.url /*|| !post.initiator.picture*/)){
-        console.log("[[[[[[[[[[[[[[[[[[[[[[[ 1 : ", post.category, post.initiator.name, post.initiator.url);
-        this.setState({dataExtractionError: true});
-        return;
-      }
-
     }
 
 
@@ -298,16 +290,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                 : null,
     };
 
-    if (!post.content.author.url 
-          || !post.content.author.name
-          /*|| post.content.author.picture*/
-          || !post.content.estimatedDate
-          || (post.content.subPost
-                && (!post.content.subPost.author.url
-                      || !post.content.subPost.author.name
-                      /*|| !post.content.subPost.author.picture*/
-                      || !post.content.subPost.estimatedDate))){
-      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
+    if (!this.isPostDataValid(post)){
       this.setState({dataExtractionError: true});
       return;
     }
@@ -319,6 +302,28 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   isPostDataValid(post){
+
+    if (post.category 
+            && post.category != "suggestions"
+            && (!post.initiator.name || !post.initiator.url /*|| !post.initiator.picture*/)){
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 1 : ", post.category, post.initiator.name, post.initiator.url);
+      return false;
+    }
+
+    if (!post.content.author.url 
+          || !post.content.author.name
+          /*|| post.content.author.picture*/
+          || !post.content.estimatedDate
+          || (post.content.subPost
+                && (!post.content.subPost.author.url
+                      || !post.content.subPost.author.name
+                      /*|| !post.content.subPost.author.picture*/
+                      || !post.content.subPost.estimatedDate))){
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
+      return false;
+    }
+
+    return true;
 
   }
 
@@ -337,7 +342,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
     }
 
     var postReactionsSectionHtmlElTextContent = this.getHtmlElTextContent(postReactionsSectionHtmlEl);
-    console.log("BBBBBBBBBBBBB : ", postReactionsSectionHtmlElTextContent);
     var reactionsDataString = postReactionsSectionHtmlElTextContent.replaceAll("\n", "").match(/\s{2,}\d+([\s,]\d+)?\s{2,}/g)[0].replaceAll(/\s{2,}/g, "");
     result.reactions = Number(reactionsDataString.replaceAll(",", "").replaceAll(/\s/g, ""));
 
@@ -548,6 +552,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     setTimeout(() => {
                       this.setState({updated: false});
                     }, appParams.TIMER_VALUE_1);
+                    // closing the modal
+                    this.handleReminderModalClose();
                   });
                 }
 
@@ -904,7 +910,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   <FeedPostReminderModal
                     show={this.state.reminderModalShow }
                     onHide={this.handleReminderModalClose}
-                    reminder={this.state.reminder}/>
+                    reminder={this.state.reminder}
+                    tabId={this.props.tabId}
+                    postUid={this.props.postUid}/>
 
                 </div>
 

@@ -27,6 +27,7 @@ import {
 	extractProjectItemData,
 	extractCertificationItemData,
 	sendTabData,
+	checkAndHighlightKeywordsInHtmlEl,
 } from "./main_lib";
 import React from 'react';
 import { 
@@ -35,6 +36,7 @@ import {
 import ReactDOM from 'react-dom/client';
 import styles from "../styles.min.css";
 
+const keywordHighlightMark = "linkbeam-extension-keyword-highlight";
 
 export default class ProfileSectionDetailsPageScriptAgent extends ScriptAgentBase {
 

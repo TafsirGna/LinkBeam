@@ -22,6 +22,9 @@
 /*import './HighlightedKeywordView.css'*/
 import React from 'react';
 import { Popover } from "flowbite-react";
+import { 
+  appParams,
+} from "../../popup/Local_library";
 
 const progressBarColors = [
   "bg-blue-600",
@@ -48,7 +51,7 @@ export default class HighlightedKeywordView extends React.Component{
     return (
         <span 
           class= {`${this.props.color} text-xl font-medium me-0.5 px-1.5 py-0.5 rounded` /*handy-cursor*/}
-          title={`#${ this.props.order}`}>
+          title={`${appParams.appName} keyword #${ this.props.order}`}>
           {this.props.keyword}
         </span>        
     );

@@ -23,6 +23,7 @@
 import React from 'react';
 import { 
   appParams, 
+  messageMeta,
 } from "../../../popup/Local_library";
 import { CheckIcon } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";

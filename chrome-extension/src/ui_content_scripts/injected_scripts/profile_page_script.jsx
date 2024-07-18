@@ -39,7 +39,7 @@ import {
 } from "../../popup/Local_library";
 
 const aboveProfileSectionWidgetClassName = "LinkbeamAboveProfileSectionWidgetClassName";
-const keywordHighlightMark= "linkbeam-extension-keyword-highlight";
+const keywordHighlightMark = "linkbeam-extension-keyword-highlight";
 
 export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
@@ -70,11 +70,12 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
       return;
     }
 
-    // play a ringtone to notify the user
-    (new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"))).play();
-
     if (appSettings.notifications && !this.keywordDetected){
       this.keywordDetected = true;
+
+      // play a ringtone to notify the user
+      (new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"))).play();
+      
       chrome.runtime.sendMessage({header: "NOTIFY_USER", data: "keywords"}, (response) => {
         console.log('notify user request sent', response);
       });
