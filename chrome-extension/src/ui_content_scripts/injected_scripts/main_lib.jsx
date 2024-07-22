@@ -34,6 +34,7 @@ import {
 } from "../../popup/Local_library";
 import { countriesNaming } from "../../popup/countriesNamingFile";
 import eventBus from "../../popup/EventBus";
+import { stringSimilarity } from "string-similarity-js";
 
 const termLanguageVariants = {
 
@@ -52,6 +53,8 @@ const termLanguageVariants = {
 export class ScriptAgentBase {
 
 	constructor(){
+
+    console.log("GGGGGGGGGGGGGG -- : ");
 
     this.tabId = null;
     this.isActiveTab = true;
@@ -186,6 +189,10 @@ export class ScriptAgentBase {
 
   startIdlingTimer(){
 
+    if (this.idlingTimer){
+      return;
+    }
+
     this.idlingTimer = setTimeout(() => {
 
       if (this.isOneVideoPlaying()){
@@ -195,6 +202,8 @@ export class ScriptAgentBase {
 
       this.idleStatus = true;
       this.sendTabIdleStatusSignal();
+
+      this.idlingTimer = null;
     }, 
     appParams.IDLING_TIMER_VALUE);
 
@@ -219,6 +228,8 @@ export class ScriptAgentBase {
     document.addEventListener("scroll", (event) => {
       this.scrollEventHandler2();
     });
+
+    console.log("GGGGGGGGGGGGGG I : ");
 
     this.runTabDataExtractionProcess();
 
@@ -255,18 +266,24 @@ export class ScriptAgentBase {
 
         // Acknowledge the message
         sendResponse({
-            status: "ACK"
+            status: "ACK---"
         });
 
+        console.log("GGGGGGGGGGGGGG 0I : ");
 
-        if (Object.hasOwn(message.data, "visitId")){
+        if (Object.hasOwn(message.data, "visitId")
+              && this.visitId != message.data.visitId){
           this.visitId = message.data.visitId; 
-          this.startIdlingTimer();
+          if (!this.mouseMoving && !this.scrolling){
+            this.startIdlingTimer();
+          }
         }
         
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
+          console.log("GGGGGGGGGGGGGG 0II : ");
           if (!this.tabId){
+            console.log("GGGGGGGGGGGGGG 0III : ");
             this.setInitData(message.data, sendResponse);
           }
           else{
@@ -336,8 +353,6 @@ export function extractPostDate(textContent, LuxonDateTime){
   if (!textContent){
     return null;
   }
-
-  console.log("hhhhhhhhhhhhhhhhhhh : ", textContent);
 
   // english version
   var timeTerm = "ago";
@@ -471,39 +486,6 @@ function passThroughHtmlElement(htmlElement, callback){
 
 }
 
-function retrieveHtmlElement(parentHtml, object){
-
-  passThroughHtmlElement(parentHtml, processNode);
-
-  function processNode(node){
-
-    if (["followers", "connections"].indexOf(object.title) != -1){
-
-      if (node.nodeType == Node.TEXT_NODE){
-
-        if (node.nodeValue.indexOf(object.title) != -1){
-          object.htmlEl = node.parentNode;
-          return object.htmlEl;
-        }
-
-      }
-
-    }
-
-    // switch(title){
-
-    //   case "followers":{
-    //     break;
-    //   }
-
-    // }
-
-    return null;
-
-  }
-
-}
-
 
 function getProfilePublicViewMainHtmlElements(){
 
@@ -517,7 +499,8 @@ function getProfilePublicViewMainHtmlElements(){
     job_title: document.querySelector(".top-card-layout__headline"),
     followers: (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[0],
     connections: (document.querySelectorAll('.top-card-layout__first-subline .not-first-middot')[1]).children[1],
-    featured_experience_education: document.querySelector('.top-card__links-container'),
+    featured_experience: document.querySelector('.top-card__links-container div[data-section="currentPositionsDetails"]'),
+    featured_education: document.querySelector('.top-card__links-container div[data-section="educationsDetails"]'),
     about: document.querySelector(`${coreSectionContainerLabel}summary`),
     education: document.querySelector(`${coreSectionContainerLabel}education`),
     experience: document.querySelector(`${coreSectionContainerLabel}experience`),
@@ -552,14 +535,31 @@ export async function getProfileViewMainHtmlElements(){
 function getProfileAuthViewMainHtmlElements(){
 
   return {
-    full_name: document.querySelector(".text-heading-xlarge"),
+    full_name: document.querySelector("section.artdeco-card a[href*='about-this-profile']") /*(() => {
+        for (let i of document.querySelectorAll('section.artdeco-card a')) {
+          if (i.href.match(window.location.href.slice(window.location.href.indexOf("/in/")))) { // or whatever attribute you want to search
+              return i;
+          }
+        }
+        return null;
+      }
+    )()*/,
     avatar: document.querySelector(".pv-top-card-profile-picture__image--show"),
     cover_image: document.querySelector("section.artdeco-card .profile-background-image img"),
     location: document.querySelector("section.artdeco-card #top-card-text-details-contact-info").parentElement.parentElement,
-    job_title: document.querySelector("section .text-body-medium"),
-    followers: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[0]) : null,
-    connections: (document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]) ? ((document.querySelector("section.artdeco-card").querySelectorAll("ul")[1]).querySelectorAll("li")[1]) : null,
-    featured_experience_education: document.querySelector("section.artdeco-card").querySelectorAll("ul")[0] /*document.querySelector('.pv-text-details__right-panel')*/,
+    job_title: document.querySelector("section.artdeco-card div[data-generated-suggestion-target]"),
+    followers: (() => {
+      const els = Array.from(document.querySelector("section.artdeco-card").querySelectorAll("*")).filter(h => h.textContent.match(/(\d[\s,])*\d+\+?\s(followers|abonnés)/g)).toReversed();
+      return els ? els[0] : null;
+    })(),
+    connections: (() => {
+      const els = Array.from(document.querySelector("section.artdeco-card").querySelectorAll("*")).filter(h => h.textContent.match(/(\d[\s,])*\d+\+?\s(connections|relations)/g)
+                                                                                                                && h.textContent.indexOf("commun") == -1
+                                                                                                                && h.textContent.indexOf("mutual") == -1).toReversed();
+      return els ? els[0] : null;
+    })(),
+    featured_experience: document.querySelector("section.artdeco-card button[aria-label^='Current company']"),
+    featured_education: document.querySelector("section.artdeco-card button[aria-label^='Education:']"),
     about: document.getElementById('about') ? document.getElementById('about').nextElementSibling.nextElementSibling : null,
     education: document.getElementById('education') ? document.getElementById('education').nextElementSibling.nextElementSibling : null,
     experience: document.getElementById('experience') ? document.getElementById('experience').nextElementSibling.nextElementSibling : null,
@@ -570,6 +570,22 @@ function getProfileAuthViewMainHtmlElements(){
     activity: null,
   };
 
+}
+
+export function getHtmlElImageSource(htmlElement){
+  return htmlElement && htmlElement.tagName == "IMG" ? htmlElement.src : null;
+}
+
+export function getHtmlElTextContent(htmlElement){
+  return htmlElement ? htmlElement.textContent : null;
+}
+
+export function getHtmlElInnerHTML(htmlElement){
+  return htmlElement ? htmlElement.innerHTML : null;
+}
+
+function getHtmlElHref(htmlElement){
+  return htmlElement ? htmlElement.href : null;
 }
 
 export const DataExtractor = {
@@ -664,42 +680,25 @@ export const DataExtractor = {
 
     function extractNotAuthData(){
 
-      var featuredExperienceEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="currentPositionsDetails"]');
-      if (featuredExperienceEntityTagContainer){
-        return {
-          name: (featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredExperienceEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").textContent : null),
-          picture: (featuredExperienceEntityTagContainer.firstElementChild.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.firstElementChild.src : null), 
-          url: (featuredExperienceEntityTagContainer.firstElementChild ? featuredExperienceEntityTagContainer.firstElementChild.href : null),
-        };
-      }
-
-      return null;
+      return {
+        name: getHtmlElTextContent(htmlElements.featured_experience.firstElementChild.querySelector(":nth-child(2)")),
+        picture: getHtmlElImageSource(htmlElements.featured_experience.firstElementChild.firstElementChild), 
+        url: getHtmlElHref(htmlElements.featured_experience.firstElementChild),
+      };
 
     }
 
     function extractAuthData(){
 
-      var featuredExperienceEntityTagContainer = null;
-
-      for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){ 
-        if (tag.getAttribute("aria-label").indexOf("Current company:") != -1){
-          featuredExperienceEntityTagContainer = tag;
-        }
-      }
-
-      if (featuredExperienceEntityTagContainer){
-        return {
-          name: featuredExperienceEntityTagContainer.textContent,
-          picture: (featuredExperienceEntityTagContainer.querySelector("img") ? featuredExperienceEntityTagContainer.querySelector("img").src : null), 
-          url: null,
-        };
-      }
-
-      return null;
+      return {
+        name: htmlElements.featured_experience.textContent,
+        picture: getHtmlElImageSource(htmlElements.featured_experience.querySelector("img")), 
+        url: null,
+      };
 
     }
 
-    if (htmlElements.featured_experience_education){
+    if (htmlElements.featured_experience){
       return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
@@ -710,42 +709,25 @@ export const DataExtractor = {
 
     function extractNotAuthData(){
 
-      var featuredEducationEntityTagContainer = htmlElements.featured_experience_education.querySelector('div[data-section="educationsDetails"]');
-      if (featuredEducationEntityTagContainer){
-        return {
-          name: (featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)") ? featuredEducationEntityTagContainer.firstElementChild.querySelector(":nth-child(2)").innerHTML : null),
-          picture: (featuredEducationEntityTagContainer.firstElementChild.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.firstElementChild.src : null),
-          url: (featuredEducationEntityTagContainer.firstElementChild ? featuredEducationEntityTagContainer.firstElementChild.href : null),
-        };
-      }
-
-      return null;
+      return {
+        name: getHtmlElInnerHTML(htmlElements.featured_education.firstElementChild.querySelector(":nth-child(2)")),
+        picture: getHtmlElImageSource(htmlElements.featured_education.firstElementChild.firstElementChild),
+        url: getHtmlElHref(htmlElements.featured_education.firstElementChild),
+      };
 
     }
 
     function extractAuthData(){
 
-      var featuredEducationEntityTagContainer = null;
-
-      for (var tag of htmlElements.featured_experience_education.querySelectorAll('button')){
-        if (tag.getAttribute("aria-label").indexOf("Education:") != -1){
-          featuredEducationEntityTagContainer = tag;
-        }
-      }
-
-      if (featuredEducationEntityTagContainer){
-        return {
-          name: featuredEducationEntityTagContainer.textContent,
-          picture: (featuredEducationEntityTagContainer.querySelector("img") ? featuredEducationEntityTagContainer.querySelector("img").src : null), 
-          url: null,
-        };
-      }
-
-      return null;
+      return {
+        name: htmlElements.featured_education.textContent,
+        picture: getHtmlElImageSource(htmlElements.featured_education.querySelector("img")), 
+        url: null,
+      };
 
     }
 
-    if (htmlElements.featured_experience_education){
+    if (htmlElements.featured_education){
       return (context == "not_auth") ? extractNotAuthData() : extractAuthData();
     }
 
@@ -1402,8 +1384,8 @@ export function extractEducationItemData(htmlElement){
 
     // period
     var nodeTextContent = node.textContent.toLowerCase();
-    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?$/g)
-          || nodeTextContent.match(/^([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)$/g)){
+    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?$/ig)
+          || nodeTextContent.match(/^([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)$/ig)){
       educationItemData.period = nodeTextContent;
       // counter++;
       return;
@@ -1528,24 +1510,24 @@ export function extractExperienceItemData(htmlElement, encompassingParent){
 
     // period
     var nodeTextContent = node.textContent.toLowerCase();
-    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?)|Less than a year)$/g)){
-      experienceItemData.period = nodeTextContent; 'juil. 2023 - aujourd’hui · 1 an 1 mois'
-      // counter++;
+    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?)|Less than a year)$/ig)){
+      experienceItemData.period = nodeTextContent;
       return;
     }
 
     // location
     nodeTextContent = node.textContent.indexOf(" · ") ? node.textContent.split(" · ")[0] : node.textContent;
-    if (nodeTextContent.match(/^([a-zàâçéèêëîïôûùüÿñæœ -]*,\s)*[a-zàâçéèêëîïôûùüÿñæœ -]*$/ig)){
+    if (nodeTextContent.match(/^([\wàâçéèêëîïôûùüÿñæœ -]+,\s){0,2}[\wàâçéèêëîïôûùüÿñæœ -]+$/ig)){
       const lastPhrase = nodeTextContent.split(", ").toReversed()[0];
-      for (const countryObject of countriesNaming){
-        if (countryObject.englishShortName.toLowerCase() == lastPhrase.toLowerCase()
-            || countryObject.frenchShortName.toLowerCase() == lastPhrase.toLowerCase()){
-          experienceItemData.location = nodeTextContent;
-          // counter++;
-          return;
-        }
+      const similarityValues = countriesNaming.map(countryObject => Math.max(stringSimilarity(countryObject.englishShortName, lastPhrase, 1), stringSimilarity(countryObject.frenchShortName, lastPhrase, 1)))
+                                              .toSorted()
+                                              .toReversed();
+
+      if (similarityValues[0] >= .7){
+        experienceItemData.location = nodeTextContent;
+        return;
       }
+
     }
 
     // description

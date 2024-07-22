@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "LinkBeam",
-  "description": "LinkBeam chrome extension ",
-  "version": "0.1.0",
+  "description": "Linkbeam is a basic extension that assists you in your linkedin browsing experience.",
+  "version": "0.0.1",
   "action": {
     "default_popup": "index.html",
     "default_icon": "app_logo.png"
@@ -28,9 +28,10 @@
                     "/assets/elevator-tone.mp3",
                     "/assets/linkedin_icon.png",
                     "/assets/sleeping_icon.png",
+                    "/assets/like_icon.png",
                     "/assets/app_logo.png",
                     "/assets/default.png"
       ]
   }],
-  "host_permissions": ["*://*/*"]
+  "host_permissions": ["https://*.linkedin.com/*"]
 }

@@ -38,6 +38,9 @@ import{
   checkAndHighlightKeywordsInHtmlEl,
   extractPostDate,
   getFeedPostHtmlElement,
+  getHtmlElImageSource,
+  getHtmlElTextContent,
+  getHtmlElInnerHTML, 
 } from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
@@ -252,11 +255,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     if (postContainerHeaderElement){
 
-      post.initiator = {
-        name: null,
-        url: this.getEntityHtmlElHref(postContainerHeaderElement.querySelector("a")),
-        picture: this.getHtmlElImageSource(postContainerHeaderElement.querySelector("img")),
-      };
+      post.initiator = this.getPostProfileData(postContainerHeaderElement);
 
       const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.textContent);
       for (const category in categoryVerbMap){
@@ -281,12 +280,12 @@ export default class AboveFeedPostWidgetView extends React.Component{
     const subPostHtmlEl = this.state.postHtmlElement.querySelector(".update-components-mini-update-v2");
 
     post.content = {
-      ...this.getPostData(this.state.postHtmlElement),
+      ...this.getPostData(this.state.postHtmlElement, false),
       reactions: postReactionsData.reactions,
       commentsCount: postReactionsData.comments,               
       repostsCount: postReactionsData.reposts,
       subPost: subPostHtmlEl
-                ? this.getPostData(subPostHtmlEl)
+                ? this.getPostData(subPostHtmlEl, true)
                 : null,
     };
 
@@ -319,7 +318,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       || !post.content.subPost.author.name
                       /*|| !post.content.subPost.author.picture*/
                       || !post.content.subPost.estimatedDate))){
-      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
       return false;
     }
 
@@ -341,7 +340,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
       return result;
     }
 
-    var postReactionsSectionHtmlElTextContent = this.getHtmlElTextContent(postReactionsSectionHtmlEl);
+    var postReactionsSectionHtmlElTextContent = getHtmlElTextContent(postReactionsSectionHtmlEl);
     var reactionsDataString = postReactionsSectionHtmlElTextContent.replaceAll("\n", "").match(/\s{2,}\d+([\s,]\d+)?\s{2,}/g)[0].replaceAll(/\s{2,}/g, "");
     result.reactions = Number(reactionsDataString.replaceAll(",", "").replaceAll(/\s/g, ""));
 
@@ -374,13 +373,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
   getPostData(postHtmlEl, subPost){
 
     const postAuthorHtmlEl = postHtmlEl.querySelector(".update-components-actor");
-    const postContentHtmlEl = postHtmlEl.querySelector(`.feed-shared-update-v2__description${subPost ? "-wrapper" : ""}`);
+    const postContentHtmlEl = postHtmlEl.querySelector(".feed-shared-update-v2__description");
 
     var result = {
       author: this.getPostProfileData(postAuthorHtmlEl),
-      text: this.getHtmlElTextContent(postContentHtmlEl),
-      innerHtml: this.getHtmlElInnerHTML(postContentHtmlEl),
-      estimatedDate: extractPostDate(this.getHtmlElTextContent(this.getEstimatedDateHtmlEl(postHtmlEl)), LuxonDateTime),
+      text: getHtmlElTextContent(postContentHtmlEl),
+      innerHtml: getHtmlElInnerHTML(postContentHtmlEl),
+      estimatedDate: extractPostDate(getHtmlElTextContent(this.getEstimatedDateHtmlEl(postHtmlEl)), LuxonDateTime),
       references: this.getPostReferenceArray(postContentHtmlEl),
       media: this.getPostMediaArray(postHtmlEl.querySelector(subPost ? ".update-components-mini-update-v2__reshared-content" : ".feed-shared-update-v2__content")),
     };
@@ -432,29 +431,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   }
 
-  getEntityHtmlElHref(htmlElement){
-
-    if (!htmlElement){
-      return null;
-    }
-
-    const result = isLinkedinProfilePage(htmlElement.href); /*|| isLinkedinCompanyPage(htmlElement.href)*/
-    return result ? result[0] : htmlElement.href.split("?")[0];
-
-  }
-
-  getHtmlElImageSource(htmlElement){
-    return htmlElement && htmlElement.tagName == "IMG" ? htmlElement.src : null;
-  }
-
-  getHtmlElTextContent(htmlElement){
-    return htmlElement ? htmlElement.textContent : null;
-  }
-
-  getHtmlElInnerHTML(htmlElement){
-    return htmlElement ? htmlElement.innerHTML : null;
-  }
-
   getPostMediaArray(htmlElement){
 
     if (!htmlElement){
@@ -485,11 +461,22 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   }
 
+  getEntityHtmlElHref(htmlElement){
+
+    if (!htmlElement){
+      return null;
+    }
+
+    const result = isLinkedinProfilePage(htmlElement.href);
+    return result ? result[0] : htmlElement.href.match(/linkedin.com\/\w+\/[\wàâçéèêëîïôûùüÿñæœ-]+/g)[0];
+
+  }
+
   getPostProfileData(htmlElement){
     return {
-      name: this.getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
+      name: getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
       url: this.getEntityHtmlElHref(htmlElement.querySelector("a")),
-      picture: this.getHtmlElImageSource(htmlElement.querySelector("img")),
+      picture: getHtmlElImageSource(htmlElement.querySelector("img")),
     };
   }
 
@@ -552,8 +539,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     setTimeout(() => {
                       this.setState({updated: false});
                     }, appParams.TIMER_VALUE_1);
-                    // closing the modal
-                    this.handleReminderModalClose();
                   });
                 }
 

@@ -19,7 +19,6 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-
 import { 
     ScriptAgentBase,
 } from "./main_lib";
@@ -36,7 +35,6 @@ import ProfilePageScriptAgent from "./profile_page_script";
 import FeedPostPageScriptAgent from "./feed_post_page_script";
 import ProfileSectionDetailsPageScriptAgent from "./profile_section_details_page_script";
 import eventBus from "../../popup/EventBus";
-
 
 class MainScriptAgent extends ScriptAgentBase {
 
@@ -120,7 +118,11 @@ class MainScriptAgent extends ScriptAgentBase {
 
     runTabDataExtractionProcess(){
 
+        console.log("GGGGGGGGGGGGGG II : ");
+
         this.timerInterval = setInterval(() => {
+
+            console.log("GGGGGGGGGGGGGG III : ");
 
             if (!this.isActiveTab){
                 return;

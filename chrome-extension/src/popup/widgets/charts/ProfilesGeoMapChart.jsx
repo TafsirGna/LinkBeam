@@ -26,6 +26,7 @@ import ProfileListItemView from "../ProfileListItemView";
 import sorry_icon from '../../../assets/sorry_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { OverlayTrigger, Popover } from "react-bootstrap";
+import { stringSimilarity } from "string-similarity-js";
 
 ChartJS.register(
   Title,
@@ -130,18 +131,22 @@ export default class ProfilesGeoMapChart extends React.Component{
 
           location = dbDataSanitizer.location(location);
 
-          // if the term for the country is in french instead of english, then I look for the corresponding english term
-          for (var countryObject of countriesNaming){
+          console.log("NNNNNNNNNNNN 1 : ", location);
 
-            if (countryObject.frenchShortName
-                             .slice(0, countryObject.frenchShortName.indexOf(" ("))
-                             .toLowerCase() == location.toLowerCase()){
-              location = countryObject.englishShortName.indexOf(" (the") != -1 
-                          ? countryObject.englishShortName.slice(0, countryObject.englishShortName.indexOf(" (the"))
-                          : countryObject.englishShortName;
-              break;
-            }
+          // if the term for the country is in french instead of english, then I look for the corresponding english term
+          const similarityValues = countriesNaming.map(countryObject => ({key: countryObject.englishShortName, value: Math.max(stringSimilarity(countryObject.englishShortName, location/*, 1*/), stringSimilarity(countryObject.frenchShortName, location/*, 1*/))}))
+                                                  .toSorted((a, b) => (b.value - a.value));
+
+          console.log("NNNNNNNNNNNN 2 : ", similarityValues);
+
+          if (similarityValues[0].value >= .6){
+            location = similarityValues[0].key.indexOf(" (the") != -1 
+                          ? similarityValues[0].key.slice(0, similarityValues[0].key.indexOf(" (the"))
+                          : similarityValues[0].key;
           }
+
+          console.log("NNNNNNNNNNNN 3 : ", location);
+
 
           const index = locations.map(i => i.label).indexOf(location);
           if (index == -1){

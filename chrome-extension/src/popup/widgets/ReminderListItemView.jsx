@@ -75,7 +75,7 @@ export default class ReminderListItemView extends React.Component{
     
     return isLinkedinProfilePage(this.props.object.objectId)
               ? this.props.object.object.fullName
-              : `${this.props.object.object.author.name} (feed)`;
+              : `${this.props.object.object.author.name} | feed`;
 
   }
 

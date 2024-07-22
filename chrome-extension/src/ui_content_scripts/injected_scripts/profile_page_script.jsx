@@ -57,6 +57,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     for (var htmlElement of Object.values(mainHtmlElements)){
 
+      console.log("RRRRRRRRRRR : ", htmlElement);
       if (!htmlElement || (htmlElement && htmlElement.getAttribute(keywordHighlightMark))){
         continue;
       }

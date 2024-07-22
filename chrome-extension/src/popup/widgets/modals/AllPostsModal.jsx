@@ -66,6 +66,14 @@ export default class AllPostsModal extends React.Component{
 
     }
 
+    if (prevProps.objects != this.props.objects){
+      if (this.props.show){
+        this.setState({feedPostViews: [...this.props.objects]}, () => {
+          this.setSortByValue(this.state.sortByValueIndex);
+        });
+      }
+    }
+
   }
 
   componentWillUnmount(){

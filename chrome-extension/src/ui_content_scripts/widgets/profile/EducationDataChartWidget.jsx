@@ -82,7 +82,7 @@ export default class EducationDataChartWidget extends React.Component{
                     status: "ACK"
                 });
                       
-                // if (!this.state.profileData){
+                // if (message.data){
                   this.setState({profileData: this.procProfileData(message.data)});
                 // }
 
@@ -119,6 +119,7 @@ export default class EducationDataChartWidget extends React.Component{
   procProfileData(profileData){
 
     // education
+    console.log("TTTTTTTTTTTTTTTTT : ", profileData);
     for (var education of profileData.education){
       if (education == "incomplete"){
         continue;

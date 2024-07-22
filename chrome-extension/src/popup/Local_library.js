@@ -262,19 +262,21 @@ export const dbDataSanitizer = {
 
   profileAbout: function(str){
 
-    return this.preSanitize(str).replace(/[^a-zA-Z ]/g, "");
+    return this.preSanitize(str).replace(/[^a-zA-Zàâçéèêëîïôûùüÿñæœ ]/g, "");
 
   },
 
   procExtractedPeriodDateString: function(dateString, LuxonDateTime){
 
-    for (var locale of appParams.supportedTimeLocales){
-      dateString = ["aujourd’hui", "Present"].indexOf(dateString) != -1
-                    ? LuxonDateTime.now()
-                    : LuxonDateTime.fromFormat(dateString, `${isNaN(dateString) ? "MMM yyyy" : "yyyy"}`, { locale: locale });
 
-      if (dateString.isValid){
-        return dateString;
+    for (const locale of appParams.supportedTimeLocales){
+      var periodDate = (` ${dateString}`).slice(1); // make a deep copy of the string
+      periodDate = ["aujourd’hui", "present"].indexOf(periodDate.toLowerCase()) != -1
+                    ? LuxonDateTime.now()
+                    : LuxonDateTime.fromFormat(periodDate, `${isNaN(periodDate) ? "MMM yyyy" : "yyyy"}`, { locale: locale });
+
+      if (periodDate.isValid){
+        return periodDate;
       }
     }
 
@@ -303,6 +305,14 @@ export const dbDataSanitizer = {
         endDateRange = this.procExtractedPeriodDateString(this.preSanitize(dateRange[1]), LuxonDateTime);
 
     if (startDateRange && endDateRange){
+
+      console.log("ZZZZZZZZZZZ 1 :  ", startDateRange.toFormat("MMM yyyy"), endDateRange.toFormat("MMM yyyy"));
+      if (startDateRange.toFormat("MMM yyyy") == endDateRange.toFormat("MMM yyyy")){
+        startDateRange = startDateRange.startOf("month");
+        endDateRange = endDateRange.endOf("month");
+        console.log("ZZZZZZZZZZZ 2 :  ", startDateRange.toFormat("dd MMM yyyy"), endDateRange.toFormat("dd MMM yyyy"))
+      }
+
       return {
         startDateRange: startDateRange,
         endDateRange: endDateRange,
@@ -394,7 +404,6 @@ export function isProfilePropertyLabelInList(name, list, type, stringSimilarity)
     return list.indexOf(name);
   }
 
-  // console.log("JJJJJJJJJJJJJJ 2 ; : ", name, list);
   return list.findIndex(item => stringSimilarity(item, name) > 0.8);
 
 }
@@ -966,7 +975,7 @@ export async function getProfileDataFrom(db, url, properties = null){
 function isExperienceListSubsetOf(extractedProfileData, oldProfileData){
 
   const property = "experience";
-  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+  const minLength = Math.min(extractedProfileData[property].length, oldProfileData[property].length);
 
   for (var i = 0; i < minLength - 1; i++){
     if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].title) != dbDataSanitizer.preSanitize(oldProfileData[property][i].title)
@@ -989,7 +998,7 @@ function isExperienceListSubsetOf(extractedProfileData, oldProfileData){
 function isEducationListSubsetOf(extractedProfileData, oldProfileData){
     
   const property = "education";
-  const minLength = numberMin(extractedProfileData[property].length < oldProfileData[property].length);
+  const minLength = Math.min(extractedProfileData[property].length < oldProfileData[property].length);
 
   for (var i = 0; i < minLength - 1; i++){
     if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].title) != dbDataSanitizer.preSanitize(oldProfileData[property][i].title)
@@ -1011,7 +1020,7 @@ function isEducationListSubsetOf(extractedProfileData, oldProfileData){
 function isProjectListSubsetOf(extractedProfileData, oldProfileData){
     
   const property = "projects";
-  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+  const minLength = Math.min(extractedProfileData[property].length, oldProfileData[property].length);
 
   for (var i = 0; i < minLength - 1; i++){
     if (dbDataSanitizer.preSanitize(extractedProfileData[property][i].name) != dbDataSanitizer.preSanitize(oldProfileData[property][i].name)
@@ -1033,15 +1042,11 @@ function isProjectListSubsetOf(extractedProfileData, oldProfileData){
 function isCertificationListSubsetOf(extractedProfileData, oldProfileData){
 
   const property = "certifications";
-  const minLength = numberMin(extractedProfileData[property].length, oldProfileData[property].length);
+  const minLength = Math.min(extractedProfileData[property].length, oldProfileData[property].length);
 
   return areProfileDataObjectsDifferent[property](extractedProfileData[property].slice(0, minLength), oldProfileData[property].slice(0, minLength));
 
 }  
-
-function numberMin(a, b){
-  return a < b ? a : b;
-}
 
 function isEntityListSubsetOf(extractedProfileData, oldProfileData, property){
 
@@ -1074,7 +1079,7 @@ function isEntityListSubsetOf(extractedProfileData, oldProfileData, property){
 
 }
 
-export function getNewProfileData(oldProfileData, extractedProfileData){
+export function getDiffProfileData(oldProfileData, extractedProfileData){
 
   if (!oldProfileData){
     return extractedProfileData;
@@ -1093,7 +1098,7 @@ export function getNewProfileData(oldProfileData, extractedProfileData){
     if (["experience", "education", "projects", "certifications"].indexOf(property) != -1){
       const oldProfileDataCopy = {...oldProfileData};
       if (isEntityListSubsetOf(extractedProfileData, oldProfileData, property)){
-        newProfileData[property] =  (areProfileDataObjectsDifferent[property])(oldProfileDataCopy[property], oldProfileData[property])
+        newProfileData[property] = (areProfileDataObjectsDifferent[property])(oldProfileDataCopy[property], oldProfileData[property])
                                       ? oldProfileData[property]
                                       : null;
       }
@@ -1210,7 +1215,7 @@ export const areProfileDataObjectsDifferent = {
       return true;
     }
 
-    console.log("&&&&&&&&&&&&&&&& 2 : ", itemObject1, itemObject2);
+    // console.log("&&&&&&&&&&&&&&&& 2 : ", itemObject1, itemObject2);
     return dbDataSanitizer.preSanitize(itemObject1.description) != dbDataSanitizer.preSanitize(itemObject2.description)
             || dbDataSanitizer.preSanitize(itemObject1.title) != dbDataSanitizer.preSanitize(itemObject2.title)
             || dbDataSanitizer.preSanitize(itemObject1.period) != dbDataSanitizer.preSanitize(itemObject2.period)
@@ -1711,9 +1716,9 @@ export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywo
 }
 
 export const isLinkedinFeed = (url) => url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
-export const isLinkedinProfilePage = (value) => value.toString().match(/linkedin.com\/in\/[\w\d-]+/g);
+export const isLinkedinProfilePage = (value) => decodeURI(value.toString()).match(/linkedin.com\/in\/[\wàâçéèêëîïôûùüÿñæœ-]+/g);
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
-export const isLinkedinProfileSectionDetailsPage = (url) => url.match(/linkedin.com\/in\/[\w\d-]+\/details\//g);
+export const isLinkedinProfileSectionDetailsPage = (url) => [decodeURI(url), url].join("|").match(/linkedin.com\/in\/[\wàâçéèêëîïôûùüÿñæœ-]+\/details\//g);
 
 export async function getPeriodVisits(dateValue, LuxonDateTime, db, category, profileUrl = null){
 

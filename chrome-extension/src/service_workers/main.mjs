@@ -26,7 +26,7 @@ import {
     messageMeta,
     getTodayReminders,
     getProfileDataFrom,
-    getNewProfileData,
+    getDiffProfileData,
     categoryVerbMap,
     isLinkedinFeed,
     isLinkedinProfilePage,
@@ -110,27 +110,24 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
         await refreshAppSettingsObject();
 
-        var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
-        console.log('**************** : ', loadingTabs, changeInfo.status);
-        
-        var url = tab.url.split("?")[0];
-        url = isLinkedinProfilePage(url) && !isLinkedinProfileSectionDetailsPage(url) ? isLinkedinProfilePage(url)[0] : url; 
+        // var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
+        // console.log('**************** : ', loadingTabs, changeInfo.status);
 
         switch(changeInfo.status){
 
             case "loading":{
 
-                async function isTabUrlAlreadyLoading(){
+                // async function isTabUrlAlreadyLoading(){
 
-                    // checking that i'm not already processing this signal
-                    if (loadingTabs.findIndex(t => t.id == tabId && t.url == url) != -1){
-                        return true;
-                    }
-                    loadingTabs.push({id: tabId, url: url});
-                    await chrome.storage.session.set({ loadingTabs: loadingTabs });
-                    return false;
+                //     // checking that i'm not already processing this signal
+                //     if (loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url) != -1){
+                //         return true;
+                //     }
+                //     loadingTabs.push({id: tabId, url: tab.url});
+                //     await chrome.storage.session.set({ loadingTabs: loadingTabs });
+                //     return false;
 
-                }
+                // }
 
                 try{
 
@@ -143,14 +140,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     return;
                                 }
 
-                                var result = await handleInterestingTab(tabId, url);
+                                const result = await handleInterestingTab(tabId, tab.url);
 
                                 if (tabs[0].id == tabId){
 
                                     if (changeInfo.url === undefined){ // in case of a tab's page reload
-                                        if (!(await isTabUrlAlreadyLoading())){
-                                            injectScriptsInTab(tabId, url);
-                                        }
+                                        // if (!(await isTabUrlAlreadyLoading())){
+                                            injectScriptsInTab(tabId, tab.url);
+                                        // }
                                     }
                                     else{
 
@@ -158,8 +155,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                         chrome.action.setBadgeText({text: result.badgeText});
 
                                         // conditionally injecting the script 
-                                        if (result.inject && !(await isTabUrlAlreadyLoading())){
-                                            injectScriptsInTab(tabId, url);
+                                        if (result.inject/* && !(await isTabUrlAlreadyLoading())*/){
+                                            injectScriptsInTab(tabId, tab.url);
                                         }
 
                                     }
@@ -180,39 +177,39 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             }
 
-            case "complete": {
+            // case "complete": {
 
-                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == url);
-                if (index != -1){
-                    loadingTabs.splice(index, 1);
-                    await chrome.storage.session.set({ loadingTabs: loadingTabs });
-                }
+            //     const index = loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url);
+            //     if (index != -1){
+            //         loadingTabs.splice(index, 1);
+            //         await chrome.storage.session.set({ loadingTabs: loadingTabs });
+            //     }
 
-                break;
-            }
+            //     break;
+            // }
 
         }
 
     }
-    else{
+    // else{
 
-        chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-            console.log("################### : ", tabs, tabs[0]);
-            if (tabs[0].id == tabId){
-                chrome.action.setBadgeText({text: null});
+    //     chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+    //         console.log("################### : ", tabs, tabs[0]);
+    //         if (tabs[0].id == tabId){
+    //             chrome.action.setBadgeText({text: null});
 
-                var sessionItem = await chrome.storage.session.get(["myTabs"]);
-                if (sessionItem.myTabs 
-                        && Object.hasOwn(sessionItem.myTabs, tabId) 
-                        && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
-                    sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
-                    chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-                }
+    //             var sessionItem = await chrome.storage.session.get(["myTabs"]);
+    //             if (sessionItem.myTabs 
+    //                     && Object.hasOwn(sessionItem.myTabs, tabId) 
+    //                     && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
+    //                 sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
+    //                 chrome.storage.session.set({ myTabs: sessionItem.myTabs });
+    //             }
 
-            }
-        });
+    //         }
+    //     });
 
-    }
+    // }
 
   }
 );
@@ -263,16 +260,14 @@ function injectScriptsInTab(tabId, url){
     // If the user is browsing linkedin's feed
     const dataExtractorPath = "./assets/main_content_script.js";
 
-    if (dataExtractorPath){
-        chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                files: [dataExtractorPath],
-            }, 
-            () => {
-                injectDataExtractorParams(tabId, url);
-            }
-        );
-    }
+    chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: [dataExtractorPath],
+        }, 
+        () => {
+            injectDataExtractorParams(tabId, url);
+        }
+    );
 
 };
 
@@ -384,7 +379,7 @@ async function handleInterestingTab(tabId, url){
     if (!sessionItem.myTabs){
 
         sessionItem.myTabs = {};  
-        sessionItem.myTabs[tabId] = {badgeText: result.badgeText, prevTabUrlInterestStatus: true};
+        sessionItem.myTabs[tabId] = {badgeText: result.badgeText/*, prevTabUrlInterestStatus: true*/};
 
     }
     else{
@@ -392,14 +387,14 @@ async function handleInterestingTab(tabId, url){
         if (Object.hasOwn(sessionItem.myTabs, tabId)){
 
             result.badgeText = sessionItem.myTabs[tabId].badgeText;
-            if (sessionItem.myTabs[tabId].visits
-                    && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
-                result.inject = false;
-            }
+            // if (sessionItem.myTabs[tabId].visits
+            //         && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
+            //     result.inject = false;
+            // }
 
         }
         else{
-            sessionItem.myTabs[tabId] = {badgeText: result.badgeText, prevTabUrlInterestStatus: true};
+            sessionItem.myTabs[tabId] = {badgeText: result.badgeText/*, prevTabUrlInterestStatus: true*/};
         }
 
     }
@@ -483,7 +478,6 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
         if (url && isUrlOfInterest(url)){
 
-            url = url.split("?")[0];
             Dexie.exists(appParams.appDbName).then(async function(exists) {
                 if (exists) {
                     var result = await handleInterestingTab(activeInfo.tabId, url);
@@ -563,6 +557,8 @@ async function enrichProfileSectionData(tabData){
 
     }
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
+
+    console.log("AAAAAAAAAAAAAAAAAAAAAAA : ", sessionItem.myTabs);
 
     // updating the last view object in the browser indexeddb
     var lastView = await db.visits.where("url").anyOf([tabData.tabUrl, encodeURI(tabData.tabUrl), decodeURI(tabData.tabUrl)]).last();
@@ -873,23 +869,24 @@ async function recordProfileVisit(tabData){
         }
         else{
 
-            if (areProfileDataObjectsDifferent.wholeObjects(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData)){
+            profileData = sessionItem.myTabs[tabData.tabId].visits[index].profileData;
 
-                var newProfileData = null,
-                    visitId = sessionItem.myTabs[tabData.tabId].visits[index].id;
+            if (areProfileDataObjectsDifferent.wholeObjects(profileData, tabData.extractedData)){
+
+                // are there meaningful changes to be taken into account
+                var diffProfileData = getDiffProfileData(profileData, tabData.extractedData);
+                //if yes, integrate these meaningful changes
+                for (const property in diffProfileData) { profileData[property] = diffProfileData[property] || profileData[property] }
                     
-                if ((await db.visits.where({url: tabData.tabUrl}).toArray()).length == 1){
-                    newProfileData = tabData.extractedData;
-                    sessionItem.myTabs[tabData.tabId].visits[index].profileData = newProfileData;
-                }
-                else{
-                    newProfileData = getNewProfileData(sessionItem.myTabs[tabData.tabId].visits[index].profileData, tabData.extractedData);
-                }
+                const firstVisit = (await db.visits.where({url: tabData.tabUrl}).toArray()).length == 1;
+
+                // update the variable in the session
+                if (firstVisit) { sessionItem.myTabs[tabData.tabId].visits[index].profileData = profileData; }
 
                 await db.visits
-                        .where({id: visitId})
+                        .where({id: sessionItem.myTabs[tabData.tabId].visits[index].id})
                         .modify(visit => {
-                            visit.profileData = newProfileData;
+                            visit.profileData = firstVisit ? profileData : diffProfileData;
                         });
 
             }
@@ -897,27 +894,55 @@ async function recordProfileVisit(tabData){
         }
     }
 
+    // Only send the visit id for the first recording, no need to do that for the next ones
+    if (visitId){
+
+        // checking first that the user is on the linkedin tab before setting the badge text
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+            if (tabs[0].id == tabData.tabId){
+                chrome.action.setBadgeText({text: badgeText});
+            }
+        });
+
+        chrome.tabs.sendMessage(tabData.tabId, {
+                header: messageMeta.header.CS_SETUP_DATA, 
+                data: {visitId: visitId},
+            }, 
+            (response) => {
+                console.log('visitId sent', response, visitId);
+            }
+        );
+    }
+
+    await checkDataTabOpening();
+
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-
-    // checking first that the user is on the linkedin tab before setting the badge text
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        if (tabs[0].id == tabData.tabId){
-            chrome.action.setBadgeText({text: badgeText});
-        }
-    });
-
-    chrome.tabs.sendMessage(tabData.tabId, {
-            header: messageMeta.header.CS_SETUP_DATA, 
-            data: {visitId: visitId},
-        }, 
-        (response) => {
-            console.log('visitId sent', response, visitId);
-        }
-    );
 
     chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData}, (response) => {
         console.log('profile data response sent', response, profileData);
     }); 
+
+    async function checkDataTabOpening(){
+
+        console.log("CCCCCCCCCCCCCCCC : ", sessionItem.myTabs);
+
+        const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+
+        if (!Object.hasOwn(sessionItem.myTabs[tabData.tabId].visits[index], "tabOpen")
+                && (await getAppSettingsObject()).autoTabOpening
+                && sessionItem.myTabs[tabData.tabId].visits[index].profileData.experience){
+
+            // Opening a new tab
+            chrome.tabs.create({
+              active: true,
+              url:  `/index.html?view=Profile&data=${tabData.tabUrl}`,
+            }, null);
+
+            sessionItem.myTabs[tabData.tabId].visits[index].tabOpen = true;
+
+        }
+
+    }
 
     async function processPrimeVisit(){
 
@@ -933,7 +958,7 @@ async function recordProfileVisit(tabData){
 
         if (profileVisits.length){
             profileData = await getProfileDataFrom(db, tabData.tabUrl);
-            visit.profileData = getNewProfileData(profileData, tabData.extractedData);
+            visit.profileData = getDiffProfileData(profileData, tabData.extractedData);
         }
         else{
             profileData = tabData.extractedData;
@@ -944,18 +969,6 @@ async function recordProfileVisit(tabData){
         await db.visits.add(visit).then(id => {
             visitId = id;
         });
-
-        if ((await getAppSettingsObject()).autoTabOpening){
-            // Opening a new tab
-            setTimeout(() => {
-
-                chrome.tabs.create({
-                  active: true,
-                  url:  `/index.html?view=Profile&data=${tabData.tabUrl}`,
-                }, null);
-
-            }, appParams.TIMER_VALUE_2);
-        }
 
         return visitId;
 
