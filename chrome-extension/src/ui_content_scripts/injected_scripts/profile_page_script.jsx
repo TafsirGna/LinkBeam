@@ -57,7 +57,6 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     for (var htmlElement of Object.values(mainHtmlElements)){
 
-      console.log("RRRRRRRRRRR : ", htmlElement);
       if (!htmlElement || (htmlElement && htmlElement.getAttribute(keywordHighlightMark))){
         continue;
       }
@@ -112,41 +111,48 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
         }
 
         if (htmlElement.querySelector(`.${aboveProfileSectionWidgetClassName}`)){
-          this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+          this.allExtensionWidgetsSet &&= true;
           return;
         }
 
-        var newDivTag = document.createElement('div');
-        newDivTag.classList.add(aboveProfileSectionWidgetClassName);
-        htmlElement.prepend(newDivTag);
-        newDivTag.attachShadow({ mode: 'open' });
+        try{
 
-        ReactDOM.createRoot(newDivTag.shadowRoot).render(
-                <React.StrictMode>
-                  <style type="text/css">{styles}</style>
+          var newDivTag = document.createElement('div');
+          newDivTag.classList.add(aboveProfileSectionWidgetClassName);
+          htmlElement.prepend(newDivTag);
+          newDivTag.attachShadow({ mode: 'open' });
 
-                  { htmlElementTitle == "about" 
-                      && <AboutDataChartWidget
-                          appSettings={props.appSettings}
-                          tabId={props.tabId}
-                          profileData={this.profileData}/>}
+          ReactDOM.createRoot(newDivTag.shadowRoot).render(
+                  <React.StrictMode>
+                    <style type="text/css">{styles}</style>
 
-                  { htmlElementTitle == "education" 
-                      && <EducationDataChartWidget
-                          appSettings={props.appSettings}
-                          tabId={props.tabId}
-                          profileData={this.profileData}/>}
+                    { htmlElementTitle == "about" 
+                        && <AboutDataChartWidget
+                            appSettings={props.appSettings}
+                            tabId={props.tabId}
+                            profileData={this.profileData}/>}
 
-                  { htmlElementTitle == "experience" 
-                      && <ExperienceDataChartWidget
-                          appSettings={props.appSettings}
-                          tabId={props.tabId}
-                          profileData={this.profileData}/>}
+                    { htmlElementTitle == "education" 
+                        && <EducationDataChartWidget
+                            appSettings={props.appSettings}
+                            tabId={props.tabId}
+                            profileData={this.profileData}/>}
 
-                </React.StrictMode>
-            );
+                    { htmlElementTitle == "experience" 
+                        && <ExperienceDataChartWidget
+                            appSettings={props.appSettings}
+                            tabId={props.tabId}
+                            profileData={this.profileData}/>}
 
-        this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+                  </React.StrictMode>
+              );
+
+          this.allExtensionWidgetsSet &&= true;
+
+        }
+        catch(error){
+          this.allExtensionWidgetsSet &&= false;
+        }
 
       }
 

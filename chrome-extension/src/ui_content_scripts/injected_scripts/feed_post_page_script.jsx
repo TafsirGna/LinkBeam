@@ -51,55 +51,65 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 		if (!document.body.querySelector(`#${LinkbeamFeedPostDataModalWrapperId}`)){
 
-			// adding the post stats modal
-			var newDivTag = document.createElement('div');
-			// newDivTag.classList.add(feedPostDataModalClassName);
-			newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
-		    document.body.appendChild(newDivTag);
-		    newDivTag.attachShadow({ mode: 'open' });
+			try{
+				// adding the post stats modal
+				var newDivTag = document.createElement('div');
+				// newDivTag.classList.add(feedPostDataModalClassName);
+				newDivTag.id = LinkbeamFeedPostDataModalWrapperId;
+			    document.body.appendChild(newDivTag);
+			    newDivTag.attachShadow({ mode: 'open' });
 
-			ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	            <React.StrictMode>
-	              <style type="text/css">{styles}</style>
-	              <FeedPostViewsChartModal
-	              	appSettings={props.appSettings}
-	              	tabId={props.tabId}/>
-	            </React.StrictMode>
-	        );
+				ReactDOM.createRoot(newDivTag.shadowRoot).render(
+		            <React.StrictMode>
+		              <style type="text/css">{styles}</style>
+		              <FeedPostViewsChartModal
+		              	appSettings={props.appSettings}
+		              	tabId={props.tabId}/>
+		            </React.StrictMode>
+		        );
 
+				this.allExtensionWidgetsSet = true;
+			}
+			catch(error){
+				console.log("An error occured when inserting some initial widgets : ", error);
+			}
+
+		}
+		else{
 			this.allExtensionWidgetsSet = true;
-
 		}
 
 
 		var postContainerElement = this.mainHtmlEl.querySelector("div[data-urn]");
+		try{
 
-		if (!postContainerElement.parentNode.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+			if (!postContainerElement.parentNode.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 
-			// Adding the marker
-			var newDivTag = document.createElement('div');
-			newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
-		    postContainerElement.parentNode.prepend(newDivTag);
-		    newDivTag.attachShadow({ mode: 'open' });
+				// Adding the marker
+				var newDivTag = document.createElement('div');
+				newDivTag.classList.add(appParams.FEED_POST_WIDGET_CLASS_NAME);
+			    postContainerElement.parentNode.prepend(newDivTag);
+			    newDivTag.attachShadow({ mode: 'open' });
 
-			ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	            <React.StrictMode>
-	              <style type="text/css">{styles}</style>
-	              <AboveFeedPostWidgetView 
-	              	postUid={postContainerElement.getAttribute("data-urn")}
-	              	tabId={props.tabId}
-	              	allKeywords={props.allKeywords}
-	              	postData={props.otherArgs ? props.otherArgs.postData : null}
-	              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
-	              	/*visitId={props.visitId}*//>
-	            </React.StrictMode>
-	        );
+				ReactDOM.createRoot(newDivTag.shadowRoot).render(
+		            <React.StrictMode>
+		              <style type="text/css">{styles}</style>
+		              <AboveFeedPostWidgetView 
+		              	postUid={postContainerElement.getAttribute("data-urn")}
+		              	tabId={props.tabId}
+		              	allKeywords={props.allKeywords}
+		              	postData={props.otherArgs ? props.otherArgs.postData : null}
+		              	highlightedKeywordBadgeColors={props.highlightedKeywordBadgeColors}
+		              	/*visitId={props.visitId}*//>
+		            </React.StrictMode>
+		        );
 
-	        this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+			}
 
 		}
-		else{
-			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
+		catch(error){
+			console.log("An error occured when inserting some initial widgets : ", error);
+			this.allExtensionWidgetsSet &&= false;
 		}
 		
 	}

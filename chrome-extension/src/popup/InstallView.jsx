@@ -32,6 +32,7 @@ import Form from 'react-bootstrap/Form';
 import { 
   appParams, 
   removeObjectsId,
+  saveSettingsPropertyValue,
 } from "./Local_library";
 import Dexie from 'dexie';
 import { liveQuery } from "dexie"; 
@@ -56,7 +57,6 @@ export default class About extends React.Component{
     this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
     this.clearFileInput = this.clearFileInput.bind(this);
     this.setSettingsObject = this.setSettingsObject.bind(this);
-    this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
     
   }
 
@@ -260,6 +260,7 @@ export default class About extends React.Component{
               maxTimeAlarm: "1 hour",
               autoTabOpening: true,
               hidePostViewCount: "Never",
+              postHighlightColor: "#563d7c",
           });
 
           localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
@@ -296,20 +297,6 @@ export default class About extends React.Component{
         formFileElement.click();
 
     }).bind(this));
-
-  }
-
-  saveSettingsPropertyValue(property, value){
-
-    var settings = this.state.settings;
-    settings[property] = value;
-
-    (async () => {
-
-      await db.settings
-              .update(1, settings);
-
-    })();
 
   }
 
@@ -368,7 +355,7 @@ export default class About extends React.Component{
                                               id="notif-custom-switch"
                                               label=""
                                               checked={this.state.settings.notifications}
-                                              onChange={(event) => {this.saveSettingsPropertyValue("notifications", event.target.checked);}}
+                                              onChange={(event) => {saveSettingsPropertyValue("notifications", event.target.checked, {settings: this.state.settings}, db);}}
                                             />
                                           </small>
                                         </div>
@@ -385,7 +372,7 @@ export default class About extends React.Component{
                                               id="notif-custom-switch"
                                               label=""
                                               checked={this.state.settings.autoTabOpening}
-                                              onChange={(event) => {this.saveSettingsPropertyValue("autoTabOpening", event.target.checked);}}
+                                              onChange={(event) => {saveSettingsPropertyValue("autoTabOpening", event.target.checked, {settings: this.state.settings}, db);}}
                                             />
                                           </small>
                                         </div>
@@ -405,7 +392,7 @@ export default class About extends React.Component{
                                                       <ul class="dropdown-menu shadow-lg border">
                                                         {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
                                                               <li>
-                                                                <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
+                                                                <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("outdatedProfileReminder", value, {settings: this.state.settings}, db)}}>
                                                                   {value}
                                                                 </a>
                                                               </li>  
@@ -430,7 +417,7 @@ export default class About extends React.Component{
                                                     <ul class="dropdown-menu shadow-lg border">
                                                       {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
                                                             <li>
-                                                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                                              <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("maxTimeAlarm", value, {settings: this.state.settings}, db)}}>
                                                                 {value}
                                                               </a>
                                                             </li>  
@@ -454,7 +441,7 @@ export default class About extends React.Component{
                                                     <ul class="dropdown-menu shadow-lg border">
                                                       {["Never", "2 views", "3 views"].map((value) => (
                                                             <li>
-                                                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("hidePostViewCount", value)}}>
+                                                              <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("hidePostViewCount", value, {settings: this.state.settings}, db)}}>
                                                                 {value}
                                                               </a>
                                                             </li>  

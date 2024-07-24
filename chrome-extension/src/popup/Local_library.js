@@ -32,6 +32,7 @@ export const appParams = {
   TIMER_VALUE_2: 3000,
   IDLING_TIMER_VALUE: 60000,
   REMINDER_ALERT_DISPLAY_LIMIT: 3,
+  LINKBEAM_HIGHLIGHTED_POST_CLASS: "LINKBEAM_HIGHLIGHTED_POST_CLASS",
   appAuthor: "Stoic Beaver",
 
   extShadowHostId: "linkBeamExtensionMainRoot",
@@ -306,11 +307,9 @@ export const dbDataSanitizer = {
 
     if (startDateRange && endDateRange){
 
-      console.log("ZZZZZZZZZZZ 1 :  ", startDateRange.toFormat("MMM yyyy"), endDateRange.toFormat("MMM yyyy"));
       if (startDateRange.toFormat("MMM yyyy") == endDateRange.toFormat("MMM yyyy")){
         startDateRange = startDateRange.startOf("month");
         endDateRange = endDateRange.endOf("month");
-        console.log("ZZZZZZZZZZZ 2 :  ", startDateRange.toFormat("dd MMM yyyy"), endDateRange.toFormat("dd MMM yyyy"))
       }
 
       return {
@@ -325,6 +324,29 @@ export const dbDataSanitizer = {
   }
 
 };
+
+export function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+}
+
+export function saveSettingsPropertyValue(property, value, globalData, db){
+
+  var settings = globalData.settings;
+  settings[property] = value;
+
+  (async () => {
+
+    await db.settings
+            .update(1, settings);
+
+  })();
+
+}
 
 export const getUserIcon = (userIconLabel, iconsSet) => {
 

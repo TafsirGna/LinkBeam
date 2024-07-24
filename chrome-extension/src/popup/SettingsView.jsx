@@ -36,6 +36,7 @@ import {
   switchToView,
   setGlobalDataSettings,
   removeObjectsId,
+  saveSettingsPropertyValue,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
@@ -86,7 +87,6 @@ export default class SettingsView extends React.Component{
     };
 
     this.deleteData = this.deleteData.bind(this);
-    this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
     this.checkStorageUsage = this.checkStorageUsage.bind(this);
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
@@ -556,20 +556,6 @@ export default class SettingsView extends React.Component{
 
   }
 
-  saveSettingsPropertyValue(property, value){
-
-    var settings = this.props.globalData.settings;
-    settings[property] = value;
-
-    (async () => {
-
-      await db.settings
-              .update(1, settings);
-
-    })();
-
-  }
-
   render(){
     return (
       <>
@@ -593,7 +579,7 @@ export default class SettingsView extends React.Component{
                     id="notif-custom-switch"
                     label=""
                     checked={ this.props.globalData.settings ? this.props.globalData.settings.notifications : false }
-                    onChange={(event) => {this.saveSettingsPropertyValue("notifications", event.target.checked);}}
+                    onChange={(event) => {saveSettingsPropertyValue("notifications", event.target.checked, this.props.globalData, db);}}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
@@ -613,7 +599,7 @@ export default class SettingsView extends React.Component{
                     id="notif-custom-switch"
                     label=""
                     checked={ this.props.globalData.settings ? this.props.globalData.settings.autoTabOpening : false }
-                    onChange={(event) => {this.saveSettingsPropertyValue("autoTabOpening", event.target.checked);}}
+                    onChange={(event) => {saveSettingsPropertyValue("autoTabOpening", event.target.checked, this.props.globalData, db);}}
                   />
                 </div>
                 {/*<span class="d-block">@username</span>*/}
@@ -637,7 +623,7 @@ export default class SettingsView extends React.Component{
                                 <ul class="dropdown-menu shadow-lg border">
                                   {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
                                         <li>
-                                          <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("outdatedProfileReminder", value)}}>
+                                          <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("outdatedProfileReminder", value, this.props.globalData, db)}}>
                                             {value}
                                           </a>
                                         </li>  
@@ -665,7 +651,7 @@ export default class SettingsView extends React.Component{
                                 <ul class="dropdown-menu shadow-lg border">
                                   {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
                                         <li>
-                                          <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("maxTimeAlarm", value)}}>
+                                          <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("maxTimeAlarm", value, this.props.globalData, db)}}>
                                             {value}
                                           </a>
                                         </li>  

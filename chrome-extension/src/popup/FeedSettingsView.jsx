@@ -27,12 +27,14 @@ import {
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataSettings,
+  saveSettingsPropertyValue,
 } from "./Local_library";
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
 import { 
   HideIcon,
+  BookmarkIcon,
 } from  "./widgets/SVGs";
 
 export default class FeedSettingsView extends React.Component{
@@ -41,8 +43,6 @@ export default class FeedSettingsView extends React.Component{
     super(props);
     this.state = {
     };
-
-    this.saveSettingsPropertyValue = this.saveSettingsPropertyValue.bind(this);
 
   }
 
@@ -53,20 +53,6 @@ export default class FeedSettingsView extends React.Component{
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
-
-  }
-
-  saveSettingsPropertyValue(property, value){
-
-    var settings = this.props.globalData.settings;
-    settings[property] = value;
-
-    (async () => {
-
-      await db.settings
-              .update(1, settings);
-
-    })();
 
   }
 
@@ -96,7 +82,7 @@ export default class FeedSettingsView extends React.Component{
                     <ul class="dropdown-menu shadow-lg border">
                       {["Never", "2 views", "3 views"].map((value) => (
                             <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("hidePostViewCount", value)}}>
+                              <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("hidePostViewCount", value, this.props.globalData, db)}}>
                                 {value}
                               </a>
                             </li>  
@@ -106,28 +92,26 @@ export default class FeedSettingsView extends React.Component{
                 </div>
               </div>
             </div>
-            {/*<div class="d-flex text-body-secondary pt-3">
+            <div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">
-                    <TagIcon
+                    <BookmarkIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Tags 
-                    <span class="badge text-bg-light ms-1 shadow border">
-                      {this.state.tagCount}
-                    </span>
+                    Post highlight color
                   </strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="Add new tag"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.TAGS)}}>
-                      Add
-                  </a>
+                  { this.props.globalData.settings
+                      && this.props.globalData.settings.postHighlightColor
+                      && <input 
+                            type="color" 
+                            class="form-control form-control-color" 
+                            value={this.props.globalData.settings.postHighlightColor} 
+                            onChange={(event) => { saveSettingsPropertyValue("postHighlightColor", event.target.value, this.props.globalData, db); }}
+                            title="Choose the feed post highlight color"/>}
                 </div>
               </div>
-            </div>*/}
+            </div>
           </div>
 
         </div>

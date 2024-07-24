@@ -602,7 +602,13 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   }
 
                   if (post.bookmarked){
-                    this.state.postHtmlElement.style.cssText = "border-color: #0dcaf0 !important; border-width: 2px !important; border-style: solid !important;"
+
+                    this.state.postHtmlElement.classList.add(appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS);
+
+                    if (this.props.appSettings.notifications){
+                      // play the ringtone to alert the user
+                      (new Audio(chrome.runtime.getURL("/assets/elevator-tone.mp3"))).play();
+                    }
                   }
                   
                 }

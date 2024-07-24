@@ -118,8 +118,6 @@ class MainScriptAgent extends ScriptAgentBase {
 
     runTabDataExtractionProcess(){
 
-        console.log("GGGGGGGGGGGGGG II : ");
-
         this.timerInterval = setInterval(() => {
 
             console.log("GGGGGGGGGGGGGG III : ");

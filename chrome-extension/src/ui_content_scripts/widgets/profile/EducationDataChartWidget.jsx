@@ -119,7 +119,6 @@ export default class EducationDataChartWidget extends React.Component{
   procProfileData(profileData){
 
     // education
-    console.log("TTTTTTTTTTTTTTTTT : ", profileData);
     for (var education of profileData.education){
       if (education == "incomplete"){
         continue;

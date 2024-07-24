@@ -54,8 +54,6 @@ export class ScriptAgentBase {
 
 	constructor(){
 
-    console.log("GGGGGGGGGGGGGG -- : ");
-
     this.tabId = null;
     this.isActiveTab = true;
     this.pageUrl = window.location.href;
@@ -229,8 +227,6 @@ export class ScriptAgentBase {
       this.scrollEventHandler2();
     });
 
-    console.log("GGGGGGGGGGGGGG I : ");
-
     this.runTabDataExtractionProcess();
 
 	}
@@ -269,8 +265,6 @@ export class ScriptAgentBase {
             status: "ACK---"
         });
 
-        console.log("GGGGGGGGGGGGGG 0I : ");
-
         if (Object.hasOwn(message.data, "visitId")
               && this.visitId != message.data.visitId){
           this.visitId = message.data.visitId; 
@@ -281,9 +275,7 @@ export class ScriptAgentBase {
         
 		      
 	      if (Object.hasOwn(message.data, "tabId")){
-          console.log("GGGGGGGGGGGGGG 0II : ");
           if (!this.tabId){
-            console.log("GGGGGGGGGGGGGG 0III : ");
             this.setInitData(message.data, sendResponse);
           }
           else{

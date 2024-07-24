@@ -287,6 +287,7 @@ async function injectDataExtractorParams(tabId, url){
         settings: {
             lastDataResetDate: settings.lastDataResetDate,
             notifications: settings.notifications,
+            postHighlightColor: settings.postHighlightColor,
         },
         postData: postData,
         allKeywords: keywords,

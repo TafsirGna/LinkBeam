@@ -38,6 +38,7 @@ import FeedPostRelatedPostsModal from "../widgets/feed/FeedPostRelatedPostsModal
 import eventBus from "../../popup/EventBus";
 
 const LINKBEAM_ALL_FEED_MODALS = "LINKBEAM_ALL_FEED_MODALS";
+const LINKBEAM_EXTENSION_FEED_POST_STYLE = "LINKBEAM_EXTENSION_FEED_POST_STYLE";
 
 function getElementVisibility(element) {
 
@@ -150,40 +151,73 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		if (!this.mainHtmlEl.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
 
-			var newDivTag = document.createElement('div');
-			newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
-		    this.mainHtmlEl.prepend(newDivTag);
-		    newDivTag.attachShadow({ mode: 'open' });
+			try{
+				var newDivTag = document.createElement('div');
+				newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
+			    this.mainHtmlEl.prepend(newDivTag);
+			    newDivTag.attachShadow({ mode: 'open' });
 
-			ReactDOM.createRoot(newDivTag.shadowRoot).render(
-	            <React.StrictMode>
-	              <style type="text/css">{styles}</style>
-	              <div>
-	              	<FeedPostViewsChartModal
-	                  appSettings={props.appSettings}
-	                  tabId={props.tabId}/>
+				ReactDOM.createRoot(newDivTag.shadowRoot).render(
+		            <React.StrictMode>
+		              <style type="text/css">{styles}</style>
+		              <div>
+		              	<FeedPostViewsChartModal
+		                  appSettings={props.appSettings}
+		                  tabId={props.tabId}/>
 
-	                <FeedPostRelatedPostsModal
-	                  appSettings={props.appSettings}
-	                  tabId={props.tabId}/>
-	              </div>
-	            </React.StrictMode>
-	        );
+		                <FeedPostRelatedPostsModal
+		                  appSettings={props.appSettings}
+		                  tabId={props.tabId}/>
+		              </div>
+		            </React.StrictMode>
+		        );
 
-			this.allExtensionWidgetsSet = true;
-
-		}
-
-		const postContainerElements = this.getPostContainerElements();
-		if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
-
-			this.attachPostWidget(this.getPostContainerElements()[0], props);
-			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && true;
+				this.allExtensionWidgetsSet = true;
+			}
+			catch(error){
+				console.log("An error occured when inserting some initial widgets : ", error);
+			}
 
 		}
 		else{
-			this.allExtensionWidgetsSet = this.allExtensionWidgetsSet && false;
+			this.allExtensionWidgetsSet = true;
 		}
+
+		// checking
+		const postContainerElements = this.getPostContainerElements();
+		try{
+			if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+				this.attachPostWidget(this.getPostContainerElements()[0], props);
+			}
+		}
+		catch(error){
+			console.log("An error occured when inserting some initial widgets : ", error);
+			this.allExtensionWidgetsSet &&= false;
+		}
+
+		// checking if the style intended to be applied to highlighted posts is there yet
+		try{
+			if (!document.getElementsByTagName('head')[0].querySelector(`style#${LINKBEAM_EXTENSION_FEED_POST_STYLE}`)){
+				var style = document.createElement('style');
+				style.type = 'text/css';
+				style.id = LINKBEAM_EXTENSION_FEED_POST_STYLE;
+				style.innerHTML = `.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS} {
+										border-color: ${props.appSettings.postHighlightColor} !important;
+										border-width: 2px !important; border-style: solid !important;
+										box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;
+										transition: transform .2s !important;
+									}
+									.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS}:hover {
+									  transform: scale(1.01);
+									}`;
+				document.getElementsByTagName('head')[0].appendChild(style);
+			}
+		}
+		catch(error){
+			console.log("An error occured when inserting some initial widgets : ", error);
+			this.allExtensionWidgetsSet &&= false;
+		}
+		
 
 		this.getAllPostsHideStatus(postContainerElements, props);
 
