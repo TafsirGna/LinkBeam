@@ -402,9 +402,6 @@ async function handleInterestingTab(tabId, url){
 
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
-    const immersiveModeMenuActionId = "immersive_mode_contextual_menu_action",
-          browseOnBehalfMenuActionId = "browse_on_behalf_contextual_menu_action";
-
     if (isLinkedinFeed(url)){ 
         createContextualMenuActions();
     }
@@ -417,14 +414,14 @@ async function handleInterestingTab(tabId, url){
         switch(action){
             case "add":{
                 chrome.contextMenus.create({
-                    id: immersiveModeMenuActionId,
+                    id: appParams.immersiveModeMenuActionId,
                     title: "Toggle immersive mode",
                     contexts: ["all"]
                 });
                 break;
             }
             case "remove":{
-                chrome.contextMenus.remove(immersiveModeMenuActionId, () => {});
+                chrome.contextMenus.remove(appParams.immersiveModeMenuActionId, () => {});
                 break;
             }
         }
@@ -436,14 +433,14 @@ async function handleInterestingTab(tabId, url){
         switch(action){
             case "add":{
                 chrome.contextMenus.create({
-                    id: browseOnBehalfMenuActionId,
+                    id: appParams.browseOnBehalfMenuActionId,
                     title: "Browse on behalf",
                     contexts: ["all"]
                 });
                 break;
             }
             case "remove":{
-                chrome.contextMenus.remove(browseOnBehalfMenuActionId, () => {});
+                chrome.contextMenus.remove(appParams.browseOnBehalfMenuActionId, () => {});
                 break;
             }
         }
@@ -463,6 +460,15 @@ async function handleInterestingTab(tabId, url){
         // browse on behalf menu action
         browseOnBehalfMenuAction("remove");
     }
+
+    // on click of the context menu items
+    chrome.contextMenus.onClicked.addListener((clickData, tab) => {
+        if(clickData.menuItemId == appParams.immersiveModeMenuActionId){
+            chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.immersiveModeMenuActionId}}, (response) => {
+                console.log('Context menu item clicked signal sent', response);
+            }); 
+        }
+    })
 
     return result;
 

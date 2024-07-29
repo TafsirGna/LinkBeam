@@ -39,6 +39,10 @@ import eventBus from "../../popup/EventBus";
 
 const LINKBEAM_ALL_FEED_MODALS = "LINKBEAM_ALL_FEED_MODALS";
 const LINKBEAM_EXTENSION_FEED_POST_STYLE = "LINKBEAM_EXTENSION_FEED_POST_STYLE";
+const distractiveElSeletors = [".scaffold-layout__aside",
+								 ".scaffold-layout__sidebar",
+								 "header#global-nav"/*,
+								 ".share-box-feed-entry__closed-share-box artdeco-card"*/];
 
 function getElementVisibility(element) {
 
@@ -209,6 +213,19 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 									}
 									.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS}:hover {
 									  transform: scale(1.01);
+									}
+
+									.${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME} {
+										transition: all 2s;
+									}
+									.${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden {
+									  opacity: 0;
+									  overflow: hidden;
+									  visibility: hidden;
+									}
+									.${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown {
+									  opacity: 1;
+									  visibility: visible;
 									}`;
 				document.getElementsByTagName('head')[0].appendChild(style);
 			}
@@ -295,5 +312,40 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	// static runTabDataExtractionProcess(props){
 
 	// }
+
+	static toggleImmersiveMode(){
+
+		function toggleElFadingEffect(htmlEl){
+
+			if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)) {
+				htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
+				htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-show`);
+				htmlEl.style.height = 'auto';
+			} else {
+				htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown`);
+				htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
+
+				setTimeout(() => {
+				  htmlEl.style.height = 0
+				}, 1000);
+			}
+
+		}
+
+		distractiveElSeletors.forEach(selector => {
+
+			const distractiveEl = document.querySelector(selector);
+
+			// setting the distinctive class name if not done yet
+			if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
+				distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
+			}
+
+			// toggling the display update
+		 	toggleElFadingEffect(distractiveEl);
+		 	
+		});
+
+	}
 
 }

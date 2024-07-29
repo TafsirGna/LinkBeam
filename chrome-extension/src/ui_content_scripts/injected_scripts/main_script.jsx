@@ -84,6 +84,26 @@ class MainScriptAgent extends ScriptAgentBase {
                 break;
 
             }
+
+            case "CONTEXT_MENU_ITEM_CLICKED":{
+
+                switch(message.data.menuItemId){
+                    case appParams.immersiveModeMenuActionId:{
+
+                        if (isLinkedinFeed(this.pageUrl)){
+                            FeedPageScriptAgent.toggleImmersiveMode();
+                        }
+
+                        if (isLinkedinProfilePage(this.pageUrl)){
+
+                        }
+
+                        break;
+                    }
+                }
+
+                break;
+            }
         }
 
     }

@@ -27,13 +27,19 @@ export const appParams = {
   appYear: "2024",
   appDbVersion: 1,
   keywordCountLimit: 5, 
+  appAuthor: "Stoic Beaver",
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
   TIMER_VALUE_1: 5000,
   TIMER_VALUE_2: 3000,
   IDLING_TIMER_VALUE: 60000,
   REMINDER_ALERT_DISPLAY_LIMIT: 3,
   LINKBEAM_HIGHLIGHTED_POST_CLASS: "LINKBEAM_HIGHLIGHTED_POST_CLASS",
-  appAuthor: "Stoic Beaver",
+
+  // Context menu item ids
+  immersiveModeMenuActionId: "immersive_mode_contextual_menu_action",
+  browseOnBehalfMenuActionId: "browse_on_behalf_contextual_menu_action",
+
+  LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME: "linkbeam-distractive-el",
 
   extShadowHostId: "linkBeamExtensionMainRoot",
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
