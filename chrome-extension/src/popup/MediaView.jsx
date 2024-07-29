@@ -27,6 +27,7 @@ import {
   setGlobalDataSettings, 
   periodRange,
   highlightText,
+  hexToRgb,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -387,7 +388,7 @@ export default class MediaView extends React.Component{
               && this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) == 0
               && <div class="text-center m-5 border shadow-lg rounded p-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
-                                  <p><span class="badge text-bg-primary fst-italic shadow">No media yet</span></p>
+                                  <p><span class="badge text-bg-primary fst-italic shadow-sm">No media yet</span></p>
                                 </div> }
 
           { this.state.allObjects
@@ -428,15 +429,18 @@ export default class MediaView extends React.Component{
 
                   { this.state.viewIndex == 0 
                       && <MediaGridView
-                          objects={this.state.allObjects}/>}
+                          objects={this.state.allObjects}
+                          globalData={this.props.globalData}/>}
 
                   { this.state.viewIndex == 1 
                       && <MediaGridView
-                          objects={this.state.imageObjects}/>}
+                          objects={this.state.imageObjects}
+                          globalData={this.props.globalData}/>}
 
                   { this.state.viewIndex == 2 
                       && <MediaGridView
-                          objects={this.state.videoObjects}/>}
+                          objects={this.state.videoObjects}
+                          globalData={this.props.globalData}/>}
 
                 </div>
 
@@ -522,7 +526,9 @@ class MediaGridView extends React.Component{
                                                                                                             href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
                                                                                                             target="_blank" 
                                                                                                             title="View on linkedin">
-                                                                                                            <div class={`card shadow ${feedPost.bookmarked ? "border border-4 border-info" : ""}`}>
+                                                                                                            <div 
+                                                                                                              class={`card shadow`} 
+                                                                                                              style={feedPost.bookmarked ? {border: `4px solid ${hexToRgb(this.props.globalData.settings.postHighlightColor, "string")}`} : null}>
                                                                                                               { feedPost.media.length == 1
                                                                                                                   && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
                                                                                                                   && <ImageLoader

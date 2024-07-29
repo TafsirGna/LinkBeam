@@ -98,7 +98,6 @@ export default class SearchInputView extends React.Component{
 
           break;
         }
-
         case dbData.objectStoreNames.REMINDERS:{
 
           if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "search"){
@@ -107,15 +106,19 @@ export default class SearchInputView extends React.Component{
 
           break;
         }
-
         case "posts":{
 
           eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
 
           break;
         }
-
         case "media":{
+
+          eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
+
+          break;
+        }
+        case "feed_profiles":{
 
           eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
 
@@ -133,23 +136,21 @@ export default class SearchInputView extends React.Component{
         this.searchProfiles()
         break;
       }
-
       case dbData.objectStoreNames.REMINDERS:{
         this.searchReminders();
         break;
-
       }
-
       case "posts":{
         this.searchPosts();
         break;
-
       }
-
       case "media":{
         this.searchPosts("media");
         break;
-
+      }
+      case "feed_profiles":{
+        eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
+        break;
       }
     }
 
@@ -391,19 +392,20 @@ export default class SearchInputView extends React.Component{
         label = "profile";
         break;
       }
-
       case dbData.objectStoreNames.REMINDERS:{
         label = "reminder";
         break;
       }
-
       case "posts":{
         label = "post";
         break;
       }
-
       case "media":{
         label = "media";
+        break;
+      }
+      case "feed_profiles":{
+        label = "profile";
         break;
       }
     }

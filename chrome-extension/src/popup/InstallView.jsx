@@ -172,8 +172,6 @@ export default class About extends React.Component{
                   }
                 }
 
-                localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
-
                 this.setState({opDone: true, processing: false}, () => {
                   this.setSettingsObject();
                 });
@@ -261,9 +259,8 @@ export default class About extends React.Component{
               autoTabOpening: true,
               hidePostViewCount: "Never",
               postHighlightColor: "#563d7c",
+              immersiveMode: false,
           });
-
-          localStorage.setItem('currentPageTitle', appParams.COMPONENT_CONTEXT_NAMES.HOME);
 
           this.setState({opDone: true, processing: false}, () => {
             this.setSettingsObject();
@@ -427,32 +424,51 @@ export default class About extends React.Component{
                                                 </small>
                                               </div>
                                             </a>}
-                                            <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                              <div class="d-flex gap-2 w-100 justify-content-between">
-                                                <div>
-                                                  <h6 class="mb-0">Hide post {/*(if no change)*/} after N views</h6>
-                                                  <p class="mb-0 opacity-75 small">It helps you hide posts that you've already seen but that keep showing up in your feed.</p>
-                                                </div>
-                                                <small>
-                                                  <div class="dropdown">
-                                                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                                                      <span class="rounded shadow-sm badge border text-primary">{this.state.settings.hidePostViewCount}</span>
-                                                    </div>
-                                                    <ul class="dropdown-menu shadow-lg border">
-                                                      {["Never", "2 views", "3 views"].map((value) => (
-                                                            <li>
-                                                              <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("hidePostViewCount", value, {settings: this.state.settings}, db)}}>
-                                                                {value}
-                                                              </a>
-                                                            </li>  
-                                                        ))}
-                                                    </ul>
-                                                  </div>
-                                                </small>
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Hide post {/*(if no change)*/} after N views</h6>
+                                            <p class="mb-0 opacity-75 small">It helps you hide posts that you've already seen but that keep showing up in your feed.</p>
+                                          </div>
+                                          <small>
+                                            <div class="dropdown">
+                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.hidePostViewCount}</span>
                                               </div>
-                                            </a>
+                                              <ul class="dropdown-menu shadow-lg border">
+                                                {["Never", "2 views", "3 views"].map((value) => (
+                                                      <li>
+                                                        <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("hidePostViewCount", value, {settings: this.state.settings}, db)}}>
+                                                          {value}
+                                                        </a>
+                                                      </li>  
+                                                  ))}
+                                              </ul>
+                                            </div>
+                                          </small>
+                                        </div>
+                                      </a>
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Immersive mode</h6>
+                                            <p class="mb-0 opacity-75 small">Toggle this on to always make all the elements surrounding the feed disappear</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <Form.Check // prettier-ignore
+                                              type="switch"
+                                              id="notif-custom-switch"
+                                              label=""
+                                              checked={this.state.settings.immersiveMode}
+                                              onChange={(event) => {saveSettingsPropertyValue("immersiveMode", event.target.checked, {settings: this.state.settings}, db);}}
+                                            />
+                                          </small>
+                                        </div>
+                                      </a>  
                                     </div>
                                   </div>}
+
+
 
                         </div>}
 

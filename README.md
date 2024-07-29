@@ -38,7 +38,6 @@ Linkbeam can basically:
 * regroup all the media associated with the posts in a unique interface for the user to view and search;
 * import/export your data in json format.
 explore some previous related posts when viewing a post right from the feed interface;
-* list all the previous copycats (that the user may have encountered in the past on their feed) of the current post (a beta feature)
 
 Linkbeam doesn't:
 * help in any ad marketing use cases;

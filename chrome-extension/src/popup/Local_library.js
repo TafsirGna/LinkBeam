@@ -325,13 +325,25 @@ export const dbDataSanitizer = {
 
 };
 
-export function hexToRgb(hex) {
+export function hexToRgb(hex, resultType) {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : null;
+
+  if (!result){
+    return null;
+  }
+
+  switch(resultType){
+    case "string": {
+      return `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16), 1})`;
+    }
+    case "object":{
+      return {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      };
+    }
+  }
 }
 
 export function saveSettingsPropertyValue(property, value, globalData, db){
@@ -359,9 +371,6 @@ export const getUserIcon = (userIconLabel, iconsSet) => {
     case "man":
       userIcon = iconsSet.man_user_icon;
       break;
-    case "boy":
-      userIcon = iconsSet.boy_user_icon;
-      break;
     case "lady":
       userIcon = iconsSet.lady_user_icon;
       break;
@@ -370,9 +379,6 @@ export const getUserIcon = (userIconLabel, iconsSet) => {
       break;
     case "gamer":
       userIcon = iconsSet.gamer_user_icon;
-      break;
-    case "mom":
-      userIcon = iconsSet.mom_user_icon;
       break;
   }
 
@@ -1915,7 +1921,7 @@ export const secondsToHms = (d, label = true) => {
 
 export function saveCurrentPageTitle(pageTitle){
 
-  localStorage.setItem('currentPageTitle', pageTitle);
+  chrome.storage.local.set({ currentPageTitle: pageTitle });
 
 }
 

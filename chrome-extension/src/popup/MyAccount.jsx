@@ -23,10 +23,8 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import default_user_icon from '../assets/user_icons/default.png';
-import boy_user_icon from '../assets/user_icons/boy.png';
 import gamer_user_icon from '../assets/user_icons/gamer.png';
 import man_user_icon from '../assets/user_icons/man.png';
-import mom_user_icon from '../assets/user_icons/mom.png';
 import lady_user_icon from '../assets/user_icons/lady.png';
 import woman_user_icon from '../assets/user_icons/woman.png';
 import { DateTime as LuxonDateTime } from "luxon";
@@ -46,10 +44,8 @@ const productIdOverlayText = "Your unique identifier";
 var iconsSet = {
   woman_user_icon: woman_user_icon,
   lady_user_icon: lady_user_icon,
-  mom_user_icon: mom_user_icon,
   man_user_icon: man_user_icon,
   gamer_user_icon: gamer_user_icon,
-  boy_user_icon: boy_user_icon,
   default_user_icon: default_user_icon,
 }
 
@@ -162,15 +158,13 @@ export default class MyAccount extends React.Component{
             <div class="row">
               <div class="col text-center">
                 <img width="60" height="60" src={default_user_icon} onClick={() => {this.changeUserIcon("default")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Default"/>
-                <img width="60" height="60" src={boy_user_icon} onClick={() => {this.changeUserIcon("boy")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Boy"/>
                 <img width="60" height="60" src={gamer_user_icon} onClick={() => {this.changeUserIcon("gamer")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Gamer"/>
               </div>
               <div class="col text-center">
                 <img width="60" height="60" src={man_user_icon} onClick={() => {this.changeUserIcon("man")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Man"/>
-                <img width="60" height="60" src={mom_user_icon} onClick={() => {this.changeUserIcon("mom")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Mom"/>
+                <img width="60" height="60" src={lady_user_icon} onClick={() => {this.changeUserIcon("lady")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Lady"/>
               </div>
               <div class="col text-center">
-                <img width="60" height="60" src={lady_user_icon} onClick={() => {this.changeUserIcon("lady")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 mb-3" title="Lady"/>
                 <img width="60" height="60" src={woman_user_icon} onClick={() => {this.changeUserIcon("woman")}} alt="twbs" class="handy-cursor shadow rounded-circle flex-shrink-0 my-3" title="Woman"/>
               </div>
             </div>

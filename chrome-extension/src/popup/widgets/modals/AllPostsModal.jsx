@@ -32,6 +32,7 @@ import {
 } from "../../Local_library";
 import { db } from "../../../db";
 import eventBus from "../../EventBus";
+import SearchInputView from "../SearchInputView";
 
 export default class AllPostsModal extends React.Component{
 
@@ -40,12 +41,17 @@ export default class AllPostsModal extends React.Component{
     this.state = {
     	feedPostViews: null,
       sortByValueIndex: 0,
+      searchText: "",
     };
 
     this.setSortByValue = this.setSortByValue.bind(this);
   }
 
   componentDidMount() {
+
+    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
+      this.setState({searchText: data.searchText});
+    });
 
   }
 
@@ -116,33 +122,6 @@ export default class AllPostsModal extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            <div class="clearfix">
-
-              <div class="float-end d-flex align-items-center gap-2">
-
-                <svg title="Sort by" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-muted"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
-
-                <div class="dropdown">
-                  <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                    <span class="rounded shadow-sm badge border text-primary">Sort by</span>
-                  </div>
-                  <ul class="dropdown-menu shadow-lg border">
-                    {["date (desc)", "duration (desc)", "popularity (desc)"].map((value, index) => (
-                          <li>
-                            <a class={`dropdown-item small ${this.state.sortByValueIndex == index ? "active" : ""}`} href="#" onClick={() => {this.setSortByValue(index)}}>
-                              {value}
-                              { this.state.sortByValueIndex == index
-                                  && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                            </a>
-                          </li>  
-                      ))}
-                  </ul>
-                </div>
-
-              </div>
-
-            </div>
-
           	{ !this.state.feedPostViews 
                 && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                       {/*<span class="visually-hidden">Loading...</span>*/}
@@ -162,11 +141,59 @@ export default class AllPostsModal extends React.Component{
 
             				{ this.state.feedPostViews.length != 0
                         		&& <div>
-    			                    { this.state.feedPostViews.map(((feedPostView, index) => <PostViewListItemView 
-                                                                          startDate={this.props.startDate}
-                                                                          endDate={this.props.endDate}
-                                                                          object={feedPostView}
-                                                                          globalData={this.props.globalData}/>))}
+
+                                {/*Search input*/}
+                                <div class="my-4">
+                                  <SearchInputView 
+                                    objectStoreName="feed_profiles" 
+                                    globalData={this.props.globalData} />
+                                    { this.state.searchText 
+                                        && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
+                                            {`${this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
+                                                                                      && ((feedPostView.initiator && feedPostView.initiator.name && feedPostView.initiator.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+                                                                                            || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
+                                                                                    || (!this.state.searchText && true))
+                                                                        .length} results for '${this.state.searchText}'`}
+                                          </p> }
+                                </div>
+
+                                {/* sort by widget */}
+                                <div class="clearfix">
+
+                                  <div class="float-end d-flex align-items-center gap-2">
+
+                                    <svg title="Sort by" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 text-muted"><line x1="21" y1="10" x2="7" y2="10"></line><line x1="21" y1="6" x2="3" y2="6"></line><line x1="21" y1="14" x2="3" y2="14"></line><line x1="21" y1="18" x2="7" y2="18"></line></svg>
+
+                                    <div class="dropdown">
+                                      <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                        <span class="rounded shadow-sm badge border text-primary">Sort by</span>
+                                      </div>
+                                      <ul class="dropdown-menu shadow-lg border">
+                                        {["date (desc)", "duration (desc)", "popularity (desc)"].map((value, index) => (
+                                              <li>
+                                                <a class={`dropdown-item small ${this.state.sortByValueIndex == index ? "active" : ""}`} href="#" onClick={() => {this.setSortByValue(index)}}>
+                                                  {value}
+                                                  { this.state.sortByValueIndex == index
+                                                      && <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1 float-end"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                                </a>
+                                              </li>  
+                                          ))}
+                                      </ul>
+                                    </div>
+
+                                  </div>
+
+                                </div>
+
+      			                    { this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
+                                                                                      && ((feedPostView.initiator && feedPostView.initiator.name && feedPostView.initiator.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+                                                                                            || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
+                                                                                    || (!this.state.searchText && true))
+                                                          .map(((feedPostView, index) => <PostViewListItemView 
+                                                                                            startDate={this.props.startDate}
+                                                                                            endDate={this.props.endDate}
+                                                                                            object={feedPostView}
+                                                                                            globalData={this.props.globalData}/>))}
     			                  	</div>}
 
             		   </div>}      

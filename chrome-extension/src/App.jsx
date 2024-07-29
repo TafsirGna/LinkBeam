@@ -75,7 +75,7 @@ export default class App extends React.Component{
 
     this.listenToBusEvents();
 
-    Dexie.exists(appParams.appDbName).then((function (exists) {
+    Dexie.exists(appParams.appDbName).then((async function (exists) {
       if (!exists) {
           // on install, open a web page for information
           this.setState({missingDatabase: true});
@@ -90,12 +90,9 @@ export default class App extends React.Component{
 
       // Getting the window url params
       const urlParams = new URLSearchParams(window.location.search);
-      var currentPageTitle = urlParams.get("view");
-
-      if (!currentPageTitle){
-        currentPageTitle = localStorage.getItem('currentPageTitle');
-        currentPageTitle = currentPageTitle ? currentPageTitle : appParams.COMPONENT_CONTEXT_NAMES.HOME;
-      }
+      const currentPageTitle = urlParams.get("view")
+                              || (await chrome.storage.local.get(["currentPageTitle"])).currentPageTitle 
+                              || appParams.COMPONENT_CONTEXT_NAMES.HOME;
 
       this.setState({currentPageTitle: currentPageTitle});
 

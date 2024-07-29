@@ -32,9 +32,11 @@ import {
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
+import Form from 'react-bootstrap/Form';
 import { 
   HideIcon,
   BookmarkIcon,
+  MaximizeIcon,
 } from  "./widgets/SVGs";
 
 export default class FeedSettingsView extends React.Component{
@@ -90,6 +92,26 @@ export default class FeedSettingsView extends React.Component{
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <MaximizeIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Immersive mode
+                  </strong>
+                  <Form.Check // prettier-ignore
+                    type="switch"
+                    id="notif-custom-switch"
+                    label=""
+                    checked={ this.props.globalData.settings ? this.props.globalData.settings.immersiveMode : false }
+                    onChange={(event) => {saveSettingsPropertyValue("immersiveMode", event.target.checked, this.props.globalData, db);}}
+                  />
+                </div>
+                {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
             <div class="d-flex text-body-secondary pt-3">
