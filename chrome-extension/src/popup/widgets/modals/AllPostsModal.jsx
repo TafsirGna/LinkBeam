@@ -42,6 +42,7 @@ export default class AllPostsModal extends React.Component{
     	feedPostViews: null,
       sortByValueIndex: 0,
       searchText: "",
+      processing: false,
     };
 
     this.setSortByValue = this.setSortByValue.bind(this);
@@ -50,7 +51,14 @@ export default class AllPostsModal extends React.Component{
   componentDidMount() {
 
     eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
-      this.setState({searchText: data.searchText});
+      this.setState({
+        searchText: data.searchText,
+        processing: true,
+      }, () => {
+        setTimeout(() => {
+          this.setState({processing: false});
+        }, 1000);
+      });
     });
 
   }
@@ -87,7 +95,10 @@ export default class AllPostsModal extends React.Component{
   }
 
   setSortByValue(index){
-    this.setState({sortByValueIndex: index}, () => {
+    this.setState({
+      sortByValueIndex: index,
+      processing: true,
+    }, () => {
 
       var feedPostViews = this.state.feedPostViews;
       switch(index){
@@ -105,7 +116,10 @@ export default class AllPostsModal extends React.Component{
         }
       }
       this.setState({feedPostViews: null}, () => {
-        this.setState({feedPostViews: feedPostViews});
+        this.setState({
+          feedPostViews: feedPostViews,
+          processing: false,
+        });
       });
     });
   }
@@ -185,15 +199,24 @@ export default class AllPostsModal extends React.Component{
 
                                 </div>
 
-      			                    { this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
+                                { this.state.processing 
+                                    && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                                            {/*<span class="visually-hidden">Loading...</span>*/}
+                                          </div>
+                                          <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                                        </div>
+                                      </div> }
+
+      			                    { !this.state.processing
+                                    && this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
                                                                                       && ((feedPostView.initiator && feedPostView.initiator.name && feedPostView.initiator.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
                                                                                             || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
                                                                                     || (!this.state.searchText && true))
-                                                          .map(((feedPostView, index) => <PostViewListItemView 
-                                                                                            startDate={this.props.startDate}
-                                                                                            endDate={this.props.endDate}
-                                                                                            object={feedPostView}
-                                                                                            globalData={this.props.globalData}/>))}
+                                                                .map(((feedPostView, index) => <PostViewListItemView 
+                                                                                                  startDate={this.props.startDate}
+                                                                                                  endDate={this.props.endDate}
+                                                                                                  object={feedPostView}
+                                                                                                  globalData={this.props.globalData}/>))}
     			                  	</div>}
 
             		   </div>}      

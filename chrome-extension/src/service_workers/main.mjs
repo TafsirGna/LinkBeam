@@ -402,19 +402,67 @@ async function handleInterestingTab(tabId, url){
 
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
-    // if (isLinkedinFeed(url)){ 
-    //     createBrowsingOnBehalfMenu();
-    // }
+    const immersiveModeMenuActionId = "immersive_mode_contextual_menu_action",
+          browseOnBehalfMenuActionId = "browse_on_behalf_contextual_menu_action";
 
-    // function createBrowsingOnBehalfMenu(){
+    if (isLinkedinFeed(url)){ 
+        createContextualMenuActions();
+    }
+    else{
+        removeContextualMenuActions();
+    }
 
-    //     chrome.contextMenus.create({
-    //         id: "browse_on_behalf_menu",
-    //         title: "Browse on behalf",
-    //         contexts: ["all"]
-    //     });
+    function immersiveModeMenuAction(action){
 
-    // }
+        switch(action){
+            case "add":{
+                chrome.contextMenus.create({
+                    id: immersiveModeMenuActionId,
+                    title: "Toggle immersive mode",
+                    contexts: ["all"]
+                });
+                break;
+            }
+            case "remove":{
+                chrome.contextMenus.remove(immersiveModeMenuActionId, () => {});
+                break;
+            }
+        }
+
+    }
+
+    function browseOnBehalfMenuAction(action){
+
+        switch(action){
+            case "add":{
+                chrome.contextMenus.create({
+                    id: browseOnBehalfMenuActionId,
+                    title: "Browse on behalf",
+                    contexts: ["all"]
+                });
+                break;
+            }
+            case "remove":{
+                chrome.contextMenus.remove(browseOnBehalfMenuActionId, () => {});
+                break;
+            }
+        }
+
+    }
+
+    function createContextualMenuActions(){
+        // immersive mode menu action
+        immersiveModeMenuAction("add");
+        // browse on behalf menu action
+        browseOnBehalfMenuAction("add");
+    }
+
+    function removeContextualMenuActions(){
+        // immersive mode menu action
+        immersiveModeMenuAction("remove");
+        // browse on behalf menu action
+        browseOnBehalfMenuAction("remove");
+    }
 
     return result;
 
