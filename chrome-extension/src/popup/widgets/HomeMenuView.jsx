@@ -38,6 +38,7 @@ import {
   HelpIcon,
   MediaIcon,
   CompassIcon,
+  CalendarIcon,
 } from "./SVGs";
 import eventBus from "../EventBus";
 
@@ -113,6 +114,17 @@ export default class HomeMenu extends React.Component{
                                         title="Click to see more"
                                         href="#">
                                         Some outdated profiles
+                                      </a>
+                                    </li>}
+
+                              { this.props.args.reminderOfDataBackup
+                                  && <li>
+                                      <a 
+                                        class="dropdown-item small" 
+                                        onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.DATA_SETTINGS)}} 
+                                        title="Click to see more"
+                                        href="#">
+                                        Data backup alert
                                       </a>
                                     </li>}
 
@@ -213,6 +225,18 @@ export default class HomeMenu extends React.Component{
                   size="15"
                   className="me-2 text-muted"/>
                 Media center
+              </a>
+            </li>
+            <li>
+              <a 
+                class="dropdown-item small" 
+                href="/index.html?view=Calendar" 
+                target="_blank"
+                title="See calendar">
+                <CalendarIcon
+                  size="15"
+                  className="me-2 text-muted"/>
+                Calendar
               </a>
             </li>
             {/*<li>

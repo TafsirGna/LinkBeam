@@ -110,24 +110,24 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
         await refreshAppSettingsObject();
 
-        // var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
+        var loadingTabs = ((await chrome.storage.session.get(["loadingTabs"])).loadingTabs || []);
         // console.log('**************** : ', loadingTabs, changeInfo.status);
 
         switch(changeInfo.status){
 
             case "loading":{
 
-                // async function isTabUrlAlreadyLoading(){
+                async function isTabUrlAlreadyLoading(){
 
-                //     // checking that i'm not already processing this signal
-                //     if (loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url) != -1){
-                //         return true;
-                //     }
-                //     loadingTabs.push({id: tabId, url: tab.url});
-                //     await chrome.storage.session.set({ loadingTabs: loadingTabs });
-                //     return false;
+                    // checking that i'm not already processing this signal
+                    if (loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url) != -1){
+                        return true;
+                    }
+                    loadingTabs.push({id: tabId, url: tab.url});
+                    await chrome.storage.session.set({ loadingTabs: loadingTabs });
+                    return false;
 
-                // }
+                }
 
                 try{
 
@@ -140,16 +140,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                     return;
                                 }
 
-                                const result = await handleInterestingTab(tabId, tab.url);
+                                const result = await handleInterestingTab(tabId);
 
                                 if (tabs[0].id == tabId){
 
-                                    if (changeInfo.url === undefined){ // in case of a tab's page reload
-                                        // if (!(await isTabUrlAlreadyLoading())){
-                                            injectScriptsInTab(tabId, tab.url);
-                                        // }
-                                    }
-                                    else{
+                                    // if (changeInfo.url === undefined){ // in case of a tab's page reload
+                                    //     // if (!(await isTabUrlAlreadyLoading())){
+                                    //         injectScriptsInTab(tabId, tab.url);
+                                    //     // }
+                                    // }
+                                    // else{
 
                                         // updating the badge text
                                         chrome.action.setBadgeText({text: result.badgeText});
@@ -159,7 +159,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                                             injectScriptsInTab(tabId, tab.url);
                                         }
 
-                                    }
+                                    // }
+
+                                    // Creating the context menu items
+                                    createContextualMenuActions();
 
                                 }
 
@@ -177,39 +180,42 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             }
 
-            // case "complete": {
+            case "complete": {
 
-            //     const index = loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url);
-            //     if (index != -1){
-            //         loadingTabs.splice(index, 1);
-            //         await chrome.storage.session.set({ loadingTabs: loadingTabs });
-            //     }
+                const index = loadingTabs.findIndex(t => t.id == tabId && t.url == tab.url);
+                if (index != -1){
+                    loadingTabs.splice(index, 1);
+                    await chrome.storage.session.set({ loadingTabs: loadingTabs });
+                }
 
-            //     break;
-            // }
+                break;
+            }
 
         }
 
     }
-    // else{
+    else{
 
-    //     chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-    //         console.log("################### : ", tabs, tabs[0]);
-    //         if (tabs[0].id == tabId){
-    //             chrome.action.setBadgeText({text: null});
+        // Removing the context menu items
+        removeContextualMenuActions();
 
-    //             var sessionItem = await chrome.storage.session.get(["myTabs"]);
-    //             if (sessionItem.myTabs 
-    //                     && Object.hasOwn(sessionItem.myTabs, tabId) 
-    //                     && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
-    //                 sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
-    //                 chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-    //             }
+        // chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+        //     console.log("################### : ", tabs, tabs[0]);
+        //     if (tabs[0].id == tabId){
+        //         chrome.action.setBadgeText({text: null});
 
-    //         }
-    //     });
+        //         var sessionItem = await chrome.storage.session.get(["myTabs"]);
+        //         if (sessionItem.myTabs 
+        //                 && Object.hasOwn(sessionItem.myTabs, tabId) 
+        //                 && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
+        //             sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
+        //             chrome.storage.session.set({ myTabs: sessionItem.myTabs });
+        //         }
 
-    // }
+        //     }
+        // });
+
+    }
 
   }
 );
@@ -372,7 +378,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-async function handleInterestingTab(tabId, url){
+async function handleInterestingTab(tabId){
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
         result = { badgeText: "!", inject: true };
@@ -402,77 +408,70 @@ async function handleInterestingTab(tabId, url){
 
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
-    if (isLinkedinFeed(url)){ 
-        createContextualMenuActions();
-    }
-    else{
-        removeContextualMenuActions();
-    }
-
-    function immersiveModeMenuAction(action){
-
-        switch(action){
-            case "add":{
-                chrome.contextMenus.create({
-                    id: appParams.immersiveModeMenuActionId,
-                    title: "Toggle immersive mode",
-                    contexts: ["all"]
-                });
-                break;
-            }
-            case "remove":{
-                chrome.contextMenus.remove(appParams.immersiveModeMenuActionId, () => {});
-                break;
-            }
-        }
-
-    }
-
-    function browseOnBehalfMenuAction(action){
-
-        switch(action){
-            case "add":{
-                chrome.contextMenus.create({
-                    id: appParams.browseOnBehalfMenuActionId,
-                    title: "Browse on behalf",
-                    contexts: ["all"]
-                });
-                break;
-            }
-            case "remove":{
-                chrome.contextMenus.remove(appParams.browseOnBehalfMenuActionId, () => {});
-                break;
-            }
-        }
-
-    }
-
-    function createContextualMenuActions(){
-        // immersive mode menu action
-        immersiveModeMenuAction("add");
-        // browse on behalf menu action
-        browseOnBehalfMenuAction("add");
-    }
-
-    function removeContextualMenuActions(){
-        // immersive mode menu action
-        immersiveModeMenuAction("remove");
-        // browse on behalf menu action
-        browseOnBehalfMenuAction("remove");
-    }
-
-    // on click of the context menu items
-    chrome.contextMenus.onClicked.addListener((clickData, tab) => {
-        if(clickData.menuItemId == appParams.immersiveModeMenuActionId){
-            chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.immersiveModeMenuActionId}}, (response) => {
-                console.log('Context menu item clicked signal sent', response);
-            }); 
-        }
-    })
-
     return result;
 
 }
+
+function immersiveModeMenuAction(action){
+
+    switch(action){
+        case "add":{
+            chrome.contextMenus.create({
+                id: appParams.immersiveModeMenuActionId,
+                title: "Toggle immersive mode",
+                contexts: ["all"]
+            });
+            break;
+        }
+        case "remove":{
+            chrome.contextMenus.remove(appParams.immersiveModeMenuActionId, () => {});
+            break;
+        }
+    }
+
+}
+
+function browseOnBehalfMenuAction(action){
+
+    switch(action){
+        case "add":{
+            chrome.contextMenus.create({
+                id: appParams.browseOnBehalfMenuActionId,
+                title: "Browse feed on behalf",
+                contexts: ["all"]
+            });
+            break;
+        }
+        case "remove":{
+            chrome.contextMenus.remove(appParams.browseOnBehalfMenuActionId, () => {});
+            break;
+        }
+    }
+
+}
+
+function createContextualMenuActions(){
+    // immersive mode menu action
+    immersiveModeMenuAction("add");
+    // browse on behalf menu action
+    browseOnBehalfMenuAction("add");
+}
+
+function removeContextualMenuActions(){
+    // immersive mode menu action
+    immersiveModeMenuAction("remove");
+    // browse on behalf menu action
+    browseOnBehalfMenuAction("remove");
+}
+
+// on click of the context menu items
+chrome.contextMenus.onClicked.addListener((clickData, tab) => {
+    if(clickData.menuItemId == appParams.immersiveModeMenuActionId){
+        chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.immersiveModeMenuActionId}}, (response) => {
+            console.log('Context menu item clicked signal sent', response);
+        }); 
+    }
+})
 
 async function setPostsRankingInSession(){
 
@@ -535,7 +534,7 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
 
             Dexie.exists(appParams.appDbName).then(async function(exists) {
                 if (exists) {
-                    var result = await handleInterestingTab(activeInfo.tabId, url);
+                    var result = await handleInterestingTab(activeInfo.tabId);
 
                     // updating the badge text
                     chrome.action.setBadgeText({text: result.badgeText});
@@ -545,12 +544,18 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                         console.log("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>> : ", url);
                         injectScriptsInTab(activeInfo.tabId, url);
                     }
+
+                    // Creating the context menu items
+                    createContextualMenuActions();
                 }
             });
 
         }
         else{
             chrome.action.setBadgeText({text: null});
+
+            // Removing the context menu items
+            removeContextualMenuActions();
         }
 
     });

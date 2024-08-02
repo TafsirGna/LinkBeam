@@ -337,9 +337,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			const distractiveEl = document.querySelector(selector);
 
 			// setting the distinctive class name if not done yet
-			if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
-				distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
-			}
+			// if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
+			// 	distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
+			// }
 
 			// toggling the display update
 		 	toggleElFadingEffect(distractiveEl);

@@ -36,8 +36,12 @@ import Form from 'react-bootstrap/Form';
 import { 
   HideIcon,
   BookmarkIcon,
-  MaximizeIcon,
+  PostIcon,
 } from  "./widgets/SVGs";
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import Popover from 'react-bootstrap/Popover';
+
+const browseOnBehalfDefaultPostCount = 10;
 
 export default class FeedSettingsView extends React.Component{
 
@@ -45,6 +49,8 @@ export default class FeedSettingsView extends React.Component{
     super(props);
     this.state = {
     };
+
+    this.getBrowseOnBehalfPostCountValue = this.getBrowseOnBehalfPostCountValue.bind(this);
 
   }
 
@@ -57,6 +63,8 @@ export default class FeedSettingsView extends React.Component{
     }
 
   }
+
+  getBrowseOnBehalfPostCountValue = () => this.props.globalData.settings.browseOnBehalfPostCount || browseOnBehalfDefaultPostCount;
 
   render(){
 
@@ -82,7 +90,7 @@ export default class FeedSettingsView extends React.Component{
                       <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.hidePostViewCount : null}</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
-                      {["Never", "2 views", "3 views"].map((value) => (
+                      {appParams.allHidePostViewCountValues.map((value) => (
                             <li>
                               <a class="dropdown-item small" href="#" onClick={() => {this.saveSettingsPropertyValue("hidePostViewCount", value, this.props.globalData, db)}}>
                                 {value}
@@ -92,26 +100,6 @@ export default class FeedSettingsView extends React.Component{
                     </ul>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <MaximizeIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Immersive mode
-                  </strong>
-                  <Form.Check // prettier-ignore
-                    type="switch"
-                    id="notif-custom-switch"
-                    label=""
-                    checked={ this.props.globalData.settings ? this.props.globalData.settings.immersiveMode : false }
-                    onChange={(event) => {saveSettingsPropertyValue("immersiveMode", event.target.checked, this.props.globalData, db);}}
-                  />
-                </div>
-                {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
             <div class="d-flex text-body-secondary pt-3">
@@ -131,6 +119,40 @@ export default class FeedSettingsView extends React.Component{
                             value={this.props.globalData.settings.postHighlightColor} 
                             onChange={(event) => { saveSettingsPropertyValue("postHighlightColor", event.target.value, this.props.globalData, db); }}
                             title="Choose the feed post highlight color"/>}
+                </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <PostIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Set post count | Browse on behalf
+                  </strong>
+                  { this.props.globalData.settings
+                      /*&& this.props.globalData.settings.browseOnBehalfPostCount*/
+                      &&  <OverlayTrigger 
+                            trigger="click" 
+                            placement="top" 
+                            overlay={<Popover id="popover-basic" className="shadow">
+                                      {/*<Popover.Header as="h6" className="py-1">Post count</Popover.Header>*/}
+                                      <Popover.Body className="py-1">
+                                        <input 
+                                          type="range" 
+                                          class="form-range border rounded mt-1 px-1 shadow-sm" 
+                                          min={browseOnBehalfDefaultPostCount} 
+                                          max={50} 
+                                          step="5"
+                                          value={this.getBrowseOnBehalfPostCountValue()}
+                                          onChange={(event) => { saveSettingsPropertyValue("browseOnBehalfPostCount", event.target.value, this.props.globalData, db); }} />
+                                      </Popover.Body>
+                                    </Popover>}>
+                            <span class="rounded shadow-sm badge border text-primary handy-cursor">
+                              {`${this.getBrowseOnBehalfPostCountValue()} posts`}
+                          </span>
+                        </OverlayTrigger>}
                 </div>
               </div>
             </div>

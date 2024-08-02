@@ -257,7 +257,7 @@ export default class About extends React.Component{
               outdatedProfileReminder: "> 1 year",
               maxTimeAlarm: "1 hour",
               autoTabOpening: true,
-              hidePostViewCount: "Never",
+              hidePostViewCount: appParams.allHidePostViewCountValues[0],
               postHighlightColor: "#563d7c",
               immersiveMode: false,
           });
@@ -387,7 +387,7 @@ export default class About extends React.Component{
                                                         <span class="rounded shadow-sm badge border text-primary">{this.state.settings.outdatedProfileReminder}</span>
                                                       </div>
                                                       <ul class="dropdown-menu shadow-lg border">
-                                                        {["Never", "> 1 month", "> 6 months", "> 1 year"].map((value) => (
+                                                        {appParams.allOutdatedProfileReminderSettingValues.map((value) => (
                                                               <li>
                                                                 <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("outdatedProfileReminder", value, {settings: this.state.settings}, db)}}>
                                                                   {value}
@@ -404,7 +404,7 @@ export default class About extends React.Component{
                                               <div class="d-flex gap-2 w-100 justify-content-between">
                                                 <div>
                                                   <h6 class="mb-0">Max time per day</h6>
-                                                  <p class="mb-0 opacity-75 small">It helps you notice when you're about to reach your daily limit of linkedin browsing.</p>
+                                                  <p class="mb-0 opacity-75 small">It helps you notice when you're about to reach your daily limit of linkedin feed and profiles browsing.</p>
                                                 </div>
                                                 <small /*class="opacity-50 text-nowrap"*/>
                                                   <div class="dropdown">
@@ -412,7 +412,7 @@ export default class About extends React.Component{
                                                       <span class="rounded shadow-sm badge border text-primary">{this.state.settings.maxTimeAlarm}</span>
                                                     </div>
                                                     <ul class="dropdown-menu shadow-lg border">
-                                                      {["Never", "30 mins", "45 mins", "1 hour"].map((value) => (
+                                                      {appParams.allMaxTimeAlarmSettingValues.map((value) => (
                                                             <li>
                                                               <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("maxTimeAlarm", value, {settings: this.state.settings}, db)}}>
                                                                 {value}
@@ -436,7 +436,7 @@ export default class About extends React.Component{
                                                 <span class="rounded shadow-sm badge border text-primary">{this.state.settings.hidePostViewCount}</span>
                                               </div>
                                               <ul class="dropdown-menu shadow-lg border">
-                                                {["Never", "2 views", "3 views"].map((value) => (
+                                                {appParams.allHidePostViewCountValues.map((value) => (
                                                       <li>
                                                         <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("hidePostViewCount", value, {settings: this.state.settings}, db)}}>
                                                           {value}
@@ -462,6 +462,30 @@ export default class About extends React.Component{
                                               checked={this.state.settings.immersiveMode}
                                               onChange={(event) => {saveSettingsPropertyValue("immersiveMode", event.target.checked, {settings: this.state.settings}, db);}}
                                             />
+                                          </small>
+                                        </div>
+                                      </a>  
+                                      <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                          <div>
+                                            <h6 class="mb-0">Data backup Alert</h6>
+                                            <p class="mb-0 opacity-75 small">Reminder you to backup this extension's data on a folder of your choice</p>
+                                          </div>
+                                          <small /*class="opacity-50 text-nowrap"*/>
+                                            <div class="dropdown">
+                                              <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                                                <span class="rounded shadow-sm badge border text-primary">{this.state.settings.dataBackupReminderFrequency || appParams.allDataBackupReminderFrequencyValues[0]}</span>
+                                              </div>
+                                              <ul class="dropdown-menu shadow-lg border">
+                                                {appParams.allDataBackupReminderFrequencyValues.map((value) => (
+                                                      <li>
+                                                        <a class="dropdown-item small" href="#" onClick={() => {saveSettingsPropertyValue("dataBackupReminderFrequency", value, {settings: this.state.settings}, db)}}>
+                                                          {value}
+                                                        </a>
+                                                      </li>  
+                                                  ))}
+                                              </ul>
+                                            </div>
                                           </small>
                                         </div>
                                       </a>  

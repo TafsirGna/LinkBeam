@@ -231,7 +231,7 @@ export default class PostViewListItemView extends React.Component{
                     
                       <div class="mb-2">
                         <a 
-                          class=/*d-block*/"text-decoration-none shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning"
+                          class=/*d-block*/"text-decoration-none shadow-sm fst-italic mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info"
                           /*href={this.state.feedPostView.category 
                                   ? (this.state.feedPostView.initiator.url ? this.state.feedPostView.initiator.url : appParams.LINKEDIN_FEED_URL())
                                   : this.state.feedPostView.feedPost.author.url}

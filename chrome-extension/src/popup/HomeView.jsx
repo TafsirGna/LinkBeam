@@ -59,6 +59,7 @@ export default class HomeView extends React.Component{
       previousDaySavedTime: null, 
       outdatedProfiles: null,
       timeCountSubscriptionResults: {"0": 0, "1": 0},
+      reminderOfDataBackup: false,
     };
 
     // Binding all the needed functions
@@ -66,6 +67,7 @@ export default class HomeView extends React.Component{
     this.switchCurrentTab = this.switchCurrentTab.bind(this);
     this.checkPreviousDaySavedTime = this.checkPreviousDaySavedTime.bind(this);
     this.checkOutdatedProfiles = this.checkOutdatedProfiles.bind(this);
+    this.checkLastDataBackupDate = this.checkLastDataBackupDate.bind(this);
     this.setTimeCountSubscriptionResults = this.setTimeCountSubscriptionResults.bind(this);
     this.addTimeCountSubscription = this.addTimeCountSubscription.bind(this);
     this.fromMaxTimeThresholdToNumeric = this.fromMaxTimeThresholdToNumeric.bind(this);
@@ -92,9 +94,29 @@ export default class HomeView extends React.Component{
 
       this.addTimeCountSubscription();
 
+      this.checkLastDataBackupDate();
+
     }
     
     
+  }
+
+  async checkLastDataBackupDate(){
+
+    if (!this.props.globalData.settings.dataBackupReminderFrequency 
+          || this.props.globalData.settings.dataBackupReminderFrequency == "Never"){
+      return;
+    }
+
+    const localItems = await chrome.storage.local.get(["lastDataBackupDate"]),
+          dataBackupReminderFrequency = Number(this.props.globalData.settings.dataBackupReminderFrequency.slice(0, this.props.globalData.settings.dataBackupReminderFrequency.indexOf("day")));
+
+    if (!localItems.lastDataBackupDate
+          || (localItems.lastDataBackupDate && LuxonDateTime.now().diff(LuxonDateTime.fromISO(localItems.lastDataBackupDate), "days").days >= dataBackupReminderFrequency)){
+      this.setState({reminderOfDataBackup: true});
+      return;
+    }
+
   }
 
   async checkOutdatedProfiles(){
@@ -106,7 +128,8 @@ export default class HomeView extends React.Component{
     }
 
     const localItems = await chrome.storage.local.get(["outdatedProfileReminderMoment"]);
-    if (localItems.outdatedProfileReminderMoment && LuxonDateTime.now().diff(LuxonDateTime.fromISO(localItems.outdatedProfileReminderMoment), "days").days < 7){
+    if (localItems.outdatedProfileReminderMoment 
+          && LuxonDateTime.now().diff(LuxonDateTime.fromISO(localItems.outdatedProfileReminderMoment), "days").days < 7){
       return;
     }
 
@@ -242,6 +265,10 @@ export default class HomeView extends React.Component{
 
         if (!this.timeCountSubscription){
           this.addTimeCountSubscription();
+        }
+
+        if (!this.state.reminderOfDataBackup){
+          this.checkLastDataBackupDate();
         }
 
       }
@@ -389,6 +416,7 @@ export default class HomeView extends React.Component{
             args={{
               previousDaySavedTime: this.state.previousDaySavedTime,
               outdatedProfiles: this.state.outdatedProfiles,
+              reminderOfDataBackup: this.state.reminderOfDataBackup,
             }}
             />
         </div>
