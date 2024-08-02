@@ -161,9 +161,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
                                     // }
 
-                                    // Creating the context menu items
-                                    createContextualMenuActions();
-
                                 }
 
                             });
@@ -196,9 +193,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
     else{
 
-        // Removing the context menu items
-        removeContextualMenuActions();
-
         // chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
         //     console.log("################### : ", tabs, tabs[0]);
         //     if (tabs[0].id == tabId){
@@ -214,6 +208,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
         //     }
         // });
+
+        // Creating the context menu items
+        updateContextualMenuActions(tab.url);
 
     }
 
@@ -372,12 +369,6 @@ async function injectDataExtractorParams(tabId, url){
 
 };
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
-  if (info.menuItemId === 'my_menu_item') {
-    console.log('hello');
-  }
-});
-
 async function handleInterestingTab(tabId){
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]),
@@ -450,26 +441,42 @@ function browseOnBehalfMenuAction(action){
 
 }
 
-function createContextualMenuActions(){
+function updateContextualMenuActions(url){
+
+    if (isUrlOfInterest(url)){
+        // immersive mode menu action
+        immersiveModeMenuAction("add");
+        if (isLinkedinFeed(url)){
+            // browse on behalf menu action
+            browseOnBehalfMenuAction("remove");
+        }
+        return;
+    }
+    
     // immersive mode menu action
-    immersiveModeMenuAction("add");
+    immersiveModeMenuAction("remove");
     // browse on behalf menu action
     browseOnBehalfMenuAction("add");
 }
 
-function removeContextualMenuActions(){
-    // immersive mode menu action
-    immersiveModeMenuAction("remove");
-    // browse on behalf menu action
-    browseOnBehalfMenuAction("remove");
-}
-
 // on click of the context menu items
 chrome.contextMenus.onClicked.addListener((clickData, tab) => {
-    if(clickData.menuItemId == appParams.immersiveModeMenuActionId){
-        chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.immersiveModeMenuActionId}}, (response) => {
-            console.log('Context menu item clicked signal sent', response);
-        }); 
+
+    switch(clickData.menuItemId){
+        case appParams.immersiveModeMenuActionId: {
+            chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.immersiveModeMenuActionId}}, (response) => {
+                console.log('Context menu item clicked signal sent', response);
+            }); 
+            break;
+        }
+        case appParams.browseOnBehalfMenuActionId: {
+            // Opening a new tab
+            chrome.tabs.create({
+              active: true,
+              url:  appParams.LINKEDIN_FEED_URL(),
+            }, null);
+            break;
+        }
     }
 })
 
@@ -544,19 +551,16 @@ chrome.tabs.onActivated.addListener(async function(activeInfo) {
                         console.log("<<<<<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>> : ", url);
                         injectScriptsInTab(activeInfo.tabId, url);
                     }
-
-                    // Creating the context menu items
-                    createContextualMenuActions();
                 }
             });
 
         }
         else{
             chrome.action.setBadgeText({text: null});
-
-            // Removing the context menu items
-            removeContextualMenuActions();
         }
+
+        // Updating the context menu items
+        updateContextualMenuActions(url);
 
     });
 

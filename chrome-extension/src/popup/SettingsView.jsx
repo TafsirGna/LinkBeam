@@ -43,7 +43,7 @@ import {
   StorageIcon,
   GridIcon,
   FeedIcon,
-  MaximizeIcon,
+  EyeIcon,
 } from "./widgets/SVGs";
 
 export default class SettingsView extends React.Component{
@@ -246,7 +246,7 @@ export default class SettingsView extends React.Component{
                   <a 
                     href="#" 
                     class="text-primary badge" 
-                    title="View Objects"
+                    title="View feed settings"
                     onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.FEED_SETTINGS)}}>
                       View
                   </a>
@@ -265,7 +265,7 @@ export default class SettingsView extends React.Component{
                   <a 
                     href="#" 
                     class="text-primary badge" 
-                    title="View Objects"
+                    title="View data Settings"
                     onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.DATA_SETTINGS)}}>
                       View
                   </a>
@@ -276,20 +276,19 @@ export default class SettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">
-                    <MaximizeIcon
+                    <EyeIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Immersive mode
+                    Visuals
                   </strong>
-                  <Form.Check // prettier-ignore
-                    type="switch"
-                    id="notif-custom-switch"
-                    label=""
-                    checked={ this.props.globalData.settings ? this.props.globalData.settings.immersiveMode : false }
-                    onChange={(event) => {saveSettingsPropertyValue("immersiveMode", event.target.checked, this.props.globalData, db);}}
-                  />
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="View visuals settings"
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.VISUALS_SETTINGS)}}>
+                      View
+                  </a>
                 </div>
-                {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
           </div>

@@ -33,6 +33,7 @@ import {
   appParams, 
   removeObjectsId,
   saveSettingsPropertyValue,
+  applyFontFamilySetting,
 } from "./Local_library";
 import Dexie from 'dexie';
 import { liveQuery } from "dexie"; 
@@ -61,6 +62,8 @@ export default class About extends React.Component{
   }
 
   componentDidMount() {
+
+    applyFontFamilySetting();
 
     // checking first if a database already exists
     Dexie.exists(appParams.appDbName).then((function (exists) {

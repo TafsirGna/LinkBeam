@@ -133,3 +133,11 @@ export const PostIcon = (props) => {
 export const CompassIcon = (props) => {
   return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>;
 }
+
+export const EyeIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>;
+}
+
+export const BoldIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>;
+}

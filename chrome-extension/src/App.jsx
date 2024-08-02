@@ -26,6 +26,7 @@ import HomeView from "./popup/HomeView";
 import SettingsView from "./popup/SettingsView";
 import ObjectsSettingsView from "./popup/ObjectsSettingsView";
 import FeedSettingsView from "./popup/FeedSettingsView";
+import VisualsSettingsView from "./popup/VisualsSettingsView";
 import StatisticsView from "./popup/StatisticsView";
 import KeywordView from "./popup/KeywordView";
 import MainProfileView from "./popup/MainProfileView";
@@ -47,6 +48,7 @@ import { db } from "./db";
 import { 
   appParams,
   getTodayReminders,
+  applyFontFamilySetting,
 } from "./popup/Local_library";
 import eventBus from "./popup/EventBus";
 
@@ -75,6 +77,9 @@ export default class App extends React.Component{
   componentDidMount() {
 
     this.listenToBusEvents();
+
+    // Set the adequate font family
+    applyFontFamilySetting();
 
     Dexie.exists(appParams.appDbName).then((async function (exists) {
       if (!exists) {
@@ -298,6 +303,10 @@ export default class App extends React.Component{
         {/*Data settings Page*/}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.DATA_SETTINGS 
             && <DataSettingsView globalData={this.state.globalData} />}
+
+        {/*Visuals settings Page*/}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.VISUALS_SETTINGS 
+            && <VisualsSettingsView globalData={this.state.globalData} />}
 
       </>
     );
