@@ -951,7 +951,7 @@ export async function setFolderProfiles(folderList, db){
 export const getPostCount = feedPostViews => feedPostViews.map(view => view.uid).filter((value, index, self) => self.indexOf(value) === index).length;
 export const getVisitsTotalTime = feedPostViews => parseFloat((feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2));
 export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
-export const getVisitMeanTime = feedPostViews => parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
+export const getVisitMeanTime = feedPostViews => !getVisitCount(feedPostViews) ? 0 : parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
 
 export const isReferenceHashtag = reference => reference.text.startsWith("#") || reference.text.startsWith("hashtag#");
 

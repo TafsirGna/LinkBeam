@@ -44,3 +44,5 @@ mv ./tmp/main_content_script.js ./dist/assets/main_content_script.js
 # mv ./tmp/web_ui.js ./dist/assets/web_ui.js
 
 cp ./manifest-example.json ./dist/manifest.json
+
+# cp ./public/Ubuntu-Regular.ttf ./dist/assets/Ubuntu-Regular.ttf
