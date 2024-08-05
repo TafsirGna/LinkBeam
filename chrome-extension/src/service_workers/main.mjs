@@ -193,21 +193,21 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
     else{
 
-        // chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
-        //     console.log("################### : ", tabs, tabs[0]);
-        //     if (tabs[0].id == tabId){
-        //         chrome.action.setBadgeText({text: null});
+        chrome.tabs.query({active: true, currentWindow: true}, async function(tabs){
+            console.log("################### : ", tabs, tabs[0]);
+            if (tabs[0].id == tabId){
+                chrome.action.setBadgeText({text: null});
 
-        //         var sessionItem = await chrome.storage.session.get(["myTabs"]);
-        //         if (sessionItem.myTabs 
-        //                 && Object.hasOwn(sessionItem.myTabs, tabId) 
-        //                 && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
-        //             sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
-        //             chrome.storage.session.set({ myTabs: sessionItem.myTabs });
-        //         }
+                // var sessionItem = await chrome.storage.session.get(["myTabs"]);
+                // if (sessionItem.myTabs 
+                //         && Object.hasOwn(sessionItem.myTabs, tabId) 
+                //         && sessionItem.myTabs[tabId].prevTabUrlInterestStatus){
+                //     sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
+                //     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
+                // }
 
-        //     }
-        // });
+            }
+        });
 
     }
 
@@ -291,6 +291,7 @@ async function injectDataExtractorParams(tabId, url){
             lastDataResetDate: settings.lastDataResetDate,
             notifications: settings.notifications,
             postHighlightColor: settings.postHighlightColor,
+            immersiveMode: settings.immersiveMode,
         },
         postData: postData,
         allKeywords: keywords,

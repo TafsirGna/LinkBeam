@@ -45,6 +45,7 @@ import {
   // Popover, 
 } from "react-bootstrap";
 import HashtagTimelineChart from "./charts/HashtagTimelineChart";
+import HashtagNetworkGraphChart from "./charts/HashtagNetworkGraphChart";
 import HashtagTangledTreeChart from "./charts/HashtagTangledTreeChart";
 import HashtagAnimatedTreeMapChart from "./charts/HashtagAnimatedTreeMapChart";
 import { db } from "../../db";
@@ -59,6 +60,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
       selectedReference: null,
       hashtagInfosModalSelectedView: 0,
       hashtags: null,
+      graphChartModalShow: false,
     };
 
     this.setHashtags = this.setHashtags.bind(this);
@@ -92,6 +94,9 @@ export default class FeedDashHashtagsSectionView extends React.Component{
   handleAnimatedTreeMapChartModalClose = () => {this.setState({animatedTreeMapChartModalShow: false})};
   handleAnimatedTreeMapChartModalShow = () => {this.setState({animatedTreeMapChartModalShow: true})};
 
+  handleGraphChartModalClose = () => {this.setState({graphChartModalShow: false})};
+  handleGraphChartModalShow = () => {this.setState({graphChartModalShow: true})};
+
   async setHashtags(){
 
     if (!this.props.objects){
@@ -99,13 +104,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
     }
 
     var references = [];
-
-    var feedPostIds = [];
-    for (var feedPostView of this.props.objects){
-      if (feedPostIds.indexOf(feedPostView.feedPostId) == -1){
-        feedPostIds.push(feedPostView.feedPostId);
-      }
-    }
+    const feedPostIds = this.props.objects.map(view => view.feedPostId).filter((value, index, self) => self.indexOf(value) === index);
 
     await db.feedPosts
             .where("id")
@@ -116,7 +115,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                 return;
               }
 
-              for (var reference of feedPost.references){
+              for (const reference of feedPost.references){
 
                 if (!isReferenceHashtag(reference)){
                   continue;
@@ -159,12 +158,12 @@ export default class FeedDashHashtagsSectionView extends React.Component{
               </div>
               <ul class="dropdown-menu shadow-lg">
                 <li>
-                  {/*<a class="dropdown-item small" href="#" onClick={this.handleModalShow}>
+                  <a class="dropdown-item small" href="#" onClick={this.handleGraphChartModalShow}>
                     <BarChartIcon 
                       size="15" 
                       className="me-2 text-muted"/>
                     Graph chart
-                  </a>*/}
+                  </a>
                   <a class="dropdown-item small" href="#" onClick={this.handleAnimatedTreeMapChartModalShow}>
                     <BarChartIcon 
                       size="15" 
@@ -305,6 +304,23 @@ export default class FeedDashHashtagsSectionView extends React.Component{
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" size="sm" onClick={this.handleAnimatedTreeMapChartModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
+        <Modal show={this.state.graphChartModalShow} onHide={this.handleGraphChartModalClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Hashtags graph chart</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            <HashtagNetworkGraphChart
+              hashtags={this.state.hashtags}/>
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleGraphChartModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

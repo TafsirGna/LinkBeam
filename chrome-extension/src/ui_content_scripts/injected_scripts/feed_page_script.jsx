@@ -220,7 +220,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 									}
 									.${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden {
 									  opacity: 0;
-									  overflow: hidden;
 									  visibility: hidden;
 									}
 									.${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown {
@@ -228,6 +227,11 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 									  visibility: visible;
 									}`;
 				document.getElementsByTagName('head')[0].appendChild(style);
+
+				if (props.appSettings.immersiveMode == true){
+					setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+				}
+
 			}
 		}
 		catch(error){
@@ -337,9 +341,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			const distractiveEl = document.querySelector(selector);
 
 			// setting the distinctive class name if not done yet
-			// if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
-			// 	distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
-			// }
+			if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
+				distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
+			}
 
 			// toggling the display update
 		 	toggleElFadingEffect(distractiveEl);

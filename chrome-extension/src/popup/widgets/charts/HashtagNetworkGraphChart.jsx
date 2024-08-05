@@ -19,14 +19,15 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-
-/*import './FeedProfilesNetworkGraphChart.css'*/
+/*import './HashtagNetworkGraphChart.css'*/
 import React from 'react';
-// import { dbDataSanitizer } from "../../Local_library";
 import * as d3 from "d3";
 import { v4 as uuidv4 } from 'uuid';
 // import {Swatches} from "@d3/color-legend";
 import { db } from "../../../db";
+import { 
+  isReferenceHashtag,
+} from "../../Local_library";
 
 
 function linkArc(d) {
@@ -62,7 +63,7 @@ var drag = simulation => {
       .on("end", dragended);
 };
 
-export default class FeedProfilesNetworkGraphChart extends React.Component{
+export default class HashtagNetworkGraphChart extends React.Component{
 
   constructor(props){
     super(props);
@@ -87,32 +88,27 @@ export default class FeedProfilesNetworkGraphChart extends React.Component{
 
   async setChartData(){
 
-    var chartData = [],
-    	doneFeedPostViewsUids = [];
+    var chartData = [];
 
-    for (const feedPostView of this.props.objects){
+    for (const hashtag of this.props.hashtags){
+    	for (const feedPost of hashtag.feedPosts){
 
-    	if (doneFeedPostViewsUids.indexOf(feedPostView.uid) != -1){
-    		continue;
+    		for (const reference of feedPost.references){
+
+    			if (!isReferenceHashtag(reference)){
+            continue;
+          }
+
+    			if (chartData.findIndex(d => d.source == hashtag.text && d.target == reference.text) == -1){
+		  			chartData.push({
+		  				source: hashtag.text,
+		  				target: reference.text,
+		  				type: "null",
+		  			});
+		  		}
+    		}
+
     	}
-
-    	if (!feedPostView.initiator || (feedPostView.initiator && !feedPostView.initiator.name)){
-    		continue;
-    	}
-
-    	const source = feedPostView.initiator.name,
-    		  target = (await db.feedPosts.where({id: feedPostView.feedPostId}).first()).author.name;
-
-  		if (chartData.findIndex(d => d.source == source && d.target == target) == -1){
-  			chartData.push({
-  				source: source,
-  				target: target,
-  				type: "null",
-  			});
-  		}
-
-  		doneFeedPostViewsUids.push(feedPostView.uid);
-
     }
 
     this.setState({chartData: chartData}, () => {
