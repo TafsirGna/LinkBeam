@@ -95,6 +95,9 @@ export default class DataSettingsView extends React.Component{
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
+    else{
+      this.setOffCanvasFormStartDate();
+    }
 
     this.checkStorageUsage();
 
@@ -104,11 +107,13 @@ export default class DataSettingsView extends React.Component{
 
     if (prevProps.globalData != this.props.globalData){
       if (prevProps.globalData.settings != this.props.globalData.settings){
-        this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});
+        this.setOffCanvasFormStartDate();
       }
     }
 
   }
+
+  setOffCanvasFormStartDate = () => {this.setState({offCanvasFormStartDate: this.props.globalData.settings.lastDataResetDate.split("T")[0]});}
 
   handleOffCanvasClose = () => {this.setState({offCanvasShow: false, offCanvasFormSelectValue: "1"})};
   handleOffCanvasShow = (title) => {this.setState({offCanvasShow: true, offCanvasTitle: title})};

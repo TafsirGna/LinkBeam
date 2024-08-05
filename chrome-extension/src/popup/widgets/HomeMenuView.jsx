@@ -230,7 +230,7 @@ export default class HomeMenu extends React.Component{
             <li>
               <a 
                 class="dropdown-item small" 
-                href="/index.html?view=Calendar" 
+                href="/index.html?view=Calendar&dataType=Visits" 
                 target="_blank"
                 title="See calendar">
                 <CalendarIcon

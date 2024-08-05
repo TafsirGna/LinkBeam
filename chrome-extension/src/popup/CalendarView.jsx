@@ -55,7 +55,7 @@ export default class CalendarView extends React.Component{
       monthReminderList: null,
       selectedDate: (new Date()),
       activeStartDate: null,
-      tabTitles: ["Profile Visits", "Time Chart"],
+      tabTitles: ["Visits", "Time Chart"],
       tabActiveKey: "",
       toastMessage: "",
       toastShow: false,
@@ -85,7 +85,7 @@ export default class CalendarView extends React.Component{
 
     // Setting the nav default active key
     this.setState({
-      tabActiveKey: dataType == "Reminders" ? dataType : this.state.tabTitles[0], 
+      tabActiveKey: dataType, 
       activeStartDate: LuxonDateTime.fromJSDate(currentDate || this.state.selectedDate).startOf('month').toFormat("yyyy-MM-dd"),
       dataType: dataType,
     });
@@ -94,10 +94,7 @@ export default class CalendarView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    this.getMonthObjectList(
-      (currentDate || this.state.selectedDate), 
-      dataType == "Reminders" ? dbData.objectStoreNames.REMINDERS : dbData.objectStoreNames.VISITS,
-    );
+    this.getMonthObjectList((currentDate || this.state.selectedDate), dataType.toLowerCase());
 
   }
 
@@ -147,12 +144,15 @@ export default class CalendarView extends React.Component{
         case dbData.objectStoreNames.VISITS: {
 
           monthList = await db.visits
-                               .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth)
-                                                  && Object.hasOwn(visit, "profileData"))
+                               .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
                                .toArray();
 
           var profiles = [];
           for (var visit of monthList){
+
+            if (!Object.hasOwn(visit, "profileData")){
+              continue;
+            }
 
             const index = profiles.map(p => p.url).indexOf(visit.url);
             if (index != -1){
@@ -196,14 +196,7 @@ export default class CalendarView extends React.Component{
     if (view === "month"){
 
       this.setState({activeStartDate: activeStartDate}, () => {
-
-        if (this.state.dataType == "Reminders"){
-          this.getMonthObjectList(activeStartDate, dbData.objectStoreNames.REMINDERS);
-        }
-        else if (this.state.dataType == "ProfileVisits"){
-          this.getMonthObjectList(activeStartDate, dbData.objectStoreNames.VISITS);
-        }
-
+        this.getMonthObjectList(activeStartDate, this.state.dataType.toLowerCase());
       });
 
     }
@@ -304,10 +297,10 @@ export default class CalendarView extends React.Component{
                           </Nav.Link>
                         </Nav.Item>}
 
-                    {this.state.dataType == "ProfileVisits" 
+                    {this.state.dataType == "Visits" 
                       && this.state.tabTitles.map((tabTitle, index) => (
                                                       <Nav.Item>
-                                                        <Nav.Link href={"#"+tabTitle} eventKey={tabTitle}>
+                                                        <Nav.Link href={`#${tabTitle}`} eventKey={tabTitle}>
                                                           {tabTitle}
                                                           { (index == 0 
                                                                 && this.getDayObjectList(this.state.monthVisitsList)) 
@@ -328,7 +321,7 @@ export default class CalendarView extends React.Component{
                       && <ReminderListView 
                             objects={this.getDayObjectList(this.state.monthReminderList)}/>}
 
-                  { this.state.dataType == "ProfileVisits"
+                  { this.state.dataType == "Visits"
                       && <div>
 
                           { this.state.tabActiveKey == this.state.tabTitles[0] 

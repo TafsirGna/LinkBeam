@@ -47,9 +47,9 @@ export const appParams = {
   supportedTimeLocales: ["fr", "en-US"],
 
   LINKEDIN_ROOT_URL: "linkedin.com",
-  LINKEDIN_FEED_URL: () => `https://www.${this.LINKEDIN_ROOT_URL}/feed/`,
-  LINKEDIN_FEED_POST_ROOT_URL: () => `https://www.${this.LINKEDIN_ROOT_URL}/feed/update/`,
-  WEB_PAGE_URL_PATTERNS: () => [/*"github.com",*/ this.LINKEDIN_ROOT_URL],
+  LINKEDIN_FEED_URL: function() { return `https://www.${this.LINKEDIN_ROOT_URL}/feed/`; },
+  LINKEDIN_FEED_POST_ROOT_URL: function() { return `https://www.${this.LINKEDIN_ROOT_URL}/feed/update/`; },
+  WEB_PAGE_URL_PATTERNS: function() { return [/*"github.com",*/ this.LINKEDIN_ROOT_URL]; },
 
   PAGE_ITEMS_LIMIT_NUMBER: 3,
   DATE_RANGE_SEPARATOR: "-",
@@ -812,18 +812,17 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
-export async function setGlobalDataSettings(db, eventBus, liveQuery){
+export function setGlobalDataSettings(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.settings
-                                               .where("id")
-                                               .equals(1)
-                                               .first());
+                                       .where({id: 1})
+                                       .first());
 
   eventBus.dispatch(eventBus.SET_APP_SUBSCRIPTION, {property: "settings", value: observable});
 
 }
 
-export async function setGlobalDataKeywords(db, eventBus, liveQuery){
+export function setGlobalDataKeywords(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.keywords.toArray());
 
@@ -831,7 +830,7 @@ export async function setGlobalDataKeywords(db, eventBus, liveQuery){
 
 }
 
-export async function setGlobalDataFolders(db, eventBus, liveQuery){
+export function setGlobalDataFolders(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.folders.toArray());
 
@@ -839,7 +838,7 @@ export async function setGlobalDataFolders(db, eventBus, liveQuery){
 
 }
 
-export async function setGlobalDataTags(db, eventBus, liveQuery){
+export function setGlobalDataTags(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.tags.toArray());
 

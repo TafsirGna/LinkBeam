@@ -29,11 +29,13 @@ import Alert from 'react-bootstrap/Alert';
 import { db } from "../db";
 import { v4 as uuidv4 } from 'uuid';
 import Form from 'react-bootstrap/Form';
+import eventBus from "./EventBus";
 import { 
   appParams, 
   removeObjectsId,
   saveSettingsPropertyValue,
   applyFontFamilySetting,
+  setGlobalDataSettings,
 } from "./Local_library";
 import Dexie from 'dexie';
 import { liveQuery } from "dexie"; 
@@ -57,7 +59,6 @@ export default class About extends React.Component{
     this.onImportDataClicked = this.onImportDataClicked.bind(this);
     this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
     this.clearFileInput = this.clearFileInput.bind(this);
-    this.setSettingsObject = this.setSettingsObject.bind(this);
     
   }
 
@@ -65,30 +66,34 @@ export default class About extends React.Component{
 
     applyFontFamilySetting();
 
+    eventBus.on(eventBus.SET_APP_SUBSCRIPTION, (data) => {
+
+      const subscription = data.value;
+
+      switch(data.property){
+
+        case "settings":{
+          this.settingsSubscription = subscription.subscribe(
+            result => this.setState({settings: result}),
+            error => this.setState({error})
+          );
+          break;
+        }
+
+      }
+
+    });
+
     // checking first if a database already exists
     Dexie.exists(appParams.appDbName).then((function (exists) {
         if (exists) {
             this.setState({opDone: true, processing: false}, () => {
-              this.setSettingsObject();
+              setGlobalDataSettings(db, eventBus, liveQuery);
             });
             return;
         }
         this.setFileInputChangeAction();
     }).bind(this));
-
-  }
-
-  setSettingsObject(){
-
-    const settingsObservable = liveQuery(() => db.settings
-                                               .where("id")
-                                               .equals(1)
-                                               .first());
-
-    this.settingsSubscription = settingsObservable.subscribe(
-      result => this.setState({settings: result}),
-      error => this.setState({error})
-    );
 
   }
 
@@ -176,7 +181,7 @@ export default class About extends React.Component{
                 }
 
                 this.setState({opDone: true, processing: false}, () => {
-                  this.setSettingsObject();
+                  setGlobalDataSettings(db, eventBus, liveQuery);
                 });
 
               }
@@ -266,7 +271,7 @@ export default class About extends React.Component{
           });
 
           this.setState({opDone: true, processing: false}, () => {
-            this.setSettingsObject();
+            setGlobalDataSettings(db, eventBus, liveQuery);
           });
 
         }).bind(this)).catch ((function (err) {

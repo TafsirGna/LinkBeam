@@ -209,10 +209,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         //     }
         // });
 
-        // Creating the context menu items
-        updateContextualMenuActions(tab.url);
-
     }
+
+    // Updating the context menu items
+    updateContextualMenuActions(tab.url);
 
   }
 );
@@ -422,21 +422,44 @@ function immersiveModeMenuAction(action){
 
 }
 
-function browseOnBehalfMenuAction(action){
+function contextMenuItem(menuItem, action){
 
-    switch(action){
-        case "add":{
-            chrome.contextMenus.create({
-                id: appParams.browseOnBehalfMenuActionId,
-                title: "Browse feed on behalf",
-                contexts: ["all"]
-            });
-            break;
+    function contextMenuItemLabel(menuItemId){
+
+        switch(menuItemId){
+            case appParams.immersiveModeMenuActionId: {
+                return "Toggle immersive mode";
+                // break;
+            }
+            case appParams.browseOnBehalfMenuActionId: {
+                return "Browse feed on behalf";
+                // break;
+            }
         }
-        case "remove":{
-            chrome.contextMenus.remove(appParams.browseOnBehalfMenuActionId, () => {});
-            break;
+
+    }
+
+
+    try{
+
+        switch(action){
+            case "on":{
+                chrome.contextMenus.create({
+                    id: appParams[`${menuItem}MenuActionId`],
+                    title: contextMenuItemLabel(appParams[`${menuItem}MenuActionId`]),
+                    contexts: ["all"]
+                });
+                break;
+            }
+            case "off":{
+                chrome.contextMenus.remove(appParams[`${menuItem}MenuActionId`], () => {});
+                break;
+            }
         }
+
+    }
+    catch(error){
+        console.log("An error occured when updating the contextual menu items", error);
     }
 
 }
@@ -445,18 +468,19 @@ function updateContextualMenuActions(url){
 
     if (isUrlOfInterest(url)){
         // immersive mode menu action
-        immersiveModeMenuAction("add");
+        contextMenuItem("immersiveMode", "on");
         if (isLinkedinFeed(url)){
             // browse on behalf menu action
-            browseOnBehalfMenuAction("remove");
+            contextMenuItem("browseOnBehalf", "off");
         }
         return;
     }
     
     // immersive mode menu action
-    immersiveModeMenuAction("remove");
+    contextMenuItem("immersiveMode", "off");
     // browse on behalf menu action
-    browseOnBehalfMenuAction("add");
+    contextMenuItem("browseOnBehalf", "on");
+
 }
 
 // on click of the context menu items

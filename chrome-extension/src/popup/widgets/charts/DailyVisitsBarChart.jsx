@@ -6,6 +6,7 @@ import {
   getChartColors, 
   dbDataSanitizer,
   getProfileDataFrom,
+  getVisitsTotalTime,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -78,37 +79,45 @@ export default class DailyVisitsBarChart extends React.Component{
     }
 
     var results = [];
-    for (var visit of this.props.objects){
-      var index = results.map(e => e.url).indexOf(visit.url),
-          time = (visit.timeCount / 60);
+    for (const visit of this.props.objects){
+      const index = results.findIndex(r => r.url == visit.url),
+            time = Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.id}).toArray());
 
-      if (index == -1){
-
-        var profile = null;
-        try{
-          profile = await getProfileDataFrom(db, visit.url);
-        }
-        catch(error){
-          console.error("Error : ", error);
-        }
-
-        if (!profile){
-          continue;
-        }
-
-        const object = {
-          url: visit.url,
-          label: dbDataSanitizer.preSanitize(profile.fullName).split(" ")[0],
-          time: time,
-        };
-        results.push(object);
-      }
-      else{
+      if (index != -1){
         results[index].time += time;
+        continue;
       }
+
+      if (!Object.hasOwn(visit, "profileData")){ // a feed visit
+        results.push({
+          url: visit.url,
+          label: "Feed",
+          time: time,
+        });
+        continue;
+      }
+
+      var profile = null;
+      try{
+        profile = await getProfileDataFrom(db, visit.url);
+      }
+      catch(error){
+        console.error("Error : ", error);
+      }
+
+      if (!profile){
+        continue;
+      }
+
+      results.push({
+        url: visit.url,
+        label: dbDataSanitizer.preSanitize(profile.fullName).split(" ")[0],
+        time: time,
+      });
+
     }
 
-    var colors = getChartColors(1);
+    const colors = getChartColors(1);
 
     // setting the bar data
     this.setState({barData: {

@@ -233,7 +233,7 @@ export default class StatisticsView extends React.Component{
                           && <a
                                 title="Show on calendar"
                                 class="mx-1"
-                                href="/index.html?view=Calendar&dataType=ProfileVisits" 
+                                href="/index.html?view=Calendar&dataType=Visits" 
                                 target="_blank">
                                 <CalendarIcon size="16" className=""/>
                               </a> }                  
