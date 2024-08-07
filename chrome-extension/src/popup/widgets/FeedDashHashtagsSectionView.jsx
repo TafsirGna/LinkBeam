@@ -311,7 +311,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
 
         <Modal show={this.state.graphChartModalShow} onHide={this.handleGraphChartModalClose} size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Hashtags graph chart</Modal.Title>
+            <Modal.Title>Hashtags network graph chart</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 

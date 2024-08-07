@@ -94,6 +94,7 @@ export default class AboutView extends React.Component{
               </a>
               <a 
                 href=/*"mailto:author@mail.com"*/"https://github.com/TafsirGna/LinkBeam/issues" 
+                target="_blank" 
                 title="Send feedback" 
                 class="mx-2">
                 <SendIcon size="24"/>                

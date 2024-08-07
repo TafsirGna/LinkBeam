@@ -5,7 +5,7 @@
 </div>
 
 <p align="center">
-	<a href="https://chrome.google.com/webstore/detail/ublock-origin/cjpalhdlnbpafiamejdnhcphjbkeiagm"><img src="https://user-images.githubusercontent.com/585534/107280622-91a8ea80-6a26-11eb-8d07-77c548b28665.png" alt="Get Linkbeam for Chromium"></a>
+	<a href="https://chromewebstore.google.com/detail/linkbeam/jgnajdgfiglbklecgloopjkdmhplnibg"><img src="https://user-images.githubusercontent.com/585534/107280622-91a8ea80-6a26-11eb-8d07-77c548b28665.png" alt="Get Linkbeam for Chromium"></a>
 </p>
 
 [Linkbeam](https://www.tensorflow.org/) is a basic chrome extension that assists you in your linkedin browsing experience. The idea is to have a chrome extension that stores some of the informations that appear on your screen, locally in your browser [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)  database. These stored data can then be processed back to you in a friendlier way.
