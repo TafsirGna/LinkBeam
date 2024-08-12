@@ -54,6 +54,7 @@ import {
   DeletionIcon,
   AlertCircleIcon,
   DuplicateIcon,
+  BellIcon,
 } from "../../../popup/widgets/SVGs";
 import eventBus from "../../../popup/EventBus";
 import sleeping_icon from '../../../assets/sleeping_icon.png';
@@ -753,6 +754,18 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                 size="22"
                                 className=""/>
                           </div> }
+
+                      { this.state.reminder
+                          && Object.hasOwn(this.state.reminder, "id")
+                          && <div 
+                              class="mx-2 flex items-center"
+                              /*title=""*/>
+                              <Tooltip content="A reminder is associated with this post" style="light" arrow={false}>
+                                <BellIcon 
+                                  size="18"
+                                  className=""/>
+                              </Tooltip>
+                          </div> }
         
                       {/* Indication that the post has just been updated */}
                       { this.state.updated 
@@ -841,8 +854,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
                                           onClick={this.updateReminder}
                                           className={` ${Object.hasOwn(this.state.reminder, "id") ? "text-red-600" : ""}`}>
 
-                                          {Object.hasOwn(this.state.reminder, "id") && <DeletionIcon size="12" className="me-2"/>}
-                                          {!Object.hasOwn(this.state.reminder, "id") && <PlusIcon size="12" className="me-2"/>}
+                                          {Object.hasOwn(this.state.reminder, "id") 
+                                              && <DeletionIcon size="12" className="me-2"/>}
+                                          {!Object.hasOwn(this.state.reminder, "id") 
+                                              && <PlusIcon size="12" className="me-2"/>}
 
                                           { Object.hasOwn(this.state.reminder, "id") ? "Delete " : "Add " } reminder
                                         </Dropdown.Item>}

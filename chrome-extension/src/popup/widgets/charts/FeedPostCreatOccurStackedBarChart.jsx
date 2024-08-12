@@ -71,7 +71,6 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
       feedPosts: null,
       chartRef: React.createRef(),
       startDateLinePlugin: null,
-      postModalShow: false,
       selectedFeedPostIndex: null,
     };
 
@@ -232,15 +231,13 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
     if (elements.length){
       console.log(elements, (elements[0]).index);
-      this.setState({selectedFeedPostIndex: elements[0].index}, () => {
-        this.handlePostModalShow();
-      });
+      this.handlePostModalShow(elements[0].index);
     }
 
   }
 
-  handlePostModalClose = () => this.setState({postModalShow: false, selectedFeedPostIndex: null});
-  handlePostModalShow = () => this.setState({postModalShow: true});
+  handlePostModalClose = () => this.setState({selectedFeedPostIndex: null});
+  handlePostModalShow = (feedPostIndex) => this.setState({selectedFeedPostIndex: feedPostIndex});
 
   render(){
     return (
@@ -263,7 +260,7 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                                       />
 
                                   <Modal 
-                                    show={this.state.postModalShow} 
+                                    show={this.state.selectedFeedPostIndex != null} 
                                     onHide={this.handlePostModalClose}>
                                     <Modal.Header closeButton>
                                       <Modal.Title>Post</Modal.Title>

@@ -37,6 +37,7 @@ import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
 import TagView from "./popup/TagView";
 import FoldersSettingsView from "./popup/FoldersSettingsView";
+import FeedVisitDataView from "./popup/FeedVisitDataView";
 import DataSettingsView from "./popup/DataSettingsView";
 import FolderView from "./popup/FolderView";
 import LicenseCreditsView from "./popup/LicenseCredits";
@@ -307,6 +308,10 @@ export default class App extends React.Component{
         {/*Visuals settings Page*/}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.VISUALS_SETTINGS 
             && <VisualsSettingsView globalData={this.state.globalData} />}
+
+        {/*Feed visit Page*/}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT 
+            && <FeedVisitDataView globalData={this.state.globalData} />}
 
       </>
     );

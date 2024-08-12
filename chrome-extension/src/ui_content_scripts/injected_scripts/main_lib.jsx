@@ -249,6 +249,48 @@ export class ScriptAgentBase {
 
   }
 
+  static toggleImmersiveMode(){
+
+    removeDistractiveHtmlEls(this.distractiveElSelectors);
+
+  }
+
+  static isAppStyleInjectedYet(props){
+
+    const LINKBEAM_EXTENSION_FEED_POST_STYLE = "LINKBEAM_EXTENSION_FEED_POST_STYLE";
+
+    if (!document.getElementsByTagName('head')[0].querySelector(`style#${LINKBEAM_EXTENSION_FEED_POST_STYLE}`)){
+
+      var style = document.createElement('style');
+      style.type = 'text/css';
+      style.id = LINKBEAM_EXTENSION_FEED_POST_STYLE;
+      style.innerHTML = `.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS} {
+                  border-color: ${props.appSettings.postHighlightColor} !important;
+                  border-width: 2px !important; border-style: solid !important;
+                  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;
+                  transition: transform .2s !important;
+                }
+                .${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS}:hover {
+                  transform: scale(1.01);
+                }
+
+                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME} {
+                  transition: all 2s;
+                }
+                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden {
+                  opacity: 0;
+                  visibility: hidden;
+                }
+                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown {
+                  opacity: 1;
+                  visibility: visible;
+                }`;
+      document.getElementsByTagName('head')[0].appendChild(style);
+
+    }
+
+  }
+
   // runTabDataExtractionProcess(){
 
   // }
@@ -314,6 +356,41 @@ export function sendTabData(tabId, data, callback = null){
 
     if (callback) { callback(); }
 
+  });
+
+}
+
+export function toggleElFadingEffect(htmlEl){
+
+  if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)) {
+    htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
+    htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-show`);
+    htmlEl.style.height = 'auto';
+  } else {
+    htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown`);
+    htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
+
+    setTimeout(() => {
+      htmlEl.style.height = 0
+    }, 1000);
+  }
+
+}
+
+export function removeDistractiveHtmlEls(distractiveElSeletors){
+
+  distractiveElSeletors.forEach(selector => {
+
+    const distractiveEl = document.querySelector(selector);
+
+    // setting the distinctive class name if not done yet
+    if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){
+      distractiveEl.classList.add(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME);
+    }
+
+    // toggling the display update
+    toggleElFadingEffect(distractiveEl);
+    
   });
 
 }

@@ -155,8 +155,8 @@ export default class FeedPostReminderModal extends React.Component{
                                           width="50" 
                                           height="50"
                                           className="mx-auto"/>
-                                        <div class="mt-3 p-4 mb-4 text-base text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
-                                          <span class="font-medium">Success!</span> Reminder added successfully.
+                                        <div class="mt-4 p-4 mb-4 text-base text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+                                          {/*<span class="font-medium">Success!</span>*/} Reminder added !
                                         </div>
                                       </div> }
 
@@ -204,12 +204,13 @@ export default class FeedPostReminderModal extends React.Component{
                                              required />
                                          </div>
                                                  
-                                         <button 
-                                            type="button" 
-                                            onClick={this.sendReminderData}
-                                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                                            Submit
-                                         </button>
+                                         { !Object.hasOwn(this.state.reminder, "id") 
+                                              && <button 
+                                                   type="button" 
+                                                   onClick={this.sendReminderData}
+                                                   class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-lg px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                                                   Submit
+                                                </button>}
 
                                         </form>}
                                 </div>}

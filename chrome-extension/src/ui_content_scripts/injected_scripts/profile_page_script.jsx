@@ -154,6 +154,19 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
           this.allExtensionWidgetsSet &&= false;
         }
 
+        // checking if the app style intended to be added is there yet
+        try{
+          if (this.isAppStyleInjectedYet(props)){
+            if (props.appSettings.immersiveMode == true){
+              setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+            }
+          }
+        }
+        catch(error){
+          console.log("An error occured when inserting some initial widgets : ", error);
+          this.allExtensionWidgetsSet &&= false;
+        }
+
       }
 
     });

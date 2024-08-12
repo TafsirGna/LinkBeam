@@ -95,7 +95,11 @@ class MainScriptAgent extends ScriptAgentBase {
                         }
 
                         if (isLinkedinProfilePage(this.pageUrl)){
+                            ProfilePageScriptAgent.toggleImmersiveMode();
+                        }
 
+                        if (isLinkedinFeedPostPage(this.pageUrl)){
+                            FeedPostPageScriptAgent.toggleImmersiveMode();
                         }
 
                         break;

@@ -93,7 +93,6 @@ export default class MediaView extends React.Component{
     };
 
     this.searchMedia = this.searchMedia.bind(this);
-    this.setViewIndex = this.setViewIndex.bind(this);
 
   }
 
@@ -363,9 +362,7 @@ export default class MediaView extends React.Component{
 
   }
 
-  setViewIndex(index){
-    this.setState({viewIndex: index});
-  }
+  setViewIndex = index => this.setState({viewIndex: index})
 
   render(){
     return (

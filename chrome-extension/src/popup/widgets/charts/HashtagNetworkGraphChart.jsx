@@ -27,6 +27,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from "../../../db";
 import { 
   isReferenceHashtag,
+  getHashtagText,
 } from "../../Local_library";
 
 
@@ -95,14 +96,16 @@ export default class HashtagNetworkGraphChart extends React.Component{
 
     		for (const reference of feedPost.references){
 
-    			if (!isReferenceHashtag(reference)){
+    			if (!isReferenceHashtag(reference)
+    						|| (reference.text == hashtag.text)){
             continue;
           }
 
-    			if (chartData.findIndex(d => d.source == hashtag.text && d.target == reference.text) == -1){
+    			if (chartData.findIndex(d => d.source == getHashtagText(hashtag.text) && d.target == getHashtagText(reference.text)) == -1
+    						&& chartData.findIndex(d => d.source == getHashtagText(reference.text) && d.target == getHashtagText(hashtag.text)) == -1){
 		  			chartData.push({
-		  				source: hashtag.text,
-		  				target: reference.text,
+		  				source: getHashtagText(hashtag.text),
+		  				target: getHashtagText(reference.text),
 		  				type: "null",
 		  			});
 		  		}

@@ -220,7 +220,7 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
           onHide={this.handleProfilesNetworkChartModalClose}
           size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Network Graph</Modal.Title>
+            <Modal.Title>Feed profiles network graph</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 

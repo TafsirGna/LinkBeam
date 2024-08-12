@@ -40,7 +40,6 @@ import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
 import { db } from "../db";
 import eventBus from "./EventBus";
-import { DateTime as LuxonDateTime } from "luxon";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import AllPostsModal from "./widgets/modals/AllPostsModal";
 import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
@@ -50,7 +49,7 @@ import FeedDashRecurrentProfilesSectionView from "./widgets/FeedDashRecurrentPro
 import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
 import FeedDashAttentionGrabbersSectionView from "./widgets/FeedDashAttentionGrabbersSectionView";
 import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
-import FeedScatterPlot from "./widgets/charts/FeedScatterPlot";
+import FeedVisitsScatterPlot from "./widgets/charts/FeedVisitsScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
@@ -173,7 +172,7 @@ export default class FeedDashView extends React.Component{
 
     for (var feedPostView of feedPostViews){
 
-      allPeriodFeedPostViews.push({...feedPostView});
+      allPeriodFeedPostViews.push({...feedPostView}); // IMPORTANT
 
       const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
       if (index == -1){
@@ -296,8 +295,9 @@ export default class FeedDashView extends React.Component{
           <div class="row mx-3 gap-2 d-flex">
             <div class="col p-0">
               <div class="border rounded shadow">
-                <FeedScatterPlot
-                  objects={this.state.allPeriodFeedPostViews}/>
+                <FeedVisitsScatterPlot
+                  objects={this.state.allPeriodFeedPostViews}
+                  globalData={this.props.globalData}/>
               </div>
               <div class="border rounded shadow mt-3">
                 <FeedNewPostMeasurementBarChart

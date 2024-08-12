@@ -38,6 +38,9 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 	static allExtensionWidgetsSet = false;
 	static mainHtmlEl = document.querySelector(".scaffold-layout__main");
+	static distractiveElSelectors = [".scaffold-layout__aside",
+									 ".scaffold-layout__sidebar",
+									 "header#global-nav"];
 
 	constructor(){
 		super();
@@ -106,6 +109,19 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 			}
 
+		}
+		catch(error){
+			console.log("An error occured when inserting some initial widgets : ", error);
+			this.allExtensionWidgetsSet &&= false;
+		}
+
+		// checking if the app style intended to be added is there yet
+		try{
+			if (this.isAppStyleInjectedYet(props)){
+				if (props.appSettings.immersiveMode == true){
+		          setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+		        }
+			}
 		}
 		catch(error){
 			console.log("An error occured when inserting some initial widgets : ", error);

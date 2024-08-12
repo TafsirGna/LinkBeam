@@ -211,9 +211,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     }
 
-    // Updating the context menu items
-    updateContextualMenuActions(tab.url);
-
   }
 );
 
@@ -495,11 +492,16 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
             break;
         }
         case appParams.browseOnBehalfMenuActionId: {
-            // Opening a new tab
-            chrome.tabs.create({
-              active: true,
-              url:  appParams.LINKEDIN_FEED_URL(),
-            }, null);
+            // Opening a new tab in a new window
+            chrome.windows.create({
+                // Just use the full URL if you need to open an external page
+                url: `${appParams.LINKEDIN_FEED_URL()}?automated=true`,
+                /*window.scroll({
+                  top: 100,
+                  left: 100,
+                  behavior: "smooth",
+                });*/
+            });
             break;
         }
     }

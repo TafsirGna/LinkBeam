@@ -39,7 +39,7 @@ export default class VisitListView extends React.Component{
                       src={sorry_icon} 
                       width="80" />
                     <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow-sm">No viewed profiles</span></p>
-                    <p><span class="badge text-bg-light fst-italic shadow-sm text-muted border border-warning">Visit some linkedin profiles or feed to get started</span></p>
+                    <p><span class="badge text-bg-light fst-italic shadow-sm text-muted border border-warning">Visit some linkedin profiles or feed</span></p>
                   </div> }
 
         { this.props.objects && this.props.objects.length != 0 &&
