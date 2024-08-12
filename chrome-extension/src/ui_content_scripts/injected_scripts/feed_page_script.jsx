@@ -75,7 +75,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	static activePostContainerElementUid = null;
 	static allPostsHideStatus = {};
 	static allExtensionWidgetsSet = false;
-	static mainHtmlEl = document.querySelector(".scaffold-finite-scroll__content");
+	static mainHtmlEl = () => document.querySelector(".scaffold-finite-scroll__content");
 	static distractiveElSelectors = [".scaffold-layout__aside",
 								 ".scaffold-layout__sidebar",
 								 "header#global-nav"/*,
@@ -97,19 +97,20 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			return;
 		}
 
-		var postContainerElementsExposurePercentage = postContainerElements.map(postContainerElement => ({
-			uid: postContainerElement.getAttribute("data-id"),
-			exposurePercentage: getElementVisibility(postContainerElement),
-		}));
+		const postContainerElementsExposurePercentage = postContainerElements.map(postContainerElement => ({
+																					uid: postContainerElement.getAttribute("data-id"),
+																					exposurePercentage: getElementVisibility(postContainerElement),
+																				}))
+																			 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage));
 
-		postContainerElementsExposurePercentage.sort((a, b) => (b.exposurePercentage - a.exposurePercentage));
-		console.log("<<<<<<<<<<<<<<<<<<<< : ", postContainerElementsExposurePercentage);
+		console.log("<<<<<<<<<<<<<<<<<<<< : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage[0].uid, postContainerElementsExposurePercentage);
 
 		if (this.activePostContainerElementUid != postContainerElementsExposurePercentage[0].uid){
 
 			this.activePostContainerElementUid = postContainerElementsExposurePercentage[0].uid;
 
 			const postContainerElement = postContainerElements.filter(postContainerElement => postContainerElement.getAttribute("data-id") == this.activePostContainerElementUid)[0];
+			console.log(">>>>>>>>>>>>>>>>>>> ||| : ", postContainerElement.getAttribute("data-id"), postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`));
 			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 				this.attachPostWidget(postContainerElement, props);
 			}
@@ -124,11 +125,11 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static getPostContainerElements(){
 
-		if (!this.mainHtmlEl){
+		if (!this.mainHtmlEl()){
 			return null;
 		}
 
-		return Array.from(this.mainHtmlEl.querySelectorAll("div[data-id]")).filter(htmlElement => {
+		return Array.from(this.mainHtmlEl().querySelectorAll("div[data-id]")).filter(htmlElement => {
 
 			if (htmlElement.querySelector(".feed-shared-update-v2")){
 				if (window.getComputedStyle(htmlElement.querySelector(".feed-shared-update-v2")).display === "none"){
@@ -152,16 +153,20 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
-		if (this.allExtensionWidgetsSet || !this.mainHtmlEl){
+		// console.log("GGGGGGGGGGGGGG I-a : ", this.allExtensionWidgetsSet, this.mainHtmlEl());
+
+		if (this.allExtensionWidgetsSet || !this.mainHtmlEl()){
 			return;
 		}
 
-		if (!this.mainHtmlEl.querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
+		// console.log("GGGGGGGGGGGGGG I-b : ", this.mainHtmlEl().querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`));
+
+		if (!this.mainHtmlEl().querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
 
 			try{
 				var newDivTag = document.createElement('div');
 				newDivTag.classList.add(LINKBEAM_ALL_FEED_MODALS);
-			    this.mainHtmlEl.prepend(newDivTag);
+			    this.mainHtmlEl().prepend(newDivTag);
 			    newDivTag.attachShadow({ mode: 'open' });
 
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
@@ -190,11 +195,36 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			this.allExtensionWidgetsSet = true;
 		}
 
-		// checking
+		// showing the widget above every adequate posts
 		const postContainerElements = this.getPostContainerElements();
+		// console.log("GGGGGGGGGGGGGG I-c : ", postContainerElements);
+
+		if (!postContainerElements || !postContainerElements.length){
+			this.allExtensionWidgetsSet = false;
+			return;
+		}
+
+		// for that purpose, getting the currently visible post
+		const visiblePostContainerElement = document.querySelector(`[data-id='${postContainerElements.map(postContainerElement => ({
+																											uid: postContainerElement.getAttribute("data-id"),
+																											exposurePercentage: getElementVisibility(postContainerElement),
+																										}))
+																									 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage))[0].uid}']`);
+		// console.log("GGGGGGGGGGGGGG I-d : ", visiblePostContainerElement.getAttribute("data-id"));
 		try{
-			if (!postContainerElements[0].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
-				this.attachPostWidget(this.getPostContainerElements()[0], props);
+			var index = 0;
+			while(true){
+				
+				// console.log("GGGGGGGGGGGGGG I-e : ", postContainerElements[index].getAttribute("data-id"), postContainerElements[index].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`));
+				if (!postContainerElements[index].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
+					this.attachPostWidget(postContainerElements[index], props);
+				}
+
+				if (postContainerElements[index].getAttribute("data-id") == visiblePostContainerElement.getAttribute("data-id")){
+					break;
+				}
+				index++;
+
 			}
 		}
 		catch(error){

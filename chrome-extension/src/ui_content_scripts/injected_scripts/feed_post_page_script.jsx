@@ -37,7 +37,7 @@ const LinkbeamFeedPostDataModalWrapperId = "LinkbeamFeedPostDataModalWrapperId";
 export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 	static allExtensionWidgetsSet = false;
-	static mainHtmlEl = document.querySelector(".scaffold-layout__main");
+	static mainHtmlEl = () => document.querySelector(".scaffold-layout__main");
 	static distractiveElSelectors = [".scaffold-layout__aside",
 									 ".scaffold-layout__sidebar",
 									 "header#global-nav"];
@@ -83,7 +83,7 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 		}
 
 
-		var postContainerElement = this.mainHtmlEl.querySelector("div[data-urn]");
+		var postContainerElement = this.mainHtmlEl().querySelector("div[data-urn]");
 		try{
 
 			if (!postContainerElement.parentNode.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){

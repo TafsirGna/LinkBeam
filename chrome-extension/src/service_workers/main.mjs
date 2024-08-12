@@ -161,6 +161,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
                                     // }
 
+                                    // Updating the context menu items
+                                    updateContextualMenuActions(tab.url);
+
                                 }
 
                             });
@@ -205,6 +208,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 //     sessionItem.myTabs[tabId].prevTabUrlInterestStatus = false;
                 //     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
                 // }
+
+                // Updating the context menu items
+                updateContextualMenuActions(tab.url);
 
             }
         });

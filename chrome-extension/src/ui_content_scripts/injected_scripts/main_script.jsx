@@ -50,6 +50,7 @@ class MainScriptAgent extends ScriptAgentBase {
             "bg-purple-100 dark:bg-purple-900 dark:text-purple-300 text-purple-800",
             "bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 text-indigo-800",
         ]);
+        this.timerIntervalInc = 0;
         
     }
 
@@ -144,7 +145,8 @@ class MainScriptAgent extends ScriptAgentBase {
 
         this.timerInterval = setInterval(() => {
 
-            console.log("GGGGGGGGGGGGGG III : ");
+            this.timerIntervalInc++;
+            // console.log("GGGGGGGGGGGGGG I : ", this.timerIntervalInc);
 
             if (!this.isActiveTab){
                 return;
@@ -160,6 +162,8 @@ class MainScriptAgent extends ScriptAgentBase {
                 otherArgs: this.otherArgs,
                 idleStatus: this.idleStatus,
             };
+
+            // console.log("GGGGGGGGGGGGGG II : ", this.pageUrl, pageUrl, isLinkedinFeed(pageUrl));
 
             if (isLinkedinFeedPostPage(pageUrl)){
 
@@ -178,6 +182,7 @@ class MainScriptAgent extends ScriptAgentBase {
                     FeedPageScriptAgent.allExtensionWidgetsSet = false;
                     FeedPageScriptAgent.allPostsHideStatus = {};
                     this.pageUrl = pageUrl;
+                    console.log("GGGGGGGGGGGGGG III : ", this.timerIntervalInc, this.pageUrl);
                 }
 
                 FeedPageScriptAgent.checkAndUpdateUi(props);
@@ -213,6 +218,11 @@ class MainScriptAgent extends ScriptAgentBase {
 
                 }
 
+            }
+            else{
+                if (this.pageUrl != pageUrl){
+                    this.pageUrl = pageUrl;
+                }
             }
 
         }, appParams.TIMER_VALUE_2);
