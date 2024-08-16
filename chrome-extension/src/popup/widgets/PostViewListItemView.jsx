@@ -65,7 +65,7 @@ const categoryIconMap = {
   reposts: repost_icon,
   suggestions: suggestion_icon,
   funs: fun_icon,
-}
+};
 
 export default class PostViewListItemView extends React.Component{
 

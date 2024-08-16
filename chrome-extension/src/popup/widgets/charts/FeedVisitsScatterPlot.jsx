@@ -124,12 +124,15 @@ export default class FeedVisitsScatterPlot extends React.Component{
   render(){
     return (
       <>
-        { !this.props.objects && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                      {/*<span class="visually-hidden">Loading...</span>*/}
-                    </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+        { !this.props.objects 
+            && <div class="text-center">
+                <div class="mb-5 mt-4">
+                  <div class="spinner-border text-primary" role="status">
+                    {/*<span class="visually-hidden">Loading...</span>*/}
                   </div>
-                </div>}
+                  <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                </div>
+              </div>}
 
         { this.props.objects 
             && <div>

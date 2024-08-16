@@ -52,6 +52,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       animatedTreeMapChartModalShow: false,
       feedProfileDataModalShow: false,
       selectedFeedProfile: null,
+      selectedPostList: null,
     };
 
     this.setAttentionGrabbers = this.setAttentionGrabbers.bind(this);
@@ -76,6 +77,9 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
   handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
   handleFeedProfileDataModalShow = (profile) => this.setState({feedProfileDataModalShow: true, selectedFeedProfile: profile});
+
+  handlePostListModalClose = () => this.setState({selectedPostList: null});
+  handlePostListModalShow = (postList) => this.setState({selectedPostList: postList});
 
   async setAttentionGrabbers(){
 
@@ -216,7 +220,15 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                                 <div class="progress-stacked shadow border" style={{height: ".5em"}}>
 
                                                                                       <OverlayTrigger overlay={<ReactTooltip id={null}>{`${secondsToHms(object.timeCount)}`}</ReactTooltip>}>
-                                                                                        <div class="progress" role="progressbar" aria-label="Segment one" aria-valuenow={((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)} aria-valuemin="0" aria-valuemax="100" style={{width: `${((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)}%`}}>
+                                                                                        <div 
+                                                                                          class="progress handy-cursor" 
+                                                                                          role="progressbar" 
+                                                                                          aria-label="Segment one" 
+                                                                                          aria-valuenow={((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)} 
+                                                                                          aria-valuemin="0" 
+                                                                                          onClick={() => this.handlePostListModalShow([])}
+                                                                                          title="Click to see more"
+                                                                                          aria-valuemax="100" style={{width: `${((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)}%`}}>
                                                                                           <div class={`progress-bar bg-secondary`}></div>
                                                                                         </div>
                                                                                       </OverlayTrigger>
@@ -257,6 +269,37 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
           show={this.state.feedProfileDataModalShow}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
+
+
+        <Modal 
+          show={this.state.selectedPostList != null} 
+          onHide={this.handlePostListModalClose}
+          size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Post List</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            { !this.state.selectedPostList 
+                && <div class="text-center">
+                    <div class="mb-5 mt-4">
+                      <div class="spinner-border text-primary" role="status">
+                        {/*<span class="visually-hidden">Loading...</span>*/}
+                      </div>
+                      <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                    </div>
+                  </div>}
+
+            { this.state.selectedPostList
+                && this.state.selectedPostList.map(post => null) }
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handlePostListModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
       </>
     );

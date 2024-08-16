@@ -6,6 +6,8 @@ import Popover from 'react-bootstrap/Popover';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 import FeedProfileDataModal from "./modals/FeedProfileDataModal";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 const bgColors = [
   "bg-primary",
@@ -53,6 +55,7 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
     this.state = {
       totalInteractions: null,
       feedProfileDataModalShow: false,
+      selectedPostList: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -80,9 +83,12 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
   handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
   handleFeedProfileDataModalShow = () => this.setState({feedProfileDataModalShow: true});
 
+  handlePostListModalClose = () => this.setState({selectedPostList: null});
+  handlePostListModalShow = (postList) => this.setState({selectedPostList: postList});
+
   onEnteringUserTooltip = async () => {
 
-    this.setState({userTooltipContent: <span class="fw-light">{`${totalInteractions(this.props.object)} deeds`} so far</span>});
+    this.setState({userTooltipContent: <span class="fw-light">{`${totalInteractions(this.props.object)} deed${totalInteractions(this.props.object) > 1 ? "s" : ""}`} so far</span>});
 
   }
 
@@ -130,8 +136,14 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
                 <div class="progress-stacked shadow border" style={{height: ".5em"}}>
                   { Object.keys(this.props.object.feedItemsMetrics).map((category, index) => (
 
-                      <OverlayTrigger overlay={<Tooltip id={null}>{`${this.props.object.feedItemsMetrics[category]} ${category}`}</Tooltip>}>
-                        <div class="progress" role="progressbar" aria-label="Segment one" aria-valuenow={((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)} aria-valuemin="0" aria-valuemax="100" style={{width: `${((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)}%`}}>
+                      <OverlayTrigger overlay={<Tooltip id={null}>{`${this.props.object.feedItemsMetrics[category]} ${this.props.object.feedItemsMetrics[category] <= 1 ? (category.endsWith("s") ? category.slice(0, category.length - 1) : category) : category}`}</Tooltip>}>
+                        <div 
+                          class="progress handy-cursor" 
+                          role="progressbar" 
+                          aria-label="Segment one" 
+                          onClick={() => {this.handlePostListModalShow([])}}
+                          title="Click to see more"
+                          aria-valuenow={((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)} aria-valuemin="0" aria-valuemax="100" style={{width: `${((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)}%`}}>
                           <div class={`progress-bar ${bgColors[index % bgColors.length]}`}></div>
                         </div>
                       </OverlayTrigger>
@@ -150,6 +162,37 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
           show={this.state.feedProfileDataModalShow}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
+
+
+        <Modal 
+          show={this.state.selectedPostList != null} 
+          onHide={this.handlePostListModalClose}
+          size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Post List</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+
+            { !this.state.selectedPostList 
+                && <div class="text-center">
+                    <div class="mb-5 mt-4">
+                      <div class="spinner-border text-primary" role="status">
+                        {/*<span class="visually-hidden">Loading...</span>*/}
+                      </div>
+                      <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+                    </div>
+                  </div>}
+
+            { this.state.selectedPostList
+                && this.state.selectedPostList.map(post => null) }
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handlePostListModalClose} className="shadow">
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
       </>
     );

@@ -257,17 +257,18 @@ export default class About extends React.Component{
           // Database opened successfully
           // Initializing the db with settings data
           const id = await db.settings.add({
-              notifications: true,
-              lastDataResetDate: new Date().toISOString(),
-              installedOn: new Date().toISOString(),
-              productID: uuidv4(), 
-              userIcon: "default",
-              outdatedProfileReminder: "> 1 year",
-              maxTimeAlarm: "1 hour",
-              autoTabOpening: true,
-              hidePostViewCount: appParams.allHidePostViewCountValues[0],
-              postHighlightColor: "#563d7c",
-              immersiveMode: false,
+            notifications: true,
+            lastDataResetDate: new Date().toISOString(),
+            installedOn: new Date().toISOString(),
+            productID: uuidv4(), 
+            userIcon: "default",
+            outdatedProfileReminder: "> 1 year",
+            maxTimeAlarm: "1 hour",
+            autoTabOpening: true,
+            hidePostViewCount: appParams.allHidePostViewCountValues[0],
+            postHighlightColor: "#563d7c",
+            immersiveMode: false,
+            // appVersion: appParams.appVersion,
           });
 
           this.setState({opDone: true, processing: false}, () => {

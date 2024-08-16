@@ -104,36 +104,36 @@ export default class FeedDashHashtagsSectionView extends React.Component{
     }
 
     var references = [];
-    const feedPostIds = this.props.objects.map(view => view.feedPostId).filter((value, index, self) => self.indexOf(value) === index);
+    const feedPosts = this.props.objects.map(view => view.feedPost).filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
+    console.log("AAAAAAAAAAAAAA - 1", feedPosts);
 
-    await db.feedPosts
-            .where("id")
-            .anyOf(feedPostIds)
-            .each(feedPost => {
+    for (var feedPost of feedPosts){
 
-              if (!feedPost.references){
-                return;
-              }
+      if (!feedPost.references){
+        continue;
+      }
 
-              for (const reference of feedPost.references){
+      for (const reference of feedPost.references){
 
-                if (!isReferenceHashtag(reference)){
-                  continue;
-                }
+        if (!isReferenceHashtag(reference)){
+          continue;
+        }
 
-                const index = references.findIndex(r => getHashtagText(r.text) == getHashtagText(reference.text));
-                if (index == -1){
-                  references.push({
-                    ...reference,
-                    feedPosts: [feedPost],
-                  });
-                }
-                else{
-                  references[index].feedPosts.push(feedPost);
-                }
-              }
+        const index = references.findIndex(r => getHashtagText(r.text) == getHashtagText(reference.text));
+        if (index == -1){
+          references.push({
+            ...reference,
+            feedPosts: [feedPost],
+          });
+        }
+        else{
+          references[index].feedPosts.push(feedPost);
+        }
+      }
 
-            });
+    }
+
+    console.log("AAAAAAAAAAAAAA - 2", references);
 
     references.sort((a, b) => b.feedPosts.length - a.feedPosts.length);
 
@@ -260,19 +260,16 @@ export default class FeedDashHashtagsSectionView extends React.Component{
               { this.state.hashtagInfosModalSelectedView == 1
                   && <div>
                       <ActivityListView 
-                        objects={this.state.selectedReference.feedPosts.map(post => ({
-                            user: {
-                              picture: post.author.picture,
-                              name: post.author.name,
-                            },
-                            // url: post.uid 
-                            //         ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.uid}`
-                            //         : (views.length
-                            //             ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`
-                            //             : null),
+                        objects={this.state.selectedReference.feedPosts.map(post => { 
+                          const view = this.props.objects.filter(view => view.feedPostId == post.id).toReversed()[0]; 
+                          return {
+                            author: post.author,
+                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`,
                             // date: views.length ? views[0].date : null,
+                            category: view.category,
+                            initiator: view.initiator,
                             text: highlightText(post.innerContentHtml, getHashtagText(this.state.selectedReference.text)),
-                          }))}
+                          }})}
                         variant="list"/>
                   </div> }
 

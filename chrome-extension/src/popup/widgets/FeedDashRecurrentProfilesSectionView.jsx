@@ -116,6 +116,7 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
         else{
           for (const category of Object.keys(categoryVerbMap)) {
             if (category == feedPostView.category){
+              // mostRecurrentProfiles[index].feedItemsMetrics[category]++;
               mostRecurrentProfiles[index].feedItemsMetrics[category]++;
             }
           }

@@ -52,6 +52,10 @@ const termLanguageVariants = {
 
 export class ScriptAgentBase {
 
+  static distractiveElSelectors = [".scaffold-layout__aside",
+                                   ".scaffold-layout__sidebar",
+                                   "header#global-nav"];
+
 	constructor(){
 
     this.tabId = null;
@@ -179,11 +183,7 @@ export class ScriptAgentBase {
 
   }
 
-  isOneVideoPlaying(){
-
-    return Array.from(document.querySelectorAll("video")).filter(htmlElement => !htmlElement.paused).length;
-
-  } 
+  isOneVideoPlaying = () => Array.from(document.querySelectorAll("video")).filter(htmlElement => !htmlElement.paused).length;
 
   startIdlingTimer(){
 
@@ -249,9 +249,9 @@ export class ScriptAgentBase {
 
   }
 
-  static toggleImmersiveMode(){
+  static toggleImmersiveMode(scriptAgentBase){
 
-    removeDistractiveHtmlEls(this.distractiveElSelectors);
+    removeDistractiveHtmlEls(scriptAgentBase.distractiveElSelectors());
 
   }
 
@@ -261,33 +261,45 @@ export class ScriptAgentBase {
 
     if (!document.getElementsByTagName('head')[0].querySelector(`style#${LINKBEAM_EXTENSION_FEED_POST_STYLE}`)){
 
-      var style = document.createElement('style');
-      style.type = 'text/css';
-      style.id = LINKBEAM_EXTENSION_FEED_POST_STYLE;
-      style.innerHTML = `.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS} {
-                  border-color: ${props.appSettings.postHighlightColor} !important;
-                  border-width: 2px !important; border-style: solid !important;
-                  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;
-                  transition: transform .2s !important;
-                }
-                .${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS}:hover {
-                  transform: scale(1.01);
-                }
+      try{
 
-                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME} {
-                  transition: all 2s;
-                }
-                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden {
-                  opacity: 0;
-                  visibility: hidden;
-                }
-                .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown {
-                  opacity: 1;
-                  visibility: visible;
-                }`;
-      document.getElementsByTagName('head')[0].appendChild(style);
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.id = LINKBEAM_EXTENSION_FEED_POST_STYLE;
+        style.innerHTML = `.${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS} {
+                    border-color: ${props.appSettings.postHighlightColor} !important;
+                    border-width: 2px !important; border-style: solid !important;
+                    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px !important;
+                    transition: transform .2s !important;
+                  }
+                  .${appParams.LINKBEAM_HIGHLIGHTED_POST_CLASS}:hover {
+                    transform: scale(1.01);
+                  }
+
+                  .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME} {
+                    transition: all 2s;
+                  }
+                  .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden {
+                    opacity: 0;
+                    visibility: hidden;
+                  }
+                  .${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown {
+                    opacity: 1;
+                    visibility: visible;
+                  }`;
+        document.getElementsByTagName('head')[0].appendChild(style);
+
+        return true;
+
+      }
+      catch(error){
+        console.log("Error : An error occured when inserting the extension app style");
+        return false;
+      }
 
     }
+
+    return true;
 
   }
 
@@ -377,11 +389,15 @@ export function toggleElFadingEffect(htmlEl){
 
 }
 
-export function removeDistractiveHtmlEls(distractiveElSeletors){
+export function removeDistractiveHtmlEls(distractiveElSelectors){
 
-  distractiveElSeletors.forEach(selector => {
+  distractiveElSelectors.forEach(selector => {
 
     const distractiveEl = document.querySelector(selector);
+
+    if (!distractiveEl){
+      return;
+    }
 
     // setting the distinctive class name if not done yet
     if (!distractiveEl.classList.contains(appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME)){

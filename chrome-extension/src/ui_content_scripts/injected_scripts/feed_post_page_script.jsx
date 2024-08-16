@@ -38,9 +38,7 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 	static allExtensionWidgetsSet = false;
 	static mainHtmlEl = () => document.querySelector(".scaffold-layout__main");
-	static distractiveElSelectors = [".scaffold-layout__aside",
-									 ".scaffold-layout__sidebar",
-									 "header#global-nav"];
+	static distractiveElSelectors = () => [...ScriptAgentBase.distractiveElSelectors/*, ""*/];
 
 	constructor(){
 		super();
@@ -119,7 +117,7 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 		try{
 			if (this.isAppStyleInjectedYet(props)){
 				if (props.appSettings.immersiveMode == true){
-		          setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+		          setTimeout(() => {this.toggleImmersiveMode(FeedPostPageScriptAgent)}, 1000); // after one sec
 		        }
 			}
 		}

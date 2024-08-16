@@ -120,7 +120,7 @@ export default class EducationDataChartWidget extends React.Component{
 
     // education
     for (var education of profileData.education){
-      if (education == "incomplete"){
+      if (education == "incomplete" || !education.period){
         continue;
       }
       education.period = dbDataSanitizer.preProcExtractedPeriodString(education.period, LuxonDateTime);

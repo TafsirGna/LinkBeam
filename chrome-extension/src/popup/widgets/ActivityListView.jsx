@@ -26,15 +26,39 @@ import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
 import share_icon from '../../assets/share_icon.png';
+import linkedin_icon from '../../assets/linkedin_icon.png';
 import newspaper_icon from '../../assets/newspaper_icon.png';
 import sorry_icon from '../../assets/sorry_icon.png';
+import party_popper_icon from '../../assets/party-popper_icon.png';
+import support_icon from '../../assets/support_icon.png';
+import contribution_icon from '../../assets/contribution_icon.png';
+import comment_icon from '../../assets/comment_icon.png';
+import insightful_icon from '../../assets/insightful_icon.png';
+import repost_icon from '../../assets/repost_icon.png';
+import like_icon from '../../assets/like_icon.png';
+import suggestion_icon from '../../assets/suggestion_icon.png';
+import fun_icon from '../../assets/fun_icon.png';
 import { PictureIcon } from "./SVGs";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { db } from "../../db";
 import { 
   appParams,
+  categoryVerbMap,
 } from "../Local_library";
+
+const categoryIconMap = {
+  loves: heart_icon,
+  celebrations: party_popper_icon,
+  likes: like_icon,
+  supports: support_icon,
+  contributions: contribution_icon,
+  comments: comment_icon,
+  insights: insightful_icon,
+  reposts: repost_icon,
+  suggestions: suggestion_icon,
+  funs: fun_icon,
+};
 
 
 export default class ActivityListView extends React.Component{
@@ -97,26 +121,52 @@ export default class ActivityListView extends React.Component{
                         && <div>
                               <div class="list-group small mt-1 shadow-sm">
                                 { this.props.objects.map((object) => (<a class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true" href={ object.url } target="_blank">
-                                  <div class="d-flex gap-2 w-100 justify-content-between">
-                                    <div>
-                                      <p class="mb-1">
-                                        <span 
-                                          class="badge align-items-center p-1 pe-3 text-secondary-emphasis rounded-pill">
-                                          <img 
-                                            class="rounded-circle me-1" 
-                                            width="24" 
-                                            height="24" 
-                                            src={ object.user.picture } 
-                                            alt=""/>
-                                          { object.user.name }
-                                          {/**/}
-                                        </span>
-                                      </p>
-                                      <p class="mb-0 opacity-75 border p-2 rounded shadow" dangerouslySetInnerHTML={{__html: object.text}}></p>
-                                    </div>
-                                    { object.date && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>}
-                                  </div>
-                                </a>))} 
+                                                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                                                          <div>
+                                                                            <p class="mb-1">
+                                                                              <span 
+                                                                                class="badge align-items-center p-1 pe-3 text-secondary-emphasis rounded-pill">
+                                                                                <img 
+                                                                                  class="rounded-circle me-1" 
+                                                                                  width="24" 
+                                                                                  height="24" 
+                                                                                  src={ object.initiator ? (object.initiator.picture || object.author.picture) : object.author.picture } 
+                                                                                  alt=""/>
+                                                                                { object.initiator ? (object.initiator.name || object.author.name) : object.author.name }
+                                                                              </span>
+                                                                              { Object.hasOwn(object, "category")
+                                                                                  && <OverlayTrigger
+                                                                                        placement="top"
+                                                                                        overlay={<Tooltip id="tooltip1">{object.category ? categoryVerbMap[object.category]["en"] : "shared"}</Tooltip>}
+                                                                                      >
+                                                                                      <span>
+                                                                                        <img 
+                                                                                          class="mx-1" 
+                                                                                          width="16" 
+                                                                                          height="16" 
+                                                                                          src={object.category ? categoryIconMap[object.category] : share_icon} 
+                                                                                          alt=""/>
+                                                                                      </span>
+                                                                                    </OverlayTrigger>}
+                                                                              <img class="float-end" width="16" height="16" src={linkedin_icon} alt=""/>
+                                                                            </p>
+                                                                            <OverlayTrigger 
+                                                                              trigger="hover" 
+                                                                              placement="left" 
+                                                                              overlay={object.author 
+                                                                                        && <Popover id="popover-basic">
+                                                                                            <Popover.Body>
+                                                                                              by {object.author.name}
+                                                                                            </Popover.Body>
+                                                                                          </Popover>}
+                                                                              >
+                                                                              <p class="mb-0 opacity-75 border p-2 rounded shadow" dangerouslySetInnerHTML={{__html: object.text}}></p>
+                                                                            </OverlayTrigger>
+                                                                          </div>
+                                                                          { object.date 
+                                                                              && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>}
+                                                                        </div>
+                                                                      </a>))} 
                               </div>
                             </div>}
                      
@@ -134,9 +184,9 @@ export default class ActivityListView extends React.Component{
                                           class="rounded-circle me-1" 
                                           width="24" 
                                           height="24" 
-                                          src={ object.user.picture } 
+                                          src={ object.initiator.picture } 
                                           alt=""/>
-                                        { object.user.name }
+                                        { object.initiator.name }
                                         {/*{object.action 
                                               && <OverlayTrigger
                                                           placement="top"

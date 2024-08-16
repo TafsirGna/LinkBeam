@@ -38,10 +38,6 @@ import FeedPostRelatedPostsModal from "../widgets/feed/FeedPostRelatedPostsModal
 import eventBus from "../../popup/EventBus";
 
 const LINKBEAM_ALL_FEED_MODALS = "LINKBEAM_ALL_FEED_MODALS";
-const distractiveElSelectors = [".scaffold-layout__aside",
-								 ".scaffold-layout__sidebar",
-								 "header#global-nav"/*,
-								 ".share-box-feed-entry__closed-share-box artdeco-card"*/];
 
 function getElementVisibility(element) {
 
@@ -76,10 +72,8 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	static allPostsHideStatus = {};
 	static allExtensionWidgetsSet = false;
 	static mainHtmlEl = () => document.querySelector(".scaffold-finite-scroll__content");
-	static distractiveElSelectors = [".scaffold-layout__aside",
-								 ".scaffold-layout__sidebar",
-								 "header#global-nav"/*,
-								 ".share-box-feed-entry__closed-share-box artdeco-card"*/];
+	static distractiveElSelectors = () => [...ScriptAgentBase.distractiveElSelectors/*,
+									 	   ".share-box-feed-entry__closed-share-box artdeco-card"*/];
 
 	constructor(){
 		super();
@@ -153,13 +147,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
-		// console.log("GGGGGGGGGGGGGG I-a : ", this.allExtensionWidgetsSet, this.mainHtmlEl());
-
 		if (this.allExtensionWidgetsSet || !this.mainHtmlEl()){
 			return;
 		}
-
-		// console.log("GGGGGGGGGGGGGG I-b : ", this.mainHtmlEl().querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`));
 
 		if (!this.mainHtmlEl().querySelector(`.${LINKBEAM_ALL_FEED_MODALS}`)){
 
@@ -197,7 +187,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		// showing the widget above every adequate posts
 		const postContainerElements = this.getPostContainerElements();
-		// console.log("GGGGGGGGGGGGGG I-c : ", postContainerElements);
 
 		if (!postContainerElements || !postContainerElements.length){
 			this.allExtensionWidgetsSet = false;
@@ -210,12 +199,10 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 																											exposurePercentage: getElementVisibility(postContainerElement),
 																										}))
 																									 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage))[0].uid}']`);
-		// console.log("GGGGGGGGGGGGGG I-d : ", visiblePostContainerElement.getAttribute("data-id"));
+
 		try{
 			var index = 0;
 			while(true){
-				
-				// console.log("GGGGGGGGGGGGGG I-e : ", postContainerElements[index].getAttribute("data-id"), postContainerElements[index].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`));
 				if (!postContainerElements[index].querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 					this.attachPostWidget(postContainerElements[index], props);
 				}
@@ -236,7 +223,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		try{
 			if (this.isAppStyleInjectedYet(props)){
 				if (props.appSettings.immersiveMode == true){
-		          setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+		          setTimeout(() => {this.toggleImmersiveMode(FeedPageScriptAgent)}, 1000); // after one sec
 		        }
 			}
 		}

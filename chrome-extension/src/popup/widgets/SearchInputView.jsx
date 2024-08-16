@@ -245,22 +245,19 @@ export default class SearchInputView extends React.Component{
       for (var post of matchingPosts){
 
         const views = await db.feedPostViews
-                .where({feedPostId: post.id})
-                .reverse()
-                .sortBy("date");
+                              .where({feedPostId: post.id})
+                              .toArray();
 
         posts.push({
-          user: {
-            picture: post.author.picture,
-            name: post.author.name,
-          },
+          author: post.author,
           url: post.uid 
                   ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.uid}`
                   : (views.length
-                      ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[0].uid}`
+                      ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[views.length - 1].uid}`
                       : null),
-          date: views.length ? views[0].date : null,
+          date: views[view.length - 1].date, // views.length ? views[0].date : null,
           text: post.innerContentHtml,
+          initiator: views[views.length - 1].initiator,
         });
 
       }
@@ -298,7 +295,7 @@ export default class SearchInputView extends React.Component{
         }
 
         posts.push({
-          user: {
+          initiator: {
             picture: profile.avatar,
             name: profile.fullName,
           },

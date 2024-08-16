@@ -44,6 +44,7 @@ import Popover from 'react-bootstrap/Popover';
 import ImageLoader from "./widgets/ImageLoader";
 import Masonry from "react-responsive-masonry";
 import Carousel from 'react-bootstrap/Carousel';
+import ActivityListView from "./widgets/ActivityListView";
 
 export default class FeedVisitDataView extends React.Component{
 
@@ -235,7 +236,7 @@ export default class FeedVisitDataView extends React.Component{
 
             { this.state.viewIndex == 0 
                 && <FeedVisitPostsView
-                    objects={this.state.visit}
+                    objects={this.state.feedPosts}
                     globalData={this.props.globalData}/>}
 
             { this.state.viewIndex == 1 
@@ -257,6 +258,30 @@ export default class FeedVisitDataView extends React.Component{
 
 function FeedVisitPostsView(props){
   return <>
+
+      { !props.objects 
+          && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                  {/*<span class="visually-hidden">Loading...</span>*/}
+                </div>
+                <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
+              </div>
+            </div>}
+
+      { props.objects 
+          && <div class="mt-4">
+              {props.objects.map(feedPost => <ActivityListView 
+                                              objects={[{
+                                                author: feedPost.author,
+                                                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                                                // date: views.length ? views[0].date : null,
+                                                text: feedPost.innerContentHtml,
+                                                media: feedPost.media,
+                                                category: feedPost.view.category,
+                                                initiator: feedPost.view.initiator,
+                                              }]}
+                                              variant="list"/>)}
+            </div>}
+
     </>;
 }
 

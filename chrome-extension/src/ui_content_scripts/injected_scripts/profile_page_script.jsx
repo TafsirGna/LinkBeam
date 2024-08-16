@@ -48,6 +48,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
   static keywordDetected = false;
   static allExtensionWidgetsSet = false;
   static profileData = null;
+  static distractiveElSelectors = () => [...ScriptAgentBase.distractiveElSelectors,
+                                         ".scaffold-layout-toolbar"];
 
   constructor(){
     super();
@@ -158,7 +160,7 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
         try{
           if (this.isAppStyleInjectedYet(props)){
             if (props.appSettings.immersiveMode == true){
-              setTimeout(this.toggleImmersiveMode, 1000); // after one sec
+              setTimeout(() => {this.toggleImmersiveMode(ProfilePageScriptAgent)}, 1000); // after one sec
             }
           }
         }

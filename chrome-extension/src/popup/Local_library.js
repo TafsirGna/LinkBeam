@@ -22,7 +22,7 @@
 
 export const appParams = {
   appName: "LinkBeam",
-  appVersion: "BETA", // "0.1.0", 
+  appVersion: "0.0.2 (BETA)", 
   appDbName: "LinkBeamDB",
   appYear: "2024",
   appDbVersion: 1,
@@ -1787,7 +1787,7 @@ export function insertHtmlTagsIntoEl(node, textArray, keywords, highlightedKeywo
 
 }
 
-export const isLinkedinFeed = (url) => url.includes(appParams.LINKEDIN_FEED_URL());
+export const isLinkedinFeed = (url) => (!isLinkedinFeedPostPage(url) && url.includes(appParams.LINKEDIN_FEED_URL())); // url.split("?")[0] == appParams.LINKEDIN_FEED_URL();
 export const isLinkedinProfilePage = (value) => decodeURI(value.toString()).match(/linkedin.com\/in\/[\wàâçéèêëîïôûùüÿñæœ-]+/g);
 export const isLinkedinFeedPostPage = (url) => url.indexOf(appParams.LINKEDIN_FEED_POST_ROOT_URL()) != -1;
 export const isLinkedinProfileSectionDetailsPage = (url) => [decodeURI(url), url].join("|").match(/linkedin.com\/in\/[\wàâçéèêëîïôûùüÿñæœ-]+\/details\//g);

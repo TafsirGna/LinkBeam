@@ -92,15 +92,15 @@ class MainScriptAgent extends ScriptAgentBase {
                     case appParams.immersiveModeMenuActionId:{
 
                         if (isLinkedinFeed(this.pageUrl)){
-                            FeedPageScriptAgent.toggleImmersiveMode();
+                            FeedPageScriptAgent.toggleImmersiveMode(FeedPageScriptAgent);
                         }
 
                         if (isLinkedinProfilePage(this.pageUrl)){
-                            ProfilePageScriptAgent.toggleImmersiveMode();
+                            ProfilePageScriptAgent.toggleImmersiveMode(ProfilePageScriptAgent);
                         }
 
                         if (isLinkedinFeedPostPage(this.pageUrl)){
-                            FeedPostPageScriptAgent.toggleImmersiveMode();
+                            FeedPostPageScriptAgent.toggleImmersiveMode(FeedPostPageScriptAgent);
                         }
 
                         break;

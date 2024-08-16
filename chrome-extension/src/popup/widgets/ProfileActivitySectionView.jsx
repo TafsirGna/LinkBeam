@@ -46,7 +46,7 @@ export default class ProfileActivitySectionView extends React.Component{
     }
 
     return this.props.profile.activity.map(activity => ({
-      user: {
+      initiator: {
         picture: this.props.profile.avatar,
         name: this.props.profile.fullName,
       },

@@ -119,16 +119,15 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
         feedPost.views = [feedPostView];
         var firstView = await db.feedPostViews.where({feedPostId: feedPostView.feedPostId}).first()
-        feedPost.firstFeedOccurence = firstView.date;
         feedPost.uid = firstView.uid;
 
         feedPosts.push(feedPost);
 
-        data[0].push(feedPost.estimatedDate.split("T")[0] < feedPost.firstFeedOccurence.split("T")[0] 
+        data[0].push(feedPost.estimatedDate.split("T")[0] < firstView.date.split("T")[0] 
                       ? feedPost.estimatedDate.split("T")[0]
-                      : feedPost.firstFeedOccurence.split("T")[0]);
+                      : firstView.date.split("T")[0]);
 
-        data[1].push(feedPost.firstFeedOccurence.split("T")[0]);
+        data[1].push(firstView.date.split("T")[0]);
 
         labels.push(new Date(feedPost.estimatedDate).valueOf().toString());
 
@@ -250,45 +249,44 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                   </div>
                 </div>}
 
-        { this.state.barData && <div> 
-                                  <Bar 
-                                      ref={this.state.chartRef}
-                                      options={this.state.barOptions} 
-                                      data={this.state.barData} 
-                                      plugins={[this.state.startDateLinePlugin]}
-                                      onClick={this.onChartClick}
-                                      />
+        { this.state.barData 
+            && <div> 
+                <Bar 
+                    ref={this.state.chartRef}
+                    options={this.state.barOptions} 
+                    data={this.state.barData} 
+                    plugins={[this.state.startDateLinePlugin]}
+                    onClick={this.onChartClick}
+                    />
 
-                                  <Modal 
-                                    show={this.state.selectedFeedPostIndex != null} 
-                                    onHide={this.handlePostModalClose}>
-                                    <Modal.Header closeButton>
-                                      <Modal.Title>Post</Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>
+                <Modal 
+                  show={this.state.selectedFeedPostIndex != null} 
+                  onHide={this.handlePostModalClose}>
+                  <Modal.Header closeButton>
+                    <Modal.Title>Post</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
 
-                                      { this.state.selectedFeedPostIndex != null 
-                                          && <ActivityListView 
-                                                objects={[{
-                                                  user: {
-                                                    picture: this.state.feedPosts[this.state.selectedFeedPostIndex].author.picture,
-                                                    name: this.state.feedPosts[this.state.selectedFeedPostIndex].author.name,
-                                                  },
-                                                  url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
-                                                  // date: views.length ? views[0].date : null,
-                                                  text: this.state.feedPosts[this.state.selectedFeedPostIndex].innerContentHtml,
-                                                }]}
-                                                variant="list"/>}
+                    { this.state.selectedFeedPostIndex != null 
+                        && <ActivityListView 
+                              objects={[{
+                                author: this.state.feedPosts[this.state.selectedFeedPostIndex].author,
+                                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
+                                // date: views.length ? views[0].date : null,
+                                text: this.state.feedPosts[this.state.selectedFeedPostIndex].innerContentHtml,
+                                category: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].category,
+                                initiator: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].initiator,
+                              }]}
+                              variant="list"/>}
 
-                                    </Modal.Body>
-                                    <Modal.Footer>
-                                      <Button variant="secondary" size="sm" onClick={this.handlePostModalClose} className="shadow">
-                                        Close
-                                      </Button>
-                                    </Modal.Footer>
-                                  </Modal>
-
-                                </div>}
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button variant="secondary" size="sm" onClick={this.handlePostModalClose} className="shadow">
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal>
+              </div>}
       </>
     );
   }
