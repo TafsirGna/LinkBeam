@@ -42,6 +42,7 @@ import AttentionGrabbersAnimatedTreeMapChart from "./charts/AttentionGrabbersAni
 import FeedProfileDataModal from "./modals/FeedProfileDataModal";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import ActivityListView from "./ActivityListView";
 
 export default class FeedDashAttentionGrabbersSectionView extends React.Component{
 
@@ -52,7 +53,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
       animatedTreeMapChartModalShow: false,
       feedProfileDataModalShow: false,
       selectedFeedProfile: null,
-      selectedPostList: null,
+      selectedProfile: null,
     };
 
     this.setAttentionGrabbers = this.setAttentionGrabbers.bind(this);
@@ -78,8 +79,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
   handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
   handleFeedProfileDataModalShow = (profile) => this.setState({feedProfileDataModalShow: true, selectedFeedProfile: profile});
 
-  handlePostListModalClose = () => this.setState({selectedPostList: null});
-  handlePostListModalShow = (postList) => this.setState({selectedPostList: postList});
+  handlePostListModalClose = () => this.setState({selectedProfile: null});
+  handlePostListModalShow = (profile) => this.setState({selectedProfile: profile});
 
   async setAttentionGrabbers(){
 
@@ -89,43 +90,44 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
     var attentionGrabbers = [];
 
-    var feedPosts = [];
     for (var feedPostView of this.props.objects){
 
+      var feedPost = feedPostView.feedPost;
+      feedPost.view = feedPostView;
+      var profileIndex = null;
+
+      // checking first for the initiator of the postView
       if (feedPostView.initiator && feedPostView.initiator.url){
-        const profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPostView.initiator.url);
+        profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPostView.initiator.url);
         if (profileIndex == -1){
           attentionGrabbers.push({
             profile: feedPostView.initiator,
             timeCount: feedPostView.timeCount,
+            feedPosts: [feedPost],
           });
         }
         else{
           attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
+          if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.id == feedPost.id) == -1){
+            attentionGrabbers[profileIndex].feedPosts.push(feedPost);
+          }
         }
       }
 
-      const feedPostIndex = feedPosts.map(p => p.id).indexOf(feedPostView.feedPostId);
-      if (feedPostIndex == -1){
-        var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-
-        const profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPost.author.url);
-        if (profileIndex == -1){
-          attentionGrabbers.push({
-            profile: feedPost.author,
-            timeCount: feedPostView.timeCount,
-          });
-        }
-        else{
-          attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
-        }
-
-        feedPosts.push(feedPost);
+      // Then doing the same for the author
+      profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPost.author.url);
+      if (profileIndex == -1){
+        attentionGrabbers.push({
+          profile: feedPost.author,
+          timeCount: feedPostView.timeCount,
+          feedPosts: [feedPost],
+        });
       }
       else{
-        var feedPost = feedPosts[feedPostIndex];
-        const profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPost.author.url);
         attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
+        if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.id == feedPost.id) == -1){
+          attentionGrabbers[profileIndex].feedPosts.push(feedPost);
+        }
       }
 
     }    
@@ -226,7 +228,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                                           aria-label="Segment one" 
                                                                                           aria-valuenow={((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)} 
                                                                                           aria-valuemin="0" 
-                                                                                          onClick={() => this.handlePostListModalShow([])}
+                                                                                          onClick={() => this.handlePostListModalShow(object)}
                                                                                           title="Click to see more"
                                                                                           aria-valuemax="100" style={{width: `${((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)}%`}}>
                                                                                           <div class={`progress-bar bg-secondary`}></div>
@@ -272,15 +274,15 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
 
         <Modal 
-          show={this.state.selectedPostList != null} 
+          show={this.state.selectedProfile != null} 
           onHide={this.handlePostListModalClose}
           size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Post List</Modal.Title>
+            <Modal.Title>Post List: {this.state.selectedProfile ? this.state.selectedProfile.profile.name : null}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
-            { !this.state.selectedPostList 
+            { !this.state.selectedProfile 
                 && <div class="text-center">
                     <div class="mb-5 mt-4">
                       <div class="spinner-border text-primary" role="status">
@@ -290,8 +292,20 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                     </div>
                   </div>}
 
-            { this.state.selectedPostList
-                && this.state.selectedPostList.map(post => null) }
+            { this.state.selectedProfile
+                && <ActivityListView 
+                      objects={this.state.selectedProfile
+                                         .feedPosts
+                                         .map(feedPost => ({
+                                            author: feedPost.author,
+                                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                                            // date: views.length ? views[0].date : null,
+                                            text: feedPost.innerContentHtml,
+                                            media: feedPost.media,
+                                            category: feedPost.view.category,
+                                            initiator: feedPost.view.initiator,
+                                          }))}
+                      variant="list"/> }
 
           </Modal.Body>
           <Modal.Footer>

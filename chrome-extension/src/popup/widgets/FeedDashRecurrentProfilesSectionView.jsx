@@ -83,16 +83,20 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
 
     var mostRecurrentProfiles = [];
 
-    function feedItemsMetrics(viewCategory){
+    function feedPostViewsByCategory(feedPostView){
       var result = {};
       for (const category of Object.keys(categoryVerbMap).concat(["publications"])) {
-        result[category] = Number(category == viewCategory);
+        result[category] = (category == feedPostView.category) 
+                              ? [feedPostView] 
+                              : (!feedPostView.category 
+                                  ? (category == "publications" ? [feedPostView] : []) 
+                                  : []); // Number(category == feedPostView.category);
       }
       return result;
     }
 
     var uids = [];
-    for (var feedPostView of this.props.objects){
+    for (const feedPostView of this.props.objects){
 
       if (uids.indexOf(feedPostView.uid) != -1){
         continue;
@@ -102,42 +106,42 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
 
       if (feedPostView.initiator){
 
-        if (!feedPostView.initiator.url){
+        if (!feedPostView.initiator.url){ // suggested post
           continue;
         }
 
-        const index = mostRecurrentProfiles.map(a => a.url).indexOf(feedPostView.initiator.url);
+        const index = mostRecurrentProfiles.findIndex(a => a.url == feedPostView.initiator.url);
         if (index == -1){
           mostRecurrentProfiles.push({
             ...feedPostView.initiator,
-            feedItemsMetrics: feedItemsMetrics(feedPostView.category),
+            feedPostViewsByCategory: feedPostViewsByCategory(feedPostView),
           });
         }
         else{
           for (const category of Object.keys(categoryVerbMap)) {
             if (category == feedPostView.category){
               // mostRecurrentProfiles[index].feedItemsMetrics[category]++;
-              mostRecurrentProfiles[index].feedItemsMetrics[category]++;
+              mostRecurrentProfiles[index].feedPostViewsByCategory[category].push(feedPostView);
             }
           }
         }
       }
       else{
         if (!feedPostView.category){
-          var feedPost = await db.feedPosts
-                                 .where({id: feedPostView.feedPostId})
-                                 .first();
-          const index = mostRecurrentProfiles.map(a => a.url).indexOf(feedPost.author.url);
+          const feedPost = await db.feedPosts
+                                   .where({id: feedPostView.feedPostId})
+                                   .first();
+          const index = mostRecurrentProfiles.findIndex(a => a.url == feedPost.author.url);
           if (index == -1){
             mostRecurrentProfiles.push({
               ...feedPost.author,
-              feedItemsMetrics: feedItemsMetrics("publications"),
+              feedPostViewsByCategory: feedPostViewsByCategory(feedPostView),
             });
           }
           else{
             for (const category of Object.keys(categoryVerbMap)) {
               if (category == "publications"){
-                mostRecurrentProfiles[index].feedItemsMetrics["publications"]++;
+                mostRecurrentProfiles[index].feedPostViewsByCategory["publications"].push(feedPostView);
               }
             }
           }
@@ -207,9 +211,9 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
 
               { this.state.profiles.length  != 0
                   && <div>
-                     { this.state.profiles.map((object, index) => <FeedRecurrentProfileListItemView  
-                                                                            object={object}                            
-                                                                            globalData={this.props.globalData}/>)}
+                     { this.state.profiles.map(object => <FeedRecurrentProfileListItemView  
+                                                            object={object}                            
+                                                            globalData={this.props.globalData}/>)}
                     </div>}
               </>}
 
@@ -230,7 +234,11 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handleProfilesNetworkChartModalClose} className="shadow">
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={this.handleProfilesNetworkChartModalClose} 
+              className="shadow">
               Close
             </Button>
           </Modal.Footer>

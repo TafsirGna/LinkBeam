@@ -1,3 +1,24 @@
+/*******************************************************************************
+
+    LinkBeam - a basic extension for your linkedin browsing experience
+    Copyright (C) 2024-present Stoic Beaver
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see {http://www.gnu.org/licenses/}.
+
+    Home: https://github.com/TafsirGna/LinkBeam
+*/
+
 /*import './FeedRecurrentProfileListItemView.css'*/
 import React, { useEffect, useState } from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
@@ -7,7 +28,11 @@ import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 import FeedProfileDataModal from "./modals/FeedProfileDataModal";
 import Modal from 'react-bootstrap/Modal';
+import ActivityListView from "./ActivityListView";
 import Button from 'react-bootstrap/Button';
+import { 
+  appParams,
+} from "../Local_library";
 
 const bgColors = [
   "bg-primary",
@@ -40,13 +65,9 @@ const UpdatingPopover = React.forwardRef(
   },
 );
 
-export const totalInteractions = (object) => {
-  var value = 0;
-  for (var category in object.feedItemsMetrics){
-    value += object.feedItemsMetrics[category];
-  }
-  return value;
-}
+export const totalInteractions = object => Object.keys(object.feedPostViewsByCategory).map(key => object.feedPostViewsByCategory[key].length)
+                                                                                      .reduce((acc, a) => acc + a, 0);
+
 
 export default class FeedRecurrentProfileListItemView extends React.Component{
 
@@ -55,7 +76,7 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
     this.state = {
       totalInteractions: null,
       feedProfileDataModalShow: false,
-      selectedPostList: null,
+      selectedPostListCategory: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
@@ -83,8 +104,8 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
   handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
   handleFeedProfileDataModalShow = () => this.setState({feedProfileDataModalShow: true});
 
-  handlePostListModalClose = () => this.setState({selectedPostList: null});
-  handlePostListModalShow = (postList) => this.setState({selectedPostList: postList});
+  handlePostListModalClose = () => this.setState({selectedPostListCategory: null});
+  handlePostListModalShow = (category) => this.setState({selectedPostListCategory: category});
 
   onEnteringUserTooltip = async () => {
 
@@ -134,16 +155,16 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
               <div class="w-100 p-1">
                 
                 <div class="progress-stacked shadow border" style={{height: ".5em"}}>
-                  { Object.keys(this.props.object.feedItemsMetrics).map((category, index) => (
+                  { Object.keys(this.props.object.feedPostViewsByCategory).map((category, index) => (
 
-                      <OverlayTrigger overlay={<Tooltip id={null}>{`${this.props.object.feedItemsMetrics[category]} ${this.props.object.feedItemsMetrics[category] <= 1 ? (category.endsWith("s") ? category.slice(0, category.length - 1) : category) : category}`}</Tooltip>}>
+                      <OverlayTrigger overlay={<Tooltip id={null}>{`${this.props.object.feedPostViewsByCategory[category].length} ${this.props.object.feedPostViewsByCategory[category].length <= 1 ? (category.endsWith("s") ? category.slice(0, category.length - 1) : category) : category}`}</Tooltip>}>
                         <div 
                           class="progress handy-cursor" 
                           role="progressbar" 
                           aria-label="Segment one" 
-                          onClick={() => {this.handlePostListModalShow([])}}
+                          onClick={() => {this.handlePostListModalShow(category)}}
                           title="Click to see more"
-                          aria-valuenow={((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)} aria-valuemin="0" aria-valuemax="100" style={{width: `${((this.props.object.feedItemsMetrics[category] * 100) / this.state.totalInteractions).toFixed(1)}%`}}>
+                          aria-valuenow={((this.props.object.feedPostViewsByCategory[category].length * 100) / this.state.totalInteractions).toFixed(1)} aria-valuemin="0" aria-valuemax="100" style={{width: `${((this.props.object.feedPostViewsByCategory[category].length * 100) / this.state.totalInteractions).toFixed(1)}%`}}>
                           <div class={`progress-bar ${bgColors[index % bgColors.length]}`}></div>
                         </div>
                       </OverlayTrigger>
@@ -165,15 +186,15 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
 
 
         <Modal 
-          show={this.state.selectedPostList != null} 
+          show={this.state.selectedPostListCategory != null} 
           onHide={this.handlePostListModalClose}
           size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Post List</Modal.Title>
+            <Modal.Title>Post List: {this.state.selectedPostListCategory} </Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
-            { !this.state.selectedPostList 
+            { !this.state.selectedPostListCategory 
                 && <div class="text-center">
                     <div class="mb-5 mt-4">
                       <div class="spinner-border text-primary" role="status">
@@ -183,8 +204,25 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
                     </div>
                   </div>}
 
-            { this.state.selectedPostList
-                && this.state.selectedPostList.map(post => null) }
+            { this.state.selectedPostListCategory
+                && <ActivityListView 
+                    objects={this.props.object.feedPostViewsByCategory[this.state.selectedPostListCategory].map(feedPostView => { 
+                                                                                                                                  var feedPost = feedPostView.feedPost;
+                                                                                                                                  feedPost.view = feedPostView; 
+                                                                                                                                  return feedPost;
+                                                                                                                                })
+                                                                                                           .filter((value, index, self) => self.findIndex(post => post.id == value.id) === index)
+                                                                                                           .map(feedPost => ({
+                                                                                                              author: feedPost.author,
+                                                                                                              url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                                                                                                              // date: views.length ? views[0].date : null,
+                                                                                                              text: feedPost.innerContentHtml,
+                                                                                                              media: feedPost.media,
+                                                                                                              category: feedPost.view.category,
+                                                                                                              initiator: feedPost.view.initiator,
+                                                                                                            }))}
+                    variant="list"/>
+                }
 
           </Modal.Body>
           <Modal.Footer>

@@ -269,17 +269,18 @@ function FeedVisitPostsView(props){
 
       { props.objects 
           && <div class="mt-4">
-              {props.objects.map(feedPost => <ActivityListView 
-                                              objects={[{
-                                                author: feedPost.author,
-                                                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
-                                                // date: views.length ? views[0].date : null,
-                                                text: feedPost.innerContentHtml,
-                                                media: feedPost.media,
-                                                category: feedPost.view.category,
-                                                initiator: feedPost.view.initiator,
-                                              }]}
-                                              variant="list"/>)}
+                {<ActivityListView 
+                  objects={props.objects.map(feedPost => ({
+                    author: feedPost.author,
+                    url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                    // date: views.length ? views[0].date : null,
+                    text: feedPost.innerContentHtml,
+                    media: feedPost.media,
+                    category: feedPost.view.category,
+                    initiator: feedPost.view.initiator,
+                  }))}
+                  variant="stacking"
+                  context="feed visit"/>}
             </div>}
 
     </>;

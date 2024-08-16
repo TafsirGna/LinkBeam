@@ -26,3 +26,13 @@
   align-items: center;
   justify-content: center;
 }
+
+.stacking-card {
+  position: sticky;
+  top: 1em;
+}
+
+.vertical-scrollable /*> .row*/ { 
+    overflow-y: auto; 
+    white-space: nowrap; 
+} 
