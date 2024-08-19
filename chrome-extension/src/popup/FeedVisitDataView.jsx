@@ -222,7 +222,11 @@ export default class FeedVisitDataView extends React.Component{
                 <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
                   Media
                   <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
-                    0+
+                    {this.state.feedPosts 
+                        ? this.state.feedPosts.filter(feedPost => feedPost.media)
+                                               .reduce((acc, a) => acc.concat(a), [])
+                                               .length
+                        : 0}+
                   </span>
                 </a>
               </li>

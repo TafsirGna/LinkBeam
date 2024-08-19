@@ -22,6 +22,7 @@
 import '../assets/css/ActivityListView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip, Popover, Accordion } from "react-bootstrap";
+import FullScreenImageModal from "./modals/FullScreenImageModal";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
@@ -46,6 +47,7 @@ import {
   appParams,
   categoryVerbMap,
   getFeedPostViewsByCategory,
+  nRange,
 } from "../Local_library";
 
 const categoryIconMap = {
@@ -70,6 +72,7 @@ export default class ActivityListView extends React.Component{
       selectedPost: null,
       imageLoaded: false,
       postsByProfile: null,
+      fsImage: null,
     };
 
   }
@@ -102,6 +105,14 @@ export default class ActivityListView extends React.Component{
 
   handleOffCanvasShow = (post) => {
     this.setState({selectedPost: post});
+  };
+
+  handleFsImageModalClose = () => {
+    this.setState({fsImage: null});
+  };
+
+  handleFsImageModalShow = (image) => {
+    this.setState({fsImage: image});
   };
 
   getPostsByProfile(){
@@ -193,10 +204,26 @@ export default class ActivityListView extends React.Component{
                                 </Popover.Body>
                               </Popover>}
                   >
-                  <p 
-                    class="mb-0 opacity-75 border p-2 rounded shadow-sm handy-cursor" 
-                    dangerouslySetInnerHTML={{__html: object.text}}>    
-                  </p>
+                  <div class="border rounded shadow-sm handy-cursor p-2">
+                    <p 
+                      class="mb-0 opacity-75 p-2" 
+                      dangerouslySetInnerHTML={{__html: object.text}}>    
+                    </p>
+                    { object.media 
+                        && <div class="p-2 my-2 border border-warning rounded shadow-sm">
+                            { nRange(0, 1, 1).map(index => object.media.length >= (index + 1) 
+                                                            ? <img 
+                                                                src={object.media[index].src || object.media[index].poster} 
+                                                                class="rounded shadow mx-1" 
+                                                                height="50em"
+                                                                onMouseEnter={() => this.handleFsImageModalShow(object.media[index].src || object.media[index].poster)}/>
+                                                            : null) }
+                            { object.media.length > 2
+                                && <div class="border h-100 mx-1 d-inline rounded-circle w-25 shadow-sm p-2 bg-primary-subtle text-muted">
+                                    {object.media.length}+
+                                  </div>}
+                          </div>}
+                  </div>
                 </OverlayTrigger>
               </div>
               { object.date 
@@ -298,6 +325,11 @@ export default class ActivityListView extends React.Component{
                                               </Accordion.Body>
                                             </Accordion.Item>) }
                                         </Accordion> }
+
+                                <FullScreenImageModal
+                                  image={this.state.fsImage}
+                                  onHide={this.handleFsImageModalClose}
+                                  />
 
                               </div>}
                          

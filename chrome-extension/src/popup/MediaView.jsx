@@ -529,7 +529,7 @@ class MediaGridView extends React.Component{
                                                                                                               { feedPost.media.length == 1
                                                                                                                   && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
                                                                                                                   && <ImageLoader
-                                                                                                                        imgSrc={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                                                                        imgSrc={feedPost.media[0].src || feedPost.media[0].poster} 
                                                                                                                         imgClass="card-img-top"
                                                                                                                         spinnerSize="small" /> }
                                                                                                               { feedPost.media.length != 1
@@ -537,7 +537,7 @@ class MediaGridView extends React.Component{
                                                                                                                         {feedPost.media.map(medium => (<Carousel.Item>
                                                                                                                                                         { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
                                                                                                                                                           && <ImageLoader 
-                                                                                                                                                              imgSrc={medium.src ? medium.src : medium.poster} 
+                                                                                                                                                              imgSrc={medium.src || medium.poster} 
                                                                                                                                                               imgClass="card-img-top"
                                                                                                                                                               spinnerSize="small"/>}
                                                                                                                                                       </Carousel.Item>))}
