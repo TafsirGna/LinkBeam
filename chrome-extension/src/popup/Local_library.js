@@ -1044,6 +1044,54 @@ export async function getProfileDataFrom(db, url, properties = null){
 
 }
 
+export function getFeedPostViewsByCategory(feedPostViews, profileUrl = null){
+
+  var result = {};
+
+  function addFeedPostViewToCategory(feedPostView, category){
+    if (category in result){
+      result[category].push(feedPostView);
+    } 
+    else{
+      result[category] = [feedPostView];
+    }
+  }
+
+  var uids = [];
+  for (const feedPostView of feedPostViews){
+
+    if (uids.indexOf(feedPostView.uid) != -1){
+      continue;
+    }
+
+    if (profileUrl){
+      if ((feedPostView.initiator 
+              && ((feedPostView.initiator.url && feedPostView.initiator.url != profileUrl)
+                    || (!feedPostView.initiator.url && profileUrl != appParams.LINKEDIN_FEED_URL)))
+            || (!feedPostView.initiator && feedPostView.feedPost.author.url != profileUrl)){
+        continue;
+      }
+    }
+
+    if (!feedPostView.category){
+      addFeedPostViewToCategory(feedPostView, "publications");
+      continue;
+    }
+
+    for (const category of Object.keys(categoryVerbMap)) {
+      if (category == feedPostView.category){
+        addFeedPostViewToCategory(feedPostView, category);
+        break;
+      }
+    }
+
+    uids.push(feedPostView.uid);
+
+  }
+
+  return result;
+} 
+
 function isExperienceListSubsetOf(extractedProfileData, oldProfileData){
 
   const property = "experience";

@@ -160,10 +160,17 @@ export default class FeedPostViewsChartModal extends React.Component{
     // feedPostViews.sort(function(a, b){ return new Date(b.date) - new Date(a.date) });
     const views = feedPostViews.toReversed();
 
-    var values = {
-      reactions: views[0].reactions - views[1].reactions,
-      comments: views[0].commentsCount - views[1].commentsCount,
-      reposts: views[0].repostsCount - views[1].repostsCount,
+    const values = {
+      numbers: {
+        reactions: views[0].reactions - views[1].reactions,
+        comments: views[0].commentsCount - views[1].commentsCount,
+        reposts: views[0].repostsCount - views[1].repostsCount,
+      },
+      percentages: {
+        reactions: !views[1].reactions ? "-" : (((views[0].reactions - views[1].reactions) / views[1].reactions) * 100).toFixed(1),
+        comments: !views[1].commentsCount ? "-" : (((views[0].commentsCount - views[1].commentsCount) / views[1].commentsCount) * 100).toFixed(1),
+        reposts: !views[1].repostsCount ? "-" : (((views[0].repostsCount - views[1].repostsCount) / views[1].repostsCount) * 100).toFixed(1), 
+      }
     };
 
     this.setState({metricChangeValues: values});
@@ -278,9 +285,12 @@ export default class FeedPostViewsChartModal extends React.Component{
 
                                 { this.state.metricChangeValues 
                                     && <div class="text-lg">
-                                        { Object.keys(this.state.metricChangeValues).map(metric => (
-                                            <span class={`${this.state.metricChangeValues[metric] == 0 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"} font-medium me-2 px-2.5 py-0.5 rounded`}>
-                                              {`+ ${this.state.metricChangeValues[metric]} ${metric}`}
+                                        { Object.keys(this.state.metricChangeValues.numbers).map(metric => (
+                                            <span class={`${this.state.metricChangeValues.numbers[metric] == 0 
+                                                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" 
+                                                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"} 
+                                                          font-medium me-2 px-2.5 py-0.5 rounded`}>
+                                              {`${this.state.metricChangeValues.numbers[metric] >= 0 ? "+" : ""} ${this.state.metricChangeValues.numbers[metric]} ${metric} (${this.state.metricChangeValues.percentages[metric]}%)`}
                                             </span>
                                           ))}
                                     </div>}

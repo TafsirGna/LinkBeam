@@ -9,6 +9,7 @@ import FeedPostCategorySizeTrendChart from "./FeedPostCategorySizeTrendChart";
 import { 
   getChartColors, 
   categoryVerbMap,
+  getFeedPostViewsByCategory,
 } from "../../Local_library";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -61,33 +62,8 @@ export default class FeedPostCategoryDonutChart extends React.Component{
       return;
     }
 
-    var viewsCategoryData = [],
-        colors = []; 
-
-
-    for (var category of Object.keys(categoryVerbMap).concat(["publications"])){
-      viewsCategoryData[category] = 0;
-    }
-
-    colors = getChartColors(Object.keys(viewsCategoryData).length).borders;
-
-    var uids = [];
-    for (var feedPostView of this.props.objects){
-
-      if (uids.indexOf(feedPostView.uid) != -1){
-        continue;
-      }
-
-      if (feedPostView.category){
-        viewsCategoryData[feedPostView.category]++;
-      }
-      else{
-        viewsCategoryData["publications"]++;
-      }
-
-      uids.push(feedPostView.uid);
-
-    }
+    const viewsCategoryData = getFeedPostViewsByCategory(this.props.objects),
+        colors = getChartColors(Object.keys(viewsCategoryData).length).borders;
 
     this.setState({
       chartData: {
@@ -95,7 +71,7 @@ export default class FeedPostCategoryDonutChart extends React.Component{
         datasets: [
           {
             label: 'Post Count',
-            data: Object.keys(viewsCategoryData).map(category => viewsCategoryData[category]),
+            data: Object.keys(viewsCategoryData).map(category => viewsCategoryData[category].length),
             backgroundColor: colors,
             borderColor: colors,
             borderWidth: 1,

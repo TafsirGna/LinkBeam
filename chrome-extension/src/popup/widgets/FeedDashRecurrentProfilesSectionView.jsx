@@ -24,7 +24,7 @@ import React from 'react';
 import eventBus from "../EventBus";
 import { 
   appParams,
-  categoryVerbMap
+  getFeedPostViewsByCategory
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
@@ -80,78 +80,20 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
     if (!this.props.objects){
       return;
     }
+    
+    const mostRecurrentProfiles = this.props.objects.filter(feedPostView => ((feedPostView.initiator && feedPostView.initiator.url)
+                                                                                || (!feedPostView.initiator /*&& !feedPostView.category*/)))
+                                                    .map(feedPostView => ({
+                                                      ...(feedPostView.initiator || feedPostView.feedPost.author),
+                                                      feedPostViewsByCategory: {},
+                                                    }))
+                                                    .filter((value, index, self) => self.findIndex(object => object.url == value.url) === index)
+                                                    .map(object => {
+                                                      object.feedPostViewsByCategory = getFeedPostViewsByCategory(this.props.objects, object.url);
+                                                      return object;
+                                                    });
 
-    var mostRecurrentProfiles = [];
-
-    function feedPostViewsByCategory(feedPostView){
-      var result = {};
-      for (const category of Object.keys(categoryVerbMap).concat(["publications"])) {
-        result[category] = (category == feedPostView.category) 
-                              ? [feedPostView] 
-                              : (!feedPostView.category 
-                                  ? (category == "publications" ? [feedPostView] : []) 
-                                  : []); // Number(category == feedPostView.category);
-      }
-      return result;
-    }
-
-    var uids = [];
-    for (const feedPostView of this.props.objects){
-
-      if (uids.indexOf(feedPostView.uid) != -1){
-        continue;
-      }
-
-      uids.push(feedPostView.uid);
-
-      if (feedPostView.initiator){
-
-        if (!feedPostView.initiator.url){ // suggested post
-          continue;
-        }
-
-        const index = mostRecurrentProfiles.findIndex(a => a.url == feedPostView.initiator.url);
-        if (index == -1){
-          mostRecurrentProfiles.push({
-            ...feedPostView.initiator,
-            feedPostViewsByCategory: feedPostViewsByCategory(feedPostView),
-          });
-        }
-        else{
-          for (const category of Object.keys(categoryVerbMap)) {
-            if (category == feedPostView.category){
-              // mostRecurrentProfiles[index].feedItemsMetrics[category]++;
-              mostRecurrentProfiles[index].feedPostViewsByCategory[category].push(feedPostView);
-            }
-          }
-        }
-      }
-      else{
-        if (!feedPostView.category){
-          const feedPost = await db.feedPosts
-                                   .where({id: feedPostView.feedPostId})
-                                   .first();
-          const index = mostRecurrentProfiles.findIndex(a => a.url == feedPost.author.url);
-          if (index == -1){
-            mostRecurrentProfiles.push({
-              ...feedPost.author,
-              feedPostViewsByCategory: feedPostViewsByCategory(feedPostView),
-            });
-          }
-          else{
-            for (const category of Object.keys(categoryVerbMap)) {
-              if (category == "publications"){
-                mostRecurrentProfiles[index].feedPostViewsByCategory["publications"].push(feedPostView);
-              }
-            }
-          }
-        }
-      }
-    }    
-
-    mostRecurrentProfiles = mostRecurrentProfiles.toSorted((a, b) => totalInteractions(b) - totalInteractions(a)).slice(0, 10);
-
-    this.setState({profiles: mostRecurrentProfiles});
+    this.setState({profiles: mostRecurrentProfiles.toSorted((a, b) => totalInteractions(b) - totalInteractions(a)).slice(0, 10)});
 
   }
 

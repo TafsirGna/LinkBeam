@@ -45,6 +45,7 @@ import { db } from "../../db";
 import { 
   appParams,
   categoryVerbMap,
+  getFeedPostViewsByCategory,
 } from "../Local_library";
 
 const categoryIconMap = {
@@ -112,33 +113,32 @@ export default class ActivityListView extends React.Component{
       return;
     }
 
-    for (const post of this.props.objects){
+    const objects = this.props.objects.map(object => { 
+                                            object.feedPost = { author: object.author }; 
+                                            return object; 
+                                          });
+    console.log("~~~ ::: 1 ", objects);
 
-      // for the author
-      if (post.author.url in postsByProfile){
-        if (postsByProfile[post.author.url].findIndex(p => p.id == post.id) == -1){
-          postsByProfile[post.author.url].posts.push(post);
-        }
-      }
-      else{
-        postsByProfile[post.author.url] = { profile: post.author, posts: [post] };
-      }
+    this.props.objects.forEach(post => {
 
-      // for the initiator
-      if (!post.initiator || (post.initiator && !post.initiator.url)){
-        continue;
-      }
+                        if (post.initiator){
+                          if (post.initiator.url && !(post.initiator.url in postsByProfile)){
+                            postsByProfile[post.initiator.url] = { profile: post.initiator, viewsByCategory: getFeedPostViewsByCategory(objects, post.initiator.url) };
+                          }
 
-      if (post.initiator.url in postsByProfile){
-        if (postsByProfile[post.initiator.url].findIndex(p => p.id == post.id) == -1){
-          postsByProfile[post.initiator.url].posts.push(post);
-        }
-      }
-      else{
-        postsByProfile[post.author.url] = { profile: post.author, posts: [post] };
-      }
+                          const linkedinFeed = {url: appParams.LINKEDIN_FEED_URL, name: "Linkedin", picture: linkedin_icon};
+                          if (!post.initiator.url && !(linkedinFeed.url in postsByProfile)){
+                            postsByProfile[post.initiator.url] = { profile: linkedinFeed, viewsByCategory: getFeedPostViewsByCategory(objects, linkedinFeed.url) };
+                          }
 
-    }
+                        }
+                        else{
+                          if (!(post.author.url in postsByProfile)){
+                            postsByProfile[post.author.url] = { profile: post.author, viewsByCategory: getFeedPostViewsByCategory(objects, post.author.url) };
+                          }
+                        }
+
+                      });
 
     this.setState({postsByProfile: postsByProfile});
 
@@ -193,11 +193,28 @@ export default class ActivityListView extends React.Component{
                                 </Popover.Body>
                               </Popover>}
                   >
-                  <p class="mb-0 opacity-75 border p-2 rounded shadow-sm" dangerouslySetInnerHTML={{__html: object.text}}></p>
+                  <p 
+                    class="mb-0 opacity-75 border p-2 rounded shadow-sm handy-cursor" 
+                    dangerouslySetInnerHTML={{__html: object.text}}>    
+                  </p>
                 </OverlayTrigger>
               </div>
               { object.date 
                   && <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(object.date).toRelative()}</small>};
+  }
+
+  getInteractionsIconBadgeView(byCategory, category){
+    return <span 
+            class="text-muted mx-2 py-1"
+            title={`${byCategory[category].length} ${byCategory[category].length > 1 ? category : category.slice(0, category.length - 1)}`}>
+            ({byCategory[category].length})
+            <img 
+              class="mx-2" 
+              width="16" 
+              height="16" 
+              src={category == "publications" ? share_icon : categoryIconMap[category]} 
+              alt=""/>
+          </span>;
   }
 
   render(){
@@ -231,6 +248,7 @@ export default class ActivityListView extends React.Component{
                                                                         class="list-group-item list-group-item-action d-flex gap-3 py-3" 
                                                                         aria-current="true" 
                                                                         href={ object.url } 
+                                                                        title="Click to view on Linkedin"
                                                                         target="_blank">
                                                                         { this.getListAndStackingObjectView(object) }
                                                                       </a>)} 
@@ -239,6 +257,13 @@ export default class ActivityListView extends React.Component{
 
                         { this.props.context == "feed visit" 
                             && <div>
+
+                                <div class="p-2 border rounded mb-3 shadow-sm">
+                                  { (() => {
+                                    const byCategory = getFeedPostViewsByCategory(this.props.objects);
+                                    return Object.keys(byCategory).map(category => this.getInteractionsIconBadgeView(byCategory, category)
+                                  )})() }
+                                </div>
 
                                 { this.state.postsByProfile
                                     && <Accordion /*defaultActiveKey="0"*/>
@@ -254,13 +279,22 @@ export default class ActivityListView extends React.Component{
                                                     alt=""/>
                                                   { this.state.postsByProfile[profileUrl].profile.name }
                                                 </span>
+                                                { Object.keys(this.state.postsByProfile[profileUrl].viewsByCategory).map(category => this.getInteractionsIconBadgeView(this.state.postsByProfile[profileUrl].viewsByCategory, category))}
                                               </Accordion.Header>
                                               <Accordion.Body>
-                                                { this.state.postsByProfile[profileUrl].posts.map((object, index) => <div>
-                                                                                                                  <div class="w-100 stacking-card my-4" style={{ transform: `translateY(${index}em)`}}>
-                                                                                                                    { this.getListAndStackingObjectView(object) }
-                                                                                                                </div>
-                                                                                                              </div>)}
+                                                { Object.values(this.state.postsByProfile[profileUrl].viewsByCategory)
+                                                        .reduce((acc, a) => acc.concat(a), [])
+                                                        .map((object, index) => <div>
+                                                            <div class="w-100 stacking-card my-4" style={{ transform: `translateY(${index}em)`}}>
+                                                              <a 
+                                                                class="text-decoration-none text-black"
+                                                                href={ object.url } 
+                                                                title="Click to view on Linkedin"
+                                                                target="_blank">
+                                                                { this.getListAndStackingObjectView(object) }
+                                                              </a>
+                                                          </div>
+                                                        </div>)}
                                               </Accordion.Body>
                                             </Accordion.Item>) }
                                         </Accordion> }
@@ -302,7 +336,7 @@ export default class ActivityListView extends React.Component{
                                           </span>
                                           <span class="border shadow-sm rounded p-1 mx-2">
                                             <a 
-                                              title="See post on linkedin" 
+                                              title="Click to view on Linkedin"
                                               class="mx-1" 
                                               href={ object.url }>
                                               <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>

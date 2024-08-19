@@ -120,7 +120,8 @@ export default class FeedVisitDataView extends React.Component{
     var feedPosts = [],
         references = [];
 
-    for (var feedPostView of this.state.visit.feedPostViews){
+    console.log("[[[[ 1 : ", this.state.visit.feedPostViews);
+    for (const feedPostView of this.state.visit.feedPostViews){
 
       // Setting the feedPosts property
       if (feedPosts.findIndex(f => f.id == feedPostView.feedPostId) != -1){
@@ -140,10 +141,6 @@ export default class FeedVisitDataView extends React.Component{
 
           feedPosts.push(linkedPost);
         }
-      }
-
-      if (!feedPost.media){
-        continue;
       }
 
       feedPost.view = feedPostView;
@@ -216,19 +213,25 @@ export default class FeedVisitDataView extends React.Component{
               <li class="nav-item" onClick={() => {this.setViewIndex(0)}}>
                 <a class={`nav-link ${this.state.viewIndex == 0 ? "active" : ""}`} aria-current="page" href="#">
                   Posts
-                  <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.visit.feedPostViews.length}+</span>
+                  <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                    {this.state.visit.feedPostViews.length}+
+                  </span>
                 </a>
               </li>
               <li class="nav-item" onClick={() => {this.setViewIndex(1)}}>
                 <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
                   Media
-                  {/*<span class="badge rounded-pill text-bg-secondary ms-2 shadow">0+</span>*/}
+                  <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                    0+
+                  </span>
                 </a>
               </li>
               <li class="nav-item" onClick={() => {this.setViewIndex(2)}}>
                 <a class={`nav-link ${this.state.viewIndex == 2 ? "active" : ""}`} href="#">
                   Hashtags
-                  <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.hashtags ? this.state.hashtags.length : 0}+</span>
+                  <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                    {this.state.hashtags ? this.state.hashtags.length : 0}+
+                  </span>
                 </a>
               </li>
               
@@ -278,6 +281,7 @@ function FeedVisitPostsView(props){
                     media: feedPost.media,
                     category: feedPost.view.category,
                     initiator: feedPost.view.initiator,
+                    uid: feedPost.view.uid,
                   }))}
                   variant="stacking"
                   context="feed visit"/>}
@@ -300,7 +304,8 @@ function FeedVisitMediaView(props){
           { props.objects
               && <Masonry columnsCount={3} gutter="10px" className="mt-4">
           
-                      { props.objects.toSorted((a, b) => {
+                      { props.objects.filter(feedPost => feedPost.media)
+                                     .toSorted((a, b) => {
                                                     if (new Date(a.view.date) < new Date(b.view.date)){
                                                       return 1;
                                                     }
@@ -310,52 +315,52 @@ function FeedVisitMediaView(props){
                                                     else{
                                                       return 0;
                                                     }
-                                                  }).map(feedPost => (
-                                                            <OverlayTrigger 
-                                                              trigger="hover" 
-                                                              placement="left" 
-                                                              overlay={<Popover id="popover-basic">
-                                                                          <Popover.Header as="h3">{feedPost.author.name}</Popover.Header>
-                                                                          {feedPost.innerContentHtml 
-                                                                              && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml}}>
-                                                                                  {}
-                                                                                </Popover.Body>}
-                                                                        </Popover>}
-                                                              >
-                                                              <a 
-                                                                href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
-                                                                target="_blank" 
-                                                                title="View on linkedin">
-                                                                <div 
-                                                                  class={`card shadow`} 
-                                                                  style={feedPost.bookmarked ? {border: `4px solid ${hexToRgb(this.props.globalData.settings.postHighlightColor, "string")}`} : null}>
-                                                                  { feedPost.media.length == 1
-                                                                      && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
-                                                                      && <ImageLoader
-                                                                            imgSrc={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
-                                                                            imgClass="card-img-top"
-                                                                            spinnerSize="small" /> }
-                                                                  { feedPost.media.length != 1
-                                                                      && <Carousel controls={false} indicators={false}>
-                                                                            {feedPost.media.map(medium => (<Carousel.Item>
-                                                                                                            { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
-                                                                                                              && <ImageLoader 
-                                                                                                                  imgSrc={medium.src ? medium.src : medium.poster} 
-                                                                                                                  imgClass="card-img-top"
-                                                                                                                  spinnerSize="small"/>}
-                                                                                                          </Carousel.Item>))}
-                                                                        </Carousel>}
-                                                                  {/*<div class="card-body">
-                                                                    <h5 class="card-title">Card title</h5>
-                                                                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-                                                                  </div>
-                                                                  <div class="card-footer">
-                                                                    <small class="text-body-secondary">Last updated 3 mins ago</small>
-                                                                  </div>*/}
-                                                                </div>
-                                                              </a>
-                                                            </OverlayTrigger>
-                                                          )) }
+                                                  })
+                                     .map(feedPost => (<OverlayTrigger 
+                                                        trigger="hover" 
+                                                        placement="left" 
+                                                        overlay={<Popover id="popover-basic">
+                                                                    <Popover.Header as="h3">{feedPost.author.name}</Popover.Header>
+                                                                    {feedPost.innerContentHtml 
+                                                                        && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml}}>
+                                                                            {}
+                                                                          </Popover.Body>}
+                                                                  </Popover>}
+                                                        >
+                                                        <a 
+                                                          href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
+                                                          target="_blank" 
+                                                          title="View on linkedin">
+                                                          <div 
+                                                            class={`card shadow`} 
+                                                            style={feedPost.bookmarked ? {border: `4px solid ${hexToRgb(this.props.globalData.settings.postHighlightColor, "string")}`} : null}>
+                                                            { feedPost.media.length == 1
+                                                                && ((feedPost.media[0].src && feedPost.media[0].src.indexOf("data:image/") == -1) || !feedPost.media[0].src)
+                                                                && <ImageLoader
+                                                                      imgSrc={feedPost.media[0].src ? feedPost.media[0].src : feedPost.media[0].poster} 
+                                                                      imgClass="card-img-top"
+                                                                      spinnerSize="small" /> }
+                                                            { feedPost.media.length != 1
+                                                                && <Carousel controls={false} indicators={false}>
+                                                                      {feedPost.media.map(medium => (<Carousel.Item>
+                                                                                                      { ((medium.src && medium.src.indexOf("data:image/") == -1) || !medium.src)  
+                                                                                                        && <ImageLoader 
+                                                                                                            imgSrc={medium.src ? medium.src : medium.poster} 
+                                                                                                            imgClass="card-img-top"
+                                                                                                            spinnerSize="small"/>}
+                                                                                                    </Carousel.Item>))}
+                                                                  </Carousel>}
+                                                            {/*<div class="card-body">
+                                                              <h5 class="card-title">Card title</h5>
+                                                              <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                                            </div>
+                                                            <div class="card-footer">
+                                                              <small class="text-body-secondary">Last updated 3 mins ago</small>
+                                                            </div>*/}
+                                                          </div>
+                                                        </a>
+                                                      </OverlayTrigger>
+                                                    )) }
           
                     </Masonry>}
 
