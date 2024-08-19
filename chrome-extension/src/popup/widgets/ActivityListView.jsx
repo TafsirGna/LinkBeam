@@ -23,6 +23,7 @@ import '../assets/css/ActivityListView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip, Popover, Accordion } from "react-bootstrap";
 import FullScreenImageModal from "./modals/FullScreenImageModal";
+import FullScreenImageSlideShowModal from "./modals/FullScreenImageSlideShowModal";
 import { DateTime as LuxonDateTime } from "luxon";
 import default_user_icon from '../../assets/user_icons/default.png';
 import heart_icon from '../../assets/heart_icon.png';
@@ -73,6 +74,7 @@ export default class ActivityListView extends React.Component{
       imageLoaded: false,
       postsByProfile: null,
       fsImage: null,
+      slideShowImages: null,
     };
 
   }
@@ -115,6 +117,14 @@ export default class ActivityListView extends React.Component{
     this.setState({fsImage: image});
   };
 
+  handleImageSlideShowModalClose = () => {
+    this.setState({slideShowImages: null});
+  };
+
+  handleImageSlideShowModalShow = (images) => {
+    this.setState({slideShowImages: images});
+  };
+
   getPostsByProfile(){
 
     var postsByProfile = {};
@@ -128,7 +138,6 @@ export default class ActivityListView extends React.Component{
                                             object.feedPost = { author: object.author }; 
                                             return object; 
                                           });
-    console.log("~~~ ::: 1 ", objects);
 
     this.props.objects.forEach(post => {
 
@@ -219,7 +228,9 @@ export default class ActivityListView extends React.Component{
                                                                 onMouseEnter={() => this.handleFsImageModalShow(object.media[index].src || object.media[index].poster)}/>
                                                             : null) }
                             { object.media.length > 2
-                                && <div class="border h-100 mx-1 d-inline rounded-circle w-25 shadow-sm p-2 bg-primary-subtle text-muted">
+                                && <div 
+                                      class="border h-100 mx-1 d-inline rounded-circle w-25 shadow-sm p-2 bg-primary-subtle text-muted"
+                                      onMouseEnter={() => this.handleImageSlideShowModalShow(object.media.map(medium => medium.src || medium.poster))}>
                                     {object.media.length}+
                                   </div>}
                           </div>}
@@ -329,6 +340,11 @@ export default class ActivityListView extends React.Component{
                                 <FullScreenImageModal
                                   image={this.state.fsImage}
                                   onHide={this.handleFsImageModalClose}
+                                  />
+
+                                <FullScreenImageSlideShowModal
+                                  images={this.state.slideShowImages}
+                                  onHide={this.handleImageSlideShowModalClose}
                                   />
 
                               </div>}
