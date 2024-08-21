@@ -76,8 +76,8 @@ export default class FeedVisitDataView extends React.Component{
       return;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const visitId = urlParams.get("visitId");
+    // const urlParams = new URLSearchParams(window.location.search);
+    const visitId = (new URLSearchParams(window.location.search)).get("visitId");
 
     if (!visitId){
       return;
@@ -85,8 +85,8 @@ export default class FeedVisitDataView extends React.Component{
 
     (async () => {
       this.setVisit({
-        ...(await db.visits.where({id: visitId}).first()),
-        feedPostViews: (await db.feedPostViews.where({visitId: visitId}).toArray()),
+        ...(await db.visits.where({id: parseInt(visitId)}).first()),
+        feedPostViews: (await db.feedPostViews.where({visitId: parseInt(visitId)}).toArray()),
       });
     }).bind(this)();
 
@@ -107,7 +107,7 @@ export default class FeedVisitDataView extends React.Component{
 
   setViewIndex = index => this.setState({viewIndex: index})
 
-  async setVisit(visit){
+  setVisit(visit){
     this.setState({
         visit: {...this.state.visit, ...visit}
       },() => {
@@ -206,16 +206,17 @@ export default class FeedVisitDataView extends React.Component{
                           <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.id)) * 60)}</div>
                         </div>}
                   <div class="text-muted fst-italic">{this.state.visit.feedPostViews.length} posts</div>
-                  <div>
-                    <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill">
-                      Browsed for me
-                      <span class="mx-2">
-                        <BoltIcon
-                          size="12"
-                          className=""/>
-                      </span>
-                    </span>
-                  </div>
+                  { this.state.visit.automated
+                      && <div class="mt-2">
+                            <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill">
+                              Browsed for me
+                              <span class="mx-2">
+                                <BoltIcon
+                                  size="12"
+                                  className=""/>
+                              </span>
+                            </span>
+                          </div>}
                 </div>
               </div>
             </div>

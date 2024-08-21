@@ -1201,10 +1201,16 @@ async function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
 
-            chrome.tabs.remove(
-                tabIds: [message.data.tabId], 
+            chrome.tabs.create(
+                { url: `/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")}&visitId=${message.data.visitId.visitId}` }, 
                 () => {
-                    notifyUser("Automatic feed visit ended");
+
+                    chrome.tabs.remove(
+                        [message.data.tabId], 
+                        () => {
+                            notifyUser("Automatic feed visit ended");
+                        }
+                    );
                 }
             );
 
