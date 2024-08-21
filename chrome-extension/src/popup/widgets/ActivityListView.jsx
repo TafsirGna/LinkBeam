@@ -221,7 +221,7 @@ export default class ActivityListView extends React.Component{
                       dangerouslySetInnerHTML={{__html: object.text}}>    
                     </p>
                     { object.media 
-                        && <div class="p-2 my-2 border border-warning rounded shadow-sm">
+                        && <div class="p-2 my-2 border border-warning rounded shadow-sm border-2">
                             { nRange(0, 1, 1).map(index => object.media.length >= (index + 1) 
                                                             ? <img 
                                                                 src={object.media[index].src || object.media[index].poster} 

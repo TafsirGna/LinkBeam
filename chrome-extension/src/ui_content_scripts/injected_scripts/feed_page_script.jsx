@@ -74,6 +74,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	static mainHtmlEl = () => document.querySelector(".scaffold-finite-scroll__content");
 	static distractiveElSelectors = () => [...ScriptAgentBase.distractiveElSelectors/*,
 									 	   ".share-box-feed-entry__closed-share-box artdeco-card"*/];
+	static automaticScrollStarted = false;
 
 	constructor(){
 		super();
@@ -215,9 +216,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 				index++;
 			}
 
-			// if (!this.activePostContainerElementUid && (new URLSearchParams(window.location.search)).get("automated") == true){
-			// 	this.automaticScroll(visiblePostContainerElement, props);
-			// }
+			if ((new URLSearchParams(window.location.search)).get("automated") == "true" && !this.automaticScrollStarted){
+				this.automaticScroll(visiblePostContainerElement, props);
+			}
 
 		}
 		catch(error){
@@ -302,26 +303,31 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	// }
 
-	static scrollToPostContainerElement(postContainerElement){
-		window.scroll({
-          top: postContainerElement.getBoundingClientRect().top,
-          left: 0, // 100,
-          behavior: "smooth",
-        });
-	}
-
 	static async automaticScroll(postContainerElement, props){
 
-		this.scrollToPostContainerElement(postContainerElement);
+		postContainerElement.scrollIntoView({ behavior: "smooth" });
+
+		// console.log("rrrrrrrrrrr 1 : ", postContainerElement, postContainerElement.getAttribute("data-id"));
+
+		this.automaticScrollStarted = !this.automaticScrollStarted ? true : this.automaticScrollStarted;
 
 		const timer = ms => new Promise(res => setTimeout(res, ms))
 
+		// updating the new scroll target
 		while(true){
 			// Setting the new scroll target
 			const postContainerElements = this.getPostContainerElements();
 			const postContainerElementIndex = postContainerElements.findIndex(el => el.getAttribute("data-id") == postContainerElement.getAttribute("data-id"));
 
+			// console.log("rrrrrrrrrrr 2 : ", postContainerElements[postContainerElementIndex + 1], props.appSettings.browseFeedForMePostCount, postContainerElementIndex, postContainerElements);
+
 			if (postContainerElementIndex >= props.appSettings.browseFeedForMePostCount){
+
+				window.open(`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")}&visitId=${props.visitId}`, '_blank');
+
+				chrome.runtime.sendMessage({header: "AUTO_FEED_VISIT_ENDED", data: {tabId: props.tabId}}, (response) => {
+			      console.log('tab idle status sent', response);
+			    });		
 				return;
 			}
 
@@ -330,14 +336,18 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 				break;
 			}
 
+			window.scrollBy(0, parseInt(window.innerHeight / 2));
+
 			// waiting for 3 seconds before resuming 
-			await timer(3000);
+			await timer(1000);
 		}
+
+		// console.log("rrrrrrrrrrr 3 : ", postContainerElement, postContainerElement.getAttribute("data-id"));
 
 		// Set a timeout for scrolling to this target
 		const timeOut = setTimeout(() => {
 			this.automaticScroll(postContainerElement, props);
-		}, 3000);
+		}, 1000);
 
 	}
 

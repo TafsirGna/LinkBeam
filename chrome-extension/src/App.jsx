@@ -310,7 +310,7 @@ export default class App extends React.Component{
             && <VisualsSettingsView globalData={this.state.globalData} />}
 
         {/*Feed visit Page*/}
-        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT 
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")
             && <FeedVisitDataView globalData={this.state.globalData} />}
 
       </>

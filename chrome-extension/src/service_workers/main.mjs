@@ -312,6 +312,7 @@ async function injectDataExtractorParams(tabId, url){
             notifications: settings.notifications,
             postHighlightColor: settings.postHighlightColor,
             immersiveMode: settings.immersiveMode,
+            browseFeedForMePostCount: settings.browseFeedForMePostCount,
         },
         postData: postData,
         allKeywords: keywords,
@@ -1190,6 +1191,22 @@ async function processMessageEvent(message, sender, sendResponse){
             });
 
             incProfileVisitTimeCount(message.data);
+
+            break;
+        }
+
+        case "AUTO_FEED_VISIT_ENDED":{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+
+            chrome.tabs.remove(
+                tabIds: [message.data.tabId], 
+                () => {
+                    notifyUser("Automatic feed visit ended");
+                }
+            );
 
             break;
         }

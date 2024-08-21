@@ -26,6 +26,7 @@ import beaver_icon from '../assets/beaver_icon.png';
 import { 
   GridIcon,
   DuplicateIcon,
+  BoltIcon,
 } from "./widgets/SVGs";
 import { OverlayTrigger, Tooltip as ReactTooltip,  } from "react-bootstrap";
 import {  
@@ -205,6 +206,16 @@ export default class FeedVisitDataView extends React.Component{
                           <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.id)) * 60)}</div>
                         </div>}
                   <div class="text-muted fst-italic">{this.state.visit.feedPostViews.length} posts</div>
+                  <div>
+                    <span class="badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill">
+                      Browsed for me
+                      <span class="mx-2">
+                        <BoltIcon
+                          size="12"
+                          className=""/>
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
