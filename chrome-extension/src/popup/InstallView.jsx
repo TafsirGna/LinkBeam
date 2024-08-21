@@ -268,6 +268,7 @@ export default class About extends React.Component{
             hidePostViewCount: appParams.allHidePostViewCountValues[0],
             postHighlightColor: "#563d7c",
             immersiveMode: false,
+            browseFeedForMePostCount: appParams.defautBrowseFeedForMePostCount,
             // appVersion: appParams.appVersion,
           });
 

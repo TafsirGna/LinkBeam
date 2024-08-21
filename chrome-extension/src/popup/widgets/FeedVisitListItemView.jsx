@@ -26,6 +26,9 @@ import { DateTime as LuxonDateTime } from "luxon";
 import { getPostCount } from "../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { db } from "../../db";
+import {
+  BoltIcon,
+} from "./SVGs";
 
 export default class FeedVisitListItemView extends React.Component{
 
@@ -78,7 +81,21 @@ export default class FeedVisitListItemView extends React.Component{
                 { this.props.parentList == "aggregated" && <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.object.date).toFormat("MM-dd-yyyy")}</small>}
               </div>
               {this.state.postCount != null
-                  && <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.state.postCount} viewed posts</p>}
+                  && <div>
+                      <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">{this.state.postCount} viewed posts</p>
+                      { this.props.parentList == "ordinary"
+                          && this.props.object.automated
+                          && <OverlayTrigger
+                                placement="top"
+                                overlay={<Tooltip id="tooltip2">Browsed for me</Tooltip>}
+                              >
+                              <span class="mx-2">
+                                <BoltIcon
+                                  size="12"
+                                  className=""/>
+                              </span>
+                            </OverlayTrigger>}
+                    </div>}
             </div>
           </div>
         </a>

@@ -220,6 +220,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 );
 
+function notifyUser(message, uuid = null){
+    
+    if (!uuid){
+        uuid = uuidv4();
+    }
+
+    chrome.notifications.create(uuid, {
+      title: 'Linkbeam',
+      message: message,
+      iconUrl: chrome.runtime.getURL(app_logo_path),
+      type: 'basic',
+    });
+
+    return uuid;
+
+}
+
 async function getPostFromPostUrl(url){
 
     var postUid = url.slice(url.indexOf("urn:li:")).replaceAll("/", "");
@@ -435,8 +452,8 @@ function contextMenuItem(menuItem, action){
                 return "Toggle immersive mode";
                 // break;
             }
-            case appParams.browseOnBehalfMenuActionId: {
-                return "Browse feed on behalf";
+            case appParams.browseFeedForMeMenuActionId: {
+                return "Browse feed for me";
                 // break;
             }
         }
@@ -474,16 +491,16 @@ function updateContextualMenuActions(url){
         // immersive mode menu action
         contextMenuItem("immersiveMode", "on");
         if (isLinkedinFeed(url)){
-            // browse on behalf menu action
-            contextMenuItem("browseOnBehalf", "off");
+            // browse for me menu action
+            contextMenuItem("browseFeedForMe", "off");
         }
         return;
     }
     
     // immersive mode menu action
     contextMenuItem("immersiveMode", "off");
-    // browse on behalf menu action
-    contextMenuItem("browseOnBehalf", "on");
+    // browse for me menu action
+    contextMenuItem("browseFeedForMe", "on");
 
 }
 
@@ -497,16 +514,14 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
             }); 
             break;
         }
-        case appParams.browseOnBehalfMenuActionId: {
+        case appParams.browseFeedForMeMenuActionId: {
             // Opening a new tab in a new window
             chrome.windows.create({
                 // Just use the full URL if you need to open an external page
                 url: `${appParams.LINKEDIN_FEED_URL()}?automated=true`,
-                /*window.scroll({
-                  top: 100,
-                  left: 100,
-                  behavior: "smooth",
-                });*/
+            }, () => {
+                // notify the user of the start of the automatic feed scrolling session
+                notifyUser(`Starting an automatic feed session !`);
             });
             break;
         }
@@ -655,7 +670,7 @@ async function enrichProfileSectionData(tabData){
     }
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
-    console.log("AAAAAAAAAAAAAAAAAAAAAAA : ", sessionItem.myTabs);
+    // console.log("AAAAAAAAAAAAAAAAAAAAAAA : ", sessionItem.myTabs);
 
     // updating the last view object in the browser indexeddb
     var lastView = await db.visits.where("url").anyOf([tabData.tabUrl, encodeURI(tabData.tabUrl), decodeURI(tabData.tabUrl)]).last();
@@ -664,13 +679,7 @@ async function enrichProfileSectionData(tabData){
     await db.visits.update(lastView.id, lastView);
 
     // notify the user of the update
-    const uuid = uuidv4();
-    chrome.notifications.create(uuid, {
-      title: 'Linkbeam',
-      message: `Profile ${tabData.extractedData.label} data updated !`,
-      iconUrl: chrome.runtime.getURL(app_logo_path),
-      type: 'basic',
-    });
+    notifyUser(`Profile ${tabData.extractedData.label} data updated !`);
 
 }
 
@@ -693,7 +702,7 @@ async function recordFeedVisit(tabData){
     var visitId = null;
 
     if (visitIndex == -1){
-        visitId = await addFreshFeedVisit();
+        visitId = await addFreshFeedVisit({ automated: tabData.extractedData.fromAutomatedVisit });
         sessionItem.myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl});
 
         chrome.tabs.sendMessage(tabData.tabId, {
@@ -917,11 +926,12 @@ async function recordFeedVisit(tabData){
 
     });
 
-    async function addFreshFeedVisit(){
+    async function addFreshFeedVisit(params){
 
         const visit = {
             date: dateTime,
             url: appParams.LINKEDIN_FEED_URL(),
+            ...(params.automated ? { automated: true } : null),
         };
 
         var visitId = null;
@@ -1118,15 +1128,7 @@ async function processMessageEvent(message, sender, sendResponse){
             });
             
             if (message.data == "keywords"){
-
-                const uuid = uuidv4();
-                chrome.notifications.create(uuid, {
-                  title: 'Linkbeam',
-                  message: `Keyword detected !`,
-                  iconUrl: chrome.runtime.getURL(app_logo_path),
-                  type: 'basic',
-                });
-
+                notifyUser("Keyword detected !");
             }
             break;
         }
@@ -1159,27 +1161,8 @@ async function processMessageEvent(message, sender, sendResponse){
             sendResponse({
                 status: "ACK"
             });
-            
-            if (message.data.idleStatus){
 
-                chrome.notifications.create(uuidv4(), {
-                  title: 'Linkbeam',
-                  message: "Going inactive",
-                  iconUrl: chrome.runtime.getURL(app_logo_path),
-                  type: 'basic',
-                });
-
-            }
-            else{
-
-                chrome.notifications.create(uuidv4(), {
-                  title: 'Linkbeam',
-                  message: "Resuming activity",
-                  iconUrl: chrome.runtime.getURL(app_logo_path),
-                  type: 'basic',
-                });
-
-            }
+            notifyUser(message.data.idleStatus ? "Going inactive" : "Resuming activity");
 
             break;
         }
@@ -1341,14 +1324,7 @@ async function checkDateTimeLeft(){
     }
 
     if (totalTime >= (maxTimeValue * (3/4))){
-    
-        chrome.notifications.create(uuidv4(), {
-          title: 'Linkbeam',
-          message: `Time limit${totalTime >= maxTimeValue ? "" : " almost"} reached`,
-          iconUrl: chrome.runtime.getURL(app_logo_path),
-          type: 'basic',
-        });
-
+        notifyUser(`Time limit${totalTime >= maxTimeValue ? "" : " almost"} reached`);
     }
 
 }

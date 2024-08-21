@@ -41,8 +41,6 @@ import {
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 
-const browseOnBehalfDefaultPostCount = 10;
-
 export default class FeedSettingsView extends React.Component{
 
   constructor(props){
@@ -50,7 +48,7 @@ export default class FeedSettingsView extends React.Component{
     this.state = {
     };
 
-    this.getBrowseOnBehalfPostCountValue = this.getBrowseOnBehalfPostCountValue.bind(this);
+    this.getBrowseFeedForMePostCountValue = this.getBrowseFeedForMePostCountValue.bind(this);
 
   }
 
@@ -64,7 +62,7 @@ export default class FeedSettingsView extends React.Component{
 
   }
 
-  getBrowseOnBehalfPostCountValue = () => this.props.globalData.settings.browseOnBehalfPostCount || browseOnBehalfDefaultPostCount;
+  getBrowseFeedForMePostCountValue = () => this.props.globalData.settings.browseFeedForMePostCount || appParams.defautBrowseFeedForMePostCount;
 
   render(){
 
@@ -129,10 +127,10 @@ export default class FeedSettingsView extends React.Component{
                     <PostIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    Set post count | Browse on behalf
+                    Post count | Browse feed for me
                   </strong>
                   { this.props.globalData.settings
-                      /*&& this.props.globalData.settings.browseOnBehalfPostCount*/
+                      /*&& this.props.globalData.settings.browseFeedForMePostCount*/
                       &&  <OverlayTrigger 
                             trigger="click" 
                             placement="top" 
@@ -142,15 +140,15 @@ export default class FeedSettingsView extends React.Component{
                                         <input 
                                           type="range" 
                                           class="form-range border rounded mt-1 px-1 shadow-sm" 
-                                          min={browseOnBehalfDefaultPostCount} 
+                                          min={appParams.defautBrowseFeedForMePostCount} 
                                           max={50} 
                                           step="5"
-                                          value={this.getBrowseOnBehalfPostCountValue()}
-                                          onChange={(event) => { saveSettingsPropertyValue("browseOnBehalfPostCount", event.target.value, this.props.globalData, db); }} />
+                                          value={this.getBrowseFeedForMePostCountValue()}
+                                          onChange={(event) => { saveSettingsPropertyValue("browseFeedForMePostCount", event.target.value, this.props.globalData, db); }} />
                                       </Popover.Body>
                                     </Popover>}>
                             <span class="rounded shadow-sm badge border text-primary handy-cursor">
-                              {`${this.getBrowseOnBehalfPostCountValue()} posts`}
+                              {`${this.getBrowseFeedForMePostCountValue()} posts`}
                           </span>
                         </OverlayTrigger>}
                 </div>

@@ -250,6 +250,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
       id: this.props.postUid,
       category: null,
       content: {},
+      fromAutomatedVisit: (() => {
+        const automated = (new URLSearchParams(window.location.search)).get("automated");
+        return automated != null && automated == "true";
+      })(),
     };
 
     const postContainerHeaderElement = this.state.postHtmlElement.querySelector(".update-components-header");
@@ -488,7 +492,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   componentWillUnmount(){
 
-    eventBus.remove(eventBus.TIMER_DISPLAY_UPDATED);
     eventBus.remove(eventBus.PAGE_IDLE_SIGNAL);
     eventBus.remove(eventBus.ACTIVE_POST_CONTAINER_ELEMENT);
 

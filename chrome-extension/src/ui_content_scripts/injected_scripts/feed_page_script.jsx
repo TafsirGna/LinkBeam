@@ -213,8 +213,12 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 					break;
 				}
 				index++;
-
 			}
+
+			// if (!this.activePostContainerElementUid && (new URLSearchParams(window.location.search)).get("automated") == true){
+			// 	this.automaticScroll(visiblePostContainerElement, props);
+			// }
+
 		}
 		catch(error){
 			console.log("An error occured when inserting some initial widgets : ", error);
@@ -297,5 +301,44 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	// static runTabDataExtractionProcess(props){
 
 	// }
+
+	static scrollToPostContainerElement(postContainerElement){
+		window.scroll({
+          top: postContainerElement.getBoundingClientRect().top,
+          left: 0, // 100,
+          behavior: "smooth",
+        });
+	}
+
+	static async automaticScroll(postContainerElement, props){
+
+		this.scrollToPostContainerElement(postContainerElement);
+
+		const timer = ms => new Promise(res => setTimeout(res, ms))
+
+		while(true){
+			// Setting the new scroll target
+			const postContainerElements = this.getPostContainerElements();
+			const postContainerElementIndex = postContainerElements.findIndex(el => el.getAttribute("data-id") == postContainerElement.getAttribute("data-id"));
+
+			if (postContainerElementIndex >= props.appSettings.browseFeedForMePostCount){
+				return;
+			}
+
+			if (postContainerElements[postContainerElementIndex + 1]){
+				postContainerElement = postContainerElements[postContainerElementIndex + 1];
+				break;
+			}
+
+			// waiting for 3 seconds before resuming 
+			await timer(3000);
+		}
+
+		// Set a timeout for scrolling to this target
+		const timeOut = setTimeout(() => {
+			this.automaticScroll(postContainerElement, props);
+		}, 3000);
+
+	}
 
 }

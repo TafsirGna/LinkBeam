@@ -37,7 +37,7 @@ export const appParams = {
 
   // Context menu item ids
   immersiveModeMenuActionId: "immersive_mode_contextual_menu_action",
-  browseOnBehalfMenuActionId: "browse_on_behalf_contextual_menu_action",
+  browseFeedForMeMenuActionId: "browse_for_me_contextual_menu_action",
 
   LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME: "linkbeam-distractive-el",
 
@@ -84,6 +84,7 @@ export const appParams = {
   allOutdatedProfileReminderSettingValues: ["Never", "> 1 month", "> 6 months", "> 1 year"],
   allMaxTimeAlarmSettingValues: ["Never", "30 mins", "45 mins", "1 hour"],
   allFontFamilySettingValues: ["None", "Courier"],
+  defautBrowseFeedForMePostCount: 10,
 }
 
 export const categoryVerbMap = {

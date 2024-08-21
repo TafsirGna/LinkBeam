@@ -141,3 +141,7 @@ export const EyeIcon = (props) => {
 export const BoldIcon = (props) => {
   return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>;
 }
+
+export const BoltIcon = (props) => {
+  return <svg viewBox="0 0 24 24" width={ props.size } height={ props.size } stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class={`css-i6dzq1 ${props.className || ""}`}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>;
+}
