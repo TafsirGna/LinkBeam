@@ -91,6 +91,8 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
     this.checkAndHighlightKeywords(result.htmlElements, props.allKeywords, props.highlightedKeywordBadgeColors, props.appSettings);
     
+    this.checkAndUpdateDistractiveUi(ProfilePageScriptAgent, props);
+
     if (this.allExtensionWidgetsSet){
       return;
     }
@@ -153,19 +155,6 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
 
         }
         catch(error){
-          this.allExtensionWidgetsSet &&= false;
-        }
-
-        // checking if the app style intended to be added is there yet
-        try{
-          if (this.isAppStyleInjectedYet(props)){
-            if (props.appSettings.immersiveMode == true){
-              setTimeout(() => {this.toggleImmersiveMode(ProfilePageScriptAgent)}, 1000); // after one sec
-            }
-          }
-        }
-        catch(error){
-          console.log("An error occured when inserting some initial widgets : ", error);
           this.allExtensionWidgetsSet &&= false;
         }
 

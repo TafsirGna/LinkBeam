@@ -84,10 +84,13 @@ export default class FullScreenImageSlideShowModal extends React.Component{
             { this.props.images
                 && <>
                     { this.props.images.map((image, index) => <div 
-                                                                class="rounded slideShow-mySlides text-center" 
+                                                                class="slideShow-mySlides text-center" 
                                                                 style={{display: this.state.activeSlideIndex == index ? "block" : "none"}}>
                                                                 <div class="slideShow-numbertext">{index + 1} / 4</div>
-                                                                <img src={image} style={{maxHeight: imgMaxHeight}}/>
+                                                                <img
+                                                                  // class="rounded" 
+                                                                  src={image} 
+                                                                  style={{maxHeight: "20em"}}/>
                                                               </div>) }
                   </>}
 
@@ -108,8 +111,8 @@ export default class FullScreenImageSlideShowModal extends React.Component{
                                                                   class={`rounded slideShow-demo ${this.state.activeSlideIndex == index ? "active" : ""}`} 
                                                                   src={image} 
                                                                   onClick={() => this.currentSlide(index)} 
-                                                                  style={{maxHeight: imgMaxHeight}}
-                                                                  /*alt="..."*//>
+                                                                  style={{maxHeight: "10em"}}
+                                                                  alt={`Image_${index + 1}`}/>
                                                               </div>) }
                   </>}
           </div>

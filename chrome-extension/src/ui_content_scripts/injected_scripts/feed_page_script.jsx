@@ -147,6 +147,8 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
+		this.checkAndUpdateDistractiveUi(FeedPageScriptAgent, props);
+
 		if (this.allExtensionWidgetsSet || !this.mainHtmlEl()){
 			return;
 		}
@@ -218,21 +220,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			console.log("An error occured when inserting some initial widgets : ", error);
 			this.allExtensionWidgetsSet &&= false;
 		}
-
-		// checking if the app style intended to be added is there yet
-		try{
-			if (this.isAppStyleInjectedYet(props)){
-				if (props.appSettings.immersiveMode == true){
-		          setTimeout(() => {this.toggleImmersiveMode(FeedPageScriptAgent)}, 1000); // after one sec
-		        }
-			}
-		}
-		catch(error){
-			console.log("An error occured when inserting some initial widgets : ", error);
-			this.allExtensionWidgetsSet &&= false;
-		}
 		
-
 		this.getAllPostsHideStatus(postContainerElements, props);
 
 	}

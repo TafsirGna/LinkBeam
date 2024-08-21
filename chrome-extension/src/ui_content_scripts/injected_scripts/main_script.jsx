@@ -182,7 +182,6 @@ class MainScriptAgent extends ScriptAgentBase {
                     FeedPageScriptAgent.allExtensionWidgetsSet = false;
                     FeedPageScriptAgent.allPostsHideStatus = {};
                     this.pageUrl = pageUrl;
-                    console.log("GGGGGGGGGGGGGG III : ", this.timerIntervalInc, this.pageUrl);
                 }
 
                 FeedPageScriptAgent.checkAndUpdateUi(props);
@@ -196,7 +195,6 @@ class MainScriptAgent extends ScriptAgentBase {
                     if (this.pageUrl != pageUrl){
                         ProfileSectionDetailsPageScriptAgent.webPageData = null;
                         ProfileSectionDetailsPageScriptAgent.allExtensionWidgetsSet = false;
-                        // ProfileSectionDetailsPageScriptAgent.checkAndUpdateUi(props);
                         this.pageUrl = pageUrl;
                     }
 

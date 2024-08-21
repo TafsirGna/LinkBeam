@@ -46,6 +46,8 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 	static checkAndUpdateUi(props){
 
+		this.checkAndUpdateDistractiveUi(FeedPostPageScriptAgent, props);
+
 		if (this.allExtensionWidgetsSet){
 			return;
 		}
@@ -107,19 +109,6 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 
 			}
 
-		}
-		catch(error){
-			console.log("An error occured when inserting some initial widgets : ", error);
-			this.allExtensionWidgetsSet &&= false;
-		}
-
-		// checking if the app style intended to be added is there yet
-		try{
-			if (this.isAppStyleInjectedYet(props)){
-				if (props.appSettings.immersiveMode == true){
-		          setTimeout(() => {this.toggleImmersiveMode(FeedPostPageScriptAgent)}, 1000); // after one sec
-		        }
-			}
 		}
 		catch(error){
 			console.log("An error occured when inserting some initial widgets : ", error);

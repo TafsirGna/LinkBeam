@@ -240,7 +240,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   clearTimer(){
 
     clearInterval(this.state.timerInterval);
-    this.setState({timerInterval: null}, () => {console.log("w : wwwww 2 ", this.props.postUid, this.state.timerInterval);});
+    this.setState({timerInterval: null});
 
   }
 
@@ -403,8 +403,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
     const timerInterval = setInterval(() => {
         this.setState((prevState) => ({timeCount: (prevState.timeCount + timeInc)}), () => {
 
-          if (window.location.href != appParams.LINKEDIN_FEED_URL()
-                || (this.state.postHtmlElement && window.getComputedStyle(this.state.postHtmlElement).display === "none" /* in the case the html element has been hidden */ )){
+          if (!isLinkedinFeed(window.location.href)
+                || (this.state.postHtmlElement 
+                      && window.getComputedStyle(this.state.postHtmlElement).display === "none" /* in the case the html element has been hidden */ )){
             if (this.state.timerInterval){
               this.clearTimer();
             }
@@ -738,13 +739,14 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       { !this.state.timerInterval
                           && isLinkedinFeed(window.location.href)
                           && <div class="flex items-center">
-                                  <img 
-                                    src={chrome.runtime.getURL("/assets/sleeping_icon.png")} 
-                                    alt="" 
-                                    width="20" 
-                                    height="20" 
-                                    class="mx-2"/>
-                              </div> }
+                              <img 
+                                src={chrome.runtime.getURL("/assets/sleeping_icon.png")} 
+                                alt="" 
+                                width="20" 
+                                height="20" 
+                                class="mx-2"
+                                title="dozing"/>
+                            </div> }
 
                       { this.state.dataExtractionError
                           && <div 

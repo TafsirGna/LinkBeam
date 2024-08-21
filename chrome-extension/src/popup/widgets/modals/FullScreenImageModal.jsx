@@ -61,7 +61,7 @@ export default class FullScreenImageModal extends React.Component{
             src={this.props.image}/>
 
           {/*<!-- Modal Caption (Image Text) -->*/}
-          <div id="fsi-caption"></div>
+          <div id="fsi-caption">Image</div>
         </div>
       </>
     );

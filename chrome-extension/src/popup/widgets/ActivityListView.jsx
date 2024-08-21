@@ -77,6 +77,8 @@ export default class ActivityListView extends React.Component{
       slideShowImages: null,
     };
 
+    this.getImageModals = this.getImageModals.bind(this);
+
   }
 
   componentDidMount() {
@@ -255,6 +257,20 @@ export default class ActivityListView extends React.Component{
           </span>;
   }
 
+  getImageModals(){
+    return <>
+            <FullScreenImageModal
+                                  image={this.state.fsImage}
+                                  onHide={this.handleFsImageModalClose}
+                                  />
+
+            <FullScreenImageSlideShowModal
+              images={this.state.slideShowImages}
+              onHide={this.handleImageSlideShowModalClose}
+              />
+          </>
+  }
+
   render(){
     return (
       <>
@@ -291,6 +307,9 @@ export default class ActivityListView extends React.Component{
                                                                         { this.getListAndStackingObjectView(object) }
                                                                       </a>)} 
                                   </div>
+
+                                  { this.getImageModals() }
+
                                 </div>}
 
                         { this.props.context == "feed visit" 
@@ -337,15 +356,7 @@ export default class ActivityListView extends React.Component{
                                             </Accordion.Item>) }
                                         </Accordion> }
 
-                                <FullScreenImageModal
-                                  image={this.state.fsImage}
-                                  onHide={this.handleFsImageModalClose}
-                                  />
-
-                                <FullScreenImageSlideShowModal
-                                  images={this.state.slideShowImages}
-                                  onHide={this.handleImageSlideShowModalClose}
-                                  />
+                                { this.getImageModals() }
 
                               </div>}
                          

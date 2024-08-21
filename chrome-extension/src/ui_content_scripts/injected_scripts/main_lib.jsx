@@ -55,6 +55,7 @@ export class ScriptAgentBase {
   static distractiveElSelectors = [".scaffold-layout__aside",
                                    ".scaffold-layout__sidebar",
                                    "header#global-nav"];
+  static immersiveMode = null;
 
 	constructor(){
 
@@ -249,9 +250,30 @@ export class ScriptAgentBase {
 
   }
 
-  static toggleImmersiveMode(scriptAgentBase){
+  static checkAndUpdateDistractiveUi(scriptAgentBase, props){
 
-    removeDistractiveHtmlEls(scriptAgentBase.distractiveElSelectors());
+    if (this.immersiveMode == null){
+      this.immersiveMode = Object.hasOwn(props.appSettings, "immersiveMode") ? props.appSettings.immersiveMode : false;
+    }
+
+    // checking if the app style intended to be added is there yet
+    try{
+      if (this.isAppStyleInjectedYet(props)){
+        this.toggleImmersiveMode(scriptAgentBase, this.immersiveMode);
+      }
+    }
+    catch(error){
+      console.log("An error occured when inserting some style in the page header : ", error);
+    }
+
+  }
+
+  static toggleImmersiveMode(scriptAgentBase, immersive = null){
+
+    if (immersive == null){
+      this.immersiveMode = !this.immersiveMode;
+    }
+    hideShowDistractiveHtmlEls(scriptAgentBase.distractiveElSelectors(), this.immersiveMode);
 
   }
 
@@ -372,24 +394,55 @@ export function sendTabData(tabId, data, callback = null){
 
 }
 
-export function toggleElFadingEffect(htmlEl){
+function toggleElFadingEffect(htmlEl, immersive){
 
-  if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)) {
+  function showEl(){
+
     htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
-    htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-show`);
+    htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown`);
     htmlEl.style.height = 'auto';
-  } else {
+
+  }
+
+  function hideEl(){
+
     htmlEl.classList.remove(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown`);
     htmlEl.classList.add(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`);
 
     setTimeout(() => {
       htmlEl.style.height = 0
-    }, 1000);
+    }, 1000);if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-shown`)) {
+      
+    }
+
+  }
+
+  // console.log("dddddddddd : ", htmlEl, immersive);
+
+  if (immersive == null){
+    if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)) {
+      showEl(); // Show if hidden
+    } 
+    else{
+      hideEl(); // hide if shown
+    }
+  }
+  else{
+    if (immersive){
+      if (!htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)){
+        hideEl(); // hide if shown
+      }
+    }
+    else{
+      if (htmlEl.classList.contains(`${appParams.LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME}-hidden`)) {
+        showEl(); // Show if hidden
+      }
+    }
   }
 
 }
 
-export function removeDistractiveHtmlEls(distractiveElSelectors){
+function hideShowDistractiveHtmlEls(distractiveElSelectors, immersive){
 
   distractiveElSelectors.forEach(selector => {
 
@@ -405,7 +458,7 @@ export function removeDistractiveHtmlEls(distractiveElSelectors){
     }
 
     // toggling the display update
-    toggleElFadingEffect(distractiveEl);
+    toggleElFadingEffect(distractiveEl, immersive);
     
   });
 
