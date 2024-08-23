@@ -518,7 +518,7 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
         case appParams.browseFeedForMeMenuActionId: {
             // Opening a new tab in a new window
             chrome.windows.create({
-                // Just use the full URL if you need to open an external page
+                // focused: false,
                 url: `${appParams.LINKEDIN_FEED_URL()}?automated=true`,
             }, () => {
                 // notify the user of the start of the automatic feed scrolling session
@@ -699,7 +699,7 @@ async function recordFeedVisit(tabData){
 
     var sessionItem = await chrome.storage.session.get(["myTabs"]);
     sessionItem.myTabs[tabData.tabId].visits = sessionItem.myTabs[tabData.tabId].visits || [];
-    const visitIndex = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+    const visitIndex = sessionItem.myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
     var visitId = null;
 
     if (visitIndex == -1){
@@ -782,11 +782,11 @@ async function recordFeedVisit(tabData){
             else{
 
                 await db.feedPosts
-                    .add(subPost)
-                    .then(function(id){
-                        subPost.id = id;
-                        dbSubPost = subPost;
-                    });
+                        .add(subPost)
+                        .then(function(id){
+                            subPost.id = id;
+                            dbSubPost = subPost;
+                        });
 
             }
 
@@ -798,7 +798,13 @@ async function recordFeedVisit(tabData){
             return (newFeedPost.uid && entry.uid && newFeedPost.uid == entry.uid)
                                                         || ((!newFeedPost.uid || !entry.uid) 
                                                                 && entry.author.url == newFeedPost.author.url
-                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20));
+                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
+                                                                    /*(() => {
+                                                                        const entryText = entry.text.replaceAll("\n", "").replaceAll(/\s/g,""),
+                                                                              postText = newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"");
+                                                                        const minLength = Math.min(entryText.length, postText.length);
+                                                                        return entryText.slice(0, minLength) == postText.slice(0, 20);
+                                                                    })() == true*/);
         }
 
         var dbFeedPost = await db.feedPosts
@@ -900,7 +906,7 @@ async function recordFeedVisit(tabData){
         sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
         sessionItem.rankedPostsByPopularity = sessionItem.rankedPostsByPopularity || await setPostsRankingInSession();
 
-        const index = sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id);
+        const index = sessionItem.rankedPostsByPopularity.findIndex(p => p.id == dbFeedPost.id);
         if (index != -1){
             post.rank = {
                 index1: index + 1, 
@@ -912,7 +918,7 @@ async function recordFeedVisit(tabData){
             sessionItem.rankedPostsByPopularity.push({id: dbFeedPost.id, popularity: popularity.value});
             sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
             post.rank = {
-                index1: sessionItem.rankedPostsByPopularity.map(p => p.id).indexOf(dbFeedPost.id) + 1,
+                index1: sessionItem.rankedPostsByPopularity.findIndex(p => p.id == dbFeedPost.id) + 1,
                 count: sessionItem.rankedPostsByPopularity.length,
                 topValue: sessionItem.rankedPostsByPopularity[0].popularity,
             };
@@ -966,7 +972,7 @@ async function recordProfileVisit(tabData){
         }];
     }
     else{
-        const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+        const index = sessionItem.myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
         if (index == -1){
             visitId = await processPrimeVisit();
             sessionItem.myTabs[tabData.tabId].visits.push({
@@ -1034,7 +1040,7 @@ async function recordProfileVisit(tabData){
 
         console.log("CCCCCCCCCCCCCCCC : ", sessionItem.myTabs);
 
-        const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+        const index = sessionItem.myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
 
         if (!Object.hasOwn(sessionItem.myTabs[tabData.tabId].visits[index], "tabOpen")
                 && (await getAppSettingsObject()).autoTabOpening
@@ -1201,8 +1207,12 @@ async function processMessageEvent(message, sender, sendResponse){
                 status: "ACK"
             });
 
+            const sessionItem = await chrome.storage.session.get(["myTabs"]);
+            const visitIndex = sessionItem.myTabs[message.data.tabId].visits.findIndex(v => v.url == message.data.tabUrl);
+            const visitId = sessionItem.myTabs[message.data.tabId].visits[visitIndex].id;
+
             chrome.tabs.create(
-                { url: `/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")}&visitId=${message.data.visitId.visitId}` }, 
+                { url: `/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")}&visitId=${visitId}` }, 
                 () => {
 
                     chrome.tabs.remove(
@@ -1264,7 +1274,7 @@ async function incProfileVisitTimeCount(tabData){
         return;
     }
     
-    const index = sessionItem.myTabs[tabData.tabId].visits.map(v => v.url).indexOf(tabData.tabUrl);
+    const index = sessionItem.myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
     if (index == -1){
         return;
     }

@@ -44,6 +44,7 @@ import {
   GridIcon,
   FeedIcon,
   EyeIcon,
+  BoltIcon,
 } from "./widgets/SVGs";
 
 export default class SettingsView extends React.Component{
@@ -280,6 +281,25 @@ export default class SettingsView extends React.Component{
                       size="15"
                       className="me-2 text-muted"/>
                     Visuals
+                  </strong>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="View visuals settings"
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.VISUALS_SETTINGS)}}>
+                      View
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <BoltIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    AI
                   </strong>
                   <a 
                     href="#" 

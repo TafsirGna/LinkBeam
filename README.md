@@ -36,8 +36,9 @@ Linkbeam can basically:
 * let them see the post that draw their attention (time) the most and list their most active connections;
 * set reminders on posts and profiles as well as keywords to be highlighted in the interface;
 * regroup all the media associated with the posts in a unique interface for the user to view and search;
-* import/export your data in json format.
-explore some previous related posts when viewing a post right from the feed interface;
+* import/export your data in json format;
+* explore some previous related posts when viewing a post right from the feed interface;
+* browse linkedin feed for the user while providing a neat report;
 
 Linkbeam doesn't:
 * help in any ad marketing use cases;

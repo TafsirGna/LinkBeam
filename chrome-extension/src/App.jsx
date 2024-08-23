@@ -27,6 +27,7 @@ import SettingsView from "./popup/SettingsView";
 import ObjectsSettingsView from "./popup/ObjectsSettingsView";
 import FeedSettingsView from "./popup/FeedSettingsView";
 import VisualsSettingsView from "./popup/VisualsSettingsView";
+import AiSettingsView from "./popup/AiSettingsView";
 import StatisticsView from "./popup/StatisticsView";
 import KeywordView from "./popup/KeywordView";
 import MainProfileView from "./popup/MainProfileView";
@@ -312,6 +313,10 @@ export default class App extends React.Component{
         {/*Feed visit Page*/}
         { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")
             && <FeedVisitDataView globalData={this.state.globalData} />}
+
+        {/*AI Settings Page*/}
+        { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS
+            && <AiSettingsView globalData={this.state.globalData} />}
 
       </>
     );

@@ -58,10 +58,11 @@ export default class FullScreenImageModal extends React.Component{
           <img 
             class="fsi-modal-content" 
             id="fsi-img01"
-            src={this.props.image}/>
+            src={this.props.image ? (this.props.image.src || this.props.image.poster) : null}/>
 
           {/*<!-- Modal Caption (Image Text) -->*/}
-          <div id="fsi-caption">Image</div>
+          { this.props.image 
+              && <div id="fsi-caption">{this.props.image.src ? "Image" : "Video"}</div>}
         </div>
       </>
     );

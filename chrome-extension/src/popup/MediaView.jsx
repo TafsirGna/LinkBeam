@@ -155,14 +155,25 @@ export default class MediaView extends React.Component{
               feedPost.view = await db.feedPostViews
                                        .where({feedPostId: feedPost.id})
                                        .last(); 
-              feedPost.bookmarked = (await db.bookmarks.where("url").anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)]).first())
-                                      || (feedPost.view.initiator
-                                            && feedPostView.view.initiator.url
-                                            && await db.bookmarks.where("url").anyOf([feedPost.view.initiator.url, encodeURI(feedPost.view.initiator.url), decodeURI(feedPost.view.initiator.url)]).first());
 
-              if (!feedPost.view){
-                continue;
+              if (!feedPost.view){ // if it's a subpost
+                const post = await db.feedPosts
+                                        .where({linkedPostId: feedPost.id})
+                                        .last();
+                if (!post) { console.error("{{{{{{{{{{{ : ", feedPost); continue; }
+                feedPost.view = await db.feedPostViews
+                                        .where({feedPostId: post.id})
+                                        .last();
               }
+
+              feedPost.bookmarked = (await db.bookmarks.where("url")
+                                                       .anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)])
+                                                       .first())
+                                      || (feedPost.view.initiator
+                                            && feedPost.view.initiator.url
+                                            && await db.bookmarks.where("url")
+                                                                 .anyOf([feedPost.view.initiator.url, encodeURI(feedPost.view.initiator.url), decodeURI(feedPost.view.initiator.url)])
+                                                                 .first());
 
               var imgVideo = separateVideoAndImage(feedPost),
                   date = feedPost.view.date.split("T")[0];

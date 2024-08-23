@@ -227,7 +227,7 @@ export default class ActivityListView extends React.Component{
                                                                 src={object.media[index].src || object.media[index].poster} 
                                                                 class="rounded shadow mx-1" 
                                                                 height="50em"
-                                                                onMouseEnter={() => this.handleFsImageModalShow(object.media[index].src || object.media[index].poster)}/>
+                                                                onMouseEnter={() => this.handleFsImageModalShow(object.media[index])}/>
                                                             : null) }
                             { object.media.length > 2
                                 && <div 
@@ -260,9 +260,9 @@ export default class ActivityListView extends React.Component{
   getImageModals(){
     return <>
             <FullScreenImageModal
-                                  image={this.state.fsImage}
-                                  onHide={this.handleFsImageModalClose}
-                                  />
+              image={this.state.fsImage}
+              onHide={this.handleFsImageModalClose}
+              />
 
             <FullScreenImageSlideShowModal
               images={this.state.slideShowImages}

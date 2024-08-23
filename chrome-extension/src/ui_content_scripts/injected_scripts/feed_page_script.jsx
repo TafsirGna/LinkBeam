@@ -321,11 +321,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 			// console.log("rrrrrrrrrrr 2 : ", postContainerElements[postContainerElementIndex + 1], props.appSettings.browseFeedForMePostCount, postContainerElementIndex, postContainerElements);
 
-			if (postContainerElementIndex >= props.appSettings.browseFeedForMePostCount){
+			if ((postContainerElementIndex + 1) >= props.appSettings.browseFeedForMePostCount){
 
-				// window.open(`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.FEED_VISIT.replaceAll(" ", "")}&visitId=${props.visitId}`, '_blank');
-
-				chrome.runtime.sendMessage({header: "AUTO_FEED_VISIT_ENDED", data: {tabId: props.tabId, visitId: props.visitId}}, (response) => {
+				chrome.runtime.sendMessage({header: "AUTO_FEED_VISIT_ENDED", data: {tabId: props.tabId, tabUrl: window.location.href.split("?")[0]}}, (response) => {
 			      console.log('tab idle status sent', response);
 			    });		
 				return;

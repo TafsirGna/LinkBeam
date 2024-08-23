@@ -22,7 +22,6 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import FolderListView from "./widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
@@ -32,7 +31,6 @@ import {
 import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
-import Form from 'react-bootstrap/Form';
 import { 
   HideIcon,
   BookmarkIcon,
