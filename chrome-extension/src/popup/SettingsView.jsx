@@ -305,7 +305,7 @@ export default class SettingsView extends React.Component{
                     href="#" 
                     class="text-primary badge" 
                     title="View visuals settings"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.VISUALS_SETTINGS)}}>
+                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS)}}>
                       View
                   </a>
                 </div>

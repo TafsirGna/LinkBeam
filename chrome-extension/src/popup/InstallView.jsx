@@ -172,10 +172,19 @@ export default class About extends React.Component{
                 }
 
                 // initialize the db with the received data
-                for (var objectStoreName in content.objectStores){
+                for (const objectStoreName in content.objectStores){
                   if (content.objectStores[objectStoreName].length){
                     var objects = content.objectStores[objectStoreName];
-                    objects = removeObjectsId(objects);
+
+                    // Optional but who knows ?
+                    if (objectStoreName == "feedPosts"){
+                      objects = objects.filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
+                    }
+                    
+                    if (objectStoreName != "feedPosts"){
+                      objects = removeObjectsId(objects);
+                    }
+
                     await db[objectStoreName].bulkAdd(objects);
                   }
                 }

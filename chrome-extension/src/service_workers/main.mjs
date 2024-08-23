@@ -783,7 +783,7 @@ async function recordFeedVisit(tabData){
 
                 await db.feedPosts
                         .add(subPost)
-                        .then(function(id){
+                        .then((id) => {
                             subPost.id = id;
                             dbSubPost = subPost;
                         });
@@ -821,7 +821,7 @@ async function recordFeedVisit(tabData){
         else{
 
             await db.feedPosts
-                    .add(newFeedPost).then(function(id){
+                    .add(newFeedPost).then((id) => {
                         newFeedPost.id = id;
                         dbFeedPost = newFeedPost;
                     });

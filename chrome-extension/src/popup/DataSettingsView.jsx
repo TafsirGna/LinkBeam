@@ -133,292 +133,98 @@ export default class DataSettingsView extends React.Component{
 
   deleteData(){
     const response = confirm("Do you confirm the erase of your data as specified ?");
-    if (response){
+    if (!response){
+      return;
+    }
 
-      this.handleOffCanvasClose();
-      // Displaying the spinner
-      this.setState({processingState: {status: "YES", info: "ERASING"}});
+    this.handleOffCanvasClose();
+    // Displaying the spinner
+    this.setState({processingState: {status: "YES", info: "ERASING"}});
 
-      // Initiate data removal
-      (async () => {
+    // Initiate data removal
+    (async () => {
 
-        for (const table of db.tables){
+      for (const table of db.tables){
 
-          if (["settings", "feedPosts", "reminders", "tags", "folders", "bookmarks", "keywords"].indexOf(table.name) != -1){
-            if (this.state.offCanvasFormSelectValue == "1"){
-              if (table.name != "settings"){
-                await table.clear();
-              }
+        if (["settings", "feedPosts", "reminders", "tags", "folders", "bookmarks", "keywords"].indexOf(table.name) != -1){
+          if (this.state.offCanvasFormSelectValue == "1"){
+            if (table.name != "settings"){
+              await table.clear();
             }
-            continue;
           }
-
-          // the following code should allow me to delete all visits in the specified range without deleting any of the corresponding profile if this profile has been visited outside of this very range
-          switch(table.name){
-
-            case "feedPostViews": {
-
-              if (this.state.offCanvasFormSelectValue == "1"){
-                
-                // Deleting all feedPostViews objects
-                await db.feedPostViews.clear(); 
-
-              }
-              else{
-
-                const feedPostViews = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                                  .toArray();
-                var feedPostIds = [], doneFeedPostIds = [];
-
-                await Promise.all(feedPostViews.map(async feedPostView => {
-
-                  if (doneFeedPostIds.indexOf(feedPostView.feedPostId) == -1){
-
-                    var subFeedPostViews = null;
-                    [subFeedPostViews] = await Promise.all([
-                      db.feedPostViews
-                        .filter(entry => entry.feedPostId == feedPostView.feedPostId 
-                                          && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                        .toArray()
-                    ]);
-
-                    if (!subFeedPostViews.length){
-
-                      feedPostIds.push(feedPostView.feedPostId);
-
-                      // then i delete any reminder associated with this feedPost object
-                      await db.reminders
-                              .where({objectId: feedPostView.feedPostId})
-                              .delete();
-
-                    }
-
-                    doneFeedPostIds.push(feedPostView.feedPostId);
-
-                  }
-
-                }));
-
-                await db.feedPosts.where("id").anyOf(feedPostIds).delete();
-                await db.feedPostViews.bulkDelete(feedPostViews.map(f => f.id));
-
-              }
-
-              break;
-
-            }
-
-            case "visits": {
-
-              if (this.state.offCanvasFormSelectValue == "1"){
-
-                // Deleting all visit objects
-                await db.visits.clear();
-
-              }
-              else{
-
-                const profileVisits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                                .toArray();
-
-                var profileUrls = [];
-
-                for (const visit of profileVisits){
-
-                  if (!Object.hasOwn(visit, "profileData")){
-                    continue;
-                  }
-
-                  if (profileUrls.indexOf(visit.url) != -1){
-                    continue;
-                  }
-
-                  // Delete associated reminder if exists
-                  await db.reminders
-                          .where("objectId")
-                          .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
-                          .delete();
-
-                  // Delete associated bookmarks
-                  await db.bookmarks
-                          .where("url")
-                          .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
-                          .delete();
-
-                  // delete associated folder
-                  var folder = await db.folders
-                                        .filter(folder => folder.profiles && folder.profiles.map(p => p.url).indexOf(visit.url) != -1)
-                                        .first();
-
-                  if (folder){
-
-                    folder.profiles.splice(folder.profiles.map(p => p.url).indexOf(visit.url), 1);
-
-                    if (!folder.profiles.length){
-                      if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, folder.createdOn.split("T")[0])){
-                        await db.folders
-                                .where({id: folder.id})
-                                .delete();
-                      }
-                    }
-                    else{
-                      await db.folders.update(folder.id, folder);
-                    }
-
-                  }
-
-                  // delete associated tags
-                  var tags = await db.tags
-                                     .filter(tag => tag.profiles && tag.profiles.map(p => p.url).indexOf(visit.url) != -1)
-                                     .toArray();
-
-                  for (var tag of tags){
-
-                    tag.profiles.splice(tag.profiles.map(p => p.url).indexOf(visit.url), 1);
-
-                    if (!tag.profiles.length){
-                      if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, tag.createdOn.split("T")[0])){
-                        await db.tags
-                                .where({id: tag.id})
-                                .delete();
-                      }
-                    }
-                    else{
-                      await db.tags.update(tag.id, tag);
-                    }
-
-                  }
-
-                  profileUrls.push(visit.url);
-
-                }
-
-                await db.visits.bulkDelete(profileVisits.map(v => v.id));
-
-              }
-
-              break;
-            }
-
-
-          }
-
-          if (this.state.offCanvasFormSelectValue != "1"){
-            await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                       .delete();
-          }
-
+          continue;
         }
 
-        this.setState({
-          processingState: {status: "NO", info: "ERASING"},
-        });
+        // the following code should allow me to delete all visits in the specified range without deleting any of the corresponding profile if this profile has been visited outside of this very range
+        switch(table.name){
 
-        this.checkStorageUsage();
+          case "feedPostViews": {
 
-        // Setting a timer to reset all of this
-        setTimeout(() => {
-          this.setState({processingState: {status: "NO", info: ""}});
-        }, appParams.TIMER_VALUE_1);
-
-      }).bind(this)();
-
-    }
-  }
-
-  initDataExport(action){
-    const response = confirm(`Do you confirm the ${action} of your data as specified ?`);
-
-    if (response){
-
-      var dbData = {
-        dbVersion: appParams.appDbVersion,
-        objectStores: {},
-      };
-
-      (async () => {
-
-        var tableData = null;
-        for (var table of db.tables){
-
-          if (table.name == "settings"){
-            tableData = await table.toArray();
-          }
-          else if (["feedPosts", "reminders", "tags", "folders", "bookmarks"].indexOf(table.name) != -1){
-            continue;
-          }
-          else{
-
-            tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
-                                     .toArray();
-
-            if (["keywords", "feedPostViews"].indexOf(table.name) != -1){ // no need to include the id for these objects
-              tableData = removeObjectsId(tableData)
-            }
-
-          }
-
-          dbData.objectStores[table.name] = tableData;
-
-          switch(table.name){
-
-            case "feedPostViews":{
-
-              // Retrieving all the other db objects linked to the feed visits 
-              var feedPosts = [],
-                  reminders = [];
-              await Promise.all (tableData.map (async feedPostView => {
-
-                if (feedPosts.map(p => p.id).indexOf(feedPostView.feedPostId) != -1){
-                  return;
-                }
-
-                // linked feedpost
-                var feedPost = null, reminder = null;
-                [feedPost] = await Promise.all([
-                  db.feedPosts.where({id: feedPostView.feedPostId}).first()
-                ]);
-
-                // if (!feedPost){
-                //   return;
-                // }
-                feedPosts.push(feedPost);
-
-                // linked reminder if exists
-                [reminder] = await Promise.all([
-                  db.reminders.where({objectId: feedPost.id}).first()
-                ]);
-
-                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) != -1){
-                  reminders.push(reminder);
-                }
-
-              }));
-
-              if (!dbData.objectStores["reminders"]){
-                dbData.objectStores["reminders"] = removeObjectsId(reminders);
-              }
-              else{
-                dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
-              }
-              dbData.objectStores["feedPosts"] = feedPosts;
-
-              break;
+            if (this.state.offCanvasFormSelectValue == "1"){
               
+              // Deleting all feedPostViews objects
+              await db.feedPostViews.clear(); 
+
+            }
+            else{
+
+              const feedPostViews = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                                .toArray();
+              var feedPostIds = [], doneFeedPostIds = [];
+
+              for (const feedPostView of feedPostViews){
+
+                if (doneFeedPostIds.indexOf(feedPostView.feedPostId) == -1){
+
+                  const subFeedPostViews = await db.feedPostViews
+                                                  .filter(entry => entry.feedPostId == feedPostView.feedPostId 
+                                                                    && !betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                                  .toArray();
+
+                  if (!subFeedPostViews.length){
+
+                    feedPostIds.push(feedPostView.feedPostId);
+
+                    // then i delete any reminder associated with this feedPost object
+                    await db.reminders
+                            .where({objectId: feedPostView.feedPostId})
+                            .delete();
+
+                  }
+
+                  doneFeedPostIds.push(feedPostView.feedPostId);
+
+                }
+
+              }
+
+              await db.feedPosts.where("id").anyOf(feedPostIds).delete();
+              await db.feedPostViews.bulkDelete(feedPostViews.map(f => f.id));
+
             }
 
-            // Retrieving all the other db objects linked to the profile visits 
-            case "visits":{
+            break;
 
-              var profileUrls = [], 
-                  reminders = [],
-                  bookmarks = [],
-                  folders = [],
-                  tags = [];
+          }
 
-              for (const visit of tableData){
+          case "visits": {
 
-                if (!Object.hasOwn(visit, 'profileData')){
+            if (this.state.offCanvasFormSelectValue == "1"){
+
+              // Deleting all visit objects
+              await db.visits.clear();
+
+            }
+            else{
+
+              const profileVisits = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                              .toArray();
+
+              var profileUrls = [];
+
+              for (const visit of profileVisits){
+
+                if (!Object.hasOwn(visit, "profileData")){
                   continue;
                 }
 
@@ -426,103 +232,288 @@ export default class DataSettingsView extends React.Component{
                   continue;
                 }
 
-                // linked reminder & bookmark
-                var reminder = null,
-                    bookmark = null;
-                [reminder, bookmark] = await Promise.all([
-                  db.reminders.where("objectId").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first(),
-                  db.bookmarks.where("url").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first()
-                ]);
+                // Delete associated reminder if exists
+                await db.reminders
+                        .where("objectId")
+                        .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                        .delete();
 
-                if (reminder && reminders.map(r => r.id).indexOf(reminder.id) == -1){
-                  reminders.push(reminder);
+                // Delete associated bookmarks
+                await db.bookmarks
+                        .where("url")
+                        .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                        .delete();
+
+                // delete associated folder
+                var folder = await db.folders
+                                      .filter(folder => folder.profiles && folder.profiles.findIndex(p => p.url == visit.url) != -1)
+                                      .first();
+
+                if (folder){
+
+                  folder.profiles.splice(folder.profiles.findIndex(p => p.url == visit.url), 1);
+
+                  if (!folder.profiles.length){
+                    if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, folder.createdOn.split("T")[0])){
+                      await db.folders
+                              .where({id: folder.id})
+                              .delete();
+                    }
+                  }
+                  else{
+                    await db.folders.update(folder.id, folder);
+                  }
+
                 }
 
-                if (bookmark && bookmarks.map(b => b.id).indexOf(bookmark.id) == -1){
-                  bookmarks.push(bookmark);
+                // delete associated tags
+                var tags = await db.tags
+                                   .filter(tag => tag.profiles && tag.profiles.findIndex(p => p.url == visit.url) != -1)
+                                   .toArray();
+
+                for (var tag of tags){
+
+                  tag.profiles.splice(tag.profiles.findIndex(p => p.url == visit.url), 1);
+
+                  if (!tag.profiles.length){
+                    if (betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, tag.createdOn.split("T")[0])){
+                      await db.tags
+                              .where({id: tag.id})
+                              .delete();
+                    }
+                  }
+                  else{
+                    await db.tags.update(tag.id, tag);
+                  }
+
                 }
 
-                // linked folders
-                await db.folders
-                        .each(folder => {
+                profileUrls.push(visit.url);
 
-                          if (!folder.profiles){
-                            return;
-                          }
-
-                          const profileIndex = folder.profiles.map(p => p.url).indexOf(visit.url);
-                          if (profileIndex != -1){
-                            const folderIndex = folders.map(f => f.id).indexOf(folder.id);
-                            if (folderIndex != -1){
-                              folders[folderIndex].profiles.push(folder.profiles[profileIndex]);
-                            }
-                            else{
-                              folder.profiles = [folder.profiles[profileIndex]];
-                              folders.push(folder);
-                            }
-                          }
-
-                        });
-
-                // linked tags
-                await db.tags
-                        .each(tag => {
-
-                          if (!tag.profiles){
-                            return;
-                          }
-
-                          const profileIndex = tag.profiles.map(p => p.url).indexOf(visit.url);
-                          if (profileIndex != -1){
-                            const tagIndex = tags.map(t => t.id).indexOf(tag.id);
-                            if (tagIndex != -1){
-                              tags[tagIndex].profiles.push(tag.profiles[profileIndex]);
-                            }
-                            else{
-                              tag.profiles = [tag.profiles[profileIndex]];
-                              tags.push(tag);
-                            }
-                          }
-
-                        });
-
-              };
-
-              if (!dbData.objectStores["reminders"]){
-                dbData.objectStores["reminders"] = removeObjectsId(reminders);
-              }
-              else{
-                dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
               }
 
-              dbData.objectStores["bookmarks"] = removeObjectsId(bookmarks);
-              dbData.objectStores["folders"] = removeObjectsId(folders);
-              dbData.objectStores["tags"] = removeObjectsId(tags);
+              await db.visits.bulkDelete(profileVisits.map(v => v.id));
 
-              break;
             }
 
+            break;
+          }
+
+
+        }
+
+        if (this.state.offCanvasFormSelectValue != "1"){
+          await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                     .delete();
+        }
+
+      }
+
+      this.setState({
+        processingState: {status: "NO", info: "ERASING"},
+      });
+
+      this.checkStorageUsage();
+
+      // Setting a timer to reset all of this
+      setTimeout(() => {
+        this.setState({processingState: {status: "NO", info: ""}});
+      }, appParams.TIMER_VALUE_1);
+
+    }).bind(this)();
+  }
+
+  initDataExport(action){
+
+    const response = confirm(`Do you confirm the ${action} of your data as specified ?`);
+
+    if (!response){
+      return;
+    }
+
+    var dbData = {
+      dbVersion: appParams.appDbVersion,
+      objectStores: {},
+    };
+
+    (async () => {
+
+      var tableData = null;
+      for (const table of db.tables){
+
+        if (table.name == "settings"){
+          tableData = await table.toArray();
+        }
+        else if (["feedPosts", "reminders", "tags", "folders", "bookmarks"].indexOf(table.name) != -1){
+          continue;
+        }
+        else{
+
+          tableData = await table.filter(entry => betweenRange(this.state.offCanvasFormStartDate, this.state.offCanvasFormEndDate, entry[datePropertyNames[table.name]].split("T")[0]))
+                                   .toArray();
+
+          if (["keywords", "feedPostViews"].indexOf(table.name) != -1){ // no need to include the id for these objects
+            tableData = removeObjectsId(tableData)
           }
 
         }
 
-        try {
-      
-          const jsonData = JSON.stringify(dbData),
-                jsonDataBlob = new Blob([jsonData]);
-          const fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
-          procExtractedData(jsonDataBlob, fileName, action, new JSZip());
+        dbData.objectStores[table.name] = tableData;
 
-          // updating the local lastDataBackupDate value
-          chrome.storage.local.set({ lastDataBackupDate: new Date().toISOString() });
+        switch(table.name){
 
-        } catch (error) {
-          console.error('Error while downloading the received data: ', error);
+          case "feedPostViews":{
+
+            // Retrieving all the other db objects linked to the feed visits 
+            var feedPosts = [],
+                reminders = [];
+            
+            for (const feedPostView of tableData){
+
+              if (feedPosts.findIndex(p => p.id == feedPostView.feedPostId) != -1){
+                continue;
+              }
+
+              // linked feedpost
+              const feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first(),
+                    reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
+
+              if (!feedPost){
+                console.error("------- Undefined feedPost", feedPost, feedPostView.feedPostId);
+                continue;
+              }
+
+              feedPosts.push(feedPost);
+
+              if (reminder && reminders.findIndex(r => r.id == reminder.id) != -1){
+                reminders.push(reminder);
+              }
+
+            }
+
+            if (!dbData.objectStores["reminders"]){
+              dbData.objectStores["reminders"] = removeObjectsId(reminders);
+            }
+            else{
+              dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
+            }
+
+            dbData.objectStores["feedPosts"] = feedPosts;
+
+            break;
+            
+          }
+
+          // Retrieving all the other db objects linked to the profile visits 
+          case "visits":{
+
+            var profileUrls = [], 
+                reminders = [],
+                bookmarks = [],
+                folders = [],
+                tags = [];
+
+            for (const visit of tableData){
+
+              if (!Object.hasOwn(visit, 'profileData')){
+                continue;
+              }
+
+              if (profileUrls.indexOf(visit.url) != -1){
+                continue;
+              }
+
+              // linked reminder & bookmark
+              const reminder = await db.reminders.where("objectId").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first(),
+                    bookmark = await db.bookmarks.where("url").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first();
+
+              if (reminder && reminders.findIndex(r => r.id == reminder.id) == -1){
+                reminders.push(reminder);
+              }
+
+              if (bookmark && bookmarks.findIndex(b => b.id == bookmark.id) == -1){
+                bookmarks.push(bookmark);
+              }
+
+              // linked folders
+              await db.folders
+                      .each(folder => {
+
+                        if (!folder.profiles){
+                          return;
+                        }
+
+                        const profileIndex = folder.profiles.findIndex(p => p.url == visit.url);
+                        if (profileIndex != -1){
+                          const folderIndex = folders.findIndex(f => f.id == folder.id);
+                          if (folderIndex != -1){
+                            folders[folderIndex].profiles.push(folder.profiles[profileIndex]);
+                          }
+                          else{
+                            folder.profiles = [folder.profiles[profileIndex]];
+                            folders.push(folder);
+                          }
+                        }
+
+                      });
+
+              // linked tags
+              await db.tags
+                      .each(tag => {
+
+                        if (!tag.profiles){
+                          return;
+                        }
+
+                        const profileIndex = tag.profiles.findIndex(p => p.url == visit.url);
+                        if (profileIndex != -1){
+                          const tagIndex = tags.findIndex(t => t.id == tag.id);
+                          if (tagIndex != -1){
+                            tags[tagIndex].profiles.push(tag.profiles[profileIndex]);
+                          }
+                          else{
+                            tag.profiles = [tag.profiles[profileIndex]];
+                            tags.push(tag);
+                          }
+                        }
+
+                      });
+
+            };
+
+            if (!dbData.objectStores["reminders"]){
+              dbData.objectStores["reminders"] = removeObjectsId(reminders);
+            }
+            else{
+              dbData.objectStores["reminders"] = dbData.objectStores["reminders"].concat(removeObjectsId(reminders));
+            }
+
+            dbData.objectStores["bookmarks"] = removeObjectsId(bookmarks);
+            dbData.objectStores["folders"] = removeObjectsId(folders);
+            dbData.objectStores["tags"] = removeObjectsId(tags);
+
+            break;
+          }
+
         }
 
-      }).bind(this)();
-  
-    }
+      }
+
+      try {
+    
+        const jsonData = JSON.stringify(dbData),
+              jsonDataBlob = new Blob([jsonData]);
+        const fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
+        procExtractedData(jsonDataBlob, fileName, action, new JSZip());
+
+        // updating the local lastDataBackupDate value
+        chrome.storage.local.set({ lastDataBackupDate: new Date().toISOString() });
+
+      } catch (error) {
+        console.error('Error while downloading the received data: ', error);
+      }
+
+    }).bind(this)();
 
   }
 

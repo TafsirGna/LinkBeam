@@ -307,8 +307,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		postContainerElement.scrollIntoView({ behavior: "smooth" });
 
-		// console.log("rrrrrrrrrrr 1 : ", postContainerElement, postContainerElement.getAttribute("data-id"));
-
 		this.automaticScrollStarted = !this.automaticScrollStarted ? true : this.automaticScrollStarted;
 
 		const timer = ms => new Promise(res => setTimeout(res, ms))
@@ -318,8 +316,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			// Setting the new scroll target
 			const postContainerElements = this.getPostContainerElements();
 			const postContainerElementIndex = postContainerElements.findIndex(el => el.getAttribute("data-id") == postContainerElement.getAttribute("data-id"));
-
-			// console.log("rrrrrrrrrrr 2 : ", postContainerElements[postContainerElementIndex + 1], props.appSettings.browseFeedForMePostCount, postContainerElementIndex, postContainerElements);
 
 			if ((postContainerElementIndex + 1) >= props.appSettings.browseFeedForMePostCount){
 
@@ -339,8 +335,6 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			// waiting for 3 seconds before resuming 
 			await timer(1000);
 		}
-
-		// console.log("rrrrrrrrrrr 3 : ", postContainerElement, postContainerElement.getAttribute("data-id"));
 
 		// Set a timeout for scrolling to this target
 		const timeOut = setTimeout(() => {

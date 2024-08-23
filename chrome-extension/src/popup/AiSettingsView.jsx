@@ -32,9 +32,7 @@ import eventBus from "./EventBus";
 import { db } from "../db";
 import { liveQuery } from "dexie";
 import { 
-  HideIcon,
-  BookmarkIcon,
-  PostIcon,
+  CompassIcon,
 } from  "./widgets/SVGs";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
@@ -57,8 +55,6 @@ export default class AiSettingsView extends React.Component{
 
   }
 
-  getBrowseFeedForMePostCountValue = () => this.props.globalData.settings.browseFeedForMePostCount || appParams.defautBrowseFeedForMePostCount;
-
   render(){
 
     return(
@@ -73,14 +69,14 @@ export default class AiSettingsView extends React.Component{
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">
-                    <HideIcon
+                    <CompassIcon
                       size="15"
                       className="me-2 text-muted"/>
                     'Browse feed for me' model
                   </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{this.props.globalData.settings ? this.props.globalData.settings.hidePostViewCount : null}</span>
+                      <span class="rounded shadow-sm badge border text-primary">Actions</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {["Import", "Train", "Download"].map((value) => (
