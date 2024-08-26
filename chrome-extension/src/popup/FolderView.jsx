@@ -106,7 +106,7 @@ export default class FolderView extends React.Component{
                                                                 {folder.name}
                                                                 </span>
                                                                 <span 
-                                                                  class="badge text-bg-primary ms-2 shadow py-1"
+                                                                  class="badge text-bg-light ms-2 shadow py-1 border"
                                                                   title={`${!folder.profiles ? 0 : folder.profiles.length} profiles`}>
                                                                   {!folder.profiles ? 0 : folder.profiles.length}
                                                                 </span>

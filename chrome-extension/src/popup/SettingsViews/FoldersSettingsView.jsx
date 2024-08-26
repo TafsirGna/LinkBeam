@@ -20,18 +20,18 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
-import FolderListView from "./widgets/FolderListView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
+import FolderListView from "../widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataFolders,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
-import { CheckIcon } from  "./widgets/SVGs";
+import { CheckIcon } from  "../widgets/SVGs";
 
 export default class FolderView extends React.Component{
 

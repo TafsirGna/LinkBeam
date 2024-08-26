@@ -21,8 +21,8 @@
 
 import React from 'react';
 /*import './Settings.css'*/
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
 import { liveQuery } from "dexie"; 
 import { 
@@ -31,9 +31,9 @@ import {
   switchToView,
   setGlobalDataSettings,
   saveSettingsPropertyValue,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { 
   AlertCircleIcon,
   BellIcon,
@@ -45,7 +45,7 @@ import {
   FeedIcon,
   EyeIcon,
   BoltIcon,
-} from "./widgets/SVGs";
+} from "../widgets/SVGs";
 
 export default class SettingsView extends React.Component{
   

@@ -20,22 +20,22 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataSettings,
   saveSettingsPropertyValue,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
 import { 
   HideIcon,
   BookmarkIcon,
   PostIcon,
-} from  "./widgets/SVGs";
+} from  "../widgets/SVGs";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 
@@ -45,9 +45,6 @@ export default class FeedSettingsView extends React.Component{
     super(props);
     this.state = {
     };
-
-    this.getBrowseFeedForMePostCountValue = this.getBrowseFeedForMePostCountValue.bind(this);
-
   }
 
   componentDidMount() {
@@ -60,7 +57,7 @@ export default class FeedSettingsView extends React.Component{
 
   }
 
-  getBrowseFeedForMePostCountValue = () => this.props.globalData.settings.browseFeedForMePostCount || appParams.defautBrowseFeedForMePostCount;
+  getBrowseFeedForMePostCountValue = () => (this.props.globalData.settings && this.props.globalData.settings.browseFeedForMePostCount) || appParams.defautBrowseFeedForMePostCount;
 
   render(){
 

@@ -84,7 +84,7 @@ export const appParams = {
   allHidePostViewCountValues: ["Never", "2 views", "3 views"],
   allOutdatedProfileReminderSettingValues: ["Never", "> 1 month", "> 6 months", "> 1 year"],
   allMaxTimeAlarmSettingValues: ["Never", "30 mins", "45 mins", "1 hour"],
-  allFontFamilySettingValues: ["None", "Courier"],
+  allFontFamilySettingValues: [{label: "None", file: null}, {label: "Courier", file: "CourierPrime-Regular.ttf"}],
   defautBrowseFeedForMePostCount: 10,
 }
 
@@ -766,33 +766,35 @@ export const groupObjectsByDate = (objectList) => {
 
 }
 
-export async function applyFontFamilySetting(){
+export async function applyFontFamilySetting(settings){
 
-  function getFontFamilyFileName(fontFamilySetting){
-    switch(fontFamilySetting){
-      case appParams.allFontFamilySettingValues[1]: {
-        return "CourierPrime-Regular.ttf";
-        // break;
-      }
-      default:{
-        return null;
-        // break;
-      }
+  console.log("ffffffffff 1 : ", settings.fontFamily);
+
+  const fontFamily = ((!settings.fontFamily && {file: null}) || (settings.fontFamily && appParams.allFontFamilySettingValues.filter(f => f.label == settings.fontFamily)[0]));
+  const styleID = "fontFamilyStyle";
+
+  console.log("ffffffffff 2 : ", fontFamily.file);
+  if (!fontFamily.file){
+    if (document.querySelector(`style#${styleID}`)){
+      document.querySelector(`style#${styleID}`).remove();
     }
+    console.log("ffffffffff 3 : ", fontFamily.file);
+    return;
   }
 
-  const fontFamilyFileName = getFontFamilyFileName(((await chrome.storage.local.get(["fontFamily"])).fontFamily || appParams.allFontFamilySettingValues[1]));
+  console.log("ffffffffff 4 : ", fontFamily.file);
 
-  if (!fontFamilyFileName){
+  if (document.querySelector(`style#${styleID}`)){
     return;
   }
 
   var style = document.createElement('style');
-      style.innerHTML = `@font-face { font-family: Courier; src: url('/${fontFamilyFileName}'); } 
+      style.id = styleID;
+      style.innerHTML = `@font-face { font-family: ${fontFamily.label}; src: url('/${fontFamily.file}'); } 
                           * {
-                             font-family: Courier
+                             font-family: ${fontFamily.label}
                           }`;
-    document.getElementsByTagName('head')[0].appendChild(style);
+  document.getElementsByTagName('head')[0].appendChild(style);
 
 }
 

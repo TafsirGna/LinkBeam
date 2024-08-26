@@ -23,6 +23,7 @@
 import { 
 	ScriptAgentBase,
 	getFeedPostHtmlElement,
+	getFontFamilyStyle,
 } from "./main_lib";
 import React from 'react';
 import { 
@@ -164,16 +165,17 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 				ReactDOM.createRoot(newDivTag.shadowRoot).render(
 		            <React.StrictMode>
-		              <style type="text/css">{styles}</style>
-		              <div>
-		              	<FeedPostViewsChartModal
-		                  appSettings={props.appSettings}
-		                  tabId={props.tabId}/>
+		              	<style type="text/css">{styles}</style>
+		              	{ getFontFamilyStyle(props) }
+		              	<div>
+		              		<FeedPostViewsChartModal
+			                  appSettings={props.appSettings}
+			                  tabId={props.tabId}/>
 
-		                <FeedPostRelatedPostsModal
-		                  appSettings={props.appSettings}
-		                  tabId={props.tabId}/>
-		              </div>
+		                	<FeedPostRelatedPostsModal
+			                  appSettings={props.appSettings}
+			                  tabId={props.tabId}/>
+		              	</div>
 		            </React.StrictMode>
 		        );
 
@@ -271,6 +273,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			ReactDOM.createRoot(newDivTag.shadowRoot).render(
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
+	              { getFontFamilyStyle(props) }
 	              <FeedPostHiddenMarkerView 
 	              	postUid={postUid}/>
 	            </React.StrictMode>
@@ -284,6 +287,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 			ReactDOM.createRoot(newDivTag.shadowRoot).render(
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
+	              { getFontFamilyStyle(props) }
 	              <AboveFeedPostWidgetView 
 	              	postUid={postUid}
 	              	tabId={props.tabId}

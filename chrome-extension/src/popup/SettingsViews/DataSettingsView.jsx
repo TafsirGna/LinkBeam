@@ -20,9 +20,9 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
-import FolderListView from "./widgets/FolderListView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
+import FolderListView from "../widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
@@ -30,9 +30,9 @@ import {
   saveSettingsPropertyValue,
   procExtractedData,
   removeObjectsId,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
 import Form from 'react-bootstrap/Form';
 import Offcanvas from 'react-bootstrap/Offcanvas';
@@ -42,7 +42,7 @@ import {
   DeletionIcon,
   DownloadIcon,
   StorageIcon,
-} from  "./widgets/SVGs";
+} from  "../widgets/SVGs";
 import { DateTime as LuxonDateTime } from "luxon";
 import JSZip from "jszip";
 import { OverlayTrigger, Tooltip, ProgressBar } from "react-bootstrap";
@@ -378,10 +378,10 @@ export default class DataSettingsView extends React.Component{
               const feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first(),
                     reminder = await db.reminders.where({objectId: feedPostView.feedPostId}).first();
 
-              if (!feedPost){
-                console.error("------- Undefined feedPost", feedPost, feedPostView.feedPostId);
-                continue;
-              }
+              // if (!feedPost){
+              //   console.error("------- Undefined feedPost", feedPost, feedPostView.feedPostId);
+              //   continue;
+              // }
 
               feedPosts.push(feedPost);
 

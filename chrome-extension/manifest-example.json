@@ -30,7 +30,8 @@
                     "/assets/sleeping_icon.png",
                     "/assets/like_icon.png",
                     "/assets/app_logo.png",
-                    "/assets/default.png"
+                    "/assets/default.png",
+                    "/CourierPrime-Regular.ttf"
       ]
   }],
   "host_permissions": ["https://*.linkedin.com/*"]

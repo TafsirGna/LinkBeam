@@ -64,8 +64,6 @@ export default class About extends React.Component{
 
   componentDidMount() {
 
-    applyFontFamilySetting();
-
     eventBus.on(eventBus.SET_APP_SUBSCRIPTION, (data) => {
 
       const subscription = data.value;
@@ -95,6 +93,15 @@ export default class About extends React.Component{
         this.setFileInputChangeAction();
     }).bind(this));
 
+  }
+
+  componentDidUpdate(prevProps, prevState){
+    if (this.state.settings != prevState.settings){
+      if (!prevState.settings
+            || (prevState.settings && this.state.settings.fontFamily != prevState.settings.fontFamily)){
+        applyFontFamilySetting(this.state.settings);
+      }
+    }
   }
 
   componentWillUnmount(){
@@ -176,10 +183,10 @@ export default class About extends React.Component{
                   if (content.objectStores[objectStoreName].length){
                     var objects = content.objectStores[objectStoreName];
 
-                    // Optional but who knows ?
-                    if (objectStoreName == "feedPosts"){
-                      objects = objects.filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
-                    }
+                    // // Optional but who knows ?
+                    // if (objectStoreName == "feedPosts"){
+                    //   objects = objects.filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
+                    // }
                     
                     if (objectStoreName != "feedPosts"){
                       objects = removeObjectsId(objects);

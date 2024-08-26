@@ -20,20 +20,20 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataSettings,
   saveSettingsPropertyValue,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
 import { 
   CompassIcon,
-} from  "./widgets/SVGs";
+} from  "../widgets/SVGs";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 

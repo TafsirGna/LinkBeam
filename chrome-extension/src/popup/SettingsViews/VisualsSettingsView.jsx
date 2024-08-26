@@ -20,23 +20,23 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
-import FolderListView from "./widgets/FolderListView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
+import FolderListView from "../widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataSettings,
-  saveSettingsPropertyValue,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+  saveSettingsPropertyValue,  
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
 import Form from 'react-bootstrap/Form';
 import { 
   BoldIcon,
   MaximizeIcon,
-} from  "./widgets/SVGs";
+} from  "../widgets/SVGs";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 
@@ -45,11 +45,7 @@ export default class VisualsSettingsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      fontFamilySetting: null,
     };
-
-    this.onFontFamilySettingChange = this.onFontFamilySettingChange.bind(this);
-
   }
 
   componentDidMount() {
@@ -60,18 +56,9 @@ export default class VisualsSettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    (async () => {
-      this.setState({fontFamilySetting: (await chrome.storage.local.get(["fontFamily"])).fontFamily || appParams.allFontFamilySettingValues[1]});
-    }).bind(this)();
-
   }
 
-  onFontFamilySettingChange(value){
-
-    chrome.storage.local.set({ fontFamily: value });
-    this.setState({fontFamilySetting: value});
-
-  }
+  getFontFamilySetting = () => (this.props.globalData.settings && this.props.globalData.settings.fontFamily) || appParams.allFontFamilySettingValues[0].label;
 
   render(){
 
@@ -115,13 +102,18 @@ export default class VisualsSettingsView extends React.Component{
                   </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">{this.state.fontFamilySetting}</span>
+                      <span class="rounded shadow-sm badge border text-primary">{ this.getFontFamilySetting() }</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
                       {appParams.allFontFamilySettingValues.map((value, index) => (
                             <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.onFontFamilySettingChange(value)}}>
-                                {value}
+                              <a 
+                                class="dropdown-item small" 
+                                href="#" 
+                                onClick={() => {
+                                  saveSettingsPropertyValue("fontFamily", value.label, this.props.globalData, db);
+                                }}>
+                                {value.label}
                               </a>
                             </li>  
                         ))}

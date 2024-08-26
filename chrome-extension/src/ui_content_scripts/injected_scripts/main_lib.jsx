@@ -464,6 +464,25 @@ function hideShowDistractiveHtmlEls(distractiveElSelectors, immersive){
 
 }
 
+export function getFontFamilyStyle(props){
+
+  if (props.appSettings.fontFamily 
+            && props.appSettings.fontFamily != appParams.allFontFamilySettingValues[0].label){
+    return <style>
+              { (() => {
+                const fontFamily = appParams.allFontFamilySettingValues.filter(f => f.label == props.appSettings.fontFamily)[0];
+                return `@font-face { font-family: ${fontFamily.label}; src: url('/${fontFamily.file}'); }
+                          * {
+                           font-family: ${fontFamily.label}
+                        }`;
+              })() }    
+          </style>;
+  }
+
+  return null;
+
+}
+
 export function DataApproximationAlert(props) {
   return <div id="alert-border-4" class="flex items-center p-4 mb-4 text-yellow-800 border-t-4 border-yellow-300 bg-yellow-50 dark:text-yellow-300 dark:bg-gray-800 dark:border-yellow-800" role="alert">
             <svg class="flex-shrink-0 w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">

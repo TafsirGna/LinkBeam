@@ -313,6 +313,7 @@ async function injectDataExtractorParams(tabId, url){
             postHighlightColor: settings.postHighlightColor,
             immersiveMode: settings.immersiveMode,
             browseFeedForMePostCount: settings.browseFeedForMePostCount,
+            fontFamily: settings.fontFamily,
         },
         postData: postData,
         allKeywords: keywords,

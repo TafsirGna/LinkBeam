@@ -20,23 +20,23 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
-import FolderListView from "./widgets/FolderListView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
+import FolderListView from "../widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataFolders,
   switchToView
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
 import {
   KeyIcon,
   TagIcon,
   FolderIcon,
-} from  "./widgets/SVGs";
+} from  "../widgets/SVGs";
 
 const keywordCountObservable = liveQuery(() => db.keywords.count());
 const tagCountObservable = liveQuery(() => db.tags.count());
