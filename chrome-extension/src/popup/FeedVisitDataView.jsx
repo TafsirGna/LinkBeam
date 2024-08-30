@@ -196,7 +196,7 @@ export default class FeedVisitDataView extends React.Component{
 
           <div class={this.props.context != "modal" ? "offset-2 col-8 mt-4" : ""}>
             
-            <div class="d-flex gap-5 p-4 border rounded">
+            <div class="d-flex gap-5 p-4 border rounded shadow-sm">
               <img src={ linkedin_icon } alt="twbs" width="100" height="100" class="shadow rounded flex-shrink-0"/>
               <div class="d-flex align-items-center">
                 <div>
@@ -336,7 +336,11 @@ function FeedVisitMediaView(props){
                                                         trigger="hover" 
                                                         placement="left" 
                                                         overlay={<Popover id="popover-basic">
-                                                                    <Popover.Header as="h3">{feedPost.author.name}</Popover.Header>
+                                                                    <Popover.Header 
+                                                                      as="h3">
+                                                                      {feedPost.author.name}
+                                                                      <span class="shadow-sm mx-2 badge bg-secondary-subtle border border-secondary-subtle text-info-emphasis rounded-pill">{feedPost.media[0].src ? "Image" : "Video"}</span>
+                                                                    </Popover.Header>
                                                                     {feedPost.innerContentHtml 
                                                                         && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml}}>
                                                                             {}

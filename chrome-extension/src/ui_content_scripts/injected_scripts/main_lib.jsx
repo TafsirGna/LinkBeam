@@ -1530,6 +1530,14 @@ export function extractEducationItemData(htmlElement){
         // break;
       }
       case 1: {
+
+        if (isEdPeriodFormat(node.textContent)){ // Period
+          educationItemData.period = node.textContent;
+          console.log("MMMMMMMMMMMMMMMMMMMMMMM 1 ", node.textContent, educationItemData.period);
+          counter++;
+          return;
+        }
+
         // title
         educationItemData.title = node.textContent;
         counter++;
@@ -1539,10 +1547,16 @@ export function extractEducationItemData(htmlElement){
       }
     }
 
+    console.log("MMMMMMMMMMMMMMMMMMMMMMM 2 ", educationItemData);
+
+    function isEdPeriodFormat(nodeTextContent){
+      return nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?$/ig)
+              || nodeTextContent.match(/^([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)$/ig);
+    }
+
     // period
     var nodeTextContent = node.textContent.toLowerCase();
-    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?$/ig)
-          || nodeTextContent.match(/^([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)$/ig)){
+    if (isEdPeriodFormat(nodeTextContent)){
       educationItemData.period = nodeTextContent;
       // counter++;
       return;
@@ -1665,9 +1679,13 @@ export function extractExperienceItemData(htmlElement, encompassingParent){
       }
     }
 
+    function isExpPeriodFormat(nodeTextContent){
+      return nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?)|Less than a year)$/ig);
+    }
+
     // period
     var nodeTextContent = node.textContent.toLowerCase();
-    if (nodeTextContent.match(/^(([a-zéû]{3,4}(.)?\s)?\d{4}\s-\s((([a-zéû]{3,4}(.)?\s)?\d{4})|Present|aujourd’hui)\s·\s)?((\d{1,2}\s[a-z]{2,4}(\s\d{1,2}\s[a-z]{2,4})?)|Less than a year)$/ig)){
+    if (isExpPeriodFormat(nodeTextContent)){
       experienceItemData.period = nodeTextContent;
       return;
     }

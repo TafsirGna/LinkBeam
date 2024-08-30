@@ -292,7 +292,7 @@ export default class SettingsView extends React.Component{
                 </div>
               </div>
             </div>
-            <div class="d-flex text-body-secondary pt-3">
+            {/*<div class="d-flex text-body-secondary pt-3">
               <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                 <div class="d-flex justify-content-between">
                   <strong class="text-gray-dark">
@@ -310,7 +310,7 @@ export default class SettingsView extends React.Component{
                   </a>
                 </div>
               </div>
-            </div>
+            </div>*/}
           </div>
         </div>
       </>

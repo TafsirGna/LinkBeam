@@ -523,7 +523,11 @@ class MediaGridView extends React.Component{
                                                                                                           trigger="hover" 
                                                                                                           placement="left" 
                                                                                                           overlay={<Popover id="popover-basic">
-                                                                                                                      <Popover.Header as="h3" dangerouslySetInnerHTML={{__html: highlightText(feedPost.author.name, this.state.searchText)}}>{/*{feedPost.author.name}*/}</Popover.Header>
+                                                                                                                      <Popover.Header 
+                                                                                                                        as="h3" 
+                                                                                                                        dangerouslySetInnerHTML={{__html: `${highlightText(feedPost.author.name, this.state.searchText)} <span class="shadow-sm  badge bg-secondary-subtle border border-secondary-subtle text-info-emphasis rounded-pill">${feedPost.media[0].src ? "Image" : "Video"}</span>`}}>
+                                                                                                                          {/*{feedPost.author.name}*/}
+                                                                                                                      </Popover.Header>
                                                                                                                       {feedPost.innerContentHtml 
                                                                                                                           && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml /*highlightText(feedPost.innerContentHtml, this.state.searchText)*/}}>
                                                                                                                               {}

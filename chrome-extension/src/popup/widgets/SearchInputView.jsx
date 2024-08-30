@@ -255,7 +255,7 @@ export default class SearchInputView extends React.Component{
                   : (views.length
                       ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[views.length - 1].uid}`
                       : null),
-          date: views[view.length - 1].date, // views.length ? views[0].date : null,
+          date: views[views.length - 1].date, // views.length ? views[0].date : null,
           text: post.innerContentHtml,
           initiator: views[views.length - 1].initiator,
         });
