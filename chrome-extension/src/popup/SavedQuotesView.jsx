@@ -26,6 +26,9 @@ import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import default_user_icon from '../assets/user_icons/default.png';
 import PageTitleView from "./widgets/PageTitleView";
+import SearchInputView from "./widgets/SearchInputView";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 import { 
   appParams,
 } from "./Local_library";
@@ -36,12 +39,17 @@ export default class SavedQuotesView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      searchText: null,
+      deletionConfModalShow: false,
     };
   }
 
   componentDidMount() {
 
   }
+
+  handleDeletionConfModalClose = () => this.setState({deletionConfModalShow: false});
+  handleDeletionConfModalShow = () => this.setState({deletionConfModalShow: true});
 
   render(){
     return (
@@ -55,7 +63,19 @@ export default class SavedQuotesView extends React.Component{
             </div>
 
           <div class={"offset-2 col-8 mt-4"}>
-            { Array.from({length: 3}).map((_, item) => <a class="list-group-item list-group-item-action d-flex gap-3 py-3 p-3 border rounded my-2" aria-current="true">
+
+            {/*Search input*/}
+            <div class="my-4">
+              <SearchInputView 
+                objectStoreName="quotes" 
+                globalData={this.props.globalData} />
+                { this.state.searchText 
+                    && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
+                        {`${null} results for '${this.state.searchText}'`}
+                      </p> }
+            </div>
+
+            { Array.from({length: 3}).map((_, item) => <a class="list-group-item list-group-item-action d-flex gap-3 py-3 p-3 border border-2 border-info rounded my-3" aria-current="true">
                                                         <img src={/*this.props.profile.avatar ? this.props.profile.avatar : default_user_icon*/default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                                         <div class="d-flex gap-2 w-100 justify-content-between">
                                                           <div>
@@ -65,13 +85,53 @@ export default class SavedQuotesView extends React.Component{
                                                               </h6>
                                                               <small class="opacity-50 text-nowrap ms-auto">{/*LuxonDateTime.fromISO(this.props.profile.lastVisit.date).toFormat("MM-dd-yyyy")*/"2 hours ago"}</small>
                                                             </div>
-                                                            <p class="fst-italic mb-0 opacity-75 small text-muted">{/*dbDataSanitizer.preSanitize(this.props.profile.title)*/"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."}</p>        
+                                                            <p class="fst-italic mb-0 opacity-75 small text-muted">
+                                                              {/*dbDataSanitizer.preSanitize(this.props.profile.title)*/}
+                                                              {`*** ${"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."} ***`}
+                                                            </p>   
+                                                            <div>
+                                                              <button 
+                                                                type="button" 
+                                                                class="btn btn-light btn-sm text-danger"
+                                                                onClick={this.handleDeletionConfModalShow}>
+                                                                Delete
+                                                              </button>
+                                                            </div>     
                                                           </div>
                                                         </div>
                                                       </a>) }
           </div>
 
         </div>
+
+        {/* Confirmation modal */}
+        <Modal 
+          show={this.state.deletionConfModalShow} 
+          onHide={this.handleDeletionConfModalClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirmation</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <p>Do you confirm the deletion of this quote</p>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button 
+              variant="secondary" 
+              size="sm" 
+              onClick={this.handleDeletionConfModalClose} 
+              className="shadow">
+              Close
+            </Button>
+            <Button 
+              variant="danger" 
+              size="sm" 
+              onClick={this.handleDeletionConfModalClose} 
+              className="shadow">
+              Confirm
+            </Button>
+          </Modal.Footer>
+        </Modal>
+
 
       </>
     );

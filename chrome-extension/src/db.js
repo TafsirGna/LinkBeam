@@ -23,9 +23,11 @@
 import { appParams } from "./popup/Local_library";
 import Dexie from 'dexie';
 
+// creating the database
 export const db = new Dexie(appParams.appDbName);
 
-db.version(appParams.appDbVersion).stores({
+// Defining database version 1 stores
+const version1Stores = {
   visits: '++id, url, date, tabId',
   keywords: '++id, &name, createdOn',
   reminders: '++id, &objectId, createdOn, active, date',
@@ -35,4 +37,22 @@ db.version(appParams.appDbVersion).stores({
   feedPostViews: '++id, feedPostId, uid, date, visitId, category',
   tags: '++id, &name, createdOn',
   folders: '++id, &name, createdOn',
+};
+
+db.version(1)
+  .stores(version1Stores);
+
+
+// Defining database version 2 stores
+const version2Stores = {
+  ...version1Stores,
+  quotes: '++id, createdOn',
+  profileNotes: '++id, createdOn, section, url',
+  feedProfiles: '++id, name, picture, url',
+}
+
+db.version(appParams.appDbVersion /*2*/)
+  .stores(version2Stores)
+  .upgrade(trans => {
+
 });

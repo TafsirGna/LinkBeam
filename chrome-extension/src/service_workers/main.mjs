@@ -428,25 +428,6 @@ async function handleInterestingTab(tabId){
 
 }
 
-function immersiveModeMenuAction(action){
-
-    switch(action){
-        case "add":{
-            chrome.contextMenus.create({
-                id: appParams.immersiveModeMenuActionId,
-                title: "Toggle immersive mode",
-                contexts: ["all"]
-            });
-            break;
-        }
-        case "remove":{
-            chrome.contextMenus.remove(appParams.immersiveModeMenuActionId, () => {});
-            break;
-        }
-    }
-
-}
-
 function contextMenuItem(menuItem, action){
 
     function contextMenuItemLabel(menuItemId){
@@ -460,6 +441,10 @@ function contextMenuItem(menuItem, action){
                 return "Browse feed for me";
                 // break;
             }
+            case appParams.saveAsQuoteMenuActionId: {
+                return "Save as quote";
+                // break;
+            }
         }
 
     }
@@ -469,15 +454,21 @@ function contextMenuItem(menuItem, action){
 
         switch(action){
             case "on":{
-                chrome.contextMenus.create({
+
+                const menuCreationOptions = {
                     id: appParams[`${menuItem}MenuActionId`],
                     title: contextMenuItemLabel(appParams[`${menuItem}MenuActionId`]),
-                    contexts: ["all"]
-                });
+                    contexts: [ appParams[`${menuItem}MenuActionId`] == appParams.saveAsQuoteMenuActionId 
+                                    ? "selection" 
+                                    : "all" ],
+                };
+
+                chrome.contextMenus.create(menuCreationOptions);
                 break;
+
             }
             case "off":{
-                chrome.contextMenus.remove(appParams[`${menuItem}MenuActionId`], () => {});
+                chrome.contextMenus.remove(appParams[`${menuItem}MenuActionId`], () => {/*Callback*/});
                 break;
             }
         }
@@ -497,6 +488,8 @@ function updateContextualMenuActions(url){
         if (isLinkedinFeed(url)){
             // browse for me menu action
             contextMenuItem("browseFeedForMe", "off");
+            // save as quote menu action
+            contextMenuItem("saveAsQuote", "on");
         }
         return;
     }
@@ -505,6 +498,8 @@ function updateContextualMenuActions(url){
     contextMenuItem("immersiveMode", "off");
     // browse for me menu action
     contextMenuItem("browseFeedForMe", "on");
+    // save as quote menu action
+    contextMenuItem("saveAsQuote", "off");
 
 }
 
@@ -527,6 +522,12 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
                 // notify the user of the start of the automatic feed scrolling session
                 notifyUser(`Starting an automatic feed session !`);
             });
+            break;
+        }
+        case appParams.saveAsQuoteMenuActionId: {
+            chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.saveAsQuoteMenuActionId, args: {selectedText: clickData.selectionText}}}, (response) => {
+                console.log('Context menu item clicked signal sent', response);
+            }); 
             break;
         }
     }
@@ -1232,11 +1233,31 @@ async function processMessageEvent(message, sender, sendResponse){
 
         case "PREVIOUS_RELATED_POSTS":{
 
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+
             const posts = await getPreviousRelatedPosts(message.data.payload);
 
             chrome.tabs.sendMessage(message.data.tabId, {header: "PREVIOUS_RELATED_POSTS_LIST", data: {objects: posts, viewIndex: message.data.payload.viewIndex}}, (response) => {
                 console.log('Previous related posts response sent', response, posts);
             });
+
+            break;
+        }
+
+        case "SAVE_QUOTE_OBJECT":{
+
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            var quote = message.data.quote;
+            quote.createdOn = new Date().toISOString();
+
+            await db.quotes.add(quote);
 
             break;
         }

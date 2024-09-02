@@ -24,6 +24,7 @@ import {
 	ScriptAgentBase,
 	getFeedPostHtmlElement,
 	getFontFamilyStyle,
+	getPostProfileData,
 } from "./main_lib";
 import React from 'react';
 import { 
@@ -344,6 +345,25 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		const timeOut = setTimeout(() => {
 			this.automaticScroll(postContainerElement, props);
 		}, 1000);
+
+	}
+
+	static onSaveAsQuoteMenuActionClicked(selectedText, props){
+
+		const postContainerElements = this.getPostContainerElements().filter(postContainerElement => postContainerElement.textContent.includes(selectedText));
+		if (!postContainerElements.length){
+			alert("Unable to identify the selected group of words to save as quote!");
+			return;
+		}
+
+		const quote = {
+			author: getPostProfileData(postContainerElements[0]),
+			text: selectedText,
+		};
+
+		chrome.runtime.sendMessage({header: "SAVE_QUOTE_OBJECT", data: {/*tabId: props.tabId, */quote: quote}}, (response) => {
+	      console.log('quote object sent', response, quote);
+	    });	
 
 	}
 

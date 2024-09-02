@@ -745,6 +745,30 @@ function getHtmlElHref(htmlElement){
   return htmlElement ? htmlElement.href : null;
 }
 
+function getEntityHtmlElHref(htmlElement){
+
+  if (!htmlElement){
+    return null;
+  }
+
+  const result = isLinkedinProfilePage(htmlElement.href);
+  return result ? result[0] : htmlElement.href.match(/linkedin.com\/\w+\/[\wàâçéèêëîïôûùüÿñæœ-]+/g)[0];
+
+}
+
+export function getPostProfileData(htmlElement, profileType){
+
+  if (profileType == "author"){
+    htmlElement = htmlElement.querySelector(".update-components-actor");
+  }
+
+  return {
+    name: getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
+    url: getEntityHtmlElHref(htmlElement.querySelector("a")),
+    picture: getHtmlElImageSource(htmlElement.querySelector("img")),
+  };
+}
+
 export const DataExtractor = {
 
   fullName: function(htmlElements, context){

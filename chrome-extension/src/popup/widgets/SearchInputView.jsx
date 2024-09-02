@@ -405,6 +405,10 @@ export default class SearchInputView extends React.Component{
         label = "profile";
         break;
       }
+      case "quotes":{
+        label = "quote";
+        break;
+      }
     }
 
     return `Search a ${label} ...`;

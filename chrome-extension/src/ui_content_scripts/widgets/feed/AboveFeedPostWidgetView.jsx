@@ -37,9 +37,9 @@ import{
   checkAndHighlightKeywordsInHtmlEl,
   extractPostDate,
   getFeedPostHtmlElement,
-  getHtmlElImageSource,
   getHtmlElTextContent,
   getHtmlElInnerHTML, 
+  getPostProfileData,
 } from "../../injected_scripts/main_lib";
 import { 
   BarChartIcon, 
@@ -259,7 +259,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     if (postContainerHeaderElement){
 
-      post.initiator = this.getPostProfileData(postContainerHeaderElement);
+      post.initiator = getPostProfileData(postContainerHeaderElement, "initiator");
 
       const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.textContent);
       for (const category in categoryVerbMap){
@@ -376,11 +376,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   getPostData(postHtmlEl, subPost){
 
-    const postAuthorHtmlEl = postHtmlEl.querySelector(".update-components-actor");
     const postContentHtmlEl = postHtmlEl.querySelector(".feed-shared-update-v2__description");
 
     var result = {
-      author: this.getPostProfileData(postAuthorHtmlEl),
+      author: getPostProfileData(postHtmlEl, "author"),
       text: getHtmlElTextContent(postContentHtmlEl),
       innerHtml: getHtmlElInnerHTML(postContentHtmlEl),
       estimatedDate: extractPostDate(getHtmlElTextContent(this.getEstimatedDateHtmlEl(postHtmlEl)), LuxonDateTime),
@@ -464,25 +463,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   text: htmlEl.textContent,
                 }));
 
-  }
-
-  getEntityHtmlElHref(htmlElement){
-
-    if (!htmlElement){
-      return null;
-    }
-
-    const result = isLinkedinProfilePage(htmlElement.href);
-    return result ? result[0] : htmlElement.href.match(/linkedin.com\/\w+\/[\wàâçéèêëîïôûùüÿñæœ-]+/g)[0];
-
-  }
-
-  getPostProfileData(htmlElement){
-    return {
-      name: getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
-      url: this.getEntityHtmlElHref(htmlElement.querySelector("a")),
-      picture: getHtmlElImageSource(htmlElement.querySelector("img")),
-    };
   }
 
   getEstimatedDateHtmlEl(htmlElement){

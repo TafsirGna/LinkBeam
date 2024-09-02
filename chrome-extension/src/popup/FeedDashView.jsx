@@ -427,7 +427,9 @@ export default class FeedDashView extends React.Component{
         objects={this.state.allPeriodUniqueFeedPostViews}/>
 
 
-      <Modal show={this.state.metricLineChartModalShow} onHide={this.handleMetricLineChartModalClose}>
+      <Modal 
+        show={this.state.metricLineChartModalShow} 
+        onHide={this.handleMetricLineChartModalClose}>
         <Modal.Header closeButton>
           <Modal.Title>{this.state.metricLineChartModalTitle}</Modal.Title>
         </Modal.Header>

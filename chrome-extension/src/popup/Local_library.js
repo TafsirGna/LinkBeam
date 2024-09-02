@@ -25,7 +25,7 @@ export const appParams = {
   appVersion: "0.0.2 (BETA)", 
   appDbName: "LinkBeamDB",
   appYear: "2024",
-  appDbVersion: 1,
+  appDbVersion: 2,
   keywordCountLimit: 5, 
   appAuthor: "Stoic Beaver",
   // PARSE_HOST_URL: 'https://parseapi.back4app.com/',
@@ -38,6 +38,7 @@ export const appParams = {
   // Context menu item ids
   immersiveModeMenuActionId: "immersive_mode_contextual_menu_action",
   browseFeedForMeMenuActionId: "browse_for_me_contextual_menu_action",
+  saveAsQuoteMenuActionId: "save_as_quote_contextual_menu_action",
 
   LINKBEAM_DISTRACTIVE_ELEMENT_CLASS_NAME: "linkbeam-distractive-el",
 

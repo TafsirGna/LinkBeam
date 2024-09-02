@@ -42,15 +42,17 @@ class MainScriptAgent extends ScriptAgentBase {
 
         super();
         this.timerInterval = null;
-        this.highlightedKeywordBadgeColors = shuffle([
-            "bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 text-yellow-800",
-            "bg-green-100 dark:bg-green-900 dark:text-green-300 text-green-800",
-            "bg-pink-100 dark:bg-pink-900 dark:text-pink-300 text-pink-800",
-            "bg-blue-100 dark:bg-blue-900 dark:text-blue-300 text-blue-800",
-            "bg-purple-100 dark:bg-purple-900 dark:text-purple-300 text-purple-800",
-            "bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 text-indigo-800",
-        ]);
         this.timerIntervalInc = 0;
+        this.props = {
+            highlightedKeywordBadgeColors: shuffle([
+                "bg-yellow-100 dark:bg-yellow-900 dark:text-yellow-300 text-yellow-800",
+                "bg-green-100 dark:bg-green-900 dark:text-green-300 text-green-800",
+                "bg-pink-100 dark:bg-pink-900 dark:text-pink-300 text-pink-800",
+                "bg-blue-100 dark:bg-blue-900 dark:text-blue-300 text-blue-800",
+                "bg-purple-100 dark:bg-purple-900 dark:text-purple-300 text-purple-800",
+                "bg-indigo-100 dark:bg-indigo-900 dark:text-indigo-300 text-indigo-800",
+            ]),
+        };
         
     }
 
@@ -105,6 +107,11 @@ class MainScriptAgent extends ScriptAgentBase {
 
                         break;
                     }
+
+                    case appParams.saveAsQuoteMenuActionId:{
+                        FeedPageScriptAgent.onSaveAsQuoteMenuActionClicked(message.data.args.selectedText, this.props);
+                        break;
+                    }
                 }
 
                 break;
@@ -115,9 +122,9 @@ class MainScriptAgent extends ScriptAgentBase {
 
     scrollEventHandler2(){
 
-        var props = {
+        this.props = {
+            ...this.props,
             tabId: this.tabId, 
-            highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
             allKeywords: this.allKeywords,
             appSettings: this.appSettings,
             visitId: this.visitId,
@@ -125,18 +132,18 @@ class MainScriptAgent extends ScriptAgentBase {
         };
     
         if (isLinkedinFeed(this.pageUrl)){
-            FeedPageScriptAgent.scrollEventHandler(props);
+            FeedPageScriptAgent.scrollEventHandler(this.props);
         }
         else if (isLinkedinProfilePage(this.pageUrl)){
             // if (isLinkedinProfileSectionDetailsPage(this.pageUrl)){
-            //     ProfileSectionDetailsPageScriptAgent.scrollEventHandler(props);
+            //     ProfileSectionDetailsPageScriptAgent.scrollEventHandler(this.props);
             // }
             // else{
-            //     ProfilePageScriptAgent.scrollEventHandler(props);
+            //     ProfilePageScriptAgent.scrollEventHandler(this.props);
             // }
         }
         else if (isLinkedinFeedPostPage(this.pageUrl)){
-            // FeedPostPageScriptAgent.scrollEventHandler(props);
+            // FeedPostPageScriptAgent.scrollEventHandler(this.props);
         }
 
     }
@@ -153,9 +160,9 @@ class MainScriptAgent extends ScriptAgentBase {
             }
 
             const pageUrl = window.location.href;
-            var props = {
+            this.props = {
+                ...this.props,
                 tabId: this.tabId, 
-                highlightedKeywordBadgeColors: this.highlightedKeywordBadgeColors,
                 allKeywords: this.allKeywords,
                 appSettings: this.appSettings,
                 visitId: this.visitId,
@@ -172,7 +179,7 @@ class MainScriptAgent extends ScriptAgentBase {
                     this.pageUrl = pageUrl;
                 }
 
-                FeedPostPageScriptAgent.checkAndUpdateUi(props);
+                FeedPostPageScriptAgent.checkAndUpdateUi(this.props);
                 
             }
             else if (isLinkedinFeed(pageUrl)){
@@ -184,8 +191,8 @@ class MainScriptAgent extends ScriptAgentBase {
                     this.pageUrl = pageUrl;
                 }
 
-                FeedPageScriptAgent.checkAndUpdateUi(props);
-                // FeedPageScriptAgent.runTabDataExtractionProcess(props);
+                FeedPageScriptAgent.checkAndUpdateUi(this.props);
+                // FeedPageScriptAgent.runTabDataExtractionProcess(this.props);
 
             }
             else if (isLinkedinProfilePage(pageUrl)){
@@ -198,7 +205,7 @@ class MainScriptAgent extends ScriptAgentBase {
                         this.pageUrl = pageUrl;
                     }
 
-                    ProfileSectionDetailsPageScriptAgent.runTabDataExtractionProcess(props);
+                    ProfileSectionDetailsPageScriptAgent.runTabDataExtractionProcess(this.props);
 
                 }
                 else{
@@ -212,7 +219,7 @@ class MainScriptAgent extends ScriptAgentBase {
                         this.pageUrl = pageUrl;
                     }
 
-                    ProfilePageScriptAgent.runTabDataExtractionProcess(props);
+                    ProfilePageScriptAgent.runTabDataExtractionProcess(this.props);
 
                 }
 
