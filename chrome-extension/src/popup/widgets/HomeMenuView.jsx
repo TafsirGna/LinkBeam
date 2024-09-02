@@ -39,6 +39,7 @@ import {
   MediaIcon,
   CompassIcon,
   CalendarIcon,
+  FileIcon,
 } from "./SVGs";
 import eventBus from "../EventBus";
 
@@ -230,7 +231,7 @@ export default class HomeMenu extends React.Component{
             <li>
               <a 
                 class="dropdown-item small" 
-                href="/index.html?view=Calendar&dataType=Visits" 
+                href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.CALENDAR}&dataType=Visits`}
                 target="_blank"
                 title="See calendar">
                 <CalendarIcon
@@ -251,6 +252,18 @@ export default class HomeMenu extends React.Component{
                 Profile Studio
               </a>
             </li>*/}
+            <li>
+              <a 
+                class="dropdown-item small" 
+                href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.SAVED_QUOTES.replaceAll(" ", "_")}`}
+                target="_blank"
+                title="See saved quotes">
+                <FileIcon
+                  size="15"
+                  className="me-2 text-muted"/>
+                Saved quotes
+              </a>
+            </li>
             <li>
               <a 
                 class="dropdown-item small" 

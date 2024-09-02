@@ -29,7 +29,6 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { 
   getChartColors, 
-  dateBetweenRange,
 } from "../../Local_library";
 import {
   Chart as ChartJS,

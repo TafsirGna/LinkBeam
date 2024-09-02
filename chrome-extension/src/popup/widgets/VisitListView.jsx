@@ -38,7 +38,7 @@ export default class VisitListView extends React.Component{
                     <img 
                       src={sorry_icon} 
                       width="80" />
-                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow-sm">No viewed profiles</span></p>
+                    <p class="mb-2"><span class="badge text-bg-primary fst-italic shadow-sm">No linkedin visits yet</span></p>
                     <p><span class="badge text-bg-light fst-italic shadow-sm text-muted border border-warning">Visit some linkedin profiles or feed</span></p>
                   </div> }
 

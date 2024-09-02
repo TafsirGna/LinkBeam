@@ -51,7 +51,6 @@ import {
   setGlobalDataSettings,
   getProfileDataFrom,
   getPeriodLabel,
-  nRange,
 } from "./Local_library";
 import { liveQuery } from "dexie"; 
 
@@ -255,7 +254,7 @@ export default class StatisticsView extends React.Component{
               </button>
               <ul class="dropdown-menu shadow">
 
-                { nRange(0, 2, 1).map(item => (<li>
+                { Array.from({length: 3}).map((_, item) => (<li>
                                                   <a 
                                                     class={`dropdown-item small ${this.state.view == item ? "active" : ""}`} 
                                                     href="#" 

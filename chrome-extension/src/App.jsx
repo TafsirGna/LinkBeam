@@ -36,6 +36,7 @@ import ReminderView from "./popup/ReminderView";
 import MediaView from "./popup/MediaView";
 import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
+import SavedQuotesView from "./popup/SavedQuotesView";
 import TagView from "./popup/TagView";
 import FoldersSettingsView from "./popup/SettingsViews/FoldersSettingsView";
 import FeedVisitDataView from "./popup/FeedVisitDataView";
@@ -328,6 +329,10 @@ export default class App extends React.Component{
             {/*AI Settings Page*/}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS
                 && <AiSettingsView globalData={this.state.globalData} />}
+
+            {/*AI Settings Page*/}
+            { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.SAVED_QUOTES.replaceAll(" ", "_")
+                && <SavedQuotesView globalData={this.state.globalData} />}
 
           </>
         );

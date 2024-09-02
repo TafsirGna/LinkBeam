@@ -48,7 +48,6 @@ import {
   appParams,
   categoryVerbMap,
   getFeedPostViewsByCategory,
-  nRange,
 } from "../Local_library";
 
 const categoryIconMap = {
@@ -222,7 +221,7 @@ export default class ActivityListView extends React.Component{
                     </p>
                     { object.media 
                         && <div class="p-2 my-2 border border-warning rounded shadow-sm border-2">
-                            { nRange(0, 1, 1).map(index => object.media.length >= (index + 1) 
+                            { Array.from({length: 2}).map((_, index) => object.media.length >= (index + 1) 
                                                             ? <img 
                                                                 src={object.media[index].src || object.media[index].poster} 
                                                                 class="rounded shadow mx-1" 

@@ -37,6 +37,8 @@ import {
     getVisitsTotalTime,
     isUrlOfInterest,
     areProfileDataObjectsDifferent,
+    isReferenceHashtag,
+    getHashtagText,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
@@ -1428,10 +1430,21 @@ async function getPreviousRelatedPosts(payload){
 
     }
 
-    if (Object.hasOwn(payload, "text")){
+    if (Object.hasOwn(payload, "text")
+            || Object.hasOwn(payload, "tag")){
 
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.innerContentHtml && (stringSimilarity(payload.text, post.text) > .9) && ((post.uid && post.uid != payload.uid) || (!post.uid && true)))
+                                  .filter(post => {
+                                    if (Object.hasOwn(payload, "text")){
+                                        return post.innerContentHtml && (stringSimilarity(payload.text, post.text) > .9) && ((post.uid && post.uid != payload.uid) || (!post.uid && true));
+                                    }
+                                    else if (Object.hasOwn(payload, "tag")){
+                                        return post.references 
+                                                && post.references
+                                                   .filter(reference => isReferenceHashtag(reference) && getHashtagText(reference.text) == payload.tag)
+                                                   .length;
+                                    }
+                                  })
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
