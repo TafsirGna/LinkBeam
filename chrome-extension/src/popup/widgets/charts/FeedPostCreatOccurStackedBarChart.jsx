@@ -95,7 +95,7 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
   async setBarData(){
 
-    var data = [/*[], */[], []], 
+    var data = [[], []], 
         minDate = LuxonDateTime.now(),
         feedPosts = [],
         labels = [];
@@ -103,14 +103,13 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
     for (var feedPostView of this.props.objects){
 
-      const index = feedPosts.findIndex(p => p.id == feedPostView.feedPostId);
+      const index = feedPosts.findIndex(p => p.uniqueId == feedPostView.feedPostId);
       if (index != -1){
         feedPosts[index].views.push(feedPostView); 
       }
       else{
 
-        var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-
+        var feedPost = { ...feedPostView.feedPost };
         if (!feedPost.estimatedDate){
           continue;
         }
@@ -270,12 +269,12 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                     { this.state.selectedFeedPostIndex != null 
                         && <ActivityListView 
                               objects={[{
-                                author: this.state.feedPosts[this.state.selectedFeedPostIndex].author,
+                                author: this.state.feedPosts[this.state.selectedFeedPostIndex].profile,
                                 url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
                                 // date: views.length ? views[0].date : null,
                                 text: this.state.feedPosts[this.state.selectedFeedPostIndex].innerContentHtml,
                                 category: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].category,
-                                initiator: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].initiator,
+                                initiator: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].profile,
                               }]}
                               variant="list"/>}
 

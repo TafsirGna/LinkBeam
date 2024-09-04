@@ -81,10 +81,8 @@ export default class FeedDashRecurrentProfilesSectionView extends React.Componen
       return;
     }
     
-    const mostRecurrentProfiles = this.props.objects.filter(feedPostView => ((feedPostView.initiator && feedPostView.initiator.url)
-                                                                                || (!feedPostView.initiator /*&& !feedPostView.category*/)))
-                                                    .map(feedPostView => ({
-                                                      ...(feedPostView.initiator || feedPostView.feedPost.author),
+    const mostRecurrentProfiles = this.props.objects.map(feedPostView => ({
+                                                      ...(feedPostView.profile || feedPostView.feedPost.profile),
                                                       feedPostViewsByCategory: {},
                                                     }))
                                                     .filter((value, index, self) => self.findIndex(object => object.url == value.url) === index)

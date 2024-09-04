@@ -83,7 +83,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
               offset: 0, 
               viewIndex: 0, 
               url: data.extractedPostData.content.author.url,
-              uid: data.extractedPostData.id,
+              htmlElId: data.extractedPostData.id,
             },
             this.props.tabId,
           );
@@ -198,7 +198,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
 
       if (payload){
         requestTabData(
-          { ...payload, uid: this.state.extractedPostData.id },
+          { ...payload, htmlElId: this.state.extractedPostData.id },
           this.props.tabId,
         );
       }

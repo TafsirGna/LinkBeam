@@ -70,7 +70,7 @@ function getElementVisibility(element) {
 
 export default class FeedPageScriptAgent extends ScriptAgentBase {
 
-	static activePostContainerElementUid = null;
+	static activePostContainerElementId = null;
 	static allPostsHideStatus = {};
 	static allExtensionWidgetsSet = false;
 	static mainHtmlEl = () => document.querySelector(".scaffold-finite-scroll__content");
@@ -95,24 +95,24 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		}
 
 		const postContainerElementsExposurePercentage = postContainerElements.map(postContainerElement => ({
-																					uid: postContainerElement.getAttribute("data-id"),
+																					htmlElId: postContainerElement.getAttribute("data-id"),
 																					exposurePercentage: getElementVisibility(postContainerElement),
 																				}))
 																			 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage));
 
-		console.log("<<<<<<<<<<<<<<<<<<<< : ", this.activePostContainerElementUid, postContainerElementsExposurePercentage[0].uid, postContainerElementsExposurePercentage);
+		console.log("<<<<<<<<<<<<<<<<<<<< : ", this.activePostContainerElementId, postContainerElementsExposurePercentage[0].htmlElId, postContainerElementsExposurePercentage);
 
-		if (this.activePostContainerElementUid != postContainerElementsExposurePercentage[0].uid){
+		if (this.activePostContainerElementId != postContainerElementsExposurePercentage[0].htmlElId){
 
-			this.activePostContainerElementUid = postContainerElementsExposurePercentage[0].uid;
+			this.activePostContainerElementId = postContainerElementsExposurePercentage[0].htmlElId;
 
-			const postContainerElement = postContainerElements.filter(postContainerElement => postContainerElement.getAttribute("data-id") == this.activePostContainerElementUid)[0];
+			const postContainerElement = postContainerElements.filter(postContainerElement => postContainerElement.getAttribute("data-id") == this.activePostContainerElementId)[0];
 			console.log(">>>>>>>>>>>>>>>>>>> ||| : ", postContainerElement.getAttribute("data-id"), postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`));
 			if (!postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 				this.attachPostWidget(postContainerElement, props);
 			}
 
-			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { uid: this.activePostContainerElementUid });
+			eventBus.dispatch(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, { htmlElId: this.activePostContainerElementId });
 
 			this.getAllPostsHideStatus(postContainerElements, props);
 
@@ -201,10 +201,10 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 		// for that purpose, getting the currently visible post
 		const visiblePostContainerElement = document.querySelector(`[data-id='${postContainerElements.map(postContainerElement => ({
-																											uid: postContainerElement.getAttribute("data-id"),
+																											htmlElId: postContainerElement.getAttribute("data-id"),
 																											exposurePercentage: getElementVisibility(postContainerElement),
 																										}))
-																									 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage))[0].uid}']`);
+																									 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage))[0].htmlElId}']`);
 
 		try{
 			var index = 0;
@@ -235,22 +235,22 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static getAllPostsHideStatus(postContainerElements, props){
 
-		var postUids = postContainerElements.filter(postContainerElement => !(postContainerElement.getAttribute("data-id") in this.allPostsHideStatus))
+		var htmlElIds = postContainerElements.filter(postContainerElement => !(postContainerElement.getAttribute("data-id") in this.allPostsHideStatus))
 										   .map(postContainerElement => {
-										   	const postUid = postContainerElement.getAttribute("data-id");
-										   	this.allPostsHideStatus[postUid] = null;
-										   	return postUid;
+										   	const htmlElId = postContainerElement.getAttribute("data-id");
+										   	this.allPostsHideStatus[htmlElId] = null;
+										   	return htmlElId;
 										   });
 
-		chrome.runtime.sendMessage({header: "FEED_POSTS_HIDE_STATUS", data: {tabId: props.tabId, objects: postUids}}, (response) => {
-	      console.log('tab idle status sent', response, postUids);
+		chrome.runtime.sendMessage({header: "FEED_POSTS_HIDE_STATUS", data: {tabId: props.tabId, objects: htmlElIds}}, (response) => {
+	      console.log('tab idle status sent', response, htmlElIds);
 	    });		
 
 	}
 
-	static hidePost(postUid){
+	static hidePost(htmlElId){
 
-		var postContainerElement = getFeedPostHtmlElement(postUid);
+		var postContainerElement = getFeedPostHtmlElement(htmlElId);
 		if (postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)){
 			postContainerElement.querySelector(`div.${appParams.FEED_POST_WIDGET_CLASS_NAME}`)
 								.remove();
@@ -261,7 +261,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static attachPostWidget(postContainerElement, props){
 
-		const postUid = postContainerElement.getAttribute("data-id");
+		const htmlElId = postContainerElement.getAttribute("data-id");
 
 		// Adding the marker
 		var newDivTag = document.createElement('div');
@@ -269,14 +269,14 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	    postContainerElement.prepend(newDivTag);
 	    newDivTag.attachShadow({ mode: 'open' });
 
-		if (this.allPostsHideStatus[postUid] == true){ // then hide the post
+		if (this.allPostsHideStatus[htmlElId] == true){ // then hide the post
 
 			ReactDOM.createRoot(newDivTag.shadowRoot).render(
 	            <React.StrictMode>
 	              <style type="text/css">{styles}</style>
 	              { getFontFamilyStyle(props) }
 	              <FeedPostHiddenMarkerView 
-	              	postUid={postUid}/>
+	              	htmlElId={htmlElId}/>
 	            </React.StrictMode>
 	        );
 
@@ -290,7 +290,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 	              <style type="text/css">{styles}</style>
 	              { getFontFamilyStyle(props) }
 	              <AboveFeedPostWidgetView 
-	              	postUid={postUid}
+	              	htmlElId={htmlElId}
 	              	tabId={props.tabId}
 	              	allKeywords={props.allKeywords}
 	              	visitId={props.visitId}

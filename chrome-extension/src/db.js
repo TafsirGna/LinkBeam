@@ -45,14 +45,29 @@ db.version(1)
 
 // Defining database version 2 stores
 const version2Stores = {
-  ...version1Stores,
-  quotes: '++id, createdOn',
-  profileNotes: '++id, createdOn, section, url',
-  feedProfiles: '++id, name, picture, url',
+  visits: '++id, url, date, &uniqueId',
+  keywords: '++id, &name, createdOn, &uniqueId',
+  reminders: '++id, &objectId, createdOn, active, date, &uniqueId',
+  settings: '++id',
+  bookmarks: '++id, &url, createdOn, &uniqueId',
+  feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId',
+  feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId',
+  tags: '++id, &name, createdOn, &uniqueId',
+  folders: '++id, &name, createdOn, &uniqueId',
+  quotes: '++id, createdOn, &uniqueId',
+  profileNotes: '++id, createdOn, section, url, &uniqueId',
+  feedProfiles: '++id, name, &picture, &url, &uniqueId',
+  profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId',
 }
 
 db.version(appParams.appDbVersion /*2*/)
   .stores(version2Stores)
-  .upgrade(trans => {
+  .upgrade(async trans => {
 
-});
+    // trans.feedPostViews.toCollection().modify(feedPostView => {
+    //   friend.birthdate = new Date(Date.now() - (friend.age * YEAR));
+    //   delete friend.age;
+    // });
+
+})
+;

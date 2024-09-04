@@ -50,9 +50,7 @@ export default class ReminderView extends React.Component{
     saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.REMINDERS);
 
     if (!this.props.globalData.reminderList){
-
       setGlobalDataReminders(db, eventBus);
-
     }
 
   }
@@ -67,7 +65,8 @@ export default class ReminderView extends React.Component{
 
           { (this.props.globalData.reminderList 
                 && (this.props.globalData.reminderList.list.length
-                    || (!this.props.globalData.reminderList.list.length && this.props.globalData.reminderList.action == "search"))) 
+                    || (!this.props.globalData.reminderList.list.length 
+                          && this.props.globalData.reminderList.action == "search"))) 
               && <SearchInputView 
                     objectStoreName={dbData.objectStoreNames.REMINDERS}
                     globalData={this.props.globalData}  /> } 

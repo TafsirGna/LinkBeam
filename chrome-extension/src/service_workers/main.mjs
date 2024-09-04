@@ -39,6 +39,7 @@ import {
     areProfileDataObjectsDifferent,
     isReferenceHashtag,
     getHashtagText,
+    allUrlCombinationsOf,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
@@ -241,10 +242,10 @@ function notifyUser(message, uuid = null){
 
 async function getPostFromPostUrl(url){
 
-    var postUid = url.slice(url.indexOf("urn:li:")).replaceAll("/", "");
+    var htmlElId = url.slice(url.indexOf("urn:li:")).replaceAll("/", "");
 
     var post = await db.feedPostViews
-                       .where({uid: postUid})
+                       .where({htmlElId: htmlElId})
                        .first();
 
     if (!post){
@@ -540,19 +541,18 @@ async function setPostsRankingInSession(){
         return;
     }
 
-    var feedPosts = await db.feedPosts.toArray(),
-        results = [];
-    for (var feedPost of feedPosts){
+    var results = [];
+    for (const feedPost of (await db.feedPosts.toArray())){
 
         const lastView = await db.feedPostViews
-                               .where({feedPostId: feedPost.id})
-                               .last();
+                                 .where({feedPostId: feedPost.uniqueId})
+                                 .last();
 
-        if (!lastView){
+        if (!lastView){ // a linked post
             continue;
         }
 
-        results.push({id: feedPost.id, popularity: popularityValue(lastView)});
+        results.push({id: feedPost.uniqueId, popularity: popularityValue(lastView)});
 
     }
 
@@ -724,8 +724,10 @@ async function recordFeedVisit(tabData){
         visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
     }
 
+    console.log("xxxxxxxxxxxxxxxxxx 0 : ", visitId);
+
     db.visits
-      .where({id: visitId})
+      .where({uniqueId: visitId})
       .first()
       .then(async (visit) => {
 
@@ -733,49 +735,236 @@ async function recordFeedVisit(tabData){
             return;
         }
 
-        var post = tabData.extractedData;
+        console.log("xxxxxxxxxxxxxxxxxx 0' : ", visit);
+
+        var extractedPostData = tabData.extractedData;
 
         const newFeedPost = {
-            uid: !post.category ? post.id : null,
-            author: post.content.author,
-            innerContentHtml: post.content.innerHtml.replaceAll("\n", ""),
-            text: post.content.text,
-            media: post.content.media 
-                    ? (post.content.media.length
-                        ? post.content.media
+            htmlElId: !extractedPostData.category ? extractedPostData.id : null,
+            innerContentHtml: extractedPostData.content.innerHtml.replaceAll("\n", ""),
+            text: extractedPostData.content.text,
+            media: extractedPostData.content.media 
+                    ? (extractedPostData.content.media.length
+                        ? extractedPostData.content.media
                         : null) 
                     : null,
-            estimatedDate: post.content.estimatedDate,
-            references: post.content.references
-                            ? (post.content.references.length
-                                    ? post.content.references
+            estimatedDate: extractedPostData.content.estimatedDate,
+            references: extractedPostData.content.references
+                            ? (extractedPostData.content.references.length
+                                    ? extractedPostData.content.references
                                     : null)
                             : null,
         };
 
-        if (post.content.subPost){
+        console.log("xxxxxxxxxxxxxxxxxx 0'' : ", extractedPostData);
+
+        await checkAndHandleSubPost(newFeedPost, extractedPostData);
+
+        console.log("xxxxxxxxxxxxxxxxxx 0''' : ", extractedPostData);
+
+        const profileId = await checkPostFeedProfile(extractedPostData.content.author);
+        const dbFeedPost = await db.feedPosts
+                                   .filter(entry => areFeedPostsTheSame(entry, { htmlElId: newFeedPost.htmlElId, profileId: profileId }))
+                                   .first();
+
+        console.log("xxxxxxxxxxxxxxxxxx 1 : ", dbFeedPost);
+
+        if (dbFeedPost){
+
+            newFeedPost.htmlElId = dbFeedPost.htmlElId || newFeedPost.htmlElId; // avoid overwritting a previous valid htmlElId
+
+            await db.feedPosts
+                    .update(dbFeedPost.id, newFeedPost);
+
+        }
+        else{
+
+            console.log("xxxxxxxxxxxxxxxxxx 2 : ", extractedPostData.content.author);
+
+            newFeedPost.uniqueId = uuidv4();
+            newFeedPost.profileId = profileId;
+
+            await db.feedPosts
+                    .add(newFeedPost);
+
+        }
+
+        console.log("xxxxxxxxxxxxxxxxxx 3 : ");
+
+        var postView = await db.feedPostViews
+                               .where({htmlElId: extractedPostData.id, visitId: visit.uniqueId})
+                               .first(); 
+
+        console.log("xxxxxxxxxxxxxxxxxx 4 : ", postView);
+
+        if (!postView){
+
+            console.log("xxxxxxxxxxxxxxxxxx 5 : ", postView);
+
+            postView = {
+                category: extractedPostData.category,
+                htmlElId: extractedPostData.id,
+                date: dateTime,
+                profileId: await checkPostFeedProfile(extractedPostData.initiator),
+                visitId: visit.uniqueId, 
+                uniqueId: uuidv4(),
+                feedPostId: (dbFeedPost || newFeedPost).uniqueId,
+                reactions: extractedPostData.content.reactions,
+                commentsCount: extractedPostData.content.commentsCount,
+                repostsCount: extractedPostData.content.repostsCount,
+                timeCount: 1,
+            };
+
+            console.log("xxxxxxxxxxxxxxxxxx 6 : ", postView);
+
+            // saving the post view
+            await db.feedPostViews.add(postView);
+
+            sessionItem.myTabs[tabData.tabId].badgeText = sessionItem.myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(sessionItem.myTabs[tabData.tabId].badgeText) + 1).toString();
+            
+        }
+
+        console.log("xxxxxxxxxxxxxxxxxx 7 : ", postView);
+
+        chrome.storage.session.set({ myTabs: sessionItem.myTabs }).then(() => {
+            chrome.action.setBadgeText({text: sessionItem.myTabs[tabData.tabId].badgeText});
+            // console.log("Value was set");
+        });
+
+        extractedPostData.reminder = await db.reminders
+                                 .where({objectId: (dbFeedPost || newFeedPost).uniqueId})
+                                 .first();
+        if (extractedPostData.reminder){
+            extractedPostData.reminder.htmlElId = extractedPostData.id;
+        }
+
+        console.log("xxxxxxxxxxxxxxxxxx 8 : ", postView);
+
+        extractedPostData.viewsCount = 0;
+        extractedPostData.timeCount = 0;
+        extractedPostData.dbId = (dbFeedPost || newFeedPost).uniqueId;
+        extractedPostData.visitId = visit.uniqueId;
+
+        var urls = allUrlCombinationsOf(extractedPostData.content.author.url);
+        urls = extractedPostData.content.subPost ? urls.concat(allUrlCombinationsOf(extractedPostData.content.subPost.author.url)) : urls;
+        urls = (extractedPostData.initiator && extractedPostData.initiator.url) ? urls.concat(allUrlCombinationsOf(extractedPostData.initiator.url)) : urls;
+        extractedPostData.bookmarked = await db.bookmarks
+                                               .where("url")
+                                               .anyOf(urls)
+                                               .first();
+
+        await db.feedPostViews
+                 .where({feedPostId: (dbFeedPost || newFeedPost).uniqueId})
+                 .each(postView => {
+                    extractedPostData.viewsCount++;
+                    extractedPostData.timeCount += postView.timeCount;
+                 });
+
+        // update the rankedPostsByPopularity session variable
+        sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
+        sessionItem.rankedPostsByPopularity = sessionItem.rankedPostsByPopularity || await setPostsRankingInSession();
+
+        const index = sessionItem.rankedPostsByPopularity.findIndex(p => p.id == (dbFeedPost || newFeedPost).uniqueId);
+        if (index != -1){
+            extractedPostData.rank = {
+                index1: index + 1, 
+                count: sessionItem.rankedPostsByPopularity.length,
+                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
+            };
+        }
+        else{
+            sessionItem.rankedPostsByPopularity.push({id: (dbFeedPost || newFeedPost).uniqueId, popularity: popularityValue(extractedPostData)});
+            sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
+            extractedPostData.rank = {
+                index1: sessionItem.rankedPostsByPopularity.findIndex(p => p.id == (dbFeedPost || newFeedPost).uniqueId) + 1,
+                count: sessionItem.rankedPostsByPopularity.length,
+                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
+            };
+            await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
+                // console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
+            });
+        }
+
+        chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: [extractedPostData]}}, (response) => {
+            console.log('post data response sent', [extractedPostData], response);
+        });  
+
+    });
+
+    function areFeedPostsTheSame(entry, newFeedPost){
+            return (newFeedPost.htmlElId && entry.htmlElId && newFeedPost.htmlElId == entry.htmlElId)
+                                                        || ((!newFeedPost.htmlElId || !entry.htmlElId) 
+                                                                && entry.profileId == newFeedPost.profileId
+                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
+                                                                    /*(() => {
+                                                                        const entryText = entry.text.replaceAll("\n", "").replaceAll(/\s/g,""),
+                                                                              postText = newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"");
+                                                                        const minLength = Math.min(entryText.length, postText.length);
+                                                                        return entryText.slice(0, minLength) == postText.slice(0, 20);
+                                                                    })() == true*/);
+    }
+
+    async function addFreshFeedVisit(params){
+
+        const visit = {
+            date: dateTime,
+            url: appParams.LINKEDIN_FEED_URL(),
+            uniqueId: uuidv4(),
+            ...(params.automated ? { automated: true } : null),
+        };
+
+        await db.visits.add(visit);
+        return visit.uniqueId;
+
+    }
+
+    async function checkPostFeedProfile(profile){
+
+        if (!profile || !profile.url){
+            return null;
+        }
+
+        const dbProfile = await db.feedProfiles.where({url: profile.url})
+                                               .first();
+
+        if (dbProfile){
+            await db.feedProfiles.update(dbProfile.id, profile);
+            return dbProfile.uniqueId;
+        }
+
+        const identifier = uuidv4();
+        await db.feedProfiles.add({...profile, uniqueId: identifier});
+
+        return identifier;
+
+    }
+
+    async function checkAndHandleSubPost(newFeedPost, extractedPostData){
+
+        if (extractedPostData.content.subPost){  
 
             var subPost = {
-                uid: post.content.subPost.uid,
-                author: post.content.subPost.author,
-                innerContentHtml: post.content.subPost.innerHtml.replaceAll("\n", ""),
-                text: post.content.subPost.text,
-                media: post.content.subPost.media
-                        ? (post.content.subPost.media.length
-                            ? post.content.subPost.media
+                htmlElId: extractedPostData.content.subPost.htmlElId,
+                innerContentHtml: extractedPostData.content.subPost.innerHtml.replaceAll("\n", ""),
+                text: extractedPostData.content.subPost.text,
+                media: extractedPostData.content.subPost.media
+                        ? (extractedPostData.content.subPost.media.length
+                            ? extractedPostData.content.subPost.media
                             : null)
                         : null,
-                estimatedDate: post.content.subPost.estimatedDate,
-                references: post.content.subPost.references
-                                ? (post.content.subPost.references.length
-                                        ? post.content.subPost.references
+                estimatedDate: extractedPostData.content.subPost.estimatedDate,
+                references: extractedPostData.content.subPost.references
+                                ? (extractedPostData.content.subPost.references.length
+                                        ? extractedPostData.content.subPost.references
                                         : null)
                                 : null,
-            }
+            };
 
-            var dbSubPost = await db.feedPosts
-                                   .filter(entry => areFeedPostsTheSame(entry, subPost))
-                                   .first();
+            const profileId = await checkPostFeedProfile(extractedPostData.content.subPost.author);
+            const dbSubPost = await db.feedPosts
+                                      .filter(entry => areFeedPostsTheSame(entry, { htmlElId: subPost.htmlElId, profileId: profileId }),
+                                        )
+                                      .first();
 
             if (dbSubPost){
 
@@ -785,171 +974,20 @@ async function recordFeedVisit(tabData){
             }
             else{
 
+                // Associating a unique id
+                subPost.uniqueId = uuidv4();
+
+                // checking the post author in the database
+                subPost.profileId = profileId;
+
                 await db.feedPosts
-                        .add(subPost)
-                        .then((id) => {
-                            subPost.id = id;
-                            dbSubPost = subPost;
-                        });
+                        .add(subPost);
 
             }
 
-            newFeedPost["linkedPostId"] = dbSubPost.id;
-            
-        }
-
-        function areFeedPostsTheSame(entry, newFeedPost){
-            return (newFeedPost.uid && entry.uid && newFeedPost.uid == entry.uid)
-                                                        || ((!newFeedPost.uid || !entry.uid) 
-                                                                && entry.author.url == newFeedPost.author.url
-                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
-                                                                    /*(() => {
-                                                                        const entryText = entry.text.replaceAll("\n", "").replaceAll(/\s/g,""),
-                                                                              postText = newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"");
-                                                                        const minLength = Math.min(entryText.length, postText.length);
-                                                                        return entryText.slice(0, minLength) == postText.slice(0, 20);
-                                                                    })() == true*/);
-        }
-
-        var dbFeedPost = await db.feedPosts
-                                   .filter(entry => areFeedPostsTheSame(entry, newFeedPost))
-                                   .first();
-
-        if (dbFeedPost){
-
-            newFeedPost.uid = dbFeedPost.uid || newFeedPost.uid; // avoid overwritting a previous valid uid
-            await db.feedPosts
-                    .update(dbFeedPost.id, newFeedPost);
+            newFeedPost.linkedPostId = (dbSubPost || subPost).uniqueId;
 
         }
-        else{
-
-            await db.feedPosts
-                    .add(newFeedPost).then((id) => {
-                        newFeedPost.id = id;
-                        dbFeedPost = newFeedPost;
-                    });
-
-        }
-
-        var postView = await db.feedPostViews
-                               .where({uid: post.id, visitId: visitId})
-                               .first(); 
-
-        if (!postView){
-
-            postView = {
-                category: post.category,
-                initiator: post.initiator,
-                uid: post.id,
-                date: dateTime,
-                visitId: visitId, 
-                feedPostId: dbFeedPost.id,
-                reactions: post.content.reactions,
-                commentsCount: post.content.commentsCount,
-                repostsCount: post.content.repostsCount,
-                timeCount: 1,
-            };
-
-            // saving the post view
-            await db.feedPostViews.add(postView);
-
-            sessionItem.myTabs[tabData.tabId].badgeText = sessionItem.myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(sessionItem.myTabs[tabData.tabId].badgeText) + 1).toString();
-            
-        }
-
-
-        post.reminder = await db.reminders
-                                 .where({objectId: dbFeedPost.id})
-                                 .first();
-        if (post.reminder){
-            post.reminder.postUid = post.id;
-        }
-
-        post.viewsCount = 0;
-        post.timeCount = 0;
-        post.dbId = dbFeedPost.id;
-        post.visitId = visitId;
-        post.bookmarked = (await db.bookmarks.where("url").anyOf([post.content.author.url, encodeURI(post.content.author.url), decodeURI(post.content.author.url)]).first())
-                            || (post.initiator 
-                                    && post.initiator.url 
-                                    && await db.bookmarks.where("url").anyOf([post.initiator.url, encodeURI(post.initiator.url), decodeURI(post.initiator.url)]).first())
-                            || (post.content.subPost
-                                    && await db.bookmarks.where("url").anyOf([post.content.subPost.author.url, encodeURI(post.content.subPost.author.url), decodeURI(post.content.subPost.author.url)]).first());
-
-        var popularity = {date: null, value: 0};
-        await db.feedPostViews
-                 .where({feedPostId: dbFeedPost.id})
-                 .each(postView => {
-
-                    post.viewsCount++;
-                    post.timeCount += postView.timeCount;
-
-                    // updating popularity variable
-                    if (!popularity.date){
-                        popularity.date = postView.date;
-                        popularity.value = popularityValue(postView);
-                    }
-                    else{
-                        if (new Date(popularity.date) < new Date(postView.date)){
-                            popularity.date = postView.date;
-                            popularity.value = popularityValue(postView);
-                        }
-                    }
-
-                 });
-
-        await db.visits.update(visit.id, visit);
-
-        chrome.storage.session.set({ myTabs: sessionItem.myTabs }).then(() => {
-            chrome.action.setBadgeText({text: sessionItem.myTabs[tabData.tabId].badgeText});
-            // console.log("Value was set");
-        });
-
-        // update the rankedPostsByPopularity session variable
-        sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
-        sessionItem.rankedPostsByPopularity = sessionItem.rankedPostsByPopularity || await setPostsRankingInSession();
-
-        const index = sessionItem.rankedPostsByPopularity.findIndex(p => p.id == dbFeedPost.id);
-        if (index != -1){
-            post.rank = {
-                index1: index + 1, 
-                count: sessionItem.rankedPostsByPopularity.length,
-                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
-            };
-        }
-        else{
-            sessionItem.rankedPostsByPopularity.push({id: dbFeedPost.id, popularity: popularity.value});
-            sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
-            post.rank = {
-                index1: sessionItem.rankedPostsByPopularity.findIndex(p => p.id == dbFeedPost.id) + 1,
-                count: sessionItem.rankedPostsByPopularity.length,
-                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
-            };
-            await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
-                // console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
-            });
-        }
-
-        chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: [post]}}, (response) => {
-            console.log('post data response sent', [post], response);
-        });  
-
-    });
-
-    async function addFreshFeedVisit(params){
-
-        const visit = {
-            date: dateTime,
-            url: appParams.LINKEDIN_FEED_URL(),
-            ...(params.automated ? { automated: true } : null),
-        };
-
-        var visitId = null;
-        await db.visits.add(visit).then(id => {
-            visitId = id;
-        });
-        return visitId;
 
     }
 
@@ -1151,12 +1189,12 @@ async function processMessageEvent(message, sender, sendResponse){
             });
             
             // Saving the new notification setting state
-            var postUid = message.data.postUid,
+            var htmlElId = message.data.htmlElId,
                 timeCount = message.data.time,
                 visitId = message.data.visitId;
 
             await db.feedPostViews
-                    .where({uid: postUid, visitId: visitId})
+                    .where({htmlElId: htmlElId, visitId: visitId})
                     .modify(postView => {
                         postView.timeCount = timeCount;
                     });
@@ -1185,7 +1223,7 @@ async function processMessageEvent(message, sender, sendResponse){
             });
             
             var results = {};
-            for (const postUid of message.data.objects){ results[postUid] = (await isPostToBeHidden(postUid)); }
+            for (const htmlElId of message.data.objects){ results[htmlElId] = (await isPostToBeHidden(htmlElId)); }
 
             chrome.tabs.sendMessage(message.data.tabId, {header: "FEED_POSTS_HIDE_STATUS_RESPONSE", data: results}, (response) => {
                 console.log('Feed posts hide status response sent', response, results);
@@ -1334,7 +1372,7 @@ async function getAppSettingsObject(){
 
 }
 
-async function isPostToBeHidden(postUid){
+async function isPostToBeHidden(htmlElId){
 
     const settings = await getAppSettingsObject();
 
@@ -1343,7 +1381,7 @@ async function isPostToBeHidden(postUid){
     }
 
     const viewCount = Number(settings.hidePostViewCount.replace(" views", ""));
-    return (await db.feedPostViews.where({uid: postUid}).toArray()).length > viewCount;
+    return (await db.feedPostViews.where({htmlElId: htmlElId}).toArray()).length > viewCount;
 
 }
 
@@ -1399,22 +1437,22 @@ async function getPreviousRelatedPosts(payload){
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.author.url == profileUrl && ((post.uid && (post.uid != payload.uid)) || (!post.uid && true)))
+                                  .filter(post => post.author.url == profileUrl && ((post.htmlElId && (post.htmlElId != payload.htmlElId)) || (!post.htmlElId && true)))
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
 
         for (const feedPost of feedPosts){
 
-            if (feedPost.uid){
-                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+            if (feedPost.htmlElId){
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
-                if (view.uid == payload.uid){
+                if (view.htmlElId == payload.htmlElId){
                     continue;
                 }
-                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.htmlElId}`;
             }
 
             posts.push({
@@ -1427,7 +1465,7 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                      .filter(view => view.initiator && view.initiator.url == profileUrl && view.uid != payload.uid)
+                                      .filter(view => view.initiator && view.initiator.url == profileUrl && view.htmlElId != payload.htmlElId)
                                       .offset(payload.offset)
                                       .limit(limit)
                                       .toArray();
@@ -1435,18 +1473,18 @@ async function getPreviousRelatedPosts(payload){
         var uids = [];
         for (const feedPostView of feedPostViews){
 
-            if (uids.indexOf(feedPostView.uid) != -1){
+            if (uids.indexOf(feedPostView.htmlElId) != -1){
                 continue;
             }
 
             const feedPost = (await db.feedPosts.where({id: feedPostView.feedPostId}).first());
             posts.push({
                 text: feedPost.innerContentHtml,
-                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`,
+                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.htmlElId}`,
                 date: feedPostView.date,
                 media: feedPost.media,
             });
-            uids.push(feedPostView.uid);
+            uids.push(feedPostView.htmlElId);
         }
 
     }
@@ -1457,7 +1495,7 @@ async function getPreviousRelatedPosts(payload){
         const feedPosts = await db.feedPosts
                                   .filter(post => {
                                     if (Object.hasOwn(payload, "text")){
-                                        return post.innerContentHtml && (stringSimilarity(payload.text, post.text) > .9) && ((post.uid && post.uid != payload.uid) || (!post.uid && true));
+                                        return post.innerContentHtml && (stringSimilarity(payload.text, post.text) > .9) && ((post.htmlElId && post.htmlElId != payload.htmlElId) || (!post.htmlElId && true));
                                     }
                                     else if (Object.hasOwn(payload, "tag")){
                                         return post.references 
@@ -1472,15 +1510,15 @@ async function getPreviousRelatedPosts(payload){
 
         for (const feedPost of feedPosts){
 
-            if (feedPost.uid){
-                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid}`;
+            if (feedPost.htmlElId){
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId}`;
             }
             else{
                 const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
-                if (view.uid == payload.uid){
+                if (view.htmlElId == payload.htmlElId){
                     continue;
                 }
-                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`;
+                postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.htmlElId}`;
             }
 
             posts.push({
@@ -1536,31 +1574,31 @@ async function saveReminder(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
     reminder.active = true;
-    const postUid = reminder.objectId;
+    const htmlElId = reminder.objectId;
 
     try{
 
         // const feedPostView = await db.feedPostViews
-        //                              .where({uid: postUid})
+        //                              .where({htmlElId: htmlElId})
         //                              .first();
 
         // if (!feedPostView.category){
-        //     reminder.objectId = feedPostView.uid;
+        //     reminder.objectId = feedPostView.htmlElId;
         // }
         // else{
         //     if (feedPostView.category == "suggestions"){
-        //         reminder.objectId = feedPostView.uid;
+        //         reminder.objectId = feedPostView.htmlElId;
         //     }
         //     else{
         //         const feedPost = await db.feedPosts
         //                                  .where({id: feedPostView.feedPostId})
         //                                  .first();
-        //         reminder.objectId = feedPost.uid || feedPostView.uid;
+        //         reminder.objectId = feedPost.htmlElId || feedPostView.htmlElId;
         //     }
         // }
 
         reminder.objectId = (await db.feedPostViews
-                                     .where({uid: reminder.objectId})
+                                     .where({htmlElId: reminder.objectId})
                                      .first()).feedPostId;
         
         await db.reminders
@@ -1569,7 +1607,7 @@ async function saveReminder(reminder){
                     reminder.id = id;
                 });
 
-        reminder.postUid = postUid;
+        reminder.htmlElId = htmlElId;
         return reminder;
 
     }
@@ -1588,7 +1626,7 @@ async function deleteReminder(reminder){
         await db.reminders
                 .delete(reminder.id);
 
-        return reminder.postUid;
+        return reminder.htmlElId;
 
     }
     catch(error){
@@ -1605,7 +1643,7 @@ async function fetchPostViews(props){
     try{
 
         const feedPostId = (await db.feedPostViews
-                                    .where({uid: props.uid})
+                                    .where({htmlElId: props.htmlElId})
                                     .first()).feedPostId;
 
         const feedPostViews = await db.feedPostViews

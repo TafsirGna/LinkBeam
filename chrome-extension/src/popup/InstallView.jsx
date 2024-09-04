@@ -144,10 +144,10 @@ export default class About extends React.Component{
 
           // here we tell the reader what to do when it's done reading...
           reader.onload = readerEvent => {
-            var content = readerEvent.target.result; // this is the content!
+            var fileData = readerEvent.target.result; // this is the content!
 
             try {
-              content = JSON.parse(content);
+              fileData = JSON.parse(fileData);
             } catch (error) {
 
               this.setState({processing: false}, () => {
@@ -170,31 +170,19 @@ export default class About extends React.Component{
 
               try{
 
-                if (content.dbVersion > appParams.appDbVersion){
-                  this.handleAlertViewShow(`The imported file version (${content.dbVersion}) is superior than this app database version (${appParams.appDbVersion})!`, "danger", () => {
+                if (fileData.dbVersion != appParams.appDbVersion /*fileData.dbVersion > appParams.appDbVersion*/){
+                  this.handleAlertViewShow(
+                    // `The imported file version (${fileData.dbVersion}) is superior than this app database version (${appParams.appDbVersion})!`, 
+                    "These data could not sadly be imported due to structural incompatible issues! Please, consider starting a fresh instance instead", 
+                    "danger", 
+                    () => {
                     this.setState({opDone: false, processing: false});
                     this.clearFileInput();
                   });
                   return;
                 }
 
-                // initialize the db with the received data
-                for (const objectStoreName in content.objectStores){
-                  if (content.objectStores[objectStoreName].length){
-                    var objects = content.objectStores[objectStoreName];
-
-                    // // Optional but who knows ?
-                    // if (objectStoreName == "feedPosts"){
-                    //   objects = objects.filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
-                    // }
-                    
-                    if (objectStoreName != "feedPosts"){
-                      objects = removeObjectsId(objects);
-                    }
-
-                    await db[objectStoreName].bulkAdd(objects);
-                  }
-                }
+                await importFileData(fileData);
 
                 this.setState({opDone: true, processing: false}, () => {
                   setGlobalDataSettings(db, eventBus, liveQuery);
@@ -533,4 +521,46 @@ export default class About extends React.Component{
       </>
     );
   }
+}
+
+async function importFileData(fileData){
+
+  for (var i = fileData.dbVersion; i <= appParams.appDbVersion; i++){
+    convertToVersion(i);
+  }
+
+  await saveConvertedData();
+
+  function convertToVersion(version){
+    switch(version){
+      case 1:{
+        convertToV1();
+        break;
+      }
+      case 2:{
+        convertToV2();
+        break;
+      }
+    }
+  }
+
+  async function saveConvertedData(){
+
+    // initialize the db with the received data
+    for (const objectStoreName in fileData.objectStores){
+      if (fileData.objectStores[objectStoreName].length){
+        await db[objectStoreName].bulkAdd(fileData.objectStores[objectStoreName]);
+      }
+    }
+
+  }
+
+  function convertToV1(){
+    // To be implemented
+  }
+
+  function convertToV2(){
+    // To be implemented
+  }
+
 }

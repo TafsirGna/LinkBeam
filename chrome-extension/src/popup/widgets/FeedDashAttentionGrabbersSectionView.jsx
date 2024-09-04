@@ -51,7 +51,6 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
     this.state = {
       profiles: null,
       animatedTreeMapChartModalShow: false,
-      feedProfileDataModalShow: false,
       selectedFeedProfile: null,
       selectedProfile: null,
     };
@@ -76,8 +75,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
   }
 
-  handleFeedProfileDataModalClose = () => this.setState({feedProfileDataModalShow: false, selectedFeedProfile: null});
-  handleFeedProfileDataModalShow = (profile) => this.setState({feedProfileDataModalShow: true, selectedFeedProfile: profile});
+  handleFeedProfileDataModalClose = () => this.setState({selectedFeedProfile: null});
+  handleFeedProfileDataModalShow = (profile) => this.setState({selectedFeedProfile: profile});
 
   handlePostListModalClose = () => this.setState({selectedProfile: null});
   handlePostListModalShow = (profile) => this.setState({selectedProfile: profile});
@@ -92,40 +91,40 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
     for (var feedPostView of this.props.objects){
 
-      var feedPost = feedPostView.feedPost;
+      var feedPost = { ...feedPostView.feedPost };
       feedPost.view = feedPostView;
       var profileIndex = null;
 
       // checking first for the initiator of the postView
-      if (feedPostView.initiator && feedPostView.initiator.url){
-        profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPostView.initiator.url);
+      if (feedPostView.profile){
+        profileIndex = attentionGrabbers.findIndex(g => g.profile.uniqueId == feedPostView.profile.uniqueId);
         if (profileIndex == -1){
           attentionGrabbers.push({
-            profile: feedPostView.initiator,
+            profile: feedPostView.profile,
             timeCount: feedPostView.timeCount,
             feedPosts: [feedPost],
           });
         }
         else{
           attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
-          if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.id == feedPost.id) == -1){
+          if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.uniqueId == feedPost.uniqueId) == -1){
             attentionGrabbers[profileIndex].feedPosts.push(feedPost);
           }
         }
       }
 
       // Then doing the same for the author
-      profileIndex = attentionGrabbers.findIndex(g => g.profile.url == feedPost.author.url);
+      profileIndex = attentionGrabbers.findIndex(g => g.profile.uniqueId == feedPost.profile.uniqueId);
       if (profileIndex == -1){
         attentionGrabbers.push({
-          profile: feedPost.author,
+          profile: feedPost.profile,
           timeCount: feedPostView.timeCount,
           feedPosts: [feedPost],
         });
       }
       else{
         attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
-        if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.id == feedPost.id) == -1){
+        if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.uniqueId == feedPost.uniqueId) == -1){
           attentionGrabbers[profileIndex].feedPosts.push(feedPost);
         }
       }
@@ -268,7 +267,6 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
         <FeedProfileDataModal
           object={this.state.selectedFeedProfile}
-          show={this.state.feedProfileDataModalShow}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 
@@ -297,13 +295,13 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                       objects={this.state.selectedProfile
                                          .feedPosts
                                          .map(feedPost => ({
-                                            author: feedPost.author,
+                                            author: feedPost.profile,
                                             url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
                                             // date: views.length ? views[0].date : null,
                                             text: feedPost.innerContentHtml,
                                             media: feedPost.media,
                                             category: feedPost.view.category,
-                                            initiator: feedPost.view.initiator,
+                                            initiator: feedPost.view.profile,
                                           }))}
                       variant="list"/> }
 

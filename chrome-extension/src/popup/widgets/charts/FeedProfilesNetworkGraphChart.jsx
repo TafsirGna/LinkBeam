@@ -96,11 +96,11 @@ export default class FeedProfilesNetworkGraphChart extends React.Component{
     		continue;
     	}
 
-    	if (!feedPostView.initiator || (feedPostView.initiator && !feedPostView.initiator.name)){
+    	if (!feedPostView.profile || (feedPostView.profile && !feedPostView.profile.name)){
     		continue;
     	}
 
-    	const source = feedPostView.initiator.name,
+    	const source = feedPostView.profile.name,
     		  target = (await db.feedPosts.where({id: feedPostView.feedPostId}).first()).author.name;
 
   		if (chartData.findIndex(d => d.source == source && d.target == target) == -1

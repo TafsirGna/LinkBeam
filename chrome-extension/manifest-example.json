@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LinkBeam",
-  "description": "Linkbeam is a basic extension that assists you in your linkedin browsing experience.",
+  "description": "Linkbeam is a basic extension that turns your linkedin usage into actionable data.",
   "version": "0.0.2",
   "action": {
     "default_popup": "index.html",

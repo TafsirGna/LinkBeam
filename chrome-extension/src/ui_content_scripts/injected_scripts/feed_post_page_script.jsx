@@ -98,7 +98,7 @@ export default class FeedPostPageScriptAgent extends ScriptAgentBase {
 		            <React.StrictMode>
 		              <style type="text/css">{styles}</style>
 		              <AboveFeedPostWidgetView 
-		              	postUid={postContainerElement.getAttribute("data-urn")}
+		              	htmlElId={postContainerElement.getAttribute("data-urn")}
 		              	tabId={props.tabId}
 		              	allKeywords={props.allKeywords}
 		              	postData={props.otherArgs ? props.otherArgs.postData : null}

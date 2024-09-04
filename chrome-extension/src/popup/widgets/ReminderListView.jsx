@@ -58,7 +58,7 @@ export default class ReminderListView extends React.Component{
                 </div>}
 
         { this.props.objects && this.props.objects.length > 0 && <div class="list-group small mt-1 shadow-sm">
-              {this.props.objects.map((reminder, index) => <ReminderListItemView object={reminder}/>)}
+              {this.props.objects.map(reminder => <ReminderListItemView object={reminder}/>)}
             </div>}
 
       </>

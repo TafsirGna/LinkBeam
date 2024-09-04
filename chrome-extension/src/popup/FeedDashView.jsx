@@ -172,9 +172,13 @@ export default class FeedDashView extends React.Component{
 
     for (var feedPostView of feedPostViews){
 
-      allPeriodFeedPostViews.push({...feedPostView}); // IMPORTANT
+      feedPostView.profile = feedPostView.profileId 
+                              ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
+                              : null;
 
-      const index = allPeriodUniqueFeedPostViews.map(v => v.uid).indexOf(feedPostView.uid);
+      allPeriodFeedPostViews.push({...feedPostView}); // IMPORTANT to duplicate the object
+
+      const index = allPeriodUniqueFeedPostViews.map(v => v.htmlElId).indexOf(feedPostView.htmlElId);
       if (index == -1){
         allPeriodUniqueFeedPostViews.push(feedPostView);
       }
@@ -191,7 +195,8 @@ export default class FeedDashView extends React.Component{
     }
 
     for (var feedPostView of allPeriodUniqueFeedPostViews){
-      feedPostView.feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+      feedPostView.feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+      feedPostView.feedPost.profile = await db.feedProfiles.where({uniqueId: feedPostView.feedPost.profileId}).first();
     }
 
     this.setState({ 

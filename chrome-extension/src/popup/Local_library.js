@@ -404,6 +404,8 @@ export const getUserIcon = (userIconLabel, iconsSet) => {
   return userIcon;
 }
 
+export const allUrlCombinationsOf = (url) => [url, encodeURI(url), decodeURI(url)];
+
 export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
   if (action == "export"){
@@ -770,21 +772,15 @@ export const groupObjectsByDate = (objectList) => {
 
 export async function applyFontFamilySetting(settings){
 
-  console.log("ffffffffff 1 : ", settings.fontFamily);
-
-  const fontFamily = ((!settings.fontFamily && {file: null}) || (settings.fontFamily && appParams.allFontFamilySettingValues.filter(f => f.label == settings.fontFamily)[0]));
+  const fontFamily = ((!settings.fontFamily && appParams.allFontFamilySettingValues[1]) || (settings.fontFamily && appParams.allFontFamilySettingValues.filter(f => f.label == settings.fontFamily)[0]));
   const styleID = "fontFamilyStyle";
 
-  console.log("ffffffffff 2 : ", fontFamily.file);
   if (!fontFamily.file){
     if (document.querySelector(`style#${styleID}`)){
       document.querySelector(`style#${styleID}`).remove();
     }
-    console.log("ffffffffff 3 : ", fontFamily.file);
     return;
   }
-
-  console.log("ffffffffff 4 : ", fontFamily.file);
 
   if (document.querySelector(`style#${styleID}`)){
     return;
@@ -855,7 +851,7 @@ export function setGlobalDataTags(db, eventBus, liveQuery){
 
 export async function setGlobalDataReminders(db, eventBus){
 
-  var reminders = await getReminders(db, "all");
+  const reminders = await getReminders(db, "all");
 
   if (reminders){
     eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
@@ -986,7 +982,7 @@ export async function setFolderProfiles(folderList, db){
 
 }
 
-export const getPostCount = feedPostViews => feedPostViews.map(view => view.uid).filter((value, index, self) => self.indexOf(value) === index).length;
+export const getPostCount = feedPostViews => feedPostViews.map(view => view.htmlElId).filter((value, index, self) => self.indexOf(value) === index).length;
 export const getVisitsTotalTime = feedPostViews => parseFloat((feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2));
 export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
 export const getVisitMeanTime = feedPostViews => !getVisitCount(feedPostViews) ? 0 : parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
@@ -1063,18 +1059,18 @@ export function getFeedPostViewsByCategory(feedPostViews, profileUrl = null){
     }
   }
 
-  var uids = [];
+  var htmlElIds = [];
   for (const feedPostView of feedPostViews){
 
-    if (uids.indexOf(feedPostView.uid) != -1){
+    if (htmlElIds.indexOf(feedPostView.htmlElId) != -1){
       continue;
     }
 
     if (profileUrl){
-      if ((feedPostView.initiator 
-              && ((feedPostView.initiator.url && feedPostView.initiator.url != profileUrl)
-                    || (!feedPostView.initiator.url && profileUrl != appParams.LINKEDIN_FEED_URL)))
-            || (!feedPostView.initiator && feedPostView.feedPost.author.url != profileUrl)){
+      if ((feedPostView.profile 
+              && ((feedPostView.profile.url && feedPostView.profile.url != profileUrl)
+                    || (!feedPostView.profile.url && profileUrl != appParams.LINKEDIN_FEED_URL)))
+            || (!feedPostView.profile && feedPostView.feedPost.profile.url != profileUrl)){
         continue;
       }
     }
@@ -1091,7 +1087,7 @@ export function getFeedPostViewsByCategory(feedPostViews, profileUrl = null){
       }
     }
 
-    uids.push(feedPostView.uid);
+    htmlElIds.push(feedPostView.htmlElId);
 
   }
 
@@ -2047,9 +2043,7 @@ async function getReminders(db, criteria){
 
     }
     else if (criteria == "all"){
-
       reminders = await db.reminders.toArray();
-
     }
                               
     for (var reminder of reminders){
@@ -2095,17 +2089,15 @@ export async function setReminderObject(db, reminder){
   // }
 
   if (isLinkedinProfilePage(reminder.objectId)){
-
-    const profile = await getProfileDataFrom(db, reminder.objectId);
-    reminder.object = profile;
-
+    reminder.object = await getProfileDataFrom(db, reminder.objectId);
   }
   else{
-
     reminder.object = await db.feedPosts 
-                              .where({id: reminder.objectId})
+                              .where({uniqueId: reminder.objectId})
                               .first();
-
+    reminder.object.profile = await db.feedProfiles
+                                      .where({uniqueId: reminder.object.profileId})
+                                      .first();
   }
 
 }

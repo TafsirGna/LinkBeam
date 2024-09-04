@@ -44,7 +44,7 @@ export default class FeedVisitListItemView extends React.Component{
 
     (async () => {
 
-      this.setState({postCount: getPostCount(await db.feedPostViews.where({visitId: this.props.object.id}).toArray())});
+      this.setState({postCount: getPostCount(await db.feedPostViews.where({visitId: this.props.object.uniqueId}).toArray())});
 
     }).bind(this)();
 

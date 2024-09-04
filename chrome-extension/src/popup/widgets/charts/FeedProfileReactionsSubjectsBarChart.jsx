@@ -112,13 +112,13 @@ export default class FeedProfileReactionsSubjectsBarChart extends React.Componen
     for (var feedPostView of feedPostViews){
       
       if (feedPostView.category
-            && feedPostView.initiator 
-            && feedPostView.initiator.url
-            && feedPostView.initiator.url != this.props.profile.url){
-        const index = data.findIndex(o => o.url == feedPostView.initiator.url);
+            && feedPostView.profile 
+            && feedPostView.profile.url
+            && feedPostView.profile.url != this.props.profile.url){
+        const index = data.findIndex(o => o.url == feedPostView.profile.url);
         if (index == -1){
           data.push({
-            ...feedPostView.initiator,
+            ...feedPostView.profile,
             value: 1,
           });
         }
@@ -128,9 +128,9 @@ export default class FeedProfileReactionsSubjectsBarChart extends React.Componen
       }
       else if (!feedPostView.category 
                   || (feedPostView.category 
-                        && feedPostView.initiator 
-                        && feedPostView.initiator.url 
-                        && feedPostView.initiator.url == this.props.profile.url)){
+                        && feedPostView.profile 
+                        && feedPostView.profile.url 
+                        && feedPostView.profile.url == this.props.profile.url)){
 
         var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
         if (feedPost.author.url != this.props.profile.url){

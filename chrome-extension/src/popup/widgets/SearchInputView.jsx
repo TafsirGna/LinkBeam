@@ -231,8 +231,7 @@ export default class SearchInputView extends React.Component{
     try{
 
       var matchingPosts = await db.feedPosts
-                                  .filter(feedPost => (feedPost.innerContentHtml 
-                                                          && feedPost.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1)
+                                  .filter(feedPost => (feedPost.text.toLowerCase().includes(this.state.text.toLowerCase()))
                                                         || (feedPost.author.name
                                                               && feedPost.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
                                   .toArray();

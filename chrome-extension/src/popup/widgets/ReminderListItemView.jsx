@@ -37,7 +37,7 @@ export default class ReminderListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      url: null,
+      objectUrl: null,
     };
 
     this.getObjectUrl = this.getObjectUrl.bind(this);
@@ -54,30 +54,26 @@ export default class ReminderListItemView extends React.Component{
 
   async getObjectUrl(){
 
-    var url = null
+    var objectUrl = null
     if (isLinkedinProfilePage(this.props.object.objectId)){
-      url = `/index.html?view=Profile&data=${this.props.object.objectId}`;
+      objectUrl = `/index.html?view=Profile&data=${this.props.object.objectId}`;
     }
     else{
 
-        var feedPostView = (await db.feedPostViews
-                                           .where({feedPostId: this.props.object.objectId})
-                                           .sortBy("date")).toReversed()[0];
+      const feedPostView = await db.feedPostViews
+                                   .where({feedPostId: this.props.object.objectId})
+                                   .last();
 
-      url = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.uid}`;
+      objectUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.htmlElId}`;
     }
 
-    this.setState({url: url});
+    this.setState({objectUrl: objectUrl});
 
   }
 
-  getItemTitle(){
-    
-    return isLinkedinProfilePage(this.props.object.objectId)
-              ? this.props.object.object.fullName
-              : `${this.props.object.object.author.name} | feed`;
-
-  }
+  getTitle = () => isLinkedinProfilePage(this.props.object.objectId)
+                    ? this.props.object.object.fullName
+                    : `${this.props.object.object.profile.name} | feed`;
 
   render(){
     return (
@@ -88,10 +84,10 @@ export default class ReminderListItemView extends React.Component{
             <div>
               <h6 class="mb-0 d-flex gap-2 w-100">
                 <a 
-                  href={this.state.url} 
+                  href={this.state.objectUrl} 
                   target="_blank" 
                   class="text-decoration-none text-muted w-100">
-                  {this.getItemTitle()}
+                  {this.getTitle()}
                 </a>
               </h6>
               <p class="mb-0 opacity-75 fst-italic" /*dangerouslySetInnerHTML={{__html: this.props.object.text}}*/>{this.props.object.text}</p>

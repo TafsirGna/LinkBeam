@@ -66,10 +66,10 @@ class MainScriptAgent extends ScriptAgentBase {
                     status: "ACK"
                 });
 
-                for (const postUid in message.data){
-                    FeedPageScriptAgent.allPostsHideStatus[postUid] = message.data[postUid];
-                    if (FeedPageScriptAgent.allPostsHideStatus[postUid]){
-                        FeedPageScriptAgent.hidePost(postUid);
+                for (const htmlElId in message.data){
+                    FeedPageScriptAgent.allPostsHideStatus[htmlElId] = message.data[htmlElId];
+                    if (FeedPageScriptAgent.allPostsHideStatus[htmlElId]){
+                        FeedPageScriptAgent.hidePost(htmlElId);
                     }
                 }
                 break;
@@ -185,7 +185,7 @@ class MainScriptAgent extends ScriptAgentBase {
             else if (isLinkedinFeed(pageUrl)){
 
                 if (this.pageUrl != pageUrl){
-                    FeedPageScriptAgent.activePostContainerElementUid = null;
+                    FeedPageScriptAgent.activePostContainerElementId = null;
                     FeedPageScriptAgent.allExtensionWidgetsSet = false;
                     FeedPageScriptAgent.allPostsHideStatus = {};
                     this.pageUrl = pageUrl;

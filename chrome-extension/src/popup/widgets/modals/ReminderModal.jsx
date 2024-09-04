@@ -37,6 +37,7 @@ function freshReminder(objectId = null){
         text: "",
         objectId: objectId,
         active: true,
+        uniqueId: uuidv4()
       };
 
 }
@@ -46,7 +47,7 @@ export default class ReminderModal extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      formTagId: uuidv4(),
+      chartRef: React.createRef(),
       reminder: freshReminder(),
       validated: false,
     };
@@ -60,7 +61,7 @@ export default class ReminderModal extends React.Component{
 
     // this.refs.form;
     var callback = null;
-    if (document.getElementById(this.state.formTagId).checkValidity()) {
+    if (this.state.chartRef.current.checkValidity()) {
       callback = async () => { await db.reminders.add(this.state.reminder); };
     }
     
@@ -76,7 +77,7 @@ export default class ReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        var reminder = this.props.object.reminder || freshReminder(this.props.object.url || this.props.object.id);
+        var reminder = this.props.object.reminder || freshReminder(this.props.object.url || this.props.object.uniqueId);
         this.setState({reminder: reminder, validated: false});
       }
     }
@@ -104,7 +105,10 @@ export default class ReminderModal extends React.Component{
             <Modal.Title>Reminder</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <Form noValidate validated={this.state.validated} id={this.state.formTagId}>
+            <Form 
+              noValidate 
+              validated={this.state.validated} /*id={this.state.formTagId}*/
+              ref={this.state.chartRef}>
               <Form.Group className="mb-3" controlId="reminderForm.scheduledForControlInput">
                 <Form.Label>Remind at</Form.Label>
                 <Form.Control

@@ -35,6 +35,7 @@ import {
   getVisitsTotalTime,
   getHashtagText,
   isReferenceHashtag,
+  allUrlCombinationsOf,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import eventBus from "./EventBus";
@@ -67,12 +68,11 @@ export default class FeedVisitDataView extends React.Component{
   componentDidMount(){
 
     if (this.props.context == "modal"){
-      (async () => {
-        this.setVisit({
-          ...(await db.visits.where({id: this.props.objects[0].visitId}).first()),
-          feedPostViews: this.props.objects,
-        });
-      }).bind(this)();
+      if (this.props.object){
+        (async () => {
+          this.setVisit(this.props.object);
+        }).bind(this)();
+      }
       return;
     }
 
@@ -85,21 +85,18 @@ export default class FeedVisitDataView extends React.Component{
 
     (async () => {
       this.setVisit({
-        ...(await db.visits.where({id: parseInt(visitId)}).first()),
-        feedPostViews: (await db.feedPostViews.where({visitId: parseInt(visitId)}).toArray()),
+        ...(await db.visits.where({uniqueId: visitId}).first()),
+        feedPostViews: (await db.feedPostViews.where({visitId: visitId}).toArray()),
       });
     }).bind(this)();
 
   }
 
   componentDidUpdate(prevProps, prevState){
-    if (prevProps.objects != this.props.objects){
-      if (this.props.objects){
+    if (prevProps.object != this.props.object){
+      if (this.props.object){
         (async () => {
-          this.setVisit({
-            ...(await db.visits.where({id: this.props.objects[0].visitId}).first()),
-            feedPostViews: this.props.objects,
-          });
+          this.setVisit(this.props.object);
         }).bind(this)();
       }
     }
@@ -109,7 +106,7 @@ export default class FeedVisitDataView extends React.Component{
 
   setVisit(visit){
     this.setState({
-        visit: {...this.state.visit, ...visit}
+        visit: visit,
       },() => {
         this.setFeedPosts();
       }
@@ -125,30 +122,38 @@ export default class FeedVisitDataView extends React.Component{
     for (const feedPostView of this.state.visit.feedPostViews){
 
       // Setting the feedPosts property
-      if (feedPosts.findIndex(f => f.id == feedPostView.feedPostId) != -1){
+      if (feedPosts.findIndex(f => f.uniqueId == feedPostView.feedPostId) != -1){
         continue;
       }
 
-      var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+      if (!feedPostView.profile){
+        feedPostView.profile = await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first(); 
+      }
+
+      var feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
 
       if (feedPost.linkedPostId){
-        const linkedPost = await db.feedPosts.where({id: feedPost.linkedPostId}).first();
+
+        const linkedPost = await db.feedPosts.where({uniqueId: feedPost.linkedPostId}).first();
         if (linkedPost 
               && linkedPost.media
-              && feedPosts.findIndex(f => f.id == linkedPost.id) == -1){
+              && feedPosts.findIndex(f => f.uniqueId == linkedPost.uniqueId) == -1){
 
+          linkedPost.profile = await db.feedProfiles.where({uniqueId: linkedPost.profileId}).first();
           linkedPost.view = feedPostView;
-          linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf([linkedPost.author.url, encodeURI(linkedPost.author.url), decodeURI(linkedPost.author.url)]).first());
+          linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(linkedPost.profile.url)).first());
 
           feedPosts.push(linkedPost);
         }
+
       }
 
+      feedPost.profile = await db.feedProfiles.where({uniqueId: feedPost.profileId}).first();
       feedPost.view = feedPostView;
-      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)]).first())
-                              || (feedPostView.initiator
-                                    && feedPostView.initiator.url
-                                    && await db.bookmarks.where("url").anyOf([feedPostView.initiator.url, encodeURI(feedPostView.initiator.url), decodeURI(feedPostView.initiator.url)]).first());
+      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPost.profile.url)).first())
+                              || (feedPostView.profile
+                                    && feedPostView.profile.url
+                                    && await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPostView.profile.url)).first());
       feedPosts.push(feedPost);
 
       // Setting the hashtag property
@@ -202,8 +207,8 @@ export default class FeedVisitDataView extends React.Component{
                 <div>
                   { this.state.visit.id
                       && <div>
-                          <div>{LuxonDateTime.fromISO(this.state.visit.date).toFormat('MMMM dd yyyy, hh:mm a')} - {LuxonDateTime.fromMillis(LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.id)) * 60000)).toFormat('MMMM dd yyyy, hh:mm a')}</div> 
-                          <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.id)) * 60)}</div>
+                          <div>{LuxonDateTime.fromISO(this.state.visit.date).toFormat('MMMM dd yyyy, hh:mm a')} - {LuxonDateTime.fromMillis(LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60000)).toFormat('MMMM dd yyyy, hh:mm a')}</div> 
+                          <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60)}</div>
                         </div>}
                   <div class="text-muted fst-italic">{this.state.visit.feedPostViews.length} posts</div>
                   { this.state.visit.automated

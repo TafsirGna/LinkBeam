@@ -143,7 +143,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
 
       this.setState({
-        postHtmlElementVisible: (this.props.postUid == data.uid),
+        postHtmlElementVisible: (this.props.htmlElId == data.htmlElId),
       });
       
     });
@@ -201,7 +201,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     }
 
     // if it's the main feed, then
-    const postHtmlElement = getFeedPostHtmlElement(this.props.postUid).querySelector(".feed-shared-update-v2");
+    const postHtmlElement = getFeedPostHtmlElement(this.props.htmlElId).querySelector(".feed-shared-update-v2");
 
     this.setState({postHtmlElement: postHtmlElement}, () => {
       // Screen this post for all contained keywords
@@ -246,7 +246,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
   extractSendPostObject(){
 
     var post = {
-      id: this.props.postUid,
+      id: this.props.htmlElId,
       category: null,
       content: {},
       fromAutomatedVisit: (() => {
@@ -390,7 +390,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     if (subPost){
       result = {
         ...result,
-        uid: postContentHtmlEl && postContentHtmlEl.parentNode.tagName == "A"
+        htmlElId: postContentHtmlEl && postContentHtmlEl.parentNode.tagName == "A"
               ? postContentHtmlEl.parentNode.getAttribute("href").match(/urn:li:activity:\d+/g)[0]
               : null
       };
@@ -423,8 +423,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
               return;
             }
 
-            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.state.visitId, postUid: this.props.postUid, time: this.state.timeCount }}, (response) => {
-              console.log('time count update request sent', this.props.postUid, this.state.postHtmlElementVisible, response);
+            chrome.runtime.sendMessage({header: messageMeta.header.FEED_POST_TIME_UPDATE, data: {visitId: this.state.visitId, htmlElId: this.props.htmlElId, time: this.state.timeCount }}, (response) => {
+              console.log('time count update request sent', this.props.htmlElId, this.state.postHtmlElementVisible, response);
             });
           }
         });
@@ -482,7 +482,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   showFeedPostDataModal(){
 
-    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { postUid: this.props.postUid, from: window.location.href });
+    eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { htmlElId: this.props.htmlElId, from: window.location.href });
 
   }
 
@@ -512,7 +512,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                 if (message.data.object){
                   const reminder = message.data.object;
-                  if (reminder.postUid != this.props.postUid){
+                  if (reminder.htmlElId != this.props.htmlElId){
                     return;
                   }
                   this.setState({
@@ -534,7 +534,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
               if (message.data.objectStoreName == "reminders"){
 
                 if (message.data.object){
-                  if (message.data.object != this.props.postUid){
+                  if (message.data.object != this.props.htmlElId){
                     return;
                   }
                   this.setState({
@@ -556,7 +556,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
               if (message.data.objectStoreName == "feedPosts"){
 
-                const index = message.data.objects.map(p => p.id).indexOf(this.props.postUid);
+                const index = message.data.objects.map(p => p.id).indexOf(this.props.htmlElId);
                 if (index != -1){
 
                   var post = message.data.objects[index];
@@ -853,7 +853,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
                                 { !isLinkedinFeedPostPage(window.location.href)
                                   && <Dropdown.Item 
-                                      onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.postUid}`, '_blank'); }}
+                                      onClick={() => { window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.props.htmlElId}`, '_blank'); }}
                                       className="">
                                       <DuplicateIcon
                                         size="12"
@@ -907,7 +907,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                     onHide={this.handleReminderModalClose}
                     reminder={this.state.reminder}
                     tabId={this.props.tabId}
-                    postUid={this.props.postUid}/>
+                    htmlElId={this.props.htmlElId}/>
 
                 </div>
 

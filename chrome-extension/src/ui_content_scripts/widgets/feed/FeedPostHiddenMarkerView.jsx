@@ -51,7 +51,7 @@ export default class FeedPostHiddenMarkerView extends React.Component{
 
   showPost(){
 
-    getFeedPostHtmlElement(this.props.postUid).querySelector(".feed-shared-update-v2").style.cssText = "display: block;";
+    getFeedPostHtmlElement(this.props.htmlElId).querySelector(".feed-shared-update-v2").style.cssText = "display: block;";
     this.setState({markerShow: false});
 
   }

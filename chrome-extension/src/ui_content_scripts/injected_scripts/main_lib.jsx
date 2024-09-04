@@ -549,8 +549,8 @@ export function extractPostDate(textContent, LuxonDateTime){
 
 }
 
-export function getFeedPostHtmlElement(postUid) {
-  return document.querySelector(`.scaffold-finite-scroll__content div[data-id='${postUid}']`);
+export function getFeedPostHtmlElement(htmlElId) {
+  return document.querySelector(`.scaffold-finite-scroll__content div[data-id='${htmlElId}']`);
 }
 
 export function checkAndHighlightKeywordsInHtmlEl(htmlElement, keywords, detected, highlightedKeywordBadgeColors){

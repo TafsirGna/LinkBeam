@@ -179,8 +179,7 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
         </div>
 
         <FeedProfileDataModal
-          object={this.props.object}
-          show={this.state.feedProfileDataModalShow}
+          object={this.state.feedProfileDataModalShow ? this.props.object : null}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 
@@ -213,13 +212,13 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
                                                                                                                                 })
                                                                                                            .filter((value, index, self) => self.findIndex(post => post.id == value.id) === index)
                                                                                                            .map(feedPost => ({
-                                                                                                              author: feedPost.author,
+                                                                                                              author: feedPost.profile,
                                                                                                               url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
                                                                                                               // date: views.length ? views[0].date : null,
                                                                                                               text: feedPost.innerContentHtml,
                                                                                                               media: feedPost.media,
                                                                                                               category: feedPost.view.category,
-                                                                                                              initiator: feedPost.view.initiator,
+                                                                                                              initiator: feedPost.view.profile,
                                                                                                             }))}
                     variant="list"/>
                 }

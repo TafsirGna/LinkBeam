@@ -163,7 +163,7 @@ export default class AllPostsModal extends React.Component{
                                     { this.state.searchText 
                                         && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
                                             {`${this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
-                                                                                      && ((feedPostView.initiator && feedPostView.initiator.name && feedPostView.initiator.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+                                                                                      && ((feedPostView.profile && feedPostView.profile.name && feedPostView.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
                                                                                             || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
                                                                                     || (!this.state.searchText && true))
                                                                         .length} results for '${this.state.searchText}'`}
@@ -208,7 +208,7 @@ export default class AllPostsModal extends React.Component{
 
       			                    { !this.state.processing
                                     && this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
-                                                                                      && ((feedPostView.initiator && feedPostView.initiator.name && feedPostView.initiator.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+                                                                                      && ((feedPostView.profile && feedPostView.profile.name && feedPostView.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
                                                                                             || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
                                                                                     || (!this.state.searchText && true))
                                                                 .map(((feedPostView, index) => <PostViewListItemView 

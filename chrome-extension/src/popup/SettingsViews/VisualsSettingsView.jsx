@@ -58,7 +58,7 @@ export default class VisualsSettingsView extends React.Component{
 
   }
 
-  getFontFamilySetting = () => (this.props.globalData.settings && this.props.globalData.settings.fontFamily) || appParams.allFontFamilySettingValues[0].label;
+  getFontFamilySetting = () => (this.props.globalData.settings && this.props.globalData.settings.fontFamily) || appParams.allFontFamilySettingValues[1].label;
 
   render(){
 

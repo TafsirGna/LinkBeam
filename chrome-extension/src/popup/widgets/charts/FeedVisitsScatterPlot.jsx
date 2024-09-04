@@ -22,6 +22,7 @@ import FeedVisitDataView from "../../FeedVisitDataView";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 // import { faker } from '@faker-js/faker';
+import { db } from "../../../db";
 
 ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -60,7 +61,7 @@ export default class FeedVisitsScatterPlot extends React.Component{
     this.state = {
       chartRef: React.createRef(),
       data: null,
-      selectedFeedVisitId: null,
+      selectedFeedVisit: null,
     };
 
     this.setChartData = this.setChartData.bind(this);
@@ -92,8 +93,10 @@ export default class FeedVisitsScatterPlot extends React.Component{
 
   }
 
-  handleFeedVisitDataModalClose = () => this.setState({selectedFeedVisitId: null});
-  handleFeedVisitDataModalShow = (visitId) => this.setState({selectedFeedVisitId: visitId});
+  handleFeedVisitDataModalClose = () => this.setState({selectedFeedVisit: null});
+  handleFeedVisitDataModalShow = async (visitId) => this.setState({
+    selectedFeedVisit: await db.visits.where({uniqueId: visitId}).first(),
+  });
 
   async setChartData(){
 
@@ -146,18 +149,22 @@ export default class FeedVisitsScatterPlot extends React.Component{
 
 
         <Modal 
-          show={this.state.selectedFeedVisitId != null} 
+          show={this.state.selectedFeedVisit} 
           onHide={this.handleFeedVisitDataModalClose}
           size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Feed Visit #{this.state.selectedFeedVisitId}</Modal.Title>
+            <Modal.Title>Feed Visit #{this.state.selectedFeedVisit && this.state.selectedFeedVisit.id}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
             <FeedVisitDataView
               context="modal"
-              objects={this.state.selectedFeedVisitId != null 
-                        ? this.props.objects.filter(view => view.visitId == this.state.selectedFeedVisitId)
+              objects={this.state.selectedFeedVisit
+                        ? (() => {
+                            var visit = this.state.selectedFeedVisit;
+                            visit.feedPostViews = this.props.objects.filter(view => view.visitId == this.state.selectedFeedVisit.uniqueId);
+                            return visit;
+                          })()
                         : null}
               globalData={this.props.globalData}/>
 

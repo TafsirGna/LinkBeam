@@ -79,7 +79,7 @@ export default class FeedPostReminderModal extends React.Component{
     this.setState({processing: true}, () => {
 
       this.setState({
-        reminder: {...this.state.reminder, objectId: this.props.postUid},
+        reminder: {...this.state.reminder, objectId: this.props.htmlElId},
       }, () => {
 
         // Send message to the background

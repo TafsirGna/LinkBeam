@@ -69,8 +69,8 @@ export default class FeedProfileDataModal extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.show != this.props.show){
-      if (this.props.show){
+    if (prevProps.object != this.props.object){
+      if (this.props.object){
         this.setFeedPostViews();
       }
     }
@@ -79,19 +79,19 @@ export default class FeedProfileDataModal extends React.Component{
 
   async setFeedPostViews(){
 
+    // Collecting the views in which the given profile has been an initiator
     var feedPostViews = await db.feedPostViews
-                                .filter(feedPostView => feedPostView.initiator 
-                                                          && feedPostView.initiator.url 
-                                                          && feedPostView.initiator.url == this.props.object.url)
+                                .filter(feedPostView => feedPostView.profileId == this.props.object.uniqueId)
                                 .toArray();
 
+    // Then, collecting the views in which the given profile has been an author
     const feedPosts = await db.feedPosts
-                              .filter(feedPost => feedPost.author.url == this.props.object.url)
+                              .filter(feedPost => feedPost.profileId == this.props.object.uniqueId)
                               .toArray();
 
     for (const feedPost of feedPosts){
       await db.feedPostViews
-              .where({feedPostId: feedPost.id})
+              .where({feedPostId: feedPost.uniqueId})
               .each(feedPostView => {
                 if (feedPostViews.findIndex(view => view.date == feedPostView.date) == -1){
                   feedPostViews.push(feedPostView);
@@ -139,7 +139,7 @@ export default class FeedProfileDataModal extends React.Component{
   render(){
     return (
       <>
-        <Modal show={this.props.show} onHide={this.handleModalClose} size="lg">
+        <Modal show={this.props.object} onHide={this.handleModalClose} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>
               {this.props.object 
