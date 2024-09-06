@@ -816,6 +816,30 @@ export const groupObjectsByMonth = (objectList) => {
 
 }
 
+export function groupPeriodFeedPostViewsByHtmlElId(allPeriodFeedPostViews){
+  return groupPeriodFeedPostViewsBy("htmlElId", allPeriodFeedPostViews);
+}
+
+function groupPeriodFeedPostViewsBy(property, allPeriodFeedPostViews){
+
+  var result = {};
+  for (const feedPostView of allPeriodFeedPostViews){
+
+    if (!(property in feedPostView)){
+      return null;
+    }
+
+    if (feedPostView[property] in result){
+      result[feedPostView[property]].push(feedPostView);
+    }
+    else{
+      result[feedPostView[property]] = [feedPostView];
+    }
+
+  }
+  return result == {} ? null : result;
+}
+
 export function setGlobalDataSettings(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.settings
@@ -1045,6 +1069,26 @@ export async function getProfileDataFrom(db, url, properties = null){
 
   return profileData;
 
+}
+
+export function extractHashtags(feedPostViews){
+
+  return feedPostViews.filter((value, index, self) => self.findIndex(v => v.feedPostId == value.feedPostId) === index)
+                      .filter(v => v.feedPost.references)
+                      .map(v => v.feedPost.references.filter(reference => isReferenceHashtag(reference)))
+                      .reduce((acc, a) => acc.concat(a), [])
+                      .filter((value, index, self) => self.indexOf(value) === index)
+  ;
+
+}
+
+export function hashtagFeedPosts(hashtag, feedPostViews){
+
+  return feedPostViews.filter((value, index, self) => self.findIndex(v => v.feedPostId == value.feedPostId) === index)
+                      .filter(v => v.feedPost.references 
+                                    && v.feedPost.references.filter(reference => getHashtagText(reference.text) == hashtag.text).length)
+                      .map(v => v.feedPost);
+                      
 }
 
 export function getFeedPostViewsByCategory(feedPostViews, profileUrl = null){

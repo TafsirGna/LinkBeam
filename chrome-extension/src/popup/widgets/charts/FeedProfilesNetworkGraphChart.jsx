@@ -87,21 +87,16 @@ export default class FeedProfilesNetworkGraphChart extends React.Component{
 
   async setChartData(){
 
-    var chartData = [],
-    	doneFeedPostViewsUids = [];
+    var chartData = [];
 
-    for (const feedPostView of this.props.objects){
+    for (const feedPostView of this.props.objects.filter((value, index, self) => self.findIndex(object => object.htmlElId == value.htmlElId) === index)){
 
-    	if (doneFeedPostViewsUids.indexOf(feedPostView.uid) != -1){
-    		continue;
-    	}
-
-    	if (!feedPostView.profile || (feedPostView.profile && !feedPostView.profile.name)){
+    	if (!feedPostView.profile){
     		continue;
     	}
 
     	const source = feedPostView.profile.name,
-    		  target = (await db.feedPosts.where({id: feedPostView.feedPostId}).first()).author.name;
+    		  	target = feedPostView.feedPost.profile.name;	
 
   		if (chartData.findIndex(d => d.source == source && d.target == target) == -1
   					&& chartData.findIndex(d => d.source == target && d.target == source) == -1){
@@ -111,8 +106,6 @@ export default class FeedProfilesNetworkGraphChart extends React.Component{
   				type: "null",
   			});
   		}
-
-  		doneFeedPostViewsUids.push(feedPostView.uid);
 
     }
 

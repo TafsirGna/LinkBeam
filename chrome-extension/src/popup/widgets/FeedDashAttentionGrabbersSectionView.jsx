@@ -91,48 +91,37 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
 
     for (var feedPostView of this.props.objects){
 
-      var feedPost = { ...feedPostView.feedPost };
-      feedPost.view = feedPostView;
       var profileIndex = null;
 
       // checking first for the initiator of the postView
       if (feedPostView.profile){
-        profileIndex = attentionGrabbers.findIndex(g => g.profile.uniqueId == feedPostView.profile.uniqueId);
+        profileIndex = attentionGrabbers.findIndex(g => g.uniqueId == feedPostView.profileId);
         if (profileIndex == -1){
           attentionGrabbers.push({
-            profile: feedPostView.profile,
-            timeCount: feedPostView.timeCount,
-            feedPosts: [feedPost],
+            ...feedPostView.profile,
+            feedPostViews: [feedPostView],
           });
         }
         else{
-          attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
-          if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.uniqueId == feedPost.uniqueId) == -1){
-            attentionGrabbers[profileIndex].feedPosts.push(feedPost);
-          }
+          attentionGrabbers[profileIndex].feedPostViews.push(feedPostView);
         }
       }
 
       // Then doing the same for the author
-      profileIndex = attentionGrabbers.findIndex(g => g.profile.uniqueId == feedPost.profile.uniqueId);
+      profileIndex = attentionGrabbers.findIndex(g => g.uniqueId == feedPostView.feedPost.profileId);
       if (profileIndex == -1){
         attentionGrabbers.push({
-          profile: feedPost.profile,
-          timeCount: feedPostView.timeCount,
-          feedPosts: [feedPost],
+          ...feedPostView.feedPost.profile,
+          feedPostViews: [feedPostView],
         });
       }
       else{
-        attentionGrabbers[profileIndex].timeCount += feedPostView.timeCount;
-        if (attentionGrabbers[profileIndex].feedPosts.findIndex(post => post.uniqueId == feedPost.uniqueId) == -1){
-          attentionGrabbers[profileIndex].feedPosts.push(feedPost);
-        }
+        attentionGrabbers[profileIndex].feedPostViews.push(feedPostView);
       }
 
     }    
 
-    attentionGrabbers.sort((a, b) => b.timeCount - a.timeCount);
-    // attentionGrabbers = attentionGrabbers.slice(0, 10);
+    attentionGrabbers.sort((a, b) => b.feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) - a.feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0));
 
     this.setState({profiles: attentionGrabbers});
 
@@ -200,7 +189,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                   && <div>
                      { this.state.profiles.map((object, index) => index < 10 ? <div class="d-flex text-body-secondary pt-3 border-bottom">
                                                                           <img 
-                                                                            src={ object.profile.picture } 
+                                                                            src={ object.picture } 
                                                                             alt="twbs" 
                                                                             width="40" 
                                                                             height="40" 
@@ -210,26 +199,26 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                               <div class="mb-2">
                                                                                 <a 
                                                                                   class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                                                                                  href=/*{object.profile.url}*/"#"
-                                                                                  onClick={() => {this.handleFeedProfileDataModalShow(object.profile);}}
+                                                                                  // href={null}
+                                                                                  onClick={() => {this.handleFeedProfileDataModalShow(object);}}
                                                                                   title="Click to show more infos">
-                                                                                  { object.profile.name } 
+                                                                                  { object.name } 
                                                                                 </a>
                                                                               </div>
                                                                               <div class="w-100 p-1">
                                                                                 
                                                                                 <div class="progress-stacked shadow border" style={{height: ".5em"}}>
 
-                                                                                      <OverlayTrigger overlay={<ReactTooltip id={null}>{`${secondsToHms(object.timeCount)}`}</ReactTooltip>}>
+                                                                                      <OverlayTrigger overlay={<ReactTooltip id={null}>{`${secondsToHms(object.feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0))}`}</ReactTooltip>}>
                                                                                         <div 
                                                                                           class="progress handy-cursor" 
                                                                                           role="progressbar" 
                                                                                           aria-label="Segment one" 
-                                                                                          aria-valuenow={((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)} 
+                                                                                          aria-valuenow={((object.feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) * 100) / this.state.profiles[0].feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0)).toFixed(1)} 
                                                                                           aria-valuemin="0" 
                                                                                           onClick={() => this.handlePostListModalShow(object)}
                                                                                           title="Click to see more"
-                                                                                          aria-valuemax="100" style={{width: `${((object.timeCount * 100) / this.state.profiles[0].timeCount).toFixed(1)}%`}}>
+                                                                                          aria-valuemax="100" style={{width: `${((object.feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) * 100) / this.state.profiles[0].feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0)).toFixed(1)}%`}}>
                                                                                           <div class={`progress-bar bg-secondary`}></div>
                                                                                         </div>
                                                                                       </OverlayTrigger>
@@ -266,7 +255,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
         </Modal>
 
         <FeedProfileDataModal
-          object={this.state.selectedFeedProfile}
+          profile={this.state.selectedFeedProfile}
+          objects={this.props.objects}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 
@@ -276,7 +266,7 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
           onHide={this.handlePostListModalClose}
           size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>Post List: {this.state.selectedProfile ? this.state.selectedProfile.profile.name : null}</Modal.Title>
+            <Modal.Title>Post List: {this.state.selectedProfile ? this.state.selectedProfile.name : null}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
@@ -293,10 +283,15 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
             { this.state.selectedProfile
                 && <ActivityListView 
                       objects={this.state.selectedProfile
-                                         .feedPosts
+                                         .feedPostViews
+                                         .filter((value, index, self) => self.findIndex(v => v.htmlElId == value.htmlElId) === index)
+                                         .map(v => {
+                                            v.feedPost.view = v;
+                                            return v.feedPost;
+                                         })
                                          .map(feedPost => ({
                                             author: feedPost.profile,
-                                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.htmlElId}`,
                                             // date: views.length ? views[0].date : null,
                                             text: feedPost.innerContentHtml,
                                             media: feedPost.media,

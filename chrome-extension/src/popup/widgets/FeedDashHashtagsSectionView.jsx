@@ -26,7 +26,8 @@ import {
   appParams,
   highlightText,
   getHashtagText,
-  isReferenceHashtag,
+  extractHashtags,
+  hashtagFeedPosts,
 } from "../Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
@@ -103,37 +104,10 @@ export default class FeedDashHashtagsSectionView extends React.Component{
       return;
     }
 
-    var references = [];
-    const feedPosts = this.props.objects.map(view => view.feedPost).filter((value, index, self) => self.findIndex(post => post.id == value.id) === index);
-    console.log("AAAAAAAAAAAAAA - 1", feedPosts);
-
-    for (var feedPost of feedPosts){
-
-      if (!feedPost.references){
-        continue;
-      }
-
-      for (const reference of feedPost.references){
-
-        if (!isReferenceHashtag(reference)){
-          continue;
-        }
-
-        const index = references.findIndex(r => getHashtagText(r.text) == getHashtagText(reference.text));
-        if (index == -1){
-          references.push({
-            ...reference,
-            feedPosts: [feedPost],
-          });
-        }
-        else{
-          references[index].feedPosts.push(feedPost);
-        }
-      }
-
-    }
-
-    console.log("AAAAAAAAAAAAAA - 2", references);
+    var references = extractHashtags(this.props.objects).map(hashtag => {
+                                                              hashtag.feedPosts = hashtagFeedPosts(hashtag, this.props.objects);
+                                                              return hashtag;
+                                                            });
 
     references.sort((a, b) => b.feedPosts.length - a.feedPosts.length);
 

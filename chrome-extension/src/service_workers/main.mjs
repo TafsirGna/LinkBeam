@@ -918,27 +918,6 @@ async function recordFeedVisit(tabData){
 
     }
 
-    async function checkPostFeedProfile(profile){
-
-        if (!profile || !profile.url){
-            return null;
-        }
-
-        const dbProfile = await db.feedProfiles.where({url: profile.url})
-                                               .first();
-
-        if (dbProfile){
-            await db.feedProfiles.update(dbProfile.id, profile);
-            return dbProfile.uniqueId;
-        }
-
-        const identifier = uuidv4();
-        await db.feedProfiles.add({...profile, uniqueId: identifier});
-
-        return identifier;
-
-    }
-
     async function checkAndHandleSubPost(newFeedPost, extractedPostData){
 
         if (extractedPostData.content.subPost){  
@@ -990,6 +969,27 @@ async function recordFeedVisit(tabData){
         }
 
     }
+
+}
+
+async function checkPostFeedProfile(profile){
+
+    if (!profile || !profile.url){
+        return null;
+    }
+
+    const dbProfile = await db.feedProfiles.where({url: profile.url})
+                                           .first();
+
+    if (dbProfile){
+        await db.feedProfiles.update(dbProfile.id, profile);
+        return dbProfile.uniqueId;
+    }
+
+    const identifier = uuidv4();
+    await db.feedProfiles.add({...profile, uniqueId: identifier});
+
+    return identifier;
 
 }
 
@@ -1298,6 +1298,7 @@ async function processMessageEvent(message, sender, sendResponse){
             delete quote.author;
 
             await db.quotes.add(quote);
+            notifyUser("Quote successfully saved!");
 
             break;
         }

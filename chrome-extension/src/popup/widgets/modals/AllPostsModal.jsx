@@ -28,6 +28,7 @@ import PostViewListItemView from "../PostViewListItemView";
 import { 
   dbDataSanitizer,
   popularityValue,
+  groupPeriodFeedPostViewsByHtmlElId,
 } from "../../Local_library";
 import { db } from "../../../db";
 import eventBus from "../../EventBus";
@@ -45,6 +46,7 @@ export default class AllPostsModal extends React.Component{
     };
 
     this.setSortByValue = this.setSortByValue.bind(this);
+    this.containsSearchText = this.containsSearchText.bind(this);
   }
 
   componentDidMount() {
@@ -63,10 +65,14 @@ export default class AllPostsModal extends React.Component{
   }
 
   componentDidUpdate(prevProps, prevState){
-   
-    if (prevProps.show != this.props.show){
 
-      if (this.props.show){
+    if (prevProps.objects != this.props.objects){
+      if (prevProps.objects){
+        this.setState({feedPostViews: [...this.props.objects]}, () => {
+          this.setSortByValue(this.state.sortByValueIndex);
+        });
+      }
+      else{
         if (!this.state.feedPostViews){
           this.setState({feedPostViews: [...this.props.objects]}, () => {
             this.setSortByValue(0);
@@ -75,15 +81,6 @@ export default class AllPostsModal extends React.Component{
         else{
           this.setSortByValue(0);
         }
-      }
-
-    }
-
-    if (prevProps.objects != this.props.objects){
-      if (this.props.show){
-        this.setState({feedPostViews: [...this.props.objects]}, () => {
-          this.setSortByValue(this.state.sortByValueIndex);
-        });
       }
     }
 
@@ -123,11 +120,18 @@ export default class AllPostsModal extends React.Component{
     });
   }
 
+  containsSearchText(feedPostView){
+    return (feedPostView.profile 
+              && feedPostView.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+            || (feedPostView.feedPost.profile.name && feedPostView.feedPost.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
+            || feedPostView.feedPost.text.toLowerCase().includes(this.state.searchText.toLowerCase);
+  }
+
   render(){
     return (
       <>
         <Modal 
-          show={this.props.show} 
+          show={this.props.objects} 
           onHide={this.props.onHide}
           size="lg">
           <Modal.Header closeButton>
@@ -162,10 +166,8 @@ export default class AllPostsModal extends React.Component{
                                     globalData={this.props.globalData} />
                                     { this.state.searchText 
                                         && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                                            {`${this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
-                                                                                      && ((feedPostView.profile && feedPostView.profile.name && feedPostView.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
-                                                                                            || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
-                                                                                    || (!this.state.searchText && true))
+                                            {`${this.state.feedPostViews.filter(feedPostView => (this.state.searchText && this.containsSearchText(feedPostView))
+                                                                                                  || (!this.state.searchText && true))
                                                                         .length} results for '${this.state.searchText}'`}
                                           </p> }
                                 </div>
@@ -199,7 +201,9 @@ export default class AllPostsModal extends React.Component{
                                 </div>
 
                                 { this.state.processing 
-                                    && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                                    && <div class="text-center">
+                                        <div class="mb-5 mt-4">
+                                          <div class="spinner-border text-primary" role="status">
                                             {/*<span class="visually-hidden">Loading...</span>*/}
                                           </div>
                                           <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
@@ -207,15 +211,14 @@ export default class AllPostsModal extends React.Component{
                                       </div> }
 
       			                    { !this.state.processing
-                                    && this.state.feedPostViews.filter(feedPostView => (this.state.searchText 
-                                                                                      && ((feedPostView.profile && feedPostView.profile.name && feedPostView.profile.name.toLowerCase().includes(this.state.searchText.toLowerCase()))
-                                                                                            || (feedPostView.feedPost.author.name && feedPostView.feedPost.author.name.toLowerCase().includes(this.state.searchText.toLowerCase()))))
-                                                                                    || (!this.state.searchText && true))
-                                                                .map(((feedPostView, index) => <PostViewListItemView 
-                                                                                                  startDate={this.props.startDate}
-                                                                                                  endDate={this.props.endDate}
-                                                                                                  object={feedPostView}
-                                                                                                  globalData={this.props.globalData}/>))}
+                                    && Object.entries(groupPeriodFeedPostViewsByHtmlElId(this.state.feedPostViews
+                                                                                                   .filter(feedPostView => (this.state.searchText && this.containsSearchText(feedPostView))
+                                                                                                                              || (!this.state.searchText && true))))
+                                                                                          .map((([_, feedPostViews]) => <PostViewListItemView 
+                                                                                                                            startDate={this.props.startDate}
+                                                                                                                            endDate={this.props.endDate}
+                                                                                                                            object={feedPostViews}
+                                                                                                                            globalData={this.props.globalData}/>))}
     			                  	</div>}
 
             		   </div>}      

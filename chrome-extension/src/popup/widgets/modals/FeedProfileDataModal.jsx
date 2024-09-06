@@ -69,49 +69,23 @@ export default class FeedProfileDataModal extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevProps.object != this.props.object){
-      if (this.props.object){
-        this.setFeedPostViews();
-      }
+    if (prevProps.profile != this.props.profile){
+      this.setFeedPostViews();
     }
 
   }
 
   async setFeedPostViews(){
 
-    // Collecting the views in which the given profile has been an initiator
-    var feedPostViews = await db.feedPostViews
-                                .filter(feedPostView => feedPostView.profileId == this.props.object.uniqueId)
-                                .toArray();
-
-    // Then, collecting the views in which the given profile has been an author
-    const feedPosts = await db.feedPosts
-                              .filter(feedPost => feedPost.profileId == this.props.object.uniqueId)
-                              .toArray();
-
-    for (const feedPost of feedPosts){
-      await db.feedPostViews
-              .where({feedPostId: feedPost.uniqueId})
-              .each(feedPostView => {
-                if (feedPostViews.findIndex(view => view.uniqueId == feedPostView.uniqueId) == -1){
-                  feedPostView.feedPost = feedPost;
-                  feedPostViews.push(feedPostView);
-                }
-              });
+    if (!this.props.profile){
+      return null;
     }
 
-    for (var feedPostView of feedPostViews){
-      feedPostView.profile = feedPostView.profileId
-                              ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
-                              : null;
-      feedPostView.feedPost = feedPostView.feedPost || await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
-      feedPostView.feedPost.profile = await db.feedProfiles.where({uniqueId: feedPostView.feedPost.profileId}).first();
-    }
-
-    this.setState({feedPostViews: feedPostViews});
+    this.setState({feedPostViews: this.props.objects.filter(feedPostView => (feedPostView.profile && feedPostView.profile.uniqueId == this.props.profile.uniqueId)
+                                                                              || feedPostView.feedPost.profile.uniqueId == this.props.profile.uniqueId)});
 
     // setting bookmark property value
-    const profileBookmarkStatusObservable = liveQuery(() => db.bookmarks.where({url: this.props.object.url}).first());
+    const profileBookmarkStatusObservable = liveQuery(() => db.bookmarks.where({url: this.props.profile.url}).first());
 
     this.profileBookmarkStatusSubscription = profileBookmarkStatusObservable.subscribe(
       result => this.setState({bookmark: result}),
@@ -138,7 +112,7 @@ export default class FeedProfileDataModal extends React.Component{
     }
     else{
       await db.bookmarks.add({
-        url: this.props.object.url,
+        url: this.props.profile.url,
         createdOn: new Date().toISOString(),
       })
     }
@@ -150,19 +124,19 @@ export default class FeedProfileDataModal extends React.Component{
   render(){
     return (
       <>
-        <Modal show={this.props.object} onHide={this.handleModalClose} size="lg">
+        <Modal show={this.props.profile} onHide={this.handleModalClose} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>
-              {this.props.object 
+              {this.props.profile 
                 && <span>
                     <span>
                       <img 
-                        src={this.props.object.picture}
+                        src={this.props.profile.picture}
                         class="shadow rounded-circle"
                         width="50" height="50"/>
-                      <span class="ms-2">{this.props.object.name}</span>
+                      <span class="ms-2">{this.props.profile.name}</span>
                       <a 
-                        href={this.props.object.url} 
+                        href={this.props.profile.url} 
                         target="_blank" 
                         title="Open profile in a new tab"
                         class="ms-3">
@@ -190,14 +164,14 @@ export default class FeedProfileDataModal extends React.Component{
           </Modal.Header>
           <Modal.Body>
 
-            { !this.props.object 
+            { !this.props.profile 
                 && <div class="text-center">
                         <div class="spinner-border spinner-border-sm text-primary" role="status">
                           <span class="visually-hidden">Loading...</span>
                         </div>
                     </div> }
 
-            { this.props.object 
+            { this.props.profile 
                 && this.state.feedPostViews
                 && <div>
 
@@ -237,7 +211,7 @@ export default class FeedProfileDataModal extends React.Component{
                         <div class="rounded shadow-sm">
                           <FeedProfileReactionsSubjectsBarChart
                             objects={this.getIndividualFeedPostViews()}
-                            profile={this.props.object}
+                            profile={this.props.profile}
                           />
                         </div>
                       </div>

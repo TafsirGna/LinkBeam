@@ -357,7 +357,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 		}
 
 		const quote = {
-			author: getPostProfileData(postContainerElements[0]),
+			author: getPostProfileData(postContainerElements[0], "author"),
 			text: selectedText,
 		};
 

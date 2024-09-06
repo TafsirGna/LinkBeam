@@ -35,6 +35,7 @@ import {
   getVisitMeanTime,
   getVisitsTotalTime,
   getFeedDashMetricValue,
+  groupPeriodFeedPostViewsByHtmlElId,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
@@ -69,11 +70,9 @@ export default class FeedDashView extends React.Component{
     this.state = {
       startDate: null,
       endDate: null,
-      allPeriodUniqueFeedPostViews: null,
       allPeriodFeedPostViews: null,
       allPostsModalShow: false,
-      metricLineChartModalShow: false,
-      metricLineChartModalTitle: "",
+      metricLineChartModalTitle: null,
       toastMessage: "",
       toastShow: false,
       activeListIndex: 0,
@@ -85,7 +84,7 @@ export default class FeedDashView extends React.Component{
     this.handleEndDateInputChange = this.handleEndDateInputChange.bind(this);
     this.addFeedPostViewSubscription = this.addFeedPostViewSubscription.bind(this);
     this.deleteFeedPostViewSubscription = this.deleteFeedPostViewSubscription.bind(this);
-    this.setFeedPostViews = this.setFeedPostViews.bind(this);
+    this.setPeriodFeedPostViews = this.setPeriodFeedPostViews.bind(this);
     this.setActiveListIndex = this.setActiveListIndex.bind(this);
     this.setHashtagCount = this.setHashtagCount.bind(this);
 
@@ -97,23 +96,28 @@ export default class FeedDashView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    var date = urlParams.get("data");
+    var date = (new URLSearchParams(window.location.search)).get("data"),
+        startDate = null,
+        endDate = null;
 
     if (date){
 
       try {
         date = JSON.parse(date);
-        this.setState({startDate: date.from.split("T")[0], endDate: date.to.split("T")[0]});
+        startDate = date.from.split("T")[0];
+        endDate = date.to.split("T")[0];
       } catch (error) {
         console.error('Error while retrieving date: ', error);
       }
 
     }
     else{
-        const d = new Date().toISOString().split("T")[0]
-        this.setState({startDate: d, endDate: d});
+        date = new Date().toISOString().split("T")[0];
+        startDate = date;
+        endDate = date;
     }
+
+    this.setState({startDate: startDate, endDate: endDate});
 
   }
 
@@ -135,8 +139,8 @@ export default class FeedDashView extends React.Component{
   handleAllPostsModalClose = () => this.setState({allPostsModalShow: false});
   handleAllPostsModalShow = () => this.setState({allPostsModalShow: true});
 
-  handleMetricLineChartModalClose = () => this.setState({metricLineChartModalShow: false});
-  handleMetricLineChartModalShow = (metricLineChartModalTitle) => this.setState({metricLineChartModalShow: true, metricLineChartModalTitle: metricLineChartModalTitle});
+  handleMetricLineChartModalClose = () => this.setState({metricLineChartModalTitle: null});
+  handleMetricLineChartModalShow = (metricLineChartModalTitle) => this.setState({metricLineChartModalTitle: metricLineChartModalTitle});
 
   setHashtagCount(count){
     this.setState({hashtagCount: count});
@@ -159,50 +163,34 @@ export default class FeedDashView extends React.Component{
     this.feedPostViewSubscription = liveQuery(() => db.feedPostViews
                                                       .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))
                                                       .toArray()).subscribe(
-      result => this.setFeedPostViews(result),
+      result => this.setPeriodFeedPostViews(result),
       error => this.setState({error})
     );
 
   }
 
-  async setFeedPostViews(feedPostViews){
+  async setPeriodFeedPostViews(feedPostViews){
 
     var allPeriodFeedPostViews = [],
-        allPeriodUniqueFeedPostViews = [];
+        visits = [],
+        profiles = [],
+        feedPosts = [];
 
     for (var feedPostView of feedPostViews){
 
       feedPostView.profile = feedPostView.profileId 
-                              ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
+                              ? profiles.filter(p => p.uniqueId == feedPostView.profileId)[0] || await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
                               : null;
+
+      feedPostView.feedPost = feedPosts.filter(p => p.uniqueId == feedPostView.feedPostId)[0] || await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+      feedPostView.feedPost.profile = profiles.filter(p => p.uniqueId == feedPostView.feedPost.profileId)[0] || await db.feedProfiles.where({uniqueId: feedPostView.feedPost.profileId}).first();
+      feedPostView.visit = visits.filter(v => v.uniqueId == feedPostView.visitId)[0] || await db.visits.where({uniqueId: feedPostView.visitId}).first();
 
       allPeriodFeedPostViews.push({...feedPostView}); // IMPORTANT to duplicate the object
 
-      const index = allPeriodUniqueFeedPostViews.map(v => v.htmlElId).indexOf(feedPostView.htmlElId);
-      if (index == -1){
-        allPeriodUniqueFeedPostViews.push(feedPostView);
-      }
-      else{
-        if (new Date(feedPostView.date) > new Date(allPeriodUniqueFeedPostViews[index].date)){
-          feedPostView.timeCount += allPeriodUniqueFeedPostViews[index].timeCount;
-          allPeriodUniqueFeedPostViews[index] = feedPostView;
-        }
-        else{
-          allPeriodUniqueFeedPostViews[index].timeCount += feedPostView.timeCount;
-        }
-      }
-
     }
 
-    for (var feedPostView of allPeriodUniqueFeedPostViews){
-      feedPostView.feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
-      feedPostView.feedPost.profile = await db.feedProfiles.where({uniqueId: feedPostView.feedPost.profileId}).first();
-    }
-
-    this.setState({ 
-      allPeriodFeedPostViews: allPeriodFeedPostViews,
-      allPeriodUniqueFeedPostViews: allPeriodUniqueFeedPostViews,
-    });
+    this.setState({allPeriodFeedPostViews: allPeriodFeedPostViews});
 
   }
 
@@ -283,7 +271,7 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Post Count")}}>
               <div class="card-body">
-                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-warning-emphasis">~{this.state.allPeriodUniqueFeedPostViews.length}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-warning-emphasis">~{Object.keys(groupPeriodFeedPostViewsByHtmlElId(this.state.allPeriodFeedPostViews)).length}</h6>}
                 <p class="card-text mb-1">Posts</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
@@ -329,15 +317,15 @@ export default class FeedDashView extends React.Component{
               "Most recurrent profiles", 
               "Top attention grabbers", 
               "Hashtags"].map((item, index) => (<span 
-                                                          class={`me-2 handy-cursor badge bg-${subMenuColorsVariants[index]}-subtle border border-${subMenuColorsVariants[index]}-subtle text-${subMenuColorsVariants[index]}-emphasis ${this.state.activeListIndex == index ? "shadow" : "shadow-sm"}`}
-                                                          onClick={() => {this.setActiveListIndex(index)}}>
-                                                          {item}
+                                                  class={`me-2 handy-cursor badge bg-${subMenuColorsVariants[index]}-subtle border border-${subMenuColorsVariants[index]}-subtle text-${subMenuColorsVariants[index]}-emphasis ${this.state.activeListIndex == index ? "shadow" : "shadow-sm"}`}
+                                                  onClick={() => {this.setActiveListIndex(index)}}>
+                                                  {item}
 
-                                                          {/*Display the count*/}
-                                                          { index == 3 
-                                                            ? (this.state.hashtagCount ? ` (${this.state.hashtagCount})` : null)
-                                                            : null}
-                                                  </span>))}
+                                                  {/*Display the count*/}
+                                                  { index == 3 
+                                                    ? (this.state.hashtagCount ? ` (${this.state.hashtagCount})` : null)
+                                                    : null}
+                                                </span>))}
           </div>
 
           { this.state.activeListIndex == 0 
@@ -367,30 +355,31 @@ export default class FeedDashView extends React.Component{
 
                       </h6>
           
-                      { !this.state.allPeriodUniqueFeedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
+                      { !this.state.allPeriodFeedPostViews && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
                                 {/*<span class="visually-hidden">Loading...</span>*/}
                               </div>
                               <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
                             </div>
                           </div>}
           
-                      { this.state.allPeriodUniqueFeedPostViews 
+                      { this.state.allPeriodFeedPostViews 
                         && <>
-                          {this.state.allPeriodUniqueFeedPostViews.length == 0
+                          {this.state.allPeriodFeedPostViews.length == 0
                             && <div class="text-center m-5">
                                   <AlertCircleIcon size="100" className="text-muted"/>
                                   <p><span class="badge text-bg-primary fst-italic shadow">No posts yet</span></p>
                                 </div>}
           
-                          { this.state.allPeriodUniqueFeedPostViews.length  != 0
+                          { this.state.allPeriodFeedPostViews.length != 0
                               && <div>
-                                  { this.state.allPeriodUniqueFeedPostViews.map(((feedPostView, index) => {
-                                    return index < 3 ? <PostViewListItemView  
-                                                        startDate={this.state.startDate}
-                                                        endDate={this.state.endDate}
-                                                        object={feedPostView}
-                                                        globalData={this.props.globalData}/>
-                                                     : null;
+                                  { Object.entries(groupPeriodFeedPostViewsByHtmlElId(this.state.allPeriodFeedPostViews)).map((([_, feedPostViews], index) => {
+                                    return index < 3 
+                                            ? <PostViewListItemView  
+                                                startDate={this.state.startDate}
+                                                endDate={this.state.endDate}
+                                                objects={feedPostViews}
+                                                globalData={this.props.globalData}/>
+                                            : null;
                                   }))}
                                   <small class="d-block text-end mt-3 fst-italic">
                                     <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
@@ -403,17 +392,17 @@ export default class FeedDashView extends React.Component{
 
           { this.state.activeListIndex == 1
               && <FeedDashRecurrentProfilesSectionView
-                    objects={this.state.allPeriodUniqueFeedPostViews}
+                    objects={this.state.allPeriodFeedPostViews}
                     globalData={this.props.globalData}/>}
 
           { this.state.activeListIndex == 2
               && <FeedDashAttentionGrabbersSectionView
-                  objects={this.state.allPeriodUniqueFeedPostViews}
+                  objects={this.state.allPeriodFeedPostViews}
                   globalData={this.props.globalData}/>}
 
           { this.state.activeListIndex == 3
               && <FeedDashHashtagsSectionView
-                    objects={this.state.allPeriodUniqueFeedPostViews}
+                    objects={this.state.allPeriodFeedPostViews}
                     setCount={this.setHashtagCount}/>}
 
   			</div>
@@ -426,21 +415,20 @@ export default class FeedDashView extends React.Component{
       <AllPostsModal 
         startDate={this.state.startDate}
         endDate={this.state.endDate}
-        show={this.state.allPostsModalShow}
         onHide={this.handleAllPostsModalClose}
         globalData={this.props.globalData}
-        objects={this.state.allPeriodUniqueFeedPostViews}/>
+        objects={this.state.allPostsModalShow ? this.state.allPeriodFeedPostViews : null}/>
 
 
       <Modal 
-        show={this.state.metricLineChartModalShow} 
+        show={this.state.metricLineChartModalTitle} 
         onHide={this.handleMetricLineChartModalClose}>
         <Modal.Header closeButton>
           <Modal.Title>{this.state.metricLineChartModalTitle}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
 
-          { this.state.metricLineChartModalShow 
+          { this.state.metricLineChartModalTitle 
               && <FeedMetricsLineChart
                     rangeDates={{
                       start: this.state.startDate,

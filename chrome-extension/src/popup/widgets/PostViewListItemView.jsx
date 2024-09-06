@@ -72,32 +72,32 @@ export default class PostViewListItemView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      postModalShow: false,
+      postTrendChartModalShow: false,
       reminderModalShow: false,
       updated: false,
-      feedPostView: null,
+      feedPostViews: null,
       selectedFeedProfile: null,
+      reminder: null,
       userTooltipContent: <Spinner 
                             animation="border" 
                             size="sm"
-                            variant="secondary" />,
+                            variant="secondary"/>,
     };
 
     this.onEnteringUserTooltip = this.onEnteringUserTooltip.bind(this);
     this.onExitingUserTooltip = this.onExitingUserTooltip.bind(this);
     this.onReminderActionClick = this.onReminderActionClick.bind(this);
     this.registerUpdateEvent = this.registerUpdateEvent.bind(this);
-    this.setAllFeedOccurences = this.setAllFeedOccurences.bind(this);
   }
 
   componentDidMount() {
 
-    this.setState({feedPostView: this.props.object}, () => {
+    this.setState({feedPostViews: this.props.objects}, () => {
 
       this.reminderSubscription = liveQuery(() => db.reminders
-                                                    .where({objectId: this.state.feedPostView.feedPost.uniqueId})
+                                                    .where({objectId: this.state.feedPostViews[0].feedPost.uniqueId})
                                                     .first()).subscribe(
-        result => this.setState({feedPostView: {...this.state.feedPostView, feedPost: {...this.state.feedPostView.feedPost, reminder: result}}}),
+        result => this.setState({reminder: result}),
         error => this.setState({error})
       );
 
@@ -107,14 +107,10 @@ export default class PostViewListItemView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
 
-    if (prevState.feedPostView != this.state.feedPostView){
-      if (prevState.feedPostView
-            && prevState.feedPostView.feedPost != this.state.feedPostView.feedPost
-            && prevState.feedPostView.feedPost.reminder != this.state.feedPostView.feedPost.reminder){
-        this.registerUpdateEvent();
-        if (!prevState.feedPostView.feedPost.reminder){
-          this.handleReminderModalClose();
-        }
+    if (prevState.reminder != this.state.reminder){
+      this.registerUpdateEvent();
+      if (!prevState.reminder){
+        this.handleReminderModalClose();
       }
     }
 
@@ -143,51 +139,34 @@ export default class PostViewListItemView extends React.Component{
   handleFeedProfileDataModalClose = () => this.setState({selectedFeedProfile: null});
   handleFeedProfileDataModalShow = (profile) => this.setState({selectedFeedProfile: profile});
 
-  handlePostModalClose = () => this.setState({postModalShow: false});
-  handlePostModalShow = () => this.setState({postModalShow: true}, () => {
-    if (this.state.feedPostView.allFeedOccurences){
-      return;
-    }
-
-    this.setAllFeedOccurences();
-
-  });
-
-  async setAllFeedOccurences(){
-
-    const occurences = await db.feedPostViews
-                                .where({htmlElId: this.state.feedPostView.htmlElId})
-                                .toArray();
-
-    this.setState({feedPostView: {...this.state.feedPostView, allFeedOccurences: occurences}});
-
-  }
+  handlePostTrendChartModalClose = () => this.setState({postTrendChartModalShow: false});
+  handlePostTrendChartModalShow = () => this.setState({postTrendChartModalShow: true});
 
   onEnteringUserTooltip = async () => {
 
     var count = 0;
-    if (this.state.feedPostView.category){
-      var htmlElIds = [];
-      await db.feedPostViews
-              .filter(feedPostView => feedPostView.category
-                                        && feedPostView.category == this.state.feedPostView.category
-                                        && ((this.state.feedPostView.profile && feedPostView.profileId == this.state.feedPostView.profile.uniqueId)
-                                              || !this.state.feedPostView.profile))
-              .each(feedPostView => {
-                if (htmlElIds.indexOf(feedPostView.htmlElId) == -1){
-                  htmlElIds.push(feedPostView.htmlElId);
-                }
-              });
-      count = htmlElIds.length;
+    if (this.state.feedPostViews[0].category){
+      count = (await db.feedPostViews
+                       .filter(feedPostView => feedPostView.category
+                                              && feedPostView.category == this.state.feedPostViews[0].category
+                                              && ((this.state.feedPostViews[0].profile && feedPostView.profileId == this.state.feedPostViews[0].profileId)
+                                                    || !this.state.feedPostViews[0].profile))
+                       .toArray())
+                .filter((value, index, self) => self.findIndex(post => post.id == value.id) === index)
+                .length;
     }
     else{
       count = await db.feedPosts
-                      .filter(feedPost => feedPost.profileId == this.state.feedPostView.feedPost.profile.id)
+                      .filter(feedPost => feedPost.profileId == this.state.feedPostViews[0].feedPost.profileId)
                       .count();
     }
 
     this.setState({userTooltipContent: <span class="fw-light">
-                                        {`${count} ${this.state.feedPostView.category ? (count > 1 ? this.state.feedPostView.category : this.state.feedPostView.category.slice(0, (this.state.feedPostView.category.length - 1))) : `publication${count > 1 ? "s" : ""}`}`} so far
+                                        {`${count} ${this.state.feedPostViews[0].category 
+                                                      ? (count > 1 
+                                                          ? this.state.feedPostViews[0].category 
+                                                          : this.state.feedPostViews[0].category.slice(0, (this.state.feedPostViews[0].category.length - 1))) 
+                                                      : `publication${count > 1 ? "s" : ""}`}`} so far
                                       </span>});
 
   }
@@ -203,11 +182,11 @@ export default class PostViewListItemView extends React.Component{
 
   async onReminderActionClick(){
 
-    if (this.state.feedPostView.feedPost.reminder){
+    if (this.state.reminder){
       // deleting the reminder
       if (confirm("Do you confirm the deletion of the reminder ?")){
         await db.reminders
-                .delete(this.state.feedPostView.feedPost.reminder.id);
+                .delete(this.state.reminder.id);
       }
     }
     else{
@@ -219,12 +198,12 @@ export default class PostViewListItemView extends React.Component{
   render(){
     return (
       <>
-        { this.state.feedPostView 
+        { this.state.feedPostViews 
             && <div class="d-flex text-body-secondary pt-3 border-bottom">
                   <img 
-                    src={ (this.state.feedPostView.category 
-                            ? (this.state.feedPostView.profile ? this.state.feedPostView.profile.picture : linkedin_icon) 
-                            : (this.state.feedPostView.feedPost.profile.picture || default_user_icon)) } 
+                    src={ (this.state.feedPostViews[0].category 
+                            ? (this.state.feedPostViews[0].profile ? this.state.feedPostViews[0].profile.picture : linkedin_icon) 
+                            : (this.state.feedPostViews[0].feedPost.profile.picture || default_user_icon)) } 
                     alt="twbs" 
                     width="40" 
                     height="40" 
@@ -234,18 +213,14 @@ export default class PostViewListItemView extends React.Component{
                       <div class="mb-2">
                         <a 
                           class=/*d-block*/"text-decoration-none shadow-sm fst-italic mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info"
-                          /*href={this.state.feedPostView.category 
-                                  ? (this.state.feedPostView.profile ? this.state.feedPostView.profile.url : appParams.LINKEDIN_FEED_URL())
-                                  : this.state.feedPostView.feedPost.profile.url}
-                          target="_blank"*/
                           href="#"
                           title="Click to show more infos"
                           onClick={() => { 
-                            if (this.state.feedPostView.category 
-                                  && !this.state.feedPostView.profile){ // it's a suggested post
+                            if (this.state.feedPostViews[0].category 
+                                  && !this.state.feedPostViews[0].profile){ // it's a suggested post
                               return;
                             }
-                            this.handleFeedProfileDataModalShow((this.state.feedPostView.category && this.state.feedPostView.profile) ? this.state.feedPostView.profile : this.state.feedPostView.feedPost.profile);
+                            this.handleFeedProfileDataModalShow((this.state.feedPostViews[0].category && this.state.feedPostViews[0].profile) ? this.state.feedPostViews[0].profile : this.state.feedPostViews[0].feedPost.profile);
                           }}>
                           <OverlayTrigger 
                             trigger="hover" 
@@ -254,9 +229,9 @@ export default class PostViewListItemView extends React.Component{
                             onExiting={this.onExitingUserTooltip}
                             overlay={<UpdatingPopover id="popover-contained">{this.state.userTooltipContent}</UpdatingPopover>}>
                             <span>
-                              { this.state.feedPostView.category 
-                                  ? (this.state.feedPostView.profile ? this.state.feedPostView.profile.name : "Linkedin")
-                                  : this.state.feedPostView.feedPost.profile.name } 
+                              { this.state.feedPostViews[0].category 
+                                  ? (this.state.feedPostViews[0].profile ? this.state.feedPostViews[0].profile.name : "Linkedin")
+                                  : this.state.feedPostViews[0].feedPost.profile.name } 
                             </span>
                           </OverlayTrigger>
                         </a>
@@ -270,10 +245,10 @@ export default class PostViewListItemView extends React.Component{
                     <div class="w-100 p-1 py-3 rounded shadow-sm border">
                       <OverlayTrigger
                         placement="top"
-                        overlay={<Tooltip id="tooltip1">{this.state.feedPostView.category ? categoryVerbMap[this.state.feedPostView.category]["en"] : "shared"}</Tooltip>}
+                        overlay={<Tooltip id="tooltip1">{this.state.feedPostViews[0].category ? categoryVerbMap[this.state.feedPostViews[0].category]["en"] : "shared"}</Tooltip>}
                       >
                         <span class="mx-1">
-                          <img class="mx-1" width="16" height="16" src={this.state.feedPostView.category ? categoryIconMap[this.state.feedPostView.category] : share_icon} alt=""/>
+                          <img class="mx-1" width="16" height="16" src={this.state.feedPostViews[0].category ? categoryIconMap[this.state.feedPostViews[0].category] : share_icon} alt=""/>
                         </span>
                       </OverlayTrigger>
                       this 
@@ -285,20 +260,20 @@ export default class PostViewListItemView extends React.Component{
                                     as="h3">
                                     Post
                                   </Popover.Header>
-                                  <Popover.Body dangerouslySetInnerHTML={{__html: this.state.feedPostView.feedPost.innerContentHtml}}>
+                                  <Popover.Body dangerouslySetInnerHTML={{__html: this.state.feedPostViews[0].feedPost.innerContentHtml}}>
                                     {}
                                   </Popover.Body>
                                 </Popover>}
                         >
                         <a 
-                          href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPostView.htmlElId}`} 
+                          href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPostViews[0].htmlElId}`} 
                           target="_blank" 
                           class="fst-italic mx-1" 
                           title="Click to open in a new tab">
                           post
                         </a>
                       </OverlayTrigger>
-                      { this.state.feedPostView.category 
+                      { this.state.feedPostViews[0].category 
                           && <span class="ms-1"> 
                               of
         
@@ -308,16 +283,14 @@ export default class PostViewListItemView extends React.Component{
                                   class="rounded-circle me-1" 
                                   width="14" 
                                   height="14" 
-                                  src={this.state.feedPostView.feedPost.profile.picture ? this.state.feedPostView.feedPost.profile.picture : default_user_icon} 
+                                  src={this.state.feedPostViews[0].feedPost.profile.picture || default_user_icon} 
                                   alt=""/>
                                 <a 
                                   class="text-decoration-none text-muted"
-                                  /*href={this.state.feedPostView.feedPost.profile.url}
-                                  target="_blank"*/
                                   href="#"
                                   title="Click to show more infos"
-                                  onClick={() => { this.handleFeedProfileDataModalShow(this.state.feedPostView.feedPost.profile) }}>
-                                  {this.state.feedPostView.feedPost.profile.name}
+                                  onClick={() => { this.handleFeedProfileDataModalShow(this.state.feedPostViews[0].feedPost.profile) }}>
+                                  {this.state.feedPostViews[0].feedPost.profile.name}
                                 </a>
                               </span>
         
@@ -327,10 +300,10 @@ export default class PostViewListItemView extends React.Component{
                     <div class="mt-3">
                       <span class="border shadow-sm rounded p-1 text-muted">
                         <span 
-                          onClick={this.handlePostModalShow} 
+                          onClick={this.handlePostTrendChartModalShow} 
                           class="handy-cursor mx-1 text-primary small"
-                          title={`${this.state.feedPostView.allFeedOccurences ? `${this.state.feedPostView.allFeedOccurences.length} impression${this.state.feedPostView.allFeedOccurences.length > 1 ? "s" : ""} |` : ""} see metrics`}>
-                          {this.state.feedPostView.allFeedOccurences ? `(${this.state.feedPostView.allFeedOccurences.length})` : null}
+                          title={`${this.state.feedPostViews ? `${this.state.feedPostViews.length} impression${this.state.feedPostViews.length > 1 ? "s" : ""} |` : ""} see metrics`}>
+                          {this.state.feedPostViews ? `(${this.state.feedPostViews.length})` : null}
                           <BarChartIcon size="14" className="ms-1"/>
                         </span>
                       </span>
@@ -348,21 +321,21 @@ export default class PostViewListItemView extends React.Component{
                         <ul class="dropdown-menu shadow">
                           <li>
                             <a 
-                              class={"dropdown-item small handy-cursor " + (this.state.feedPostView.feedPost.reminder ? "text-danger" : "text-muted")} 
+                              class={"dropdown-item small handy-cursor " + (this.state.reminder ? "text-danger" : "text-muted")} 
                               onClick={this.onReminderActionClick}>
-                              { this.state.feedPostView.feedPost.reminder 
+                              { this.state.reminder 
                                 && <DeletionIcon size="15" className="me-2"/> }
-                              { !this.state.feedPostView.feedPost.reminder 
+                              { !this.state.reminder 
                                   && <PlusIcon size="15" className="me-2 text-muted"/> }
-                              { this.state.feedPostView.feedPost.reminder ? "Delete " : "Add "} reminder
+                              { this.state.reminder ? "Delete " : "Add "} reminder
                             </a>
                             </li>
                         </ul>
                       </div>
         
-                      { Object.hasOwn(this.state.feedPostView, "timeCount")
+                      { this.state.feedPostViews
                           && <span class="badge bg-light-subtle border border-light-subtle text-light-emphasis rounded-pill">
-                              {secondsToHms(this.state.feedPostView.timeCount, false)}
+                              {secondsToHms(this.state.feedPostViews.map(v => v.timeCount).reduce((acc, a) => acc + a, 0), false)}
                             </span>}
                     </div>
                   </p>
@@ -370,16 +343,16 @@ export default class PostViewListItemView extends React.Component{
 
         {/*Modal*/}
         <Modal 
-          show={this.state.postModalShow} 
+          show={this.state.postTrendChartModalShow} 
           onHide={this.handlePostModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Post</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
-              { this.state.postModalShow 
+              { this.state.postTrendChartModalShow 
                   && <FeedPostTrendLineChart
-                      objects={this.state.feedPostView.allFeedOccurences}
+                      objects={this.state.feedPostViews}
                       globalData={this.props.globalData}
                       metricValueFunction={getPostMetricValue}/> }
 
@@ -391,9 +364,9 @@ export default class PostViewListItemView extends React.Component{
           </Modal.Footer>
         </Modal>
 
-        { this.state.feedPostView 
+        { this.state.feedPostViews 
             && <ReminderModal 
-                  object={this.state.feedPostView.feedPost} 
+                  object={this.state.feedPostViews[0].feedPost} 
                   show={this.state.reminderModalShow} 
                   onHide={this.handleReminderModalClose} />}
 

@@ -50,16 +50,17 @@ const version2Stores = {
   reminders: '++id, &objectId, createdOn, active, date, &uniqueId',
   settings: '++id',
   bookmarks: '++id, &url, createdOn, &uniqueId',
-  feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId',
-  feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId',
+  feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId', // profileId
+  feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId', // profileId
   tags: '++id, &name, createdOn, &uniqueId', // *profiles
   folders: '++id, &name, createdOn, &uniqueId', // *profiles
-  quotes: '++id, createdOn, &uniqueId',
+  quotes: '++id, createdOn, &uniqueId', // profileId
   profileNotes: '++id, createdOn, section, url, &uniqueId',
   feedProfiles: '++id, name, &picture, &url, &uniqueId',
   profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId', // *profiles
   // educationOrganizations: '++id, &url, &uniqueId',
   // experienceOrganizations: '++id, &url, &uniqueId',
+  // // // // postReactions: '++id, &uniqueId, createdOn, feedPostId',
 }
 
 db.version(appParams.appDbVersion /*2*/)

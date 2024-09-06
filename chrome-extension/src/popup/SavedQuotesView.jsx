@@ -44,6 +44,8 @@ export default class SavedQuotesView extends React.Component{
       quotes: null,
       selectedQuote: null,
     };
+
+    this.deleteQuote = this.deleteQuote.bind(this);
   }
 
   componentDidMount() {
@@ -79,7 +81,7 @@ export default class SavedQuotesView extends React.Component{
   }
 
   async deleteQuote(){
-    await db.quotes.delete(this.state.quote.id);
+    await db.quotes.delete(this.state.selectedQuote.id);
     this.handleDeletionConfModalClose();
   }
 
@@ -108,10 +110,22 @@ export default class SavedQuotesView extends React.Component{
             { this.state.quotes
               && <div>
                   { this.state.quotes.length == 0
-                      && <div class="text-center m-5 border shadow-lg rounded p-5">
-                                          <AlertCircleIcon size="100" className="text-muted"/>
-                                          <p><span class="badge text-bg-primary fst-italic shadow-sm">No quotes saved yet</span></p>
-                                        </div> }
+                      && <div class="mt-5">
+
+                          <div class="alert alert-secondary d-flex align-items-center py-1 fst-italic small shadow-sm mx-5" role="alert">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:" width="16">
+                              <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"></path>
+                            </svg>
+                            <div>
+                              To create quote, select a text of a post on Linkedin's feed, right-click > 'Save a quote'.
+                            </div>
+                          </div>
+
+                          <div class="text-center m-5 border shadow-lg rounded p-5 mt-2">
+                            <AlertCircleIcon size="100" className="text-muted"/>
+                            <p><span class="badge text-bg-primary fst-italic shadow-sm">No quotes saved yet</span></p>
+                          </div>
+                        </div> }
 
                   { this.state.quotes.length != 0
                       && <div>
@@ -129,7 +143,7 @@ export default class SavedQuotesView extends React.Component{
                             { this.state.quotes.map(object => <a class="list-group-item list-group-item-action d-flex gap-3 py-3 p-3 border border-2 border-info rounded my-3" aria-current="true">
                                                                         <img src={object.profile.picture || default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
                                                                         <div class="d-flex gap-2 w-100 justify-content-between">
-                                                                          <div>
+                                                                          <div class="w-100">
                                                                             <div class="d-flex gap-2 align-items-center">
                                                                               <h6 class="mb-0 d-flex align-items-center gap-1">
                                                                                 <a class="text-decoration-none text-black" href={object.profile.url} target="_blank">{/*dbDataSanitizer.preSanitize(this.props.profile.fullName)*/ object.profile.name}</a> 

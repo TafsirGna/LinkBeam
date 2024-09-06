@@ -82,22 +82,19 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
     			keys: [],
     			group: null,
     		},
-    		profileData = this.props.profiles.filter(object => object.profile).map(object => ({
-    			name: object.profile.name,
+    		profileData = this.props.profiles.map(object => ({
+    			name: object.name,
     			values: [],
-    			url: object.profile.url,
+    			uniqueId: object.uniqueId,
     		}));
-
-    var feedPosts = [];
 
   	if (this.props.objects[0].date.split("T")[0] == this.props.objects[this.props.objects.length - 1].date.split("T")[0]){
 
   		for (const date of periodRange(LuxonDateTime.fromISO(this.props.objects[0].date).set({hours: 1, minutes: 0, seconds: 0}).toJSDate(), LuxonDateTime.fromISO(this.props.objects[0].date).set({hours: 23, minutes: 0, seconds: 0}).toJSDate(), 1, LuxonDateTime, "hours")){
 
   			chartData.keys.push(date.toFormat("hh a"));
-
-  			var views = this.props.objects.filter(view => date.minus({hours: 1}) <= LuxonDateTime.fromISO(view.date)
-  																															&& LuxonDateTime.fromISO(view.date) <= date);
+  			const views = this.props.objects.filter(view => date.minus({hours: 1}) <= LuxonDateTime.fromISO(view.date)
+  																												&& LuxonDateTime.fromISO(view.date) <= date);
   			await handleTimeSlotViews(views);
 
   		}
@@ -108,8 +105,7 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
   		for (const date of periodRange(LuxonDateTime.fromISO(this.props.objects[0].date).set({hours: 0, minutes: 0, seconds: 0}).plus({days: 1}).toJSDate(), LuxonDateTime.fromISO(this.props.objects[this.props.objects.length - 1].date).set({hours: 0, minutes: 0, seconds: 0}).plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days")){
 
   			chartData.keys.push(date.toFormat("MMMM dd"));
-
-  			var views = this.props.objects.filter(view => date.minus({days: 1}) <= LuxonDateTime.fromISO(view.date)
+  			const views = this.props.objects.filter(view => date.minus({days: 1}) <= LuxonDateTime.fromISO(view.date)
   																															&& LuxonDateTime.fromISO(view.date) <= date);
   			await handleTimeSlotViews(views);
 
@@ -141,36 +137,25 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
   		for (var profile of profileData){ profile.values.push(!profile.values.length ? /*(Math.floor(Math.random() * 1000) + 100)*/ 0 : profile.values[profile.values.length - 1]);	}
 
     	for (var feedPostView of views){
-				const feedPostIndex = feedPosts.findIndex(post => post.id == feedPostView.feedPostId);
-				var feedPost = null;
-				if (feedPostIndex == -1){
-					feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-					feedPosts.push(feedPost);
-				}
-				else{
-					feedPost = feedPosts[feedPostIndex];
-				}
 
-				if (feedPostView.initiator && feedPostView.initiator.name){
+				if (feedPostView.profile){
 
-					const profileIndex = profileData.findIndex(object => object.url == feedPostView.initiator.url);	
+					const profileIndex = profileData.findIndex(object => object.uniqueId == feedPostView.profileId);	
 					
 					// i increment the last item's value
 					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 
 					profileData[profileIndex].values[profileData[profileIndex].values.length - 1] += /*(Math.floor(Math.random() * 1000) + 100);*/ feedPostView.timeCount;
 					
-
 				}
 
 				if (feedPost.author && feedPost.author.name){
 
-					const profileIndex = profileData.findIndex(object => object.url == feedPost.author.url);	
+					const profileIndex = profileData.findIndex(object => object.uniqueId == feedPost.profileId);	
 					
 					// i increment the last item's value
 					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 
 					profileData[profileIndex].values[profileData[profileIndex].values.length - 1] += /*(Math.floor(Math.random() * 1000) + 100);*/ feedPostView.timeCount;
 				
-
 				}
 
 			}
