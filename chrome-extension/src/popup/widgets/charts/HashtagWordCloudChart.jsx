@@ -64,32 +64,21 @@ export default class HashtagWordCloudChart extends React.Component{
     }
 
     var hashtags = [],
-        feedPosts = [],
-        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
+        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.feedPostId == value.feedPostId) === index);
 
     for (const feedPostView of feedPostViews){
 
-      var index = feedPosts.findIndex(post => post.id == feedPostView.feedPostId);
-      var feedPost = null;
-      if (index == -1){
-        feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-        feedPosts.push(feedPost);
-      }
-      else{
-        feedPost = feedPosts[index];
-      }
-
-      if (!feedPost.references){
+      if (!feedPostView.feedPost.references){
         continue;
       }
 
-      for (const reference of feedPost.references){
+      for (const reference of feedPostView.feedPost.references){
 
         if (!isReferenceHashtag(reference)){
           continue;
         }
 
-        index = hashtags.findIndex(h => h.key == getHashtagText(reference.text))
+        const index = hashtags.findIndex(h => h.key == getHashtagText(reference.text))
         if (index == -1){
           hashtags.push({
             key: getHashtagText(reference.text),

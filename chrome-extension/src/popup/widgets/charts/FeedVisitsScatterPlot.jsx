@@ -159,7 +159,7 @@ export default class FeedVisitsScatterPlot extends React.Component{
 
             <FeedVisitDataView
               context="modal"
-              objects={this.state.selectedFeedVisit
+              object={this.state.selectedFeedVisit
                         ? (() => {
                             var visit = this.state.selectedFeedVisit;
                             visit.feedPostViews = this.props.objects.filter(view => view.visitId == this.state.selectedFeedVisit.uniqueId);

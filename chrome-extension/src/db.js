@@ -52,12 +52,14 @@ const version2Stores = {
   bookmarks: '++id, &url, createdOn, &uniqueId',
   feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId',
   feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId',
-  tags: '++id, &name, createdOn, &uniqueId',
-  folders: '++id, &name, createdOn, &uniqueId',
+  tags: '++id, &name, createdOn, &uniqueId', // *profiles
+  folders: '++id, &name, createdOn, &uniqueId', // *profiles
   quotes: '++id, createdOn, &uniqueId',
   profileNotes: '++id, createdOn, section, url, &uniqueId',
   feedProfiles: '++id, name, &picture, &url, &uniqueId',
-  profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId',
+  profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId', // *profiles
+  // educationOrganizations: '++id, &url, &uniqueId',
+  // experienceOrganizations: '++id, &url, &uniqueId',
 }
 
 db.version(appParams.appDbVersion /*2*/)

@@ -107,15 +107,14 @@ export default class FeedProfileReactionsSubjectsBarChart extends React.Componen
 
     var data = [],
         feedPosts = [],
-        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
+        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index);
 
     for (var feedPostView of feedPostViews){
       
       if (feedPostView.category
             && feedPostView.profile 
-            && feedPostView.profile.url
-            && feedPostView.profile.url != this.props.profile.url){
-        const index = data.findIndex(o => o.url == feedPostView.profile.url);
+            && feedPostView.profile.uniqueId != this.props.profile.uniqueId){
+        const index = data.findIndex(o => o.uniqueId == feedPostView.profile.uniqueId);
         if (index == -1){
           data.push({
             ...feedPostView.profile,
@@ -129,15 +128,13 @@ export default class FeedProfileReactionsSubjectsBarChart extends React.Componen
       else if (!feedPostView.category 
                   || (feedPostView.category 
                         && feedPostView.profile 
-                        && feedPostView.profile.url 
-                        && feedPostView.profile.url == this.props.profile.url)){
+                        && feedPostView.profile.uniqueId == this.props.profile.uniqueId)){
 
-        var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-        if (feedPost.author.url != this.props.profile.url){
-          const index = data.findIndex(o => o.url == feedPost.author.url);
+        if (feedPostView.feedPost.profile.uniqueId != this.props.profile.uniqueId){
+          const index = data.findIndex(o => o.uniqueId == feedPostView.feedPost.profile.uniqueId);
           if (index == -1){
             data.push({
-              ...feedPost.author,
+              ...feedPostView.feedPost.profile,
               value: 1,
             });
           }

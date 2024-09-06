@@ -22,8 +22,7 @@
 /*import './SavedQuotesView.css'*/
 import React from 'react';
 import app_logo from '../assets/app_logo.png';
-import { LockIcon, GithubIcon, SendIcon, TagIcon } from "./widgets/SVGs";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { AlertCircleIcon } from "./widgets/SVGs";
 import default_user_icon from '../assets/user_icons/default.png';
 import PageTitleView from "./widgets/PageTitleView";
 import SearchInputView from "./widgets/SearchInputView";
@@ -32,7 +31,9 @@ import Modal from 'react-bootstrap/Modal';
 import { 
   appParams,
 } from "./Local_library";
-import eventBus from "./EventBus";
+import { db } from "../db";
+import { liveQuery } from "dexie";
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class SavedQuotesView extends React.Component{
 
@@ -40,16 +41,47 @@ export default class SavedQuotesView extends React.Component{
     super(props);
     this.state = {
       searchText: null,
-      deletionConfModalShow: false,
+      quotes: null,
+      selectedQuote: null,
     };
   }
 
   componentDidMount() {
 
+    this.quoteSubscription = liveQuery(() => db.quotes.toArray())
+                              .subscribe(
+      result => this.setQuotes(result),
+      error => this.setState({error})
+    );
+
   }
 
-  handleDeletionConfModalClose = () => this.setState({deletionConfModalShow: false});
-  handleDeletionConfModalShow = () => this.setState({deletionConfModalShow: true});
+  handleDeletionConfModalClose = () => this.setState({selectedQuote: null});
+  handleDeletionConfModalShow = (quote) => this.setState({selectedQuote: quote});
+
+  componentWillUnmount(){
+
+    if (this.quoteSubscription) {
+      this.quoteSubscription.unsubscribe();
+      this.quoteSubscription = null;
+    }
+
+  }
+
+  async setQuotes(quotes){
+
+    for (var quote of quotes){
+      quote.profile = await db.feedProfiles.where({uniqueId: quote.profileId}).first();
+    }
+
+    this.setState({quotes: quotes});
+
+  }
+
+  async deleteQuote(){
+    await db.quotes.delete(this.state.quote.id);
+    this.handleDeletionConfModalClose();
+  }
 
   render(){
     return (
@@ -64,49 +96,71 @@ export default class SavedQuotesView extends React.Component{
 
           <div class={"offset-2 col-8 mt-4"}>
 
-            {/*Search input*/}
-            <div class="my-4">
-              <SearchInputView 
-                objectStoreName="quotes" 
-                globalData={this.props.globalData} />
-                { this.state.searchText 
-                    && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                        {`${null} results for '${this.state.searchText}'`}
-                      </p> }
-            </div>
+            { !this.state.quotes 
+              && <div class="text-center">
+                  <div class="mb-5 mt-5">
+                    <div class="spinner-border text-primary" role="status">
+                    </div>
+                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                  </div>
+                </div> }
 
-            { Array.from({length: 3}).map((_, item) => <a class="list-group-item list-group-item-action d-flex gap-3 py-3 p-3 border border-2 border-info rounded my-3" aria-current="true">
-                                                        <img src={/*this.props.profile.avatar ? this.props.profile.avatar : default_user_icon*/default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                                                        <div class="d-flex gap-2 w-100 justify-content-between">
-                                                          <div>
-                                                            <div class="d-flex gap-2 align-items-center">
-                                                              <h6 class="mb-0 d-flex align-items-center gap-1">
-                                                                <a class="text-decoration-none text-black" href={`/index.html?view=Profile&data=${/*this.props.profile.url*/null}`} target="_blank">{/*dbDataSanitizer.preSanitize(this.props.profile.fullName)*/ "Freddy Mercury"}</a> 
-                                                              </h6>
-                                                              <small class="opacity-50 text-nowrap ms-auto">{/*LuxonDateTime.fromISO(this.props.profile.lastVisit.date).toFormat("MM-dd-yyyy")*/"2 hours ago"}</small>
-                                                            </div>
-                                                            <p class="fst-italic mb-0 opacity-75 small text-muted">
-                                                              {/*dbDataSanitizer.preSanitize(this.props.profile.title)*/}
-                                                              {`*** ${"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."} ***`}
-                                                            </p>   
-                                                            <div>
-                                                              <button 
-                                                                type="button" 
-                                                                class="btn btn-light btn-sm text-danger"
-                                                                onClick={this.handleDeletionConfModalShow}>
-                                                                Delete
-                                                              </button>
-                                                            </div>     
-                                                          </div>
-                                                        </div>
-                                                      </a>) }
+            { this.state.quotes
+              && <div>
+                  { this.state.quotes.length == 0
+                      && <div class="text-center m-5 border shadow-lg rounded p-5">
+                                          <AlertCircleIcon size="100" className="text-muted"/>
+                                          <p><span class="badge text-bg-primary fst-italic shadow-sm">No quotes saved yet</span></p>
+                                        </div> }
+
+                  { this.state.quotes.length != 0
+                      && <div>
+                            {/*Search input*/}
+                            <div class="my-4">
+                              <SearchInputView 
+                                objectStoreName="quotes" 
+                                globalData={this.props.globalData} />
+                                { this.state.searchText 
+                                    && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
+                                        {`${null} results for '${this.state.searchText}'`}
+                                      </p> }
+                            </div>
+
+                            { this.state.quotes.map(object => <a class="list-group-item list-group-item-action d-flex gap-3 py-3 p-3 border border-2 border-info rounded my-3" aria-current="true">
+                                                                        <img src={object.profile.picture || default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
+                                                                        <div class="d-flex gap-2 w-100 justify-content-between">
+                                                                          <div>
+                                                                            <div class="d-flex gap-2 align-items-center">
+                                                                              <h6 class="mb-0 d-flex align-items-center gap-1">
+                                                                                <a class="text-decoration-none text-black" href={object.profile.url} target="_blank">{/*dbDataSanitizer.preSanitize(this.props.profile.fullName)*/ object.profile.name}</a> 
+                                                                              </h6>
+                                                                              <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(object.createdOn).toFormat("MM-dd-yyyy")}</small>
+                                                                            </div>
+                                                                            <p class="fst-italic mb-0 opacity-75 small text-muted">
+                                                                              {/*dbDataSanitizer.preSanitize(this.props.profile.title)*/}
+                                                                              {`*** ${object.text /*"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."*/} ***`}
+                                                                            </p>   
+                                                                            <div>
+                                                                              <button 
+                                                                                type="button" 
+                                                                                class="btn btn-light btn-sm text-danger"
+                                                                                onClick={() => {this.handleDeletionConfModalShow(object)}}>
+                                                                                Delete
+                                                                              </button>
+                                                                            </div>     
+                                                                          </div>
+                                                                        </div>
+                                                                      </a>) }
+                        </div> }
+                </div> }
+
           </div>
 
         </div>
 
         {/* Confirmation modal */}
         <Modal 
-          show={this.state.deletionConfModalShow} 
+          show={this.state.selectedQuote} 
           onHide={this.handleDeletionConfModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Confirmation</Modal.Title>
@@ -125,7 +179,7 @@ export default class SavedQuotesView extends React.Component{
             <Button 
               variant="danger" 
               size="sm" 
-              onClick={this.handleDeletionConfModalClose} 
+              onClick={this.deleteQuote} 
               className="shadow">
               Confirm
             </Button>

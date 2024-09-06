@@ -154,7 +154,7 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  async addFeedPostViewSubscription(){
+  addFeedPostViewSubscription(){
 
     this.feedPostViewSubscription = liveQuery(() => db.feedPostViews
                                                       .filter(feedPostView => dateBetweenRange(this.state.startDate, this.state.endDate, feedPostView.date))

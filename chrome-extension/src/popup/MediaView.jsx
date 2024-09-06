@@ -28,6 +28,7 @@ import {
   periodRange,
   highlightText,
   hexToRgb,
+  allUrlCombinationsOf,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -47,36 +48,6 @@ import CustomToast from "./widgets/toasts/CustomToast";
 
 var objectsBackup = null;
 
-function separateVideoAndImage(feedPost){
-
-  var videoFeedPost = null,
-      imageFeedPost = null;
-      
-  for (const medium of feedPost.media){
-
-    if (medium.src){ // the medium is an image
-      if (!imageFeedPost){
-        imageFeedPost = {...feedPost};
-        imageFeedPost.media = [medium];
-      }
-      else{
-        imageFeedPost.media.push(medium);
-      }
-    }
-    else{ // it's a video
-      if (!videoFeedPost){
-        videoFeedPost = {...feedPost};
-        videoFeedPost.media = [medium];
-      }
-      else{
-        videoFeedPost.media.push(medium);
-      }
-    }
-
-  }
-  return {videoFeedPost: videoFeedPost, imageFeedPost: imageFeedPost};
-}
-
 export default class MediaView extends React.Component{
 
   constructor(props){
@@ -87,12 +58,14 @@ export default class MediaView extends React.Component{
       searchText: null,
       toastShow: false,
       toastMessage: "",
-      videoObjects: null,
-      imageObjects: null, 
       viewIndex: 0,
     };
 
     this.searchMedia = this.searchMedia.bind(this);
+    this.addFeedPostViewSubscription = this.addFeedPostViewSubscription.bind(this);
+    this.deleteFeedPostViewSubscription = this.deleteFeedPostViewSubscription.bind(this);
+    this.getFeedPosts = this.getFeedPosts.bind(this);
+    this.onFeedPostViewSubscriptionTrigger = this.onFeedPostViewSubscriptionTrigger.bind(this);
 
   }
 
@@ -117,9 +90,7 @@ export default class MediaView extends React.Component{
         if (!data){
           if (!objectsBackup){
             objectsBackup = {
-              all: this.state.allObjects,
-              video: this.state.videoObjects,
-              image: this.state.imageObjects,
+              all: this.state.allObjects
             };
           }
           this.setState({allObjects: null});
@@ -131,20 +102,23 @@ export default class MediaView extends React.Component{
           if (objectsBackup){
             this.setState({
               allObjects: objectsBackup.all, 
-              videoObjects: objectsBackup.video,
-              imageObjects: objectsBackup.image,
               searchText: null,
+            }, () => {
+              if (!this.feedPostViewSubscription){
+                this.addFeedPostViewSubscription();
+              }
             });
           }
 
         }
         else{
 
+          // Stop listening the the database changes for today
+          this.deleteFeedPostViewSubscription();
+
           this.setState({searchText: data.searchText}, async () => {
 
-            var feedPostsByDate = {},
-                videoFeedPostsByDate = {},
-                imageFeedPostsByDate = {};
+            var feedPostsByDate = {};
 
             for (var feedPost of data.results){
 
@@ -153,30 +127,33 @@ export default class MediaView extends React.Component{
               }
 
               feedPost.view = await db.feedPostViews
-                                       .where({feedPostId: feedPost.id})
+                                       .where({feedPostId: feedPost.uniqueId})
                                        .last(); 
 
               if (!feedPost.view){ // if it's a subpost
                 const post = await db.feedPosts
-                                        .where({linkedPostId: feedPost.id})
-                                        .last();
-                if (!post) { console.error("{{{{{{{{{{{ : ", feedPost); continue; }
+                                        .where({linkedPostId: feedPost.uniqueId})
+                                        .first();
+                // if (!post) { console.error("{{{{{{{{{{{ : ", feedPost); continue; }
                 feedPost.view = await db.feedPostViews
-                                        .where({feedPostId: post.id})
+                                        .where({feedPostId: post.uniqueId})
                                         .last();
               }
 
+              feedPost.view.profile = feedPost.view.profileId
+                                        ? await db.feedProfiles.where({uniqueId: feedPost.view.profileId}).first()
+                                        : null;
+
               feedPost.bookmarked = (await db.bookmarks.where("url")
-                                                       .anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)])
+                                                       .anyOf(allUrlCombinationsOf(feedPost.profile.url))
                                                        .first())
-                                      || (feedPost.view.initiator
-                                            && feedPost.view.initiator.url
+                                      || (feedPost.view.profile
+                                            && feedPost.view.profile.url
                                             && await db.bookmarks.where("url")
-                                                                 .anyOf([feedPost.view.initiator.url, encodeURI(feedPost.view.initiator.url), decodeURI(feedPost.view.initiator.url)])
+                                                                 .anyOf(allUrlCombinationsOf(feedPost.view.profile.url))
                                                                  .first());
 
-              var imgVideo = separateVideoAndImage(feedPost),
-                  date = feedPost.view.date.split("T")[0];
+              const date = feedPost.view.date.split("T")[0];
 
               if (date in feedPostsByDate){
                 feedPostsByDate[date].push(feedPost);
@@ -185,32 +162,10 @@ export default class MediaView extends React.Component{
                 feedPostsByDate[date] = [feedPost];
               }
 
-              // push a new feedPost object with a video
-              if (imgVideo.videoFeedPost){
-                if (date in videoFeedPostsByDate){
-                  videoFeedPostsByDate[date].push(imgVideo.videoFeedPost);
-                }
-                else{
-                  videoFeedPostsByDate[date] = [imgVideo.videoFeedPost];
-                }
-              }
-
-              // push a new feedPost object with an image
-              if (imgVideo.imageFeedPost){
-                if (date in imageFeedPostsByDate){
-                  imageFeedPostsByDate[date].push(imgVideo.imageFeedPost);
-                }
-                else{
-                  imageFeedPostsByDate[date] = [imgVideo.imageFeedPost];
-                }
-              }
-
             }
 
             data.results = {
               all: [], 
-              video: [],
-              image: [],
             };
 
             for (const date of periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days").toReversed()){
@@ -222,26 +177,10 @@ export default class MediaView extends React.Component{
                                 : [],
               });
 
-              data.results.video.push({
-                date: date,
-                feedPosts: date.toISO().split("T")[0] in videoFeedPostsByDate 
-                                        ? videoFeedPostsByDate[date.toISO().split("T")[0]] 
-                                        : [],
-              });
-
-              data.results.image.push({
-                date: date,
-                feedPosts: date.toISO().split("T")[0] in imageFeedPostsByDate 
-                                        ? imageFeedPostsByDate[date.toISO().split("T")[0]] 
-                                        : [],
-              });
-
             }
 
             this.setState({
               allObjects: data.results.all,
-              videoObjects: data.results.video,
-              imageObjects: data.results.image,
             });
 
           });
@@ -263,6 +202,36 @@ export default class MediaView extends React.Component{
 
   }
 
+  addFeedPostViewSubscription(){
+
+    this.feedPostViewSubscription = liveQuery(() => db.feedPostViews
+                                                      .filter(feedPostView => feedPostView.date.startsWith(LuxonDateTime.now().toISO().split("T")[0]))
+                                                      .toArray()).subscribe(
+      result => this.onFeedPostViewSubscriptionTrigger(result),
+      error => this.setState({error})
+    );
+
+  }
+
+  deleteFeedPostViewSubscription(){
+
+    if (this.feedPostViewSubscription) {
+      this.feedPostViewSubscription.unsubscribe();
+      this.feedPostViewSubscription = null;
+    }
+
+  }
+
+  async onFeedPostViewSubscriptionTrigger(feedPostViews){
+
+    var allObjects = this.state.allObjects;
+    const index = allObjects.findIndex(o => o.date.toISO().split("T")[0] == LuxonDateTime.now().toISO().split("T")[0]);
+    allObjects[index].feedPosts = (await this.getFeedPosts(feedPostViews));
+
+    this.setState({allObjects: allObjects});
+
+  }
+
   toggleToastShow = (message = "", show = null) => {this.setState((prevState) => ({toastMessage: message, toastShow: (show || !prevState.toastShow)}));};
 
   searchMedia(){
@@ -270,106 +239,88 @@ export default class MediaView extends React.Component{
     this.setState({searchingMedia: true}, async () => {
 
       var allObjects = null,
-          imageObjects = null,
-          videoObjects = null,
           newDate = null;
 
       if (!this.state.allObjects){
-
         newDate = LuxonDateTime.now();
         allObjects = [];
-        imageObjects = [];
-        videoObjects = [];
-
       }
       else{
-
         newDate = this.state.allObjects[this.state.allObjects.length - 1].date.minus({days: 1});
         allObjects = this.state.allObjects;
-        videoObjects = this.state.videoObjects;
-        imageObjects = this.state.imageObjects;
-
       }
 
-      var feedPosts = [],
-          videoFeedPosts = [],
-          imageFeedPosts = [],
-          feedPostViews = await db.feedPostViews
+      const feedPostViews = await db.feedPostViews
                                   .where("date")
                                   .startsWith(newDate.toISO().split("T")[0])
-                                  .toArray();
+                                  .toArray(); 
 
-      for (var feedPostView of feedPostViews){
-
-        if (feedPosts.findIndex(f => f.id == feedPostView.feedPostId) != -1){
-          continue;
-        }
-
-        var feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
-
-        if (feedPost.linkedPostId){
-          const linkedPost = await db.feedPosts.where({id: feedPost.linkedPostId}).first();
-          if (linkedPost 
-                && linkedPost.media
-                && feedPosts.findIndex(f => f.id == linkedPost.id) == -1){
-
-            linkedPost.view = feedPostView;
-            linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf([linkedPost.author.url, encodeURI(linkedPost.author.url), decodeURI(linkedPost.author.url)]).first());
-
-            feedPosts.push(linkedPost);
-
-            var imgVideo = separateVideoAndImage(linkedPost);
-
-            // push a new feedPost object with a video
-            if (imgVideo.videoFeedPost){
-              videoFeedPosts.push(imgVideo.videoFeedPost);
-            }
-
-            // push a new feedPost object with an image
-            if (imgVideo.imageFeedPost){
-              imageFeedPosts.push(imgVideo.imageFeedPost);
-            }
-
-          }
-        }
-
-        if (!feedPost.media){
-          continue;
-        }
-
-        feedPost.view = feedPostView;
-        feedPost.bookmarked = (await db.bookmarks.where("url").anyOf([feedPost.author.url, encodeURI(feedPost.author.url), decodeURI(feedPost.author.url)]).first())
-                                || (feedPostView.initiator
-                                      && feedPostView.initiator.url
-                                      && await db.bookmarks.where("url").anyOf([feedPostView.initiator.url, encodeURI(feedPostView.initiator.url), decodeURI(feedPostView.initiator.url)]).first());
-        feedPosts.push(feedPost);
-
-        var imgVideo = separateVideoAndImage(feedPost);
-
-        // push a new feedPost object with a video
-        if (imgVideo.videoFeedPost){
-          videoFeedPosts.push(imgVideo.videoFeedPost);
-        }
-
-        // push a new feedPost object with an image
-        if (imgVideo.imageFeedPost){
-          imageFeedPosts.push(imgVideo.imageFeedPost);
-        }
-
-      }
-
-      allObjects.push({date: newDate, feedPosts: feedPosts});
-      videoObjects.push({date: newDate, feedPosts: videoFeedPosts});
-      imageObjects.push({date: newDate, feedPosts: imageFeedPosts});
+      allObjects.push({date: newDate, feedPosts: (await this.getFeedPosts(feedPostViews))});
 
       this.setState({
         allObjects: allObjects, 
-        imageObjects: imageObjects,
-        videoObjects: videoObjects,
         searchingMedia: false
+      }, () => {
+        if (!this.feedPostViewSubscription){
+          this.addFeedPostViewSubscription();
+        }
       });
 
     })
+
+  }
+
+  async addLinkedPostToList(feedPost, feedPosts){
+
+    const linkedPost = await db.feedPosts.where({uniqueId: feedPost.linkedPostId}).first();
+    if (linkedPost 
+          && linkedPost.media
+          && feedPosts.findIndex(f => f.uniqueId == linkedPost.uniqueId) == -1){
+
+      linkedPost.view = feedPost.view;
+      linkedPost.profile = await db.feedProfiles.where({uniqueId: linkedPost.profileId}).first();
+      linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(linkedPost.profile.url)).first());
+
+      feedPosts.push(linkedPost);
+
+    }
+
+  }
+
+  async getFeedPosts(feedPostViews){
+
+    var feedPosts = [];
+
+    for (const feedPostView of feedPostViews){
+
+      if (feedPosts.findIndex(f => f.uniqueId == feedPostView.feedPostId) != -1){
+        continue;
+      }
+
+      feedPostView.profile = feedPostView.profileId
+                                ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
+                                : null;
+      var feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+      feedPost.view = feedPostView;
+
+      if (feedPost.linkedPostId){
+        await this.addLinkedPostToList(feedPost, feedPosts);
+      }
+
+      if (!feedPost.media){
+        continue;
+      }
+
+      feedPost.profile = await db.feedProfiles.where({uniqueId: feedPost.profileId}).first();
+      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPost.profile.url)).first())
+                              || (feedPostView.profile
+                                    && feedPostView.profile.url
+                                    && await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPostView.profile.url)).first());
+      feedPosts.push(feedPost);
+
+    }
+
+    return feedPosts;
 
   }
 
@@ -386,11 +337,13 @@ export default class MediaView extends React.Component{
           </div>
 
           { !this.state.allObjects 
-              && <div class="text-center"><div class="mb-5 mt-5"><div class="spinner-border text-primary" role="status">
-                            </div>
-                            <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-                          </div>
-                        </div> }
+              && <div class="text-center">
+                  <div class="mb-5 mt-5">
+                    <div class="spinner-border text-primary" role="status">
+                    </div>
+                    <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
+                  </div>
+                </div> }
 
           { this.state.allObjects
               && this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) == 0
@@ -417,19 +370,32 @@ export default class MediaView extends React.Component{
                     <li class="nav-item" onClick={() => {this.setViewIndex(0)}}>
                       <a class={`nav-link ${this.state.viewIndex == 0 ? "active" : ""}`} aria-current="page" href="#">
                         All
-                        { this.state.allObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
+                        { this.state.allObjects 
+                            && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                                {this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+
+                              </span>}
                       </a>
                     </li>
                     <li class="nav-item" onClick={() => {this.setViewIndex(1)}}>
                       <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
                         Photos
-                        { this.state.imageObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.imageObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
+                        { this.state.allObjects 
+                            && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                                {this.state.allObjects.map(o => o.feedPosts.filter(feedPost => feedPost.media.filter(medium => medium.src).length))
+                                                      .reduce((acc, a) => acc.concat(a), [])
+                                                      .length}+
+                              </span>}
                       </a>
                     </li>
                     <li class="nav-item" onClick={() => {this.setViewIndex(2)}}>
                       <a class={`nav-link ${this.state.viewIndex == 2 ? "active" : ""}`} href="#">
                         Videos
-                        { this.state.videoObjects && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">{this.state.videoObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0)}+</span>}
+                        { this.state.allObjects 
+                            && <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
+                                {this.state.allObjects.map(o => o.feedPosts.filter(feedPost => feedPost.media.filter(medium => medium.poster).length))
+                                                      .reduce((acc, a) => acc.concat(a), [])
+                                                      .length}+
+                              </span>}
                       </a>
                     </li>
                     
@@ -442,12 +408,12 @@ export default class MediaView extends React.Component{
 
                   { this.state.viewIndex == 1 
                       && <MediaGridView
-                          objects={this.state.imageObjects}
+                          objects={this.state.allObjects.map(o => ({ ...o, feedPosts: o.feedPosts.filter(feedPost => feedPost.media.filter(medium => medium.src).length) }))}
                           globalData={this.props.globalData}/>}
 
                   { this.state.viewIndex == 2 
                       && <MediaGridView
-                          objects={this.state.videoObjects}
+                          objects={this.state.allObjects.map(o => ({ ...o, feedPosts: o.feedPosts.filter(feedPost => feedPost.media.filter(medium => medium.poster).length) }))}
                           globalData={this.props.globalData}/>}
 
                 </div>
@@ -525,8 +491,8 @@ class MediaGridView extends React.Component{
                                                                                                           overlay={<Popover id="popover-basic">
                                                                                                                       <Popover.Header 
                                                                                                                         as="h3" 
-                                                                                                                        dangerouslySetInnerHTML={{__html: `${highlightText(feedPost.author.name, this.state.searchText)} <span class="shadow-sm  badge bg-secondary-subtle border border-secondary-subtle text-info-emphasis rounded-pill">${feedPost.media[0].src ? "Image" : "Video"}</span>`}}>
-                                                                                                                          {/*{feedPost.author.name}*/}
+                                                                                                                        dangerouslySetInnerHTML={{__html: `${highlightText(feedPost.profile.name, this.state.searchText)} <span class="shadow-sm  badge bg-secondary-subtle border border-secondary-subtle text-info-emphasis rounded-pill">${feedPost.media[0].src ? "Image" : "Video"}</span>`}}>
+                                                                                                                          {/*{feedPost.profile.name}*/}
                                                                                                                       </Popover.Header>
                                                                                                                       {feedPost.innerContentHtml 
                                                                                                                           && <Popover.Body dangerouslySetInnerHTML={{__html: feedPost.innerContentHtml /*highlightText(feedPost.innerContentHtml, this.state.searchText)*/}}>

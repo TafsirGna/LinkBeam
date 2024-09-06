@@ -263,11 +263,11 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                         objects={this.state.selectedReference.feedPosts.map(post => { 
                           const view = this.props.objects.filter(view => view.feedPostId == post.id).toReversed()[0]; 
                           return {
-                            author: post.author,
-                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.uid}`,
+                            author: post.profile,
+                            url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.htmlElId}`,
                             // date: views.length ? views[0].date : null,
                             category: view.category,
-                            initiator: view.initiator,
+                            initiator: view.profile,
                             text: highlightText(post.innerContentHtml, getHashtagText(this.state.selectedReference.text)),
                           }})}
                         variant="list"/>

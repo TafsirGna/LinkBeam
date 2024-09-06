@@ -93,10 +93,19 @@ export default class FeedProfileDataModal extends React.Component{
       await db.feedPostViews
               .where({feedPostId: feedPost.uniqueId})
               .each(feedPostView => {
-                if (feedPostViews.findIndex(view => view.date == feedPostView.date) == -1){
+                if (feedPostViews.findIndex(view => view.uniqueId == feedPostView.uniqueId) == -1){
+                  feedPostView.feedPost = feedPost;
                   feedPostViews.push(feedPostView);
                 }
               });
+    }
+
+    for (var feedPostView of feedPostViews){
+      feedPostView.profile = feedPostView.profileId
+                              ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
+                              : null;
+      feedPostView.feedPost = feedPostView.feedPost || await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+      feedPostView.feedPost.profile = await db.feedProfiles.where({uniqueId: feedPostView.feedPost.profileId}).first();
     }
 
     this.setState({feedPostViews: feedPostViews});
@@ -135,6 +144,8 @@ export default class FeedProfileDataModal extends React.Component{
     }
 
   }
+
+  getIndividualFeedPostViews = () => this.state.feedPostViews.filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index);
 
   render(){
     return (
@@ -225,7 +236,7 @@ export default class FeedProfileDataModal extends React.Component{
                       <div class="col">
                         <div class="rounded shadow-sm">
                           <FeedProfileReactionsSubjectsBarChart
-                            objects={this.state.feedPostViews}
+                            objects={this.getIndividualFeedPostViews()}
                             profile={this.props.object}
                           />
                         </div>
@@ -251,7 +262,7 @@ export default class FeedProfileDataModal extends React.Component{
                       <div class="col">
                         <div class="shadow-sm rounded py-2">
                           <FeedPostCategoryDonutChart 
-                          objects={this.state.feedPostViews}
+                          objects={this.getIndividualFeedPostViews()}
                           rangeDates={{
                             start: this.props.globalData.settings.lastDataResetDate,
                             end: new Date().toISOString(),
@@ -263,7 +274,7 @@ export default class FeedProfileDataModal extends React.Component{
                       <div class="col">
                         <div class="shadow-sm rounded py-2 h-100">
                           <HashtagWordCloudChart
-                            objects={this.state.feedPostViews}/>
+                            objects={this.getIndividualFeedPostViews()}/>
                         </div>
                       </div>
 

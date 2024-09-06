@@ -119,10 +119,10 @@ export default class HashtagAnimatedTreeMapChart extends React.Component{
   		for (var hashtag of hashtagData){ hashtag.values.push(!hashtag.values.length ? /*(Math.floor(Math.random() * 1000) + 100)*/ 0 : hashtag.values[hashtag.values.length - 1]);	}
 
     	for (var feedPostView of views){
-				const feedPostIndex = feedPosts.findIndex(post => post.id == feedPostView.feedPostId);
+				const feedPostIndex = feedPosts.findIndex(post => post.uniqueId == feedPostView.feedPostId);
 				var feedPost = null;
 				if (feedPostIndex == -1){
-					feedPost = await db.feedPosts.where({id: feedPostView.feedPostId}).first();
+					feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
 					feedPosts.push(feedPost);
 				}
 				else{

@@ -126,7 +126,7 @@ export default class FeedVisitDataView extends React.Component{
         continue;
       }
 
-      if (!feedPostView.profile){
+      if (!feedPostView.profile && feedPostView.profileId){
         feedPostView.profile = await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first(); 
       }
 
@@ -295,14 +295,14 @@ function FeedVisitPostsView(props){
           && <div class="mt-4">
                 {<ActivityListView 
                   objects={props.objects.map(feedPost => ({
-                    author: feedPost.author,
-                    url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                    author: feedPost.profile,
+                    url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.htmlElId}`,
                     // date: views.length ? views[0].date : null,
                     text: feedPost.innerContentHtml,
                     media: feedPost.media,
                     category: feedPost.view.category,
-                    initiator: feedPost.view.initiator,
-                    uid: feedPost.view.uid,
+                    initiator: feedPost.view.profile,
+                    htmlElId: feedPost.view.htmlElId,
                   }))}
                   variant="stacking"
                   context="feed visit"/>}
@@ -343,7 +343,7 @@ function FeedVisitMediaView(props){
                                                         overlay={<Popover id="popover-basic">
                                                                     <Popover.Header 
                                                                       as="h3">
-                                                                      {feedPost.author.name}
+                                                                      {feedPost.profile.name}
                                                                       <span class="shadow-sm mx-2 badge bg-secondary-subtle border border-secondary-subtle text-info-emphasis rounded-pill">{feedPost.media[0].src ? "Image" : "Video"}</span>
                                                                     </Popover.Header>
                                                                     {feedPost.innerContentHtml 
@@ -353,7 +353,7 @@ function FeedVisitMediaView(props){
                                                                   </Popover>}
                                                         >
                                                         <a 
-                                                          href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
+                                                          href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId || feedPost.view.htmlElId}`} 
                                                           target="_blank" 
                                                           title="View on linkedin">
                                                           <div 

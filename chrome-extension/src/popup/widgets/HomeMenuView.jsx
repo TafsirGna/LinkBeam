@@ -240,18 +240,18 @@ export default class HomeMenu extends React.Component{
                 Calendar
               </a>
             </li>
-            {/*<li>
+            <li>
               <a 
                 class="dropdown-item small" 
-                href="/index.html?view=Media" 
+                href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}`}
                 target="_blank"
-                title="Display all media">
+                title="List studios">
                 <MediaIcon
                   size="15"
                   className="me-2 text-muted"/>
                 Profile Studio
               </a>
-            </li>*/}
+            </li>
             <li>
               <a 
                 class="dropdown-item small" 

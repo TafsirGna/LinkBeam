@@ -1294,6 +1294,8 @@ async function processMessageEvent(message, sender, sendResponse){
             
             var quote = message.data.quote;
             quote.createdOn = new Date().toISOString();
+            quote.profileId = await checkPostFeedProfile(quote.author);
+            delete quote.author;
 
             await db.quotes.add(quote);
 

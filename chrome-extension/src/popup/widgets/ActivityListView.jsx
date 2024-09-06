@@ -136,27 +136,32 @@ export default class ActivityListView extends React.Component{
     }
 
     const objects = this.props.objects.map(object => { 
-                                            object.feedPost = { author: object.author }; 
+                                            object.feedPost = { profile: object.author };
+                                            object.profile = object.initiator;
                                             return object; 
                                           });
 
     this.props.objects.forEach(post => {
 
                         if (post.initiator){
-                          if (post.initiator.url && !(post.initiator.url in postsByProfile)){
+                          if (!(post.initiator.url in postsByProfile)){
                             postsByProfile[post.initiator.url] = { profile: post.initiator, viewsByCategory: getFeedPostViewsByCategory(objects, post.initiator.url) };
                           }
-
-                          const linkedinFeed = {url: appParams.LINKEDIN_FEED_URL, name: "Linkedin", picture: linkedin_icon};
-                          if (!post.initiator.url && !(linkedinFeed.url in postsByProfile)){
-                            postsByProfile[post.initiator.url] = { profile: linkedinFeed, viewsByCategory: getFeedPostViewsByCategory(objects, linkedinFeed.url) };
-                          }
-
                         }
                         else{
-                          if (!(post.author.url in postsByProfile)){
-                            postsByProfile[post.author.url] = { profile: post.author, viewsByCategory: getFeedPostViewsByCategory(objects, post.author.url) };
+
+                          if (post.category){
+                            const linkedinFeed = {url: appParams.LINKEDIN_FEED_URL, name: "Linkedin", picture: linkedin_icon};
+                            if (!(linkedinFeed.url in postsByProfile)){
+                              postsByProfile[linkedinFeed.url] = { profile: linkedinFeed, viewsByCategory: getFeedPostViewsByCategory(objects, linkedinFeed.url) };
+                            }
                           }
+                          else{
+                            if (!(post.author.url in postsByProfile)){
+                              postsByProfile[post.author.url] = { profile: post.author, viewsByCategory: getFeedPostViewsByCategory(objects, post.author.url) };
+                            }
+                          }
+                          
                         }
 
                       });
