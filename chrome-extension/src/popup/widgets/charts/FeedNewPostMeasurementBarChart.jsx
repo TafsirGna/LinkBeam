@@ -106,7 +106,7 @@ export default class FeedNewPostMeasurementBarChart extends React.Component{
       return;
     }
 
-    const objects = this.props.objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
+    const objects = this.props.objects.filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index);
 
     var results = {
       Old: 0,

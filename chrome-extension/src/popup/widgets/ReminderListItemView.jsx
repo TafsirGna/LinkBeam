@@ -73,7 +73,12 @@ export default class ReminderListItemView extends React.Component{
 
   getTitle = () => isLinkedinProfilePage(this.props.object.objectId)
                     ? this.props.object.object.fullName
-                    : `${this.props.object.object.profile.name} | feed`;
+                    : <span>
+                        {this.props.object.object.profile.name}
+                        <span class="mx-2 shadow-sm fst-italic mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info pb-0">
+                          Feed
+                        </span>
+                      </span>;
 
   render(){
     return (

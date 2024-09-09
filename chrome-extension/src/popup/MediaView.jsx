@@ -94,8 +94,6 @@ export default class MediaView extends React.Component{
 
   componentWillUnmount(){
 
-    eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
-
   }
 
   onSearchTextChange(data){
@@ -396,7 +394,7 @@ class MediaGridView extends React.Component{
                                                                                                                     </Popover>}
                                                                                                           >
                                                                                                           <a 
-                                                                                                            href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.uid || feedPost.view.uid}`} 
+                                                                                                            href={`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId || feedPost.view.htmlElId}`} 
                                                                                                             target="_blank" 
                                                                                                             title="View on linkedin">
                                                                                                             <div 

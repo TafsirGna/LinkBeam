@@ -62,8 +62,8 @@ export default class FeedPostCategoryDonutChart extends React.Component{
       return;
     }
 
-    const viewsCategoryData = getFeedPostViewsByCategory(this.props.objects),
-        colors = getChartColors(Object.keys(viewsCategoryData).length).borders;
+    const viewsCategoryData = getFeedPostViewsByCategory(this.props.objects.filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index)),
+          colors = getChartColors(Object.keys(viewsCategoryData).length).borders;
 
     this.setState({
       chartData: {

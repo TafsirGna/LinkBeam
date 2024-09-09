@@ -763,6 +763,7 @@ async function recordFeedVisit(tabData){
         console.log("xxxxxxxxxxxxxxxxxx 0''' : ", extractedPostData);
 
         const profileId = await checkPostFeedProfile(extractedPostData.content.author);
+        console.log("xxxxxxxxxxxxxxxxxx 0-4 : ", profileId);
         const dbFeedPost = await db.feedPosts
                                    .filter(entry => areFeedPostsTheSame(entry, { htmlElId: newFeedPost.htmlElId, profileId: profileId }))
                                    .first();
@@ -895,7 +896,7 @@ async function recordFeedVisit(tabData){
             return (newFeedPost.htmlElId && entry.htmlElId && newFeedPost.htmlElId == entry.htmlElId)
                                                         || ((!newFeedPost.htmlElId || !entry.htmlElId) 
                                                                 && entry.profileId == newFeedPost.profileId
-                                                                && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
+                                                                && entry.text?.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text?.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
                                                                     /*(() => {
                                                                         const entryText = entry.text.replaceAll("\n", "").replaceAll(/\s/g,""),
                                                                               postText = newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"");

@@ -211,10 +211,10 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
                                                                                                                                   feedPost.view = feedPostView; 
                                                                                                                                   return feedPost;
                                                                                                                                 })
-                                                                                                           .filter((value, index, self) => self.findIndex(post => post.id == value.id) === index)
+                                                                                                           .filter((value, index, self) => self.findIndex(post => post.uniqueId == value.uniqueId) === index)
                                                                                                            .map(feedPost => ({
                                                                                                               author: feedPost.profile,
-                                                                                                              url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.uid}`,
+                                                                                                              url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.view.htmlElId}`,
                                                                                                               // date: views.length ? views[0].date : null,
                                                                                                               text: feedPost.innerContentHtml,
                                                                                                               media: feedPost.media,

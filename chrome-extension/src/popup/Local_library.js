@@ -1770,7 +1770,7 @@ export async function getPostMetricValue(postViews, metric){
 
 }
 
-export async function getFeedDashMetricValue(feedPostViews, metric){
+export function getFeedDashMetricValue(feedPostViews, metric){
 
     var value = null;
     switch(metric){

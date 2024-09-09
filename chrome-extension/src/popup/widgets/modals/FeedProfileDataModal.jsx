@@ -238,11 +238,11 @@ export default class FeedProfileDataModal extends React.Component{
                       <div class="col">
                         <div class="shadow-sm rounded py-2">
                           <FeedPostCategoryDonutChart 
-                          objects={this.getIndividualFeedPostViews()}
-                          rangeDates={{
-                            start: this.props.globalData.settings.lastDataResetDate,
-                            end: new Date().toISOString(),
-                          }}
+                            objects={this.state.feedPostViews}
+                            rangeDates={{
+                              start: this.props.globalData.settings.lastDataResetDate,
+                              end: new Date().toISOString(),
+                            }}
                             />
                         </div>
                       </div>

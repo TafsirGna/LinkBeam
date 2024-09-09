@@ -104,7 +104,7 @@ export default class SearchInputView extends React.Component{
           break;
         }
         case "posts":{
-          eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
+          this.props.searchTextChanged({searchText: this.state.text, results: []});
           break;
         }
         case "media":{
@@ -224,7 +224,7 @@ export default class SearchInputView extends React.Component{
   async searchPosts(selection = null){
 
     // in order to show the spinner 
-    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, null);
+    this.props.searchTextChanged(null);
 
     var posts = [];
 
@@ -235,13 +235,13 @@ export default class SearchInputView extends React.Component{
                                              .toArray())
                                              .map(p => p.uniqueId);
 
-      var matchingPosts = await db.feedPosts
+      var tmpPosts = await db.feedPosts
                                   .filter(feedPost => (feedPost.text.toLowerCase().includes(this.state.text.toLowerCase()))
                                                         || relatedFeedProfileIds.includes(feedPost.profileId))
                                   .toArray();
 
       var feedPostViews = [];
-      for (const post of matchingPosts){
+      for (const post of tmpPosts){
 
         var lastView = await db.feedPostViews
                                   .where({feedPostId: post.uniqueId})
@@ -269,33 +269,29 @@ export default class SearchInputView extends React.Component{
       }
 
       if (selection == "media_only"){
-        eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: feedPostViews});
+        this.props.searchTextChanged({searchText: this.state.text, results: feedPostViews});
         return;
       }
 
-      matchingPosts = [];
+      tmpPosts = [];
       await db.visits
               .filter(visit => Object.hasOwn(visit, "profileData"))
               .each(visit => {
-                if (visit.profileData.activity){
-                  for (var activity of visit.profileData.activity){
-                    if (dbDataSanitizer.preSanitize(activity.title).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1
-                          && !(matchingPosts.filter(p => dbDataSanitizer.preSanitize(p.title) == dbDataSanitizer.preSanitize(activity.title)).length)){
-                      activity.date = visit.date;
-                      activity.profile = { url: visit.url };
-                      matchingPosts.push(activity);
-                    }
-
+                visit.profileData.activity?.forEach(activity => {
+                  if (dbDataSanitizer.preSanitize(activity.title).toLowerCase().includes(this.state.text.toLowerCase())
+                        && !(tmpPosts.filter(p => dbDataSanitizer.preSanitize(p.title) == dbDataSanitizer.preSanitize(activity.title)).length)){
+                    activity.date = visit.date;
+                    activity.profile = { url: visit.url };
+                    tmpPosts.push(activity);
                   }
-
-                }
+                });
               });
 
       var profiles = [];
-      for (var post of matchingPosts){
+      for (var post of tmpPosts){
         
         // checking in the activities already saved, to retrieve a similar profile to match
-        const index = profiles.map(p => p.url).indexOf(post.profile.url);
+        const index = profiles.findIndex(p => p.url == post.profile.url);
         var profile = null;
         if (index != -1){
           profile = profiles[index];

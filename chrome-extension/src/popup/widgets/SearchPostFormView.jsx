@@ -27,7 +27,6 @@ import {
 } from "../Local_library";
 import SearchInputView from "./SearchInputView";
 import ActivityListView from "./ActivityListView";
-import eventBus from "../EventBus";
 
 export default class SearchPostFormView extends React.Component{
 
@@ -41,13 +40,6 @@ export default class SearchPostFormView extends React.Component{
 
   componentDidMount() {
 
-    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, (data) => {
-        
-        this.setState({posts: !data ? null : data.results});
-
-      }
-    );
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -56,16 +48,17 @@ export default class SearchPostFormView extends React.Component{
 
   componentWillUnmount(){
 
-    eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
-
   }
+
+  onSearchTextChange = (data) => this.setState({posts: data?.results});
 
   render(){
     return (
       <>
       
         <SearchInputView 
-          objectStoreName="posts"/>
+          objectStoreName="posts"
+          searchTextChanged={(data) => this.onSearchTextChange(data)}/>
 
         <div class="mt-2">
           <ActivityListView 

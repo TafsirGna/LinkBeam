@@ -115,26 +115,9 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
      	return getFeedDashMetricValue(objects, metric); 
     }
 
-		var value = 0,
-				uids = [];
-
-		for (const feedPostView of objects){
-			if (uids.indexOf(feedPostView.uid) != -1){
-				continue;
-			}
-
-			if (feedPostView.category){
-				if (feedPostView.category == metric){
-					value++;
-				}
-			}
-			else{
-				value++;
-			}
-
-		}
-
-		return value;
+		return objects.filter((value, index, self) => self.findIndex(v => v.htmlElId == value.htmlElId) === index)
+									.filter(feedPostView => feedPostView.category == metric || (!feedPostView.category && true))
+									.length;
 
 	}
 

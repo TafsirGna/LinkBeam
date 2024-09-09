@@ -734,15 +734,15 @@ export function getHtmlElImageSource(htmlElement){
 }
 
 export function getHtmlElTextContent(htmlElement){
-  return htmlElement ? htmlElement.textContent : null;
+  return htmlElement?.textContent;
 }
 
 export function getHtmlElInnerHTML(htmlElement){
-  return htmlElement ? htmlElement.innerHTML : null;
+  return htmlElement?.innerHTML;
 }
 
 function getHtmlElHref(htmlElement){
-  return htmlElement ? htmlElement.href : null;
+  return htmlElement?.href;
 }
 
 function getEntityHtmlElHref(htmlElement){

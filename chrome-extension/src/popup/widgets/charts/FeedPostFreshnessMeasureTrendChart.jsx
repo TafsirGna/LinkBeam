@@ -132,13 +132,13 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
     //   }
     // });
 
-    objects = objects.filter((value, index, self) => self.findIndex(view => view.uid == value.uid) === index);
+    const objs = objects.filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index);
 			
-		for (var object of objects){
+		for (var object of objs){
 
 			const postView = await db.feedPostViews
                                 .where({feedPostId: object.feedPostId})
-                                .filter(postView => new Date(postView.date) < new Date(objects[0].date))
+                                .filter(postView => new Date(postView.date) < new Date(objs[0].date))
                                 .first();
 
       if (postView){
