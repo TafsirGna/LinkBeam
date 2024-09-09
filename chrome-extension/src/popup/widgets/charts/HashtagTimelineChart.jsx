@@ -27,6 +27,8 @@ import {
   getChartColors,
   getFeedLineChartsData,
   getFeedDashMetricValue,
+  isReferenceHashtag,
+  getHashtagText,
 } from "../../Local_library";
 import {
   Chart as ChartJS,
@@ -40,8 +42,6 @@ import {
   Filler,
   Legend,
 } from 'chart.js';
-import { db } from "../../../db";
-import eventBus from "../../EventBus";
 
 ChartJS.register(
   CategoryScale,
@@ -93,6 +93,10 @@ export default class HashtagTimelineChart extends React.Component{
       this.setChartData();
     }
 
+    if (prevProps.feedPostViews != this.props.feedPostViews){
+      this.setChartData();
+    }
+
   }
 
   componentWillUnmount(){
@@ -101,15 +105,16 @@ export default class HashtagTimelineChart extends React.Component{
 
   async setChartData(){
 
-    if (!this.props.object){
+    if (!this.props.object
+          || !this.props.feedPostViews){
       this.setState({lineData: null});
       return;
     }
 
-    const feedPostViews = await db.feedPostViews
-                                  .where("feedPostId")
-                                  .anyOf(this.props.object.feedPosts.map(p => p.id).filter((value, index, self) => self.indexOf(value) === index))
-                                  .toArray();
+    const feedPostViews = this.props.feedPostViews.filter(v => v.feedPost.references
+                                                                && v.feedPost.references.filter(reference => isReferenceHashtag(reference) 
+                                                                                                              && getHashtagText(reference.text) == this.props.object.text)
+                                                                                        .length);
 
     const rangeDates = {
       start: feedPostViews[0].date,

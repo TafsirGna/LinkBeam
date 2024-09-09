@@ -31,7 +31,6 @@ import {
   groupPeriodFeedPostViewsByHtmlElId,
 } from "../../Local_library";
 import { db } from "../../../db";
-import eventBus from "../../EventBus";
 import SearchInputView from "../SearchInputView";
 
 export default class AllPostsModal extends React.Component{
@@ -47,20 +46,10 @@ export default class AllPostsModal extends React.Component{
 
     this.setSortByValue = this.setSortByValue.bind(this);
     this.containsSearchText = this.containsSearchText.bind(this);
+    this.onSearchTextChange = this.onSearchTextChange.bind(this);
   }
 
   componentDidMount() {
-
-    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
-      this.setState({
-        searchText: data.searchText,
-        processing: true,
-      }, () => {
-        setTimeout(() => {
-          this.setState({processing: false});
-        }, 1000);
-      });
-    });
 
   }
 
@@ -68,7 +57,7 @@ export default class AllPostsModal extends React.Component{
 
     if (prevProps.objects != this.props.objects){
       if (prevProps.objects){
-        this.setState({feedPostViews: [...this.props.objects]}, () => {
+        this.setState({feedPostViews: (this.props.objects ? [...this.props.objects] : null)}, () => {
           this.setSortByValue(this.state.sortByValueIndex);
         });
       }
@@ -90,7 +79,23 @@ export default class AllPostsModal extends React.Component{
     
   }
 
+  onSearchTextChange(data){
+    this.setState({
+      searchText: data.searchText,
+      processing: true,
+    }, () => {
+      setTimeout(() => {
+        this.setState({processing: false});
+      }, 1000);
+    });
+  }
+
   setSortByValue(index){
+
+    if (!this.state.feedPostViews){
+      return;
+    }
+
     this.setState({
       sortByValueIndex: index,
       processing: true,
@@ -163,7 +168,8 @@ export default class AllPostsModal extends React.Component{
                                 <div class="my-4">
                                   <SearchInputView 
                                     objectStoreName="feed_profiles" 
-                                    globalData={this.props.globalData} />
+                                    globalData={this.props.globalData} 
+                                    searchTextChanged={data => this.onSearchTextChange(data)}/>
                                     { this.state.searchText 
                                         && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
                                             {`${this.state.feedPostViews.filter(feedPostView => (this.state.searchText && this.containsSearchText(feedPostView))
@@ -217,7 +223,7 @@ export default class AllPostsModal extends React.Component{
                                                                                           .map((([_, feedPostViews]) => <PostViewListItemView 
                                                                                                                             startDate={this.props.startDate}
                                                                                                                             endDate={this.props.endDate}
-                                                                                                                            object={feedPostViews}
+                                                                                                                            objects={feedPostViews}
                                                                                                                             globalData={this.props.globalData}/>))}
     			                  	</div>}
 

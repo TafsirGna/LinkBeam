@@ -40,6 +40,7 @@ import {
   CompassIcon,
   CalendarIcon,
   FileIcon,
+  ApertureIcon,
 } from "./SVGs";
 import eventBus from "../EventBus";
 
@@ -246,7 +247,7 @@ export default class HomeMenu extends React.Component{
                 href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}`}
                 target="_blank"
                 title="List studios">
-                <MediaIcon
+                <ApertureIcon
                   size="15"
                   className="me-2 text-muted"/>
                 Profile Studio

@@ -72,7 +72,7 @@ export default class AiSettingsView extends React.Component{
                     <CompassIcon
                       size="15"
                       className="me-2 text-muted"/>
-                    'Browse feed for me' model
+                    'Browse feed for me' models
                   </strong>
                   <div class="dropdown">
                     <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
@@ -88,6 +88,38 @@ export default class AiSettingsView extends React.Component{
                         ))}
                     </ul>
                   </div>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <CompassIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Last trained on
+                  </strong>
+                  <span class="rounded shadow-sm badge border text-secondary">{this.props.globalData.settings?.modelLastTrainingDate || "Never"}</span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <CompassIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Model characterictics
+                  </strong>
+                  <a 
+                    href="#" 
+                    class="text-primary badge" 
+                    title="View characterictics"
+                    onClick={null}>
+                      View
+                  </a>
                 </div>
               </div>
             </div>

@@ -60,55 +60,14 @@ export default class BookmarkView extends React.Component{
         try{
 
           bookmarks = await db.bookmarks.toArray();
-
           for (var bookmark of bookmarks){
-
-            var profile = null;
-
             try{
-
-              // if it's a feed bookmark then
-              if (!(await db.visits.where("url").anyOf(allUrlCombinationsOf(bookmark.url)).first())){
-
-                var object = await db.feedPostViews
-                                      .filter(view => view.profile && allUrlCombinationsOf(bookmark.url).indexOf(view.profile.url) != -1)
-                                      .first();
-
-                if (!object){
-                  object = await db.feedPosts
-                                    .filter(view => allUrlCombinationsOf(bookmark.url).indexOf(view.author.url) != -1)
-                                    .first();
-
-                  // if (!object){
-                  //   continue;
-                  // }
-
-                  profile = object.author;
-
-                }
-                else{
-                  profile = object.initiator;
-                }
-
-                bookmark.profile = {
-                  avatar: profile.picture,
-                  fullName: profile.name,
-                  title: null,
-                };
-                bookmark.feed = true;
-
-                continue;
-
-              }
-
-              profile = await getProfileDataFrom(db, bookmark.url);
-              bookmark.profile = profile;
-
+              bookmark.profile = await db.feedProfiles.where("url").anyOf(allUrlCombinationsOf(bookmark.url)).first()
+                                  || await getProfileDataFrom(db, bookmark.url);
             }
             catch(error){
               console.error("Error : ", error);
             }
-
           }
 
         }

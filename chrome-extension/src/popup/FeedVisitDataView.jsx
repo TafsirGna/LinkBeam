@@ -36,6 +36,9 @@ import {
   getHashtagText,
   isReferenceHashtag,
   allUrlCombinationsOf,
+  extractHashtags,
+  hashtagFeedPosts,
+  extractFeedPosts,
 } from "./Local_library";
 import PageTitleView from "./widgets/PageTitleView";
 import eventBus from "./EventBus";
@@ -68,11 +71,9 @@ export default class FeedVisitDataView extends React.Component{
   componentDidMount(){
 
     if (this.props.context == "modal"){
-      if (this.props.object){
-        (async () => {
-          this.setVisit(this.props.object);
-        }).bind(this)();
-      }
+      (async () => {
+        this.setVisit(this.props.object);
+      }).bind(this)();
       return;
     }
 
@@ -94,11 +95,9 @@ export default class FeedVisitDataView extends React.Component{
 
   componentDidUpdate(prevProps, prevState){
     if (prevProps.object != this.props.object){
-      if (this.props.object){
-        (async () => {
-          this.setVisit(this.props.object);
-        }).bind(this)();
-      }
+      (async () => {
+        this.setVisit(this.props.object);
+      }).bind(this)();
     }
   }
 
@@ -115,75 +114,15 @@ export default class FeedVisitDataView extends React.Component{
 
   async setFeedPosts(){
 
-    var feedPosts = [],
-        references = [];
-
-    console.log("[[[[ 1 : ", this.state.visit.feedPostViews);
-    for (const feedPostView of this.state.visit.feedPostViews){
-
-      // Setting the feedPosts property
-      if (feedPosts.findIndex(f => f.uniqueId == feedPostView.feedPostId) != -1){
-        continue;
-      }
-
-      if (!feedPostView.profile && feedPostView.profileId){
-        feedPostView.profile = await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first(); 
-      }
-
-      var feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
-
-      if (feedPost.linkedPostId){
-
-        const linkedPost = await db.feedPosts.where({uniqueId: feedPost.linkedPostId}).first();
-        if (linkedPost 
-              && linkedPost.media
-              && feedPosts.findIndex(f => f.uniqueId == linkedPost.uniqueId) == -1){
-
-          linkedPost.profile = await db.feedProfiles.where({uniqueId: linkedPost.profileId}).first();
-          linkedPost.view = feedPostView;
-          linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(linkedPost.profile.url)).first());
-
-          feedPosts.push(linkedPost);
-        }
-
-      }
-
-      feedPost.profile = await db.feedProfiles.where({uniqueId: feedPost.profileId}).first();
-      feedPost.view = feedPostView;
-      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPost.profile.url)).first())
-                              || (feedPostView.profile
-                                    && feedPostView.profile.url
-                                    && await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPostView.profile.url)).first());
-      feedPosts.push(feedPost);
-
-      // Setting the hashtag property
-      if (!feedPost.references){
-        continue
-      }
-
-      for (const reference of feedPost.references){
-
-        if (!isReferenceHashtag(reference)){
-          continue;
-        }
-
-        const index = references.findIndex(r => getHashtagText(r.text) == getHashtagText(reference.text));
-        if (index == -1){
-          references.push({
-            ...reference,
-            feedPosts: [feedPost],
-          });
-        }
-        else{
-          references[index].feedPosts.push(feedPost);
-        }
-      }
-
-    }
+    const feedPosts = await extractFeedPosts(this.state.visit.feedPostViews, db);
 
     this.setState({
       feedPosts: feedPosts,
-      hashtags: references.toSorted((a, b) => b.feedPosts.length - a.feedPosts.length),
+      hashtags: extractHashtags(this.state.visit.feedPostViews).map(hashtag => {
+                                                                  hashtag.feedPosts = hashtagFeedPosts(hashtag, this.state.visit.feedPostViews);
+                                                                  return hashtag;
+                                                                })
+                                                               .toSorted((a, b) => b.feedPosts.length - a.feedPosts.length),
     });
 
   }
@@ -205,9 +144,18 @@ export default class FeedVisitDataView extends React.Component{
               <img src={ linkedin_icon } alt="twbs" width="100" height="100" class="shadow rounded flex-shrink-0"/>
               <div class="d-flex align-items-center">
                 <div>
-                  { this.state.visit.id
+                  { this.state.visit.uniqueId
                       && <div>
-                          <div>{LuxonDateTime.fromISO(this.state.visit.date).toFormat('MMMM dd yyyy, hh:mm a')} - {LuxonDateTime.fromMillis(LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60000)).toFormat('MMMM dd yyyy, hh:mm a')}</div> 
+                          <div>
+                            { LuxonDateTime.fromISO(this.state.visit.date).toFormat('MMMM dd yyyy, hh:mm a') } 
+                            {" - "} 
+                            {LuxonDateTime.fromMillis(Math.max(
+                                                                (LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60000)), 
+                                                                LuxonDateTime.fromISO(this.state.visit.feedPostViews[this.state.visit.feedPostViews.length - 1].date)
+                                                                             .toMillis()
+                                                              ))
+                                          .toFormat('MMMM dd yyyy, hh:mm a')}
+                          </div> 
                           <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60)}</div>
                         </div>}
                   <div class="text-muted fst-italic">{this.state.visit.feedPostViews.length} posts</div>
@@ -239,11 +187,9 @@ export default class FeedVisitDataView extends React.Component{
                 <a class={`nav-link ${this.state.viewIndex == 1 ? "active" : ""}`} href="#">
                   Media
                   <span class="badge rounded-pill text-bg-secondary ms-2 shadow">
-                    {this.state.feedPosts 
-                        ? this.state.feedPosts.filter(feedPost => feedPost.media)
-                                               .reduce((acc, a) => acc.concat(a), [])
-                                               .length
-                        : 0}+
+                    {this.state.feedPosts?.filter(feedPost => feedPost.media)
+                                         .reduce((acc, a) => acc.concat(a), [])
+                                         .length}+
                   </span>
                 </a>
               </li>

@@ -29,6 +29,7 @@ import {
   highlightText,
   hexToRgb,
   allUrlCombinationsOf,
+  extractFeedPosts,
 } from "./Local_library";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -64,8 +65,8 @@ export default class MediaView extends React.Component{
     this.searchMedia = this.searchMedia.bind(this);
     this.addFeedPostViewSubscription = this.addFeedPostViewSubscription.bind(this);
     this.deleteFeedPostViewSubscription = this.deleteFeedPostViewSubscription.bind(this);
-    this.getFeedPosts = this.getFeedPosts.bind(this);
     this.onFeedPostViewSubscriptionTrigger = this.onFeedPostViewSubscriptionTrigger.bind(this);
+    this.onSearchTextChange = this.onSearchTextChange.bind(this);
 
   }
 
@@ -85,111 +86,6 @@ export default class MediaView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
-    eventBus.on(eventBus.SET_MATCHING_POSTS_DATA, async (data) => {
-
-        if (!data){
-          if (!objectsBackup){
-            objectsBackup = {
-              all: this.state.allObjects
-            };
-          }
-          this.setState({allObjects: null});
-          return;
-        }
-
-        if (!data.searchText.replaceAll(/\s/g,"").length){
-
-          if (objectsBackup){
-            this.setState({
-              allObjects: objectsBackup.all, 
-              searchText: null,
-            }, () => {
-              if (!this.feedPostViewSubscription){
-                this.addFeedPostViewSubscription();
-              }
-            });
-          }
-
-        }
-        else{
-
-          // Stop listening the the database changes for today
-          this.deleteFeedPostViewSubscription();
-
-          this.setState({searchText: data.searchText}, async () => {
-
-            var feedPostsByDate = {};
-
-            for (var feedPost of data.results){
-
-              if (!feedPost.media){
-                continue;
-              }
-
-              feedPost.view = await db.feedPostViews
-                                       .where({feedPostId: feedPost.uniqueId})
-                                       .last(); 
-
-              if (!feedPost.view){ // if it's a subpost
-                const post = await db.feedPosts
-                                        .where({linkedPostId: feedPost.uniqueId})
-                                        .first();
-                // if (!post) { console.error("{{{{{{{{{{{ : ", feedPost); continue; }
-                feedPost.view = await db.feedPostViews
-                                        .where({feedPostId: post.uniqueId})
-                                        .last();
-              }
-
-              feedPost.view.profile = feedPost.view.profileId
-                                        ? await db.feedProfiles.where({uniqueId: feedPost.view.profileId}).first()
-                                        : null;
-
-              feedPost.bookmarked = (await db.bookmarks.where("url")
-                                                       .anyOf(allUrlCombinationsOf(feedPost.profile.url))
-                                                       .first())
-                                      || (feedPost.view.profile
-                                            && feedPost.view.profile.url
-                                            && await db.bookmarks.where("url")
-                                                                 .anyOf(allUrlCombinationsOf(feedPost.view.profile.url))
-                                                                 .first());
-
-              const date = feedPost.view.date.split("T")[0];
-
-              if (date in feedPostsByDate){
-                feedPostsByDate[date].push(feedPost);
-              }
-              else{
-                feedPostsByDate[date] = [feedPost];
-              }
-
-            }
-
-            data.results = {
-              all: [], 
-            };
-
-            for (const date of periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days").toReversed()){
-              
-              data.results.all.push({
-                date: date,
-                feedPosts: date.toISO().split("T")[0] in feedPostsByDate 
-                                ? feedPostsByDate[date.toISO().split("T")[0]] 
-                                : [],
-              });
-
-            }
-
-            this.setState({
-              allObjects: data.results.all,
-            });
-
-          });
-
-        }
-
-      }
-    );
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -199,6 +95,58 @@ export default class MediaView extends React.Component{
   componentWillUnmount(){
 
     eventBus.remove(eventBus.SET_MATCHING_POSTS_DATA);
+
+  }
+
+  onSearchTextChange(data){
+
+    if (!data){
+      if (!objectsBackup){
+        objectsBackup = {
+          all: this.state.allObjects
+        };
+      }
+      this.setState({allObjects: null});
+      return;
+    }
+
+    if (!data.searchText.replaceAll(/\s/g,"").length){
+
+      if (objectsBackup){
+        this.setState({
+          allObjects: objectsBackup.all, 
+          searchText: null,
+        }, () => {
+          if (!this.feedPostViewSubscription){
+            this.addFeedPostViewSubscription();
+          }
+        });
+      }
+
+    }
+    else{
+
+      // Stop listening the the database changes for today
+      this.deleteFeedPostViewSubscription();
+
+      this.setState({searchText: data.searchText}, async () => {
+
+        const feedPosts = await extractFeedPosts(data.results, db, "media_only");
+
+        data.results = periodRange(new Date(this.props.globalData.settings.lastDataResetDate), LuxonDateTime.now().plus({days: 1}).toJSDate(), 1, LuxonDateTime, "days")
+                        .toReversed()
+                        .map(date => ({
+                          date: date,
+                          feedPosts: feedPosts.filter(feedPost => feedPost.view.date.startsWith(date.toISO().split("T")[0])),
+                        }));
+
+        this.setState({
+          allObjects: data.results,
+        });
+
+      });
+
+    }
 
   }
 
@@ -226,7 +174,7 @@ export default class MediaView extends React.Component{
 
     var allObjects = this.state.allObjects;
     const index = allObjects.findIndex(o => o.date.toISO().split("T")[0] == LuxonDateTime.now().toISO().split("T")[0]);
-    allObjects[index].feedPosts = (await this.getFeedPosts(feedPostViews));
+    allObjects[index].feedPosts = (await extractFeedPosts(feedPostViews, db, "media_only"));
 
     this.setState({allObjects: allObjects});
 
@@ -251,11 +199,11 @@ export default class MediaView extends React.Component{
       }
 
       const feedPostViews = await db.feedPostViews
-                                  .where("date")
-                                  .startsWith(newDate.toISO().split("T")[0])
-                                  .toArray(); 
+                                    .where("date")
+                                    .startsWith(newDate.toISO().split("T")[0])
+                                    .toArray(); 
 
-      allObjects.push({date: newDate, feedPosts: (await this.getFeedPosts(feedPostViews))});
+      allObjects.push({date: newDate, feedPosts: (await extractFeedPosts(feedPostViews, db, "media_only"))});
 
       this.setState({
         allObjects: allObjects, 
@@ -267,60 +215,6 @@ export default class MediaView extends React.Component{
       });
 
     })
-
-  }
-
-  async addLinkedPostToList(feedPost, feedPosts){
-
-    const linkedPost = await db.feedPosts.where({uniqueId: feedPost.linkedPostId}).first();
-    if (linkedPost 
-          && linkedPost.media
-          && feedPosts.findIndex(f => f.uniqueId == linkedPost.uniqueId) == -1){
-
-      linkedPost.view = feedPost.view;
-      linkedPost.profile = await db.feedProfiles.where({uniqueId: linkedPost.profileId}).first();
-      linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(linkedPost.profile.url)).first());
-
-      feedPosts.push(linkedPost);
-
-    }
-
-  }
-
-  async getFeedPosts(feedPostViews){
-
-    var feedPosts = [];
-
-    for (const feedPostView of feedPostViews){
-
-      if (feedPosts.findIndex(f => f.uniqueId == feedPostView.feedPostId) != -1){
-        continue;
-      }
-
-      feedPostView.profile = feedPostView.profileId
-                                ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
-                                : null;
-      var feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
-      feedPost.view = feedPostView;
-
-      if (feedPost.linkedPostId){
-        await this.addLinkedPostToList(feedPost, feedPosts);
-      }
-
-      if (!feedPost.media){
-        continue;
-      }
-
-      feedPost.profile = await db.feedProfiles.where({uniqueId: feedPost.profileId}).first();
-      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPost.profile.url)).first())
-                              || (feedPostView.profile
-                                    && feedPostView.profile.url
-                                    && await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPostView.profile.url)).first());
-      feedPosts.push(feedPost);
-
-    }
-
-    return feedPosts;
 
   }
 
@@ -359,7 +253,8 @@ export default class MediaView extends React.Component{
                   <div class="my-4">
                     <SearchInputView 
                       objectStoreName="media" 
-                      globalData={this.props.globalData} />
+                      globalData={this.props.globalData}
+                      searchTextChanged={(data) => this.onSearchTextChange(data)} />
                       { this.state.searchText 
                           && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
                               {`${this.state.allObjects ? this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}

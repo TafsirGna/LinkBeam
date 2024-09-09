@@ -331,27 +331,25 @@ export default class FeedDashView extends React.Component{
           { this.state.activeListIndex == 0 
               && <div class="my-2 p-3 bg-body rounded shadow border mx-3">
                       <h6 class="border-bottom pb-2 mb-0">
-
                         Posts
-
                         <div class="dropdown float-end bd-gray">
-                            <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
-                              <LayersIcon 
-                                size="18" 
-                                className="text-muted"/>
-                            </div>
-                            <ul class="dropdown-menu shadow-lg">
-                              <li>
-                                <a class="dropdown-item small" href="#" onClick={this.handlePostStackedBarChartModalShow}>
-                                  <BarChartIcon
-                                    size="15"
-                                    className="me-2 text-muted"/>
-                                  Post Creat/Occur bar chart
-                                  {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
-                                </a>
-                              </li>
-                            </ul>
+                          <div class="dropdown-toggle handy-cursor" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
+                            <LayersIcon 
+                              size="18" 
+                              className="text-muted"/>
                           </div>
+                          <ul class="dropdown-menu shadow-lg">
+                            <li>
+                              <a class="dropdown-item small" href="#" onClick={this.handlePostStackedBarChartModalShow}>
+                                <BarChartIcon
+                                  size="15"
+                                  className="me-2 text-muted"/>
+                                Post Creat/Occur bar chart
+                                {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
+                              </a>
+                            </li>
+                          </ul>
+                        </div>
 
                       </h6>
           
@@ -462,7 +460,7 @@ export default class FeedDashView extends React.Component{
               start: this.state.startDate,
               end: this.state.endDate,
             }}
-            objects={this.state.allPeriodUniqueFeedPostViews}/>
+            objects={this.state.allPeriodFeedPostViews?.filter((value, index, self) => self.findIndex(v => v.htmlElId == value.htmlElId) === index)}/>
 
         </Modal.Body>
         <Modal.Footer>

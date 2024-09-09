@@ -4,6 +4,7 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dbDataSanitizer,
+  allUrlCombinationsOf,
 } from "../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { db } from "../../db";
@@ -49,7 +50,7 @@ export default class ProfileListItemView extends React.Component{
 
       bookmark = await db.bookmarks
                         .where("url")
-                        .anyOf([decodeURI(this.props.object.url), this.props.object.url, encodeURI(this.props.object.url)])
+                        .anyOf(allUrlCombinationsOf(this.props.object.url))
                         .first();
                         
     }

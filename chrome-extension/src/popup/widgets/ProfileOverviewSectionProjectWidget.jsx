@@ -63,7 +63,7 @@ export default class ProfileOverviewSectionProjectWidget extends React.Component
           onClick={this.handleProjectsModalShow}
           title={this.props.profile.projects && this.props.profile.projects.indexOf("incomplete") != -1 ? "Incomplete data" : null}>
           <div class="card-body">
-            <h6 class="card-title text-danger-emphasis">{this.props.profile.projects ? this.props.profile.projects.filter(project => project != "incomplete").length : 0}</h6>
+            <h6 class="card-title text-danger-emphasis">{this.props.profile.projects?.filter(project => project != "incomplete").length}</h6>
             <p class="card-text">Projects</p>
           </div>
         </div>

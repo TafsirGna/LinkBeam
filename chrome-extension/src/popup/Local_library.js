@@ -1018,7 +1018,7 @@ export async function getProfileDataFrom(db, url, properties = null){
 
   const visits = await db.visits
                       .where("url")
-                      .anyOf([url, encodeURI(url), decodeURI(url)])
+                      .anyOf(allUrlCombinationsOf(url))
                       .reverse()
                       .sortBy("date");
 
@@ -1071,13 +1071,75 @@ export async function getProfileDataFrom(db, url, properties = null){
 
 }
 
+export async function addLinkedPostToList(feedPost, feedPosts, db, scope = "all"){
+
+  const linkedPost = await db.feedPosts.where({uniqueId: feedPost.linkedPostId}).first();
+  if (linkedPost 
+        && ((scope == "media_only" && linkedPost.media) || (scope == "all" && true))
+        && feedPosts.findIndex(f => f.uniqueId == linkedPost.uniqueId) == -1){
+
+    linkedPost.view = feedPost.view;
+    linkedPost.profile = await db.feedProfiles.where({uniqueId: linkedPost.profileId}).first();
+    linkedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(linkedPost.profile.url)).first());
+
+    feedPosts.push(linkedPost);
+
+  }
+
+}
+
+export async function extractFeedPosts(feedPostViews, db, scope = "all"){
+
+    var feedPosts = [];
+
+    for (const feedPostView of feedPostViews){
+
+      if (feedPosts.findIndex(f => f.uniqueId == feedPostView.feedPostId) != -1){
+        continue;
+      }
+
+      feedPostView.profile = feedPostView.profile 
+                              || (feedPostView.profileId
+                                    ? await db.feedProfiles.where({uniqueId: feedPostView.profileId}).first()
+                                    : null);
+
+      var feedPost = feedPostView.feedPost || await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+      feedPost.view = feedPostView;
+
+      if (feedPost.linkedPostId){
+        await addLinkedPostToList(feedPost, feedPosts, db, scope);
+      }
+
+      if (scope = "media_only"){
+        if (!feedPost.media){
+          continue;
+        }
+      }
+
+      feedPost.profile = feedPost.profile || await db.feedProfiles.where({uniqueId: feedPost.profileId}).first();
+      feedPost.bookmarked = (await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPost.profile.url)).first())
+                              || (feedPostView.profile
+                                    && feedPostView.profile.url
+                                    && await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(feedPostView.profile.url)).first());
+      feedPosts.push(feedPost);
+
+    }
+
+    return feedPosts;
+
+  }
+
 export function extractHashtags(feedPostViews){
 
   return feedPostViews.filter((value, index, self) => self.findIndex(v => v.feedPostId == value.feedPostId) === index)
                       .filter(v => v.feedPost.references)
-                      .map(v => v.feedPost.references.filter(reference => isReferenceHashtag(reference)))
+                      .map(v => v.feedPost.references.filter(reference => isReferenceHashtag(reference))
+                                                     .map(reference => {
+                                                        reference.text = getHashtagText(reference.text);
+                                                        return reference;
+                                                      }))
                       .reduce((acc, a) => acc.concat(a), [])
-                      .filter((value, index, self) => self.indexOf(value) === index)
+                      .filter((value, index, self) => self.findIndex(reference => reference.text == value.text) === index)
   ;
 
 }

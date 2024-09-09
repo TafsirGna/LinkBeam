@@ -94,8 +94,14 @@ export default class FeedVisitsScatterPlot extends React.Component{
   }
 
   handleFeedVisitDataModalClose = () => this.setState({selectedFeedVisit: null});
-  handleFeedVisitDataModalShow = async (visitId) => this.setState({
-    selectedFeedVisit: await db.visits.where({uniqueId: visitId}).first(),
+  handleFeedVisitDataModalShow = (visitId) => this.setState({
+    selectedFeedVisit: (() => {
+      for (const feedPostView of this.props.objects){
+        if (feedPostView.visitId == visitId){
+          return feedPostView.visit;
+        }
+      }
+    })(),
   });
 
   async setChartData(){
@@ -159,13 +165,10 @@ export default class FeedVisitsScatterPlot extends React.Component{
 
             <FeedVisitDataView
               context="modal"
-              object={this.state.selectedFeedVisit
-                        ? (() => {
-                            var visit = this.state.selectedFeedVisit;
-                            visit.feedPostViews = this.props.objects.filter(view => view.visitId == this.state.selectedFeedVisit.uniqueId);
-                            return visit;
-                          })()
-                        : null}
+              object={{
+                ...(this.state.selectedFeedVisit),
+                feedPostViews: this.props.objects?.filter(view => this.state.selectedFeedVisit && view.visitId == this.state.selectedFeedVisit.uniqueId),
+              }}
               globalData={this.props.globalData}/>
 
           </Modal.Body>

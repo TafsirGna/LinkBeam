@@ -678,7 +678,7 @@ async function enrichProfileSectionData(tabData){
     // console.log("AAAAAAAAAAAAAAAAAAAAAAA : ", sessionItem.myTabs);
 
     // updating the last view object in the browser indexeddb
-    var lastView = await db.visits.where("url").anyOf([tabData.tabUrl, encodeURI(tabData.tabUrl), decodeURI(tabData.tabUrl)]).last();
+    var lastView = await db.visits.where("url").anyOf(allUrlCombinationsOf(tabData.tabUrl)).last();
     lastView.profileData[tabData.extractedData.label] = tabData.extractedData.list;
 
     await db.visits.update(lastView.id, lastView);
@@ -1577,40 +1577,17 @@ async function saveReminder(reminder){
 
     reminder.createdOn = (new Date()).toISOString();
     reminder.active = true;
-    const htmlElId = reminder.objectId;
+    reminder.uniqueId = uuidv4();
 
     try{
 
-        // const feedPostView = await db.feedPostViews
-        //                              .where({htmlElId: htmlElId})
-        //                              .first();
-
-        // if (!feedPostView.category){
-        //     reminder.objectId = feedPostView.htmlElId;
-        // }
-        // else{
-        //     if (feedPostView.category == "suggestions"){
-        //         reminder.objectId = feedPostView.htmlElId;
-        //     }
-        //     else{
-        //         const feedPost = await db.feedPosts
-        //                                  .where({id: feedPostView.feedPostId})
-        //                                  .first();
-        //         reminder.objectId = feedPost.htmlElId || feedPostView.htmlElId;
-        //     }
-        // }
-
         reminder.objectId = (await db.feedPostViews
-                                     .where({htmlElId: reminder.objectId})
+                                     .where({htmlElId: reminder.htmlElId})
                                      .first()).feedPostId;
         
         await db.reminders
-                .add(reminder)
-                .then(function(id){
-                    reminder.id = id;
-                });
+                .add(reminder);
 
-        reminder.htmlElId = htmlElId;
         return reminder;
 
     }

@@ -371,7 +371,8 @@ export default class PostViewListItemView extends React.Component{
                   onHide={this.handleReminderModalClose} />}
 
         <FeedProfileDataModal
-          object={this.state.selectedFeedProfile}
+          profile={this.state.selectedFeedProfile}
+          objects={this.state.feedPostViews}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 

@@ -25,7 +25,6 @@ import eventBus from "../EventBus";
 import { 
   appParams,
   highlightText,
-  getHashtagText,
   extractHashtags,
   hashtagFeedPosts,
 } from "../Local_library";
@@ -104,15 +103,13 @@ export default class FeedDashHashtagsSectionView extends React.Component{
       return;
     }
 
-    var references = extractHashtags(this.props.objects).map(hashtag => {
-                                                              hashtag.feedPosts = hashtagFeedPosts(hashtag, this.props.objects);
-                                                              return hashtag;
-                                                            });
-
-    references.sort((a, b) => b.feedPosts.length - a.feedPosts.length);
-
-    this.setState({hashtags: references}, () => {
-      this.props.setCount(references.length);
+    this.setState({hashtags: extractHashtags(this.props.objects).map(hashtag => {
+                                                                  hashtag.feedPosts = hashtagFeedPosts(hashtag, this.props.objects);
+                                                                  return hashtag;
+                                                                })
+                                                                .toSorted((a, b) => b.feedPosts.length - a.feedPosts.length)
+    }, () => {
+      this.props.setCount(this.state.hashtags.length);
     });
 
   }
@@ -175,7 +172,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                                                               >
                                                               <span 
                                                                 class={/*handy-cursor */`mx-2 badge bg-secondary-subtle border-secondary-subtle text-secondary-emphasis border rounded-pill`}>
-                                                                {`${getHashtagText(object.text)} (${object.feedPosts.length})`}
+                                                                {`${object.text} (${object.feedPosts.length})`}
                                                               </span>
                                                               </OverlayTrigger>
                                                             </div>
@@ -207,7 +204,7 @@ export default class FeedDashHashtagsSectionView extends React.Component{
         {/*Modals */}
         <Modal show={this.state.hashtagInfosModalShow} onHide={this.handleHashtagInfosModalClose} size="lg">
           <Modal.Header closeButton>
-            <Modal.Title>{`Hashtag: ${this.state.selectedReference ? getHashtagText(this.state.selectedReference.text) : null}`}</Modal.Title>
+            <Modal.Title>{`Hashtag: ${this.state.selectedReference ? this.state.selectedReference.text : null}`}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
 
@@ -235,14 +232,14 @@ export default class FeedDashHashtagsSectionView extends React.Component{
                   && <div>
                       <ActivityListView 
                         objects={this.state.selectedReference.feedPosts.map(post => { 
-                          const view = this.props.objects.filter(view => view.feedPostId == post.id).toReversed()[0]; 
+                          const view = this.props.objects.filter(view => view.feedPostId == post.uniqueId).toReversed()[0]; 
                           return {
                             author: post.profile,
                             url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${view.htmlElId}`,
                             // date: views.length ? views[0].date : null,
                             category: view.category,
                             initiator: view.profile,
-                            text: highlightText(post.innerContentHtml, getHashtagText(this.state.selectedReference.text)),
+                            text: highlightText(post.innerContentHtml, this.state.selectedReference.text),
                           }})}
                         variant="list"/>
                   </div> }
@@ -250,7 +247,8 @@ export default class FeedDashHashtagsSectionView extends React.Component{
               { this.state.hashtagInfosModalSelectedView == 2
                   && <div>
                       <HashtagTimelineChart
-                        object={this.state.selectedReference}/>
+                        object={this.state.selectedReference}
+                        feedPostViews={this.props.objects}/>
                   </div> }
 
           </Modal.Body>

@@ -35,6 +35,7 @@ import {
   setReminderObject,
   isLinkedinProfilePage,
   parseHtmlFromString,
+  allUrlCombinationsOf,
 } from "../Local_library";
 import { db } from "../../db";
 
@@ -91,37 +92,32 @@ export default class SearchInputView extends React.Component{
 
       switch(this.props.objectStoreName){
         case dbData.objectStoreNames.VISITS:{
-
           if (this.props.globalData.homeAllVisitsList && this.props.globalData.homeAllVisitsList.action == "search"){
             setGlobalDataHomeAllVisitsList(db, eventBus, this.props.globalData);
           }
-
           break;
         }
         case dbData.objectStoreNames.REMINDERS:{
-
           if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "search"){
             setGlobalDataReminders(db, eventBus);
           }
-
           break;
         }
         case "posts":{
-
           eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
-
           break;
         }
         case "media":{
-
-          eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
-
+          this.props.searchTextChanged({searchText: this.state.text, results: []});
           break;
         }
         case "feed_profiles":{
+          this.props.searchTextChanged({searchText: this.state.text, results: []});
+          break;
+        }
 
-          eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
-
+        case "quotes":{
+          this.props.searchTextChanged({searchText: this.state.text, results: []});
           break;
         }
       }
@@ -145,11 +141,15 @@ export default class SearchInputView extends React.Component{
         break;
       }
       case "media":{
-        this.searchPosts("media");
+        this.searchPosts("media_only");
         break;
       }
       case "feed_profiles":{
-        eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: []});
+        this.props.searchTextChanged({searchText: this.state.text, results: []});
+        break;
+      }
+      case "quotes":{
+        this.props.searchTextChanged({searchText: this.state.text, results: []});
         break;
       }
     }
@@ -230,35 +230,47 @@ export default class SearchInputView extends React.Component{
 
     try{
 
+      const relatedFeedProfileIds = (await db.feedProfiles
+                                             .filter(p => p.name.toLowerCase().includes(this.state.text.toLowerCase()))
+                                             .toArray())
+                                             .map(p => p.uniqueId);
+
       var matchingPosts = await db.feedPosts
                                   .filter(feedPost => (feedPost.text.toLowerCase().includes(this.state.text.toLowerCase()))
-                                                        || (feedPost.author.name
-                                                              && feedPost.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1))
+                                                        || relatedFeedProfileIds.includes(feedPost.profileId))
                                   .toArray();
 
-      if (selection == "media"){
-        eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: matchingPosts});
-        return;
-      }
+      var feedPostViews = [];
+      for (const post of matchingPosts){
 
-      for (var post of matchingPosts){
+        var lastView = await db.feedPostViews
+                                  .where({feedPostId: post.uniqueId})
+                                  .last();
 
-        const views = await db.feedPostViews
-                              .where({feedPostId: post.id})
-                              .toArray();
+        if (!lastView){
+          const feedPost = await db.feedPosts.where({linkedPostId: post.uniqueId}).first();
+          lastView = await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).last();
+        }
+
+        feedPostViews.push(lastView);
 
         posts.push({
-          author: post.author,
-          url: post.uid 
-                  ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.uid}`
-                  : (views.length
-                      ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${views[views.length - 1].uid}`
+          author: post.profile,
+          url: post.htmlElId 
+                  ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.htmlElId}`
+                  : (lastView
+                      ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${lastView.htmlElId}`
                       : null),
-          date: views[views.length - 1].date, // views.length ? views[0].date : null,
+          date: lastView.date,
           text: post.innerContentHtml,
-          initiator: views[views.length - 1].initiator,
+          initiator: lastView.profile,
         });
 
+      }
+
+      if (selection == "media_only"){
+        eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: feedPostViews});
+        return;
       }
 
       matchingPosts = [];
@@ -321,7 +333,7 @@ export default class SearchInputView extends React.Component{
       }
     });   
 
-    eventBus.dispatch(eventBus.SET_MATCHING_POSTS_DATA, {searchText: this.state.text, results: posts});
+    this.props.searchTextChanged({searchText: this.state.text, results: posts});
 
   }
 
@@ -352,7 +364,7 @@ export default class SearchInputView extends React.Component{
 
           var profileVisits = await db.visits
                                   .where("url")
-                                  .anyOf([url, encodeURI(url), decodeURI(url)])
+                                  .anyOf(allUrlCombinationsOf(url))
                                   .sortBy("date");
 
           profileVisits = profileVisits.map(visit => {

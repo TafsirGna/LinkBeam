@@ -148,9 +148,9 @@ export default class AttentionGrabbersAnimatedTreeMapChart extends React.Compone
 					
 				}
 
-				if (feedPost.author && feedPost.author.name){
+				if (feedPostView.feedPost.profile){
 
-					const profileIndex = profileData.findIndex(object => object.uniqueId == feedPost.profileId);	
+					const profileIndex = profileData.findIndex(object => object.uniqueId == feedPostView.feedPost.profileId);	
 					
 					// i increment the last item's value
 					// profileData[profileIndex].values[profileData[profileIndex].values.length - 1]++; // or 

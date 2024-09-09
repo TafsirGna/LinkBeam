@@ -179,7 +179,8 @@ export default class FeedRecurrentProfileListItemView extends React.Component{
         </div>
 
         <FeedProfileDataModal
-          object={this.state.feedProfileDataModalShow ? this.props.object : null}
+          profile={this.state.feedProfileDataModalShow ? this.props.object : null}
+          objects={this.props.objects}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 

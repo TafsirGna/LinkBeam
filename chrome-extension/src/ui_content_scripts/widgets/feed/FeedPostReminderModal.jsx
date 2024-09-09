@@ -79,7 +79,7 @@ export default class FeedPostReminderModal extends React.Component{
     this.setState({processing: true}, () => {
 
       this.setState({
-        reminder: {...this.state.reminder, objectId: this.props.htmlElId},
+        reminder: {...this.state.reminder, htmlElId: this.props.htmlElId},
       }, () => {
 
         // Send message to the background
@@ -107,7 +107,7 @@ export default class FeedPostReminderModal extends React.Component{
 
           this.setState({processing: false});
 
-          if (Object.hasOwn(this.state.reminder, "id")){ // adding a new reminder
+          if (Object.hasOwn(this.state.reminder, "uniqueId")){ // adding a new reminder
             this.setState({error: false});
           }
           else{
@@ -122,7 +122,7 @@ export default class FeedPostReminderModal extends React.Component{
 
     if (prevProps.show != this.props.show){
       if (this.props.show){
-        if (Object.hasOwn(this.state.reminder, "id") && this.state.error != null){
+        if (Object.hasOwn(this.state.reminder, "uniqueId") && this.state.error != null){
           this.setState({error: null});
         }
       }
@@ -183,7 +183,7 @@ export default class FeedPostReminderModal extends React.Component{
                                              onChange={this.handleReminderDateInputChange} 
                                              min={(new Date()).toISOString().split('T')[0]}
                                              /*placeholder=""*/ 
-                                             disabled={Object.hasOwn(this.state.reminder, "id")}
+                                             disabled={Object.hasOwn(this.state.reminder, "uniqueId")}
                                              className="text-lg"
                                              required />
                                          </div>
@@ -199,12 +199,12 @@ export default class FeedPostReminderModal extends React.Component{
                                              rows={4} 
                                              value={this.state.reminder.text} 
                                              onChange={this.handleReminderTextAreaChange}
-                                             disabled={Object.hasOwn(this.state.reminder, "id")}
+                                             disabled={Object.hasOwn(this.state.reminder, "uniqueId")}
                                              className="text-lg"
                                              required />
                                          </div>
                                                  
-                                         { !Object.hasOwn(this.state.reminder, "id") 
+                                         { !Object.hasOwn(this.state.reminder, "uniqueId") 
                                               && <button 
                                                    type="button" 
                                                    onClick={this.sendReminderData}

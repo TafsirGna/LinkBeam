@@ -239,24 +239,25 @@ export default class HashtagTangledTreeChart extends React.Component{
     }
 
     var chartData = [
-      [{id: getHashtagText(this.props.object.text)}],
+      [{id: this.props.object.text}],
       []
     ];
 
     for (var feedPost of this.props.object.feedPosts){
-      for (var reference of feedPost.references){
-        if (reference.text == this.props.object.text){
+      for (const reference of feedPost.references){
+
+        if (!isReferenceHashtag(reference)){
           continue;
         }
 
-        if (!isReferenceHashtag(reference)){
+        if (getHashtagText(reference.text) == this.props.object.text){
           continue;
         }
 
         if (chartData[1].map(o => o.id).indexOf(getHashtagText(reference.text)) == -1){
           chartData[1].push({
             id: getHashtagText(reference.text),
-            parents: [getHashtagText(this.props.object.text)],
+            parents: [this.props.object.text],
           });
         }
 

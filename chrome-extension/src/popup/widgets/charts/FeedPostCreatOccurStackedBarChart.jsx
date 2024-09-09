@@ -95,42 +95,35 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
 
   async setBarData(){
 
+    if (!this.props.objects){
+      return;
+    }
+
     var data = [[], []], 
         minDate = LuxonDateTime.now(),
-        feedPosts = [],
+        feedPosts = this.props.objects.filter((value, index, self) => self.findIndex(v => v.feedPostId == value.feedPostId) === index)
+                                      .map(v => {
+                                            v.feedPost.view = v;
+                                            return v.feedPost;
+                                          }),
         labels = [];
 
 
-    for (var feedPostView of this.props.objects){
+    for (const feedPost of feedPosts){
 
-      const index = feedPosts.findIndex(p => p.uniqueId == feedPostView.feedPostId);
-      if (index != -1){
-        feedPosts[index].views.push(feedPostView); 
+      if (!feedPost.estimatedDate){
+        continue;
       }
-      else{
 
-        var feedPost = { ...feedPostView.feedPost };
-        if (!feedPost.estimatedDate){
-          continue;
-        }
+      minDate = LuxonDateTime.fromISO(feedPost.estimatedDate) < minDate ? LuxonDateTime.fromISO(feedPost.estimatedDate) : minDate;
 
-        minDate = LuxonDateTime.fromISO(feedPost.estimatedDate) < minDate ? LuxonDateTime.fromISO(feedPost.estimatedDate) : minDate;
+      data[0].push(feedPost.estimatedDate.split("T")[0] < feedPost.view.date.split("T")[0] 
+                    ? feedPost.estimatedDate.split("T")[0]
+                    : feedPost.view.date.split("T")[0]);
 
-        feedPost.views = [feedPostView];
-        var firstView = await db.feedPostViews.where({feedPostId: feedPostView.feedPostId}).first()
-        feedPost.uid = firstView.uid;
+      data[1].push(feedPost.view.date.split("T")[0]);
 
-        feedPosts.push(feedPost);
-
-        data[0].push(feedPost.estimatedDate.split("T")[0] < firstView.date.split("T")[0] 
-                      ? feedPost.estimatedDate.split("T")[0]
-                      : firstView.date.split("T")[0]);
-
-        data[1].push(firstView.date.split("T")[0]);
-
-        labels.push(new Date(feedPost.estimatedDate).valueOf().toString());
-
-      }
+      labels.push(new Date(feedPost.estimatedDate).valueOf().toString());
 
     }
 
@@ -270,11 +263,11 @@ export default class FeedPostCreatOccurStackedBarChart extends React.Component{
                         && <ActivityListView 
                               objects={[{
                                 author: this.state.feedPosts[this.state.selectedFeedPostIndex].profile,
-                                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].uid}`,
+                                url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${this.state.feedPosts[this.state.selectedFeedPostIndex].view.htmlElId}`,
                                 // date: views.length ? views[0].date : null,
                                 text: this.state.feedPosts[this.state.selectedFeedPostIndex].innerContentHtml,
-                                category: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].category,
-                                initiator: this.state.feedPosts[this.state.selectedFeedPostIndex].views.toReversed()[0].profile,
+                                category: this.state.feedPosts[this.state.selectedFeedPostIndex].view.category,
+                                initiator: this.state.feedPosts[this.state.selectedFeedPostIndex].view.profile,
                               }]}
                               variant="list"/>}
 

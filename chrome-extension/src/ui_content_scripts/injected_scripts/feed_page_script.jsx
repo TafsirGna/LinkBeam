@@ -350,9 +350,9 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 
 	static onSaveAsQuoteMenuActionClicked(selectedText, props){
 
-		const postContainerElements = this.getPostContainerElements().filter(postContainerElement => postContainerElement.textContent.includes(selectedText));
+		const postContainerElements = this.getPostContainerElements().filter(postContainerElement => postContainerElement.querySelector(".feed-shared-update-v2__description").textContent.includes(selectedText));
 		if (!postContainerElements.length){
-			alert("Unable to identify the selected group of words to save as quote!");
+			alert("Linkbeam doesn't seem to be able to identify the selected group of words to save as quote!");
 			return;
 		}
 

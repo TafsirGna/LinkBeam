@@ -27,6 +27,7 @@ import FeedMetricsLineChart from "../charts/FeedMetricsLineChart";
 import FeedPostCategoryDonutChart from "../charts/FeedPostCategoryDonutChart";
 import HashtagWordCloudChart from "../charts/HashtagWordCloudChart";
 import FeedProfileReactionsSubjectsBarChart from "../charts/FeedProfileReactionsSubjectsBarChart";
+import { v4 as uuidv4 } from 'uuid';
 import { 
   getFeedDashMetricValue,
   getPostCount,
@@ -114,6 +115,7 @@ export default class FeedProfileDataModal extends React.Component{
       await db.bookmarks.add({
         url: this.props.profile.url,
         createdOn: new Date().toISOString(),
+        uniqueId: uuidv4(),
       })
     }
 

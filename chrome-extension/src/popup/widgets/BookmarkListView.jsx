@@ -40,24 +40,44 @@ export default class BookmarkListView extends React.Component{
               { this.props.objects.length != 0 && 
                 <div class="list-group m-1 shadow-sm small">
                   {
-                    this.props.objects.map(bookmark => (<a href={ bookmark.feed == true ? bookmark.url : `/index.html?view=Profile&data=${bookmark.url}`} target="_blank" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-                                    <img src={(bookmark.profile.avatar ? bookmark.profile.avatar : default_user_icon)} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0"/>
-                                    <div class="d-flex gap-2 w-100 justify-content-between">
-                                      <div>
-                                        <h6 class="mb-0">{bookmark.profile.fullName}</h6>
-                                        <p class="mb-0 opacity-75 small">{bookmark.profile.title}</p>
-                                        {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
-                                          <OverlayTrigger
-                                            placement="top"
-                                            overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
-                                          >
-                                            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                                          </OverlayTrigger>
-                                        </p>*/}
-                                      </div>
-                                      <small class="opacity-50 text-nowrap">{LuxonDateTime.fromISO(bookmark.createdOn).toRelative()}</small>
-                                    </div>
-                                  </a>))
+                    this.props.objects.map(bookmark => (<a 
+                                                          href={ Object.hasOwn(bookmark.profile, "picture") /*it's a feed bookmark*/ ? `https://${bookmark.url}` : `/index.html?view=Profile&data=${bookmark.url}`} 
+                                                          target="_blank" 
+                                                          class="list-group-item list-group-item-action d-flex gap-3 py-3" 
+                                                          aria-current="true">
+                                                          <img 
+                                                            src={((bookmark.profile.avatar || bookmark.profile.picture) || default_user_icon)} 
+                                                            alt="twbs" 
+                                                            width="40" 
+                                                            height="40" 
+                                                            class="shadow rounded-circle flex-shrink-0"/>
+                                                          <div class="d-flex gap-2 w-100 justify-content-between">
+                                                            <div>
+                                                              <h6 class="mb-0">
+                                                                {bookmark.profile.fullName || bookmark.profile.name}
+                                                              </h6>
+                                                              {Object.hasOwn(bookmark.profile, "picture")
+                                                                && <p class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">
+                                                                    On feed
+                                                                </p>}
+                                                              {Object.hasOwn(bookmark.profile, "avatar")
+                                                                  && <p class="mb-0 opacity-75 small">
+                                                                      {bookmark.profile.title}
+                                                                    </p>}
+                                                              {/*<p class="fst-italic opacity-50 mb-0 bg-light-subtle text-light-emphasis">
+                                                                <OverlayTrigger
+                                                                  placement="top"
+                                                                  overlay={<ReactTooltip id="tooltip1">Bookmarked</ReactTooltip>}
+                                                                >
+                                                                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+                                                                </OverlayTrigger>
+                                                              </p>*/}
+                                                            </div>
+                                                            <small class="opacity-50 text-nowrap">
+                                                              {LuxonDateTime.fromISO(bookmark.createdOn).toRelative()}
+                                                            </small>
+                                                          </div>
+                                                        </a>))
                   }
                 </div> }
 

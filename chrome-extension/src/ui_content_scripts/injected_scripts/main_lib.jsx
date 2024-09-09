@@ -466,11 +466,11 @@ function hideShowDistractiveHtmlEls(distractiveElSelectors, immersive){
 
 export function getFontFamilyStyle(props){
 
-  if (props.appSettings.fontFamily 
-            && props.appSettings.fontFamily != appParams.allFontFamilySettingValues[0].label){
+  if (!props.appSettings.fontFamily 
+        || (props.appSettings.fontFamily != appParams.allFontFamilySettingValues[0].label)){
     return <style>
               { (() => {
-                const fontFamily = appParams.allFontFamilySettingValues.filter(f => f.label == props.appSettings.fontFamily)[0];
+                const fontFamily = ((!props.appSettings.fontFamily && appParams.allFontFamilySettingValues[1]) || (props.appSettings.fontFamily && appParams.allFontFamilySettingValues.filter(f => f.label == props.appSettings.fontFamily)[0]))
                 return `@font-face { font-family: ${fontFamily.label}; src: url('/${fontFamily.file}'); }
                           * {
                            font-family: ${fontFamily.label}

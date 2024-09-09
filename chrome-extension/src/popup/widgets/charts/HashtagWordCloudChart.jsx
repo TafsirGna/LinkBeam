@@ -27,6 +27,7 @@ import { db } from "../../../db";
 import { 
   getHashtagText,
   isReferenceHashtag,
+  extractHashtags
 } from "../../Local_library";
 
 Chart.register(WordCloudController, WordElement);
@@ -63,34 +64,15 @@ export default class HashtagWordCloudChart extends React.Component{
       return;
     }
 
-    var hashtags = [],
-        feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.feedPostId == value.feedPostId) === index);
+    const feedPostViews = this.props.objects.filter((value, index, self) => self.findIndex(view => view.feedPostId == value.feedPostId) === index);
+    const hashtags = extractHashtags(feedPostViews).map(hashtag => ({
+                                                          key: hashtag.text,
+                                                          value: feedPostViews.filter(v => v.feedPost.references?.filter(reference => isReferenceHashtag(reference)
+                                                                                                                                        && getHashtagText(reference.text) == hashtag.text)
+                                                                                                                .length)
+                                                                              .length,
+                                                      }));
 
-    for (const feedPostView of feedPostViews){
-
-      if (!feedPostView.feedPost.references){
-        continue;
-      }
-
-      for (const reference of feedPostView.feedPost.references){
-
-        if (!isReferenceHashtag(reference)){
-          continue;
-        }
-
-        const index = hashtags.findIndex(h => h.key == getHashtagText(reference.text))
-        if (index == -1){
-          hashtags.push({
-            key: getHashtagText(reference.text),
-            value: 1,
-          });
-        }
-        else{
-          hashtags[index].value++;
-        }
-      }
-
-    }
 
     const chart = new Chart(this.state.chartRef.current.getContext("2d"), {
       type: "wordCloud",

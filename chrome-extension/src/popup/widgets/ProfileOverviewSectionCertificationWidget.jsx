@@ -143,9 +143,7 @@ export default class ProfileOverviewSectionCertificationWidget extends React.Com
           title={this.props.profile.certifications && this.props.profile.certifications.indexOf("incomplete") != -1 ? "Incomplete data" : null}>
           <div class="card-body">
             <h6 class="card-title text-success-emphasis">
-              {this.props.profile.certifications 
-                ? this.props.profile.certifications.filter(certification => certification != "incomplete").length 
-                : 0}
+              { this.props.profile.certifications?.filter(certification => certification != "incomplete").length }
             </h6>
             <p class="card-text">Certifications</p>
           </div>

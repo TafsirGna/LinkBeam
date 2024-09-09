@@ -30,6 +30,7 @@ import {
   saveSettingsPropertyValue,
   procExtractedData,
   removeObjectsId,
+  allUrlCombinationsOf,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
@@ -235,13 +236,13 @@ export default class DataSettingsView extends React.Component{
                 // Delete associated reminder if exists
                 await db.reminders
                         .where("objectId")
-                        .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                        .anyOf(allUrlCombinationsOf(visit.url))
                         .delete();
 
                 // Delete associated bookmarks
                 await db.bookmarks
                         .where("url")
-                        .anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)])
+                        .anyOf(allUrlCombinationsOf(visit.url))
                         .delete();
 
                 // delete associated folder
@@ -424,8 +425,8 @@ export default class DataSettingsView extends React.Component{
               }
 
               // linked reminder & bookmark
-              const reminder = await db.reminders.where("objectId").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first(),
-                    bookmark = await db.bookmarks.where("url").anyOf([visit.url, encodeURI(visit.url), decodeURI(visit.url)]).first();
+              const reminder = await db.reminders.where("objectId").anyOf(allUrlCombinationsOf(visit.url)).first(),
+                    bookmark = await db.bookmarks.where("url").anyOf(allUrlCombinationsOf(visit.url)).first();
 
               if (reminder && reminders.findIndex(r => r.id == reminder.id) == -1){
                 reminders.push(reminder);
@@ -726,7 +727,26 @@ export default class DataSettingsView extends React.Component{
                         { this.state.processingState.status == "NO" 
                             && <div>
                                 <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
-                                <button type="button" class="shadow btn btn-primary btn-sm" onClick={() => {this.initDataExport("export");}}>Export</button>
+                                <div class="dropdown d-inline">
+                                  <button type="button" class="dropdown-toggle shadow btn btn-primary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">Export</button>
+                                  <ul class="dropdown-menu shadow-lg">
+                                    <li>
+                                      <a class="dropdown-item small" href="#" onClick={null}>
+                                        {/*<BarChartIcon
+                                            size="15"
+                                            className="me-2 text-muted"/>*/}
+                                        Csv
+                                        {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
+                                      </a>
+                                      <a class="dropdown-item small" href="#" onClick={() => {this.initDataExport("export");}}>
+                                        {/*<BarChartIcon
+                                            size="15"
+                                            className="me-2 text-muted"/>*/}
+                                        Json
+                                      </a>
+                                    </li>
+                                  </ul>
+                                </div>
                               </div>}
                     </div>}
             </div>

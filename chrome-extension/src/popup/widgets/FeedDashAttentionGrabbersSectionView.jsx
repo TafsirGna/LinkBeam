@@ -198,8 +198,8 @@ export default class FeedDashAttentionGrabbersSectionView extends React.Componen
                                                                             
                                                                               <div class="mb-2">
                                                                                 <a 
-                                                                                  class=/*d-block*/" text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
-                                                                                  // href={null}
+                                                                                  class=/*d-block*/"handy-cursor text-gray-dark text-decoration-none text-secondary fst-italic mb-2 fw-bold" 
+                                                                                  href={null}
                                                                                   onClick={() => {this.handleFeedProfileDataModalShow(object);}}
                                                                                   title="Click to show more infos">
                                                                                   { object.name } 
