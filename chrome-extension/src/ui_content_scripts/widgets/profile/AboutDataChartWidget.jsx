@@ -27,7 +27,7 @@ import {
 } from "../../../popup/Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import ExtensionMarkerView from "./ExtensionMarkerView";
-import ProfileAboutBubbleChart from '../../../popup/widgets/charts/ProfileAboutBubbleChart';
+import ProfileAboutBubbleChart from '../../../popup/widgets/Charts/ProfileAboutBubbleChart';
 import { DataApproximationAlert } from "../../injected_scripts/main_lib";
 
 export default class AboutDataChartWidget extends React.Component{

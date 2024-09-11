@@ -38,11 +38,11 @@ import {
   // Popover, 
 } from "react-bootstrap";
 import { db } from "../../db";
-import AttentionGrabbersAnimatedTreeMapChart from "./charts/AttentionGrabbersAnimatedTreeMapChart";
-import FeedProfileDataModal from "./modals/FeedProfileDataModal";
+import AttentionGrabbersAnimatedTreeMapChart from "./Charts/AttentionGrabbersAnimatedTreeMapChart";
+import FeedProfileDataModal from "./Modals/FeedProfileDataModal";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ActivityListView from "./ActivityListView";
+import ActivityListView from "./Lists/ActivityListView";
 
 export default class FeedDashAttentionGrabbersSectionView extends React.Component{
 

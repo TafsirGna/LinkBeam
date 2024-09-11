@@ -26,7 +26,7 @@ import {
   LayersIcon ,
   BarChartIcon,
 } from "./widgets/SVGs";
-import PostViewListItemView from "./widgets/PostViewListItemView";
+import PostViewListItemView from "./widgets/ListItems/PostViewListItemView";
 import { 
   appParams,
   setGlobalDataSettings,
@@ -42,19 +42,19 @@ import Form from 'react-bootstrap/Form';
 import { db } from "../db";
 import eventBus from "./EventBus";
 import { AlertCircleIcon } from "./widgets/SVGs";
-import AllPostsModal from "./widgets/modals/AllPostsModal";
-import FeedPostCategoryDonutChart from "./widgets/charts/FeedPostCategoryDonutChart";
-import FeedPostCreatOccurStackedBarChart from "./widgets/charts/FeedPostCreatOccurStackedBarChart";
-import FeedNewPostMeasurementBarChart from "./widgets/charts/FeedNewPostMeasurementBarChart";
+import AllPostsModal from "./widgets/Modals/AllPostsModal";
+import FeedPostCategoryDonutChart from "./widgets/Charts/FeedPostCategoryDonutChart";
+import FeedPostCreatOccurStackedBarChart from "./widgets/Charts/FeedPostCreatOccurStackedBarChart";
+import FeedNewPostMeasurementBarChart from "./widgets/Charts/FeedNewPostMeasurementBarChart";
 import FeedDashRecurrentProfilesSectionView from "./widgets/FeedDashRecurrentProfilesSectionView";
 import FeedDashHashtagsSectionView from "./widgets/FeedDashHashtagsSectionView";
 import FeedDashAttentionGrabbersSectionView from "./widgets/FeedDashAttentionGrabbersSectionView";
-import FeedMetricsLineChart from "./widgets/charts/FeedMetricsLineChart";
-import FeedVisitsScatterPlot from "./widgets/charts/FeedVisitsScatterPlot";
+import FeedMetricsLineChart from "./widgets/Charts/FeedMetricsLineChart";
+import FeedVisitsScatterPlot from "./widgets/Charts/FeedVisitsScatterPlot";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { liveQuery } from "dexie"; 
-import CustomToast from "./widgets/toasts/CustomToast";
+import CustomToast from "./widgets/Toasts/CustomToast";
 
 const subMenuColorsVariants = [
     "secondary",
@@ -189,6 +189,8 @@ export default class FeedDashView extends React.Component{
       allPeriodFeedPostViews.push({...feedPostView}); // IMPORTANT to duplicate the object
 
     }
+
+    console.log("cccccccccccc : ", allPeriodFeedPostViews);
 
     this.setState({allPeriodFeedPostViews: allPeriodFeedPostViews});
 

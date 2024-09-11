@@ -8,8 +8,8 @@ import {
 } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ProfilesGeoMapChart from "./charts/ProfilesGeoMapChart";
-import TagPickModal from "./modals/TagPickModal";
+import ProfilesGeoMapChart from "./Charts/ProfilesGeoMapChart";
+import TagPickModal from "./Modals/TagPickModal";
 import eventBus from "../EventBus";
 import { 
   appParams, 
@@ -18,7 +18,7 @@ import {
   checkOneKeyword,
   shuffle,
 } from "../Local_library";
-import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
+import ProfileSingleItemDonutChart from "./Charts/ProfileSingleItemDonutChart";
 import { 
   AlertCircleIcon, 
   LocationIcon, 

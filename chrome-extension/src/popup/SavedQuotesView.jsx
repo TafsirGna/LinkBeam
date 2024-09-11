@@ -78,7 +78,7 @@ export default class SavedQuotesView extends React.Component{
     for (var quote of quotes){
       quote.profile = await db.feedProfiles.where({uniqueId: quote.profileId}).first();
       quote.feedPost = await db.feedPosts.filter(p => p.profileId == quote.profileId
-                                                        && (p.text && p.text.includes(quote.text)))
+                                                        && (p.text?.includes(quote.text)))
                                          .first();
       if (quote.feedPost && !quote.feedPost.htmlElId){
         quote.feedPost.view = await db.feedPostViews.where({feedPostId: quote.feedPost.uniqueId}).first();
@@ -200,7 +200,7 @@ export default class SavedQuotesView extends React.Component{
                                                                           title={object.feedPost && "View the original post"}
                                                                           onClick={() => {
                                                                             if (!object.feedPost){ return; }
-                                                                            window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${(object.feedPost || object.feedPost.view).htmlElId}`, '_blank');
+                                                                            window.open(`${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${(object.feedPost?.htmlElId || object.feedPost.view?.htmlElId)}`, '_blank');
                                                                           }}>
                                                                           {}
                                                                         </p>   

@@ -24,15 +24,15 @@ import React from 'react'
 import { DateTime as LuxonDateTime } from "luxon";
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
-import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
-import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
+import VisitsTimelineChart from "./widgets/Charts/VisitsTimelineChart";
+import VisitsKeywordsBarChart from "./widgets/Charts/VisitsKeywordsBarChart";
+import ProfilesGeoMapChart from "./widgets/Charts/ProfilesGeoMapChart";
 import StatIndicatorsView from "./widgets/StatIndicatorsView";
-import ProfileElementsPeriodShareBarChart from "./widgets/charts/ProfileElementsPeriodShareBarChart";
-import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
-import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
-import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
-import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
+import ProfileElementsPeriodShareBarChart from "./widgets/Charts/ProfileElementsPeriodShareBarChart";
+import ProfilesNetworkMetricsBubbleChart from "./widgets/Charts/ProfilesNetworkMetricsBubbleChart";
+import ExpEdStackBarChart from "./widgets/Charts/ExpEdStackBarChart";
+import ProfilesGraphChart from "./widgets/Charts/ProfilesGraphChart";
+import ProfileVisitsConnectedScatterPlot from "./widgets/Charts/ProfileVisitsConnectedScatterPlot";
 import Carousel from 'react-bootstrap/Carousel';
 import eventBus from "./EventBus";
 import { 

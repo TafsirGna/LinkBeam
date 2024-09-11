@@ -21,8 +21,8 @@
 
 /*import './ReminderListView.css'*/
 import React from 'react';
-import { AlertCircleIcon } from "./SVGs";
-import ReminderListItemView from "./ReminderListItemView";
+import { AlertCircleIcon } from "../SVGs";
+import ReminderListItemView from "../ListItems/ReminderListItemView";
 
 export default class ReminderListView extends React.Component{
 
@@ -45,21 +45,28 @@ export default class ReminderListView extends React.Component{
     return (
       <>
 
-        { !this.props.objects && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                  {/*<span class="visually-hidden">Loading...</span>*/}
+        { !this.props.objects 
+            && <div class="text-center">
+                <div class="mb-5 mt-4">
+                  <div class="spinner-border text-primary" role="status">
+                    {/*<span class="visually-hidden">Loading...</span>*/}
+                  </div>
+                  <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
                 </div>
-                <p><span class="badge text-bg-primary fst-italic shadow">Loading...</span></p>
-              </div>
-            </div>}
+              </div>}
 
-        { this.props.objects && this.props.objects.length == 0 && <div class="text-center m-5 mt-4">
-                  <AlertCircleIcon size="100" className="mb-3 text-muted" />
-                  <p><span class="badge text-bg-primary fst-italic shadow">No reminder to display</span></p>
-                </div>}
-
-        { this.props.objects && this.props.objects.length > 0 && <div class="list-group small mt-1 shadow-sm">
-              {this.props.objects.map(reminder => <ReminderListItemView object={reminder}/>)}
-            </div>}
+        { this.props.objects 
+            && <div>
+                {this.props.objects.length == 0 
+                  && <div class="text-center m-5 mt-4">
+                        <AlertCircleIcon size="100" className="mb-3 text-muted" />
+                        <p><span class="badge text-bg-primary fst-italic shadow">No reminder to display</span></p>
+                      </div>}
+                {this.props.objects.length != 0 
+                  && <div class="list-group small mt-1 shadow-sm">
+                    {this.props.objects.map(reminder => <ReminderListItemView object={reminder}/>)}
+                  </div>}
+              </div>}
 
       </>
     );

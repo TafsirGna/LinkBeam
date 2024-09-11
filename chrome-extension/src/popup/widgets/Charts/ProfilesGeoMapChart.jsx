@@ -22,7 +22,7 @@ import { v4 as uuidv4 } from 'uuid';
 import eventBus from "../../EventBus";
 import { saveAs } from 'file-saver';
 import { Offcanvas } from "react-bootstrap";
-import ProfileListItemView from "../ProfileListItemView";
+import ProfileListItemView from "../ListItems/ProfileListItemView";
 import sorry_icon from '../../../assets/sorry_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { OverlayTrigger, Popover } from "react-bootstrap";

@@ -24,13 +24,13 @@ import React from 'react';
 import { 
   DuplicateIcon, 
   ClockIcon,
-} from "./SVGs";
-import { db } from "../../db";
+} from "../SVGs";
+import { db } from "../../../db";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   isLinkedinProfilePage,
   appParams,
-} from "../Local_library";
+} from "../../Local_library";
 
 export default class ReminderListItemView extends React.Component{
 
@@ -73,12 +73,12 @@ export default class ReminderListItemView extends React.Component{
 
   getTitle = () => isLinkedinProfilePage(this.props.object.objectId)
                     ? this.props.object.object.fullName
-                    : <span>
-                        {this.props.object.object.profile.name}
+                    : `<span>
+                        ${this.props.object.object.profile.name}
                         <span class="mx-2 shadow-sm fst-italic mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-info pb-0">
                           Feed
                         </span>
-                      </span>;
+                      </span>`;
 
   render(){
     return (
@@ -91,11 +91,14 @@ export default class ReminderListItemView extends React.Component{
                 <a 
                   href={this.state.objectUrl} 
                   target="_blank" 
-                  class="text-decoration-none text-muted w-100">
-                  {this.getTitle()}
+                  class="text-decoration-none text-muted w-100"
+                  dangerouslySetInnerHTML={{__html: this.getTitle()}}>
+                  {/*this.getTitle()*/}
                 </a>
               </h6>
-              <p class="mb-0 opacity-75 fst-italic" /*dangerouslySetInnerHTML={{__html: this.props.object.text}}*/>{this.props.object.text}</p>
+              <p class="mb-0 opacity-75 fst-italic" dangerouslySetInnerHTML={{__html: this.props.object.text}}>
+                {/*this.props.object.text*/}
+              </p>
               <div class={`small mt-1 ${new Date(this.props.object.date) >= new Date() ? "text-warning" : "text-muted"}`}>
                 <ClockIcon
                   size="14"/>

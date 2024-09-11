@@ -22,7 +22,7 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import KeywordListView from "./widgets/KeywordListView";
+import KeywordListView from "./widgets/Lists/KeywordListView";
 import { 
   saveCurrentPageTitle, 
   appParams,

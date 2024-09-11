@@ -21,11 +21,11 @@
 
 /*import './ProfileListItemView.css'*/
 import React from 'react';
-import default_user_icon from '../../assets/user_icons/default.png';
+import default_user_icon from '../../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dbDataSanitizer, 
-} from "../Local_library";
+} from "../../Local_library";
 
 export default class ProfileListItemView extends React.Component{
 

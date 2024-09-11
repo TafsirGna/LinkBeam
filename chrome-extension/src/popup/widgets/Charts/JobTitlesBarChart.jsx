@@ -19,7 +19,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Colors } from 'chart.js';
-import EdExpInfoModal from "../modals/EdExpInfoModal";
+import EdExpInfoModal from "../Modals/EdExpInfoModal";
 
 // Chart.register(Colors);
 

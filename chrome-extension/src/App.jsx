@@ -28,7 +28,9 @@ import ObjectsSettingsView from "./popup/SettingsViews/ObjectsSettingsView";
 import FeedSettingsView from "./popup/SettingsViews/FeedSettingsView";
 import VisualsSettingsView from "./popup/SettingsViews/VisualsSettingsView";
 import AiSettingsView from "./popup/SettingsViews/AiSettingsView";
+import TagSettingsView from "./popup/SettingsViews/TagSettingsView";
 import StatisticsView from "./popup/StatisticsView";
+import ProfileStudiosView from "./popup/ProfileStudiosView";
 import KeywordView from "./popup/KeywordView";
 import MainProfileView from "./popup/MainProfileView";
 import MyAccount from "./popup/MyAccount";
@@ -37,11 +39,10 @@ import MediaView from "./popup/MediaView";
 import BookmarkView from "./popup/BookmarkView";
 import CalendarView from "./popup/CalendarView";
 import SavedQuotesView from "./popup/SavedQuotesView";
-import TagView from "./popup/TagView";
 import FoldersSettingsView from "./popup/SettingsViews/FoldersSettingsView";
 import FeedVisitDataView from "./popup/FeedVisitDataView";
 import DataSettingsView from "./popup/SettingsViews/DataSettingsView";
-import FolderView from "./popup/FolderView";
+import FoldersView from "./popup/FoldersView";
 import LicenseCreditsView from "./popup/LicenseCredits";
 import ErrorPageView from "./popup/ErrorPageView";
 import ChartExpansionView from "./popup/ChartExpansionView";
@@ -74,6 +75,7 @@ export default class App extends React.Component{
             homeAllVisitsList: null,
             homeTodayVisitsList: null,
             settings: null,
+            profileStudios: null,
           }
         };
 
@@ -81,14 +83,39 @@ export default class App extends React.Component{
 
     componentDidMount() {
 
-        this.listenToBusEvents();
-
         Dexie.exists(appParams.appDbName).then((async function (exists) {
             if (!exists) {
               // on install, open a web page for information
               this.setState({missingDatabase: true});
               return;
             }
+
+
+
+
+            (async () => {
+                var found = false;
+                for (const feedPost of (await db.feedPosts.toArray())){
+                    if (!(await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).first())){
+
+                        if (!(await db.feedPosts.where({linkedPostId: feedPost.uniqueId}).first())){
+                            found = true;
+                            await db.feedPosts.delete(feedPost.id);
+                            console.log("----------- : ", feedPost);
+                        }
+                    }
+                }
+                if (found){
+                    alert("Incoherent posts in db");
+                }
+            })();
+
+
+
+
+
+
+            this.listenToBusEvents();
 
             getTodayReminders(db, reminders => {
                 this.setState({globalData: {...this.state.globalData, todayReminderList: reminders}});
@@ -264,7 +291,7 @@ export default class App extends React.Component{
 
             {/*Tags Page */}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.TAGS
-                && <TagView globalData={this.state.globalData} />}
+                && <TagSettingsView globalData={this.state.globalData} />}
 
             {/*Folders Settings Page */}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FOLDERS_SETTINGS
@@ -272,7 +299,7 @@ export default class App extends React.Component{
 
             {/*Folders Page */}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.FOLDERS 
-                && <FolderView globalData={this.state.globalData} />}
+                && <FoldersView globalData={this.state.globalData} />}
 
             {/*MyAccount Page */}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.MY_ACCOUNT 
@@ -330,9 +357,13 @@ export default class App extends React.Component{
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS
                 && <AiSettingsView globalData={this.state.globalData} />}
 
-            {/*AI Settings Page*/}
+            {/*Saved quotes Page*/}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.SAVED_QUOTES.replaceAll(" ", "_")
                 && <SavedQuotesView globalData={this.state.globalData} />}
+
+            {/*Saved quotes Page*/}
+            { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")
+                && <ProfileStudiosView globalData={this.state.globalData} />}
 
           </>
         );

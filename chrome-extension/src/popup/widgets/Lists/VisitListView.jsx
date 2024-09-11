@@ -1,9 +1,9 @@
 /*import './VisitListView.css'*/
 import React from 'react';
-import { AlertCircleIcon } from "./SVGs";
-import ProfileVisitListItemView from "./ProfileVisitListItemView";
-import FeedVisitListItemView from "./FeedVisitListItemView";
-import sorry_icon from '../../assets/sorry_icon.png';
+import { AlertCircleIcon } from "../SVGs";
+import ProfileVisitListItemView from "../ListItems/ProfileVisitListItemView";
+import FeedVisitListItemView from "../ListItems/FeedVisitListItemView";
+import sorry_icon from '../../../assets/sorry_icon.png';
 
 export default class VisitListView extends React.Component{
 

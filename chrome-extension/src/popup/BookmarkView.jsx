@@ -22,7 +22,7 @@
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import BookmarkListView from "./widgets/BookmarkListView";
+import BookmarkListView from "./widgets/Lists/BookmarkListView";
 import { 
   saveCurrentPageTitle, 
   appParams,

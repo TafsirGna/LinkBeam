@@ -25,7 +25,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { Offcanvas } from "react-bootstrap";
-import ProfileListItemView from "../ProfileListItemView";
+import ProfileListItemView from "../ListItems/ProfileListItemView";
 import { 
   dbDataSanitizer,
   shuffle,

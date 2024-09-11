@@ -24,7 +24,7 @@ import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { AlertCircleIcon } from "../SVGs";
-import PostViewListItemView from "../PostViewListItemView";
+import PostViewListItemView from "../ListItems/PostViewListItemView";
 import { 
   dbDataSanitizer,
   popularityValue,

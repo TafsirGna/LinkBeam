@@ -21,7 +21,7 @@
 
 // import '../assets/css/ProfileActivitySectionView.css';
 import React from 'react';
-import ActivityListView from "./ActivityListView";
+import ActivityListView from "./Lists/ActivityListView";
 
 
 export default class ProfileActivitySectionView extends React.Component{

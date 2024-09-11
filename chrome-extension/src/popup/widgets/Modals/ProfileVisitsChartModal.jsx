@@ -25,7 +25,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { DateTime as LuxonDateTime } from "luxon";
-import VisitsTimelineChart from "../charts/VisitsTimelineChart";
+import VisitsTimelineChart from "../Charts/VisitsTimelineChart";
 import { 
   getPeriodVisits,
   appParams,

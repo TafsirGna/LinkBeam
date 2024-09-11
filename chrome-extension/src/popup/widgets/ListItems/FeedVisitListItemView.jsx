@@ -21,14 +21,14 @@
 
 /*import './FeedVisitListItemView.css'*/
 import React from 'react';
-import linkedin_icon from '../../assets/linkedin_icon.png';
+import linkedin_icon from '../../../assets/linkedin_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";
-import { getPostCount } from "../Local_library";
+import { getPostCount } from "../../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { db } from "../../db";
+import { db } from "../../../db";
 import {
   BoltIcon,
-} from "./SVGs";
+} from "../SVGs";
 
 export default class FeedVisitListItemView extends React.Component{
 

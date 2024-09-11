@@ -21,18 +21,18 @@
 
 /*import './FeedRecurrentProfileListItemView.css'*/
 import React, { useEffect, useState } from 'react';
-import default_user_icon from '../../assets/user_icons/default.png';
+import default_user_icon from '../../../assets/user_icons/default.png';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
-import FeedProfileDataModal from "./modals/FeedProfileDataModal";
+import FeedProfileDataModal from "../Modals/FeedProfileDataModal";
 import Modal from 'react-bootstrap/Modal';
-import ActivityListView from "./ActivityListView";
+import ActivityListView from "../Lists/ActivityListView";
 import Button from 'react-bootstrap/Button';
 import { 
   appParams,
-} from "../Local_library";
+} from "../../Local_library";
 
 const bgColors = [
   "bg-primary",

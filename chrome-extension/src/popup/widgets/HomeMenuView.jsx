@@ -245,7 +245,6 @@ export default class HomeMenu extends React.Component{
               <a 
                 class="dropdown-item small" 
                 href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}`}
-                target="_blank"
                 title="List studios">
                 <ApertureIcon
                   size="15"

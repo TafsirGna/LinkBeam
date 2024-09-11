@@ -26,7 +26,7 @@ import {
   dbDataSanitizer,
 } from "../../../popup/Local_library";
 import ExtensionMarkerView from "./ExtensionMarkerView";
-import ProfileGanttChart from "../../../popup/widgets/charts/ProfileGanttChart";
+import ProfileGanttChart from "../../../popup/widgets/Charts/ProfileGanttChart";
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   DataApproximationAlert,

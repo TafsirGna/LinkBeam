@@ -21,14 +21,14 @@
 
 import React from 'react';
 import HomeMenuView from "./widgets/HomeMenuView";
-import VisitListView from "./widgets/VisitListView";
+import VisitListView from "./widgets/Lists/VisitListView";
 import { 
   ClockIcon,
 } from "./widgets/SVGs";
-import AggregatedVisitListView from "./widgets/AggregatedVisitListView";
-import ProfileListItemView from "./widgets/ProfileListItemView";
+import AggregatedVisitListView from "./widgets/Lists/AggregatedVisitListView";
+import ProfileListItemView from "./widgets/ListItems/ProfileListItemView";
 import { Offcanvas } from "react-bootstrap";
-import ReminderListView from "./widgets/ReminderListView";
+import ReminderListView from "./widgets/Lists/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import SearchPostFormView from "./widgets/SearchPostFormView";
 import party_popper_icon from '../assets/party-popper_icon.png';

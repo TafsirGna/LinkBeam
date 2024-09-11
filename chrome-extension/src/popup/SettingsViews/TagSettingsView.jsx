@@ -20,20 +20,20 @@
 */
 
 import React from 'react';
-import BackToPrev from "./widgets/BackToPrev";
-import PageTitleView from "./widgets/PageTitleView";
-import TagListView from "./widgets/TagListView";
+import BackToPrev from "../widgets/BackToPrev";
+import PageTitleView from "../widgets/PageTitleView";
+import TagListView from "../widgets/Lists/TagListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
   setGlobalDataTags,
-} from "./Local_library";
-import eventBus from "./EventBus";
-import { db } from "../db";
+} from "../Local_library";
+import eventBus from "../EventBus";
+import { db } from "../../db";
 import { liveQuery } from "dexie";
-import { CheckIcon } from  "./widgets/SVGs";
+import { CheckIcon } from  "../widgets/SVGs";
 
-export default class TagView extends React.Component{
+export default class TagSettingsView extends React.Component{
 
   constructor(props){
     super(props);

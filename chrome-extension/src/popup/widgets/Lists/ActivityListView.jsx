@@ -19,36 +19,36 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-import '../assets/css/ActivityListView.css';
+import '../../assets/css/ActivityListView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip, Popover, Accordion } from "react-bootstrap";
-import FullScreenImageModal from "./modals/FullScreenImageModal";
-import FullScreenImageSlideShowModal from "./modals/FullScreenImageSlideShowModal";
+import FullScreenImageModal from "../Modals/FullScreenImageModal";
+import FullScreenImageSlideShowModal from "../Modals/FullScreenImageSlideShowModal";
 import { DateTime as LuxonDateTime } from "luxon";
-import default_user_icon from '../../assets/user_icons/default.png';
-import heart_icon from '../../assets/heart_icon.png';
-import share_icon from '../../assets/share_icon.png';
-import linkedin_icon from '../../assets/linkedin_icon.png';
-import newspaper_icon from '../../assets/newspaper_icon.png';
-import sorry_icon from '../../assets/sorry_icon.png';
-import party_popper_icon from '../../assets/party-popper_icon.png';
-import support_icon from '../../assets/support_icon.png';
-import contribution_icon from '../../assets/contribution_icon.png';
-import comment_icon from '../../assets/comment_icon.png';
-import insightful_icon from '../../assets/insightful_icon.png';
-import repost_icon from '../../assets/repost_icon.png';
-import like_icon from '../../assets/like_icon.png';
-import suggestion_icon from '../../assets/suggestion_icon.png';
-import fun_icon from '../../assets/fun_icon.png';
-import { PictureIcon } from "./SVGs";
+import default_user_icon from '../../../assets/user_icons/default.png';
+import heart_icon from '../../../assets/heart_icon.png';
+import share_icon from '../../../assets/share_icon.png';
+import linkedin_icon from '../../../assets/linkedin_icon.png';
+import newspaper_icon from '../../../assets/newspaper_icon.png';
+import sorry_icon from '../../../assets/sorry_icon.png';
+import party_popper_icon from '../../../assets/party-popper_icon.png';
+import support_icon from '../../../assets/support_icon.png';
+import contribution_icon from '../../../assets/contribution_icon.png';
+import comment_icon from '../../../assets/comment_icon.png';
+import insightful_icon from '../../../assets/insightful_icon.png';
+import repost_icon from '../../../assets/repost_icon.png';
+import like_icon from '../../../assets/like_icon.png';
+import suggestion_icon from '../../../assets/suggestion_icon.png';
+import fun_icon from '../../../assets/fun_icon.png';
+import { PictureIcon } from "../SVGs";
 import Button from 'react-bootstrap/Button';
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import { db } from "../../db";
+import { db } from "../../../db";
 import { 
   appParams,
   categoryVerbMap,
   getFeedPostViewsByCategory,
-} from "../Local_library";
+} from "../../Local_library";
 
 const categoryIconMap = {
   loves: heart_icon,
@@ -179,9 +179,9 @@ export default class ActivityListView extends React.Component{
                       class="rounded-circle me-1" 
                       width="24" 
                       height="24" 
-                      src={ object.initiator ? (object.initiator.picture || object.author.picture) : object.author.picture } 
+                      src={ (object.initiator.picture || (object.author && object.author.picture)) || default_user_icon } 
                       alt=""/>
-                    { object.initiator ? (object.initiator.name || object.author.name) : object.author.name }
+                    { (object.initiator.name || (object.author && object.author.name)) }
                   </span>
                   { Object.hasOwn(object, "category")
                       && <OverlayTrigger

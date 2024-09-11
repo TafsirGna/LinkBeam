@@ -38,10 +38,10 @@ import {
   // Popover, 
 } from "react-bootstrap";
 import { db } from "../../db";
-import FeedRecurrentProfileListItemView, { totalInteractions } from "./FeedRecurrentProfileListItemView";
+import FeedRecurrentProfileListItemView, { totalInteractions } from "./ListItems/FeedRecurrentProfileListItemView";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import FeedProfilesNetworkGraphChart from "./charts/FeedProfilesNetworkGraphChart";
+import FeedProfilesNetworkGraphChart from "./Charts/FeedProfilesNetworkGraphChart";
 
 export default class FeedDashRecurrentProfilesSectionView extends React.Component{
 

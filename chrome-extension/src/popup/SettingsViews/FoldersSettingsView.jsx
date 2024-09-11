@@ -22,7 +22,7 @@
 import React from 'react';
 import BackToPrev from "../widgets/BackToPrev";
 import PageTitleView from "../widgets/PageTitleView";
-import FolderListView from "../widgets/FolderListView";
+import FolderListView from "../widgets/Lists/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
@@ -33,7 +33,7 @@ import { db } from "../../db";
 import { liveQuery } from "dexie";
 import { CheckIcon } from  "../widgets/SVGs";
 
-export default class FolderView extends React.Component{
+export default class FolderSettingsView extends React.Component{
 
   constructor(props){
     super(props);

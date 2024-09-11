@@ -23,9 +23,9 @@
 /*import './ProfileOverviewSectionView.css'*/
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import ProfileOverviewSunBurstChart from "./charts/ProfileOverviewSunBurstChart";
-import ProfileOverviewRadarChart from "./charts/ProfileOverviewRadarChart";
-import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
+import ProfileOverviewSunBurstChart from "./Charts/ProfileOverviewSunBurstChart";
+import ProfileOverviewRadarChart from "./Charts/ProfileOverviewRadarChart";
+import ProfileSingleItemDonutChart from "./Charts/ProfileSingleItemDonutChart";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import ProfileOverviewSectionCertificationWidget from "./ProfileOverviewSectionCertificationWidget";

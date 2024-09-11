@@ -19,53 +19,46 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './SearchPostFormView.css'*/
+/*import './ProfileStudiosView.css'*/
 import React from 'react';
+import BackToPrev from "./widgets/BackToPrev";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import PageTitleView from "./widgets/PageTitleView";
 import { 
-  dbDataSanitizer, 
-  groupVisitsByProfile,
-} from "../Local_library";
-import SearchInputView from "./SearchInputView";
-import ActivityListView from "./Lists/ActivityListView";
+  saveCurrentPageTitle, 
+  appParams,
+} from "./Local_library";
 
-export default class SearchPostFormView extends React.Component{
+export default class ProfileStudiosView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      posts: [],
     };
-
   }
 
   componentDidMount() {
 
-  }
-
-  componentDidUpdate(prevProps, prevState){
+    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_"));
 
   }
-
-  componentWillUnmount(){
-
-  }
-
-  onSearchTextChange = (data) => this.setState({posts: data?.results});
 
   render(){
     return (
       <>
-      
-        <SearchInputView 
-          objectStoreName="posts"
-          searchTextChanged={(data) => this.onSearchTextChange(data)}/>
+        <div class="p-3">
+          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
 
-        <div class="mt-2">
-          <ActivityListView 
-            objects={this.state.posts}
-            variant="list"/> 
+          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS}/>
+
+          <div class="mt-3">            
+            {/* Profile studios list view */}
+
+            <ProfileStudiosListView 
+              objects={this.props.globalData.profileStudios}  />
+
+          </div>
         </div>
-
       </>
     );
   }

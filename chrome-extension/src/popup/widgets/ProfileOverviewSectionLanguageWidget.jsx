@@ -21,7 +21,7 @@
 
 /*import './ProfileOverviewSectionLanguageWidget.css'*/
 import React from 'react';
-import LanguageListModal from "./modals/LanguageListModal";
+import LanguageListModal from "./Modals/LanguageListModal";
 
 export default class ProfileOverviewSectionLanguageWidget extends React.Component{
 

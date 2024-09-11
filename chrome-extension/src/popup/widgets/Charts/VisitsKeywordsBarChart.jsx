@@ -50,7 +50,7 @@ import eventBus from "../../EventBus";
 import { db } from "../../../db";
 import { saveAs } from 'file-saver';
 import { AlertCircleIcon } from "../SVGs";
-import ProfileListItemView from "../ProfileListItemView";
+import ProfileListItemView from "../ListItems/ProfileListItemView";
 import { liveQuery } from "dexie";
 import sorry_icon from '../../../assets/sorry_icon.png';
 import { DateTime as LuxonDateTime } from "luxon";

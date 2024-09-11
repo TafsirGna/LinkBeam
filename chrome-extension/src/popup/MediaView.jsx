@@ -45,7 +45,7 @@ import Carousel from 'react-bootstrap/Carousel';
 import Popover from 'react-bootstrap/Popover';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import ReactDOM from 'react-dom/client';
-import CustomToast from "./widgets/toasts/CustomToast";
+import CustomToast from "./widgets/Toasts/CustomToast";
 
 var objectsBackup = null;
 

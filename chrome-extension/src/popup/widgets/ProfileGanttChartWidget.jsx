@@ -25,7 +25,7 @@ import { OverlayTrigger, Tooltip as ReactTooltip } from "react-bootstrap";
 import {  
   dbDataSanitizer,
 } from "../Local_library";
-import ProfileGanttChart from "./charts/ProfileGanttChart";
+import ProfileGanttChart from "./Charts/ProfileGanttChart";
 import { AlertCircleIcon } from "./SVGs";
 
 export default class ProfileGanttChartWidget extends React.Component{

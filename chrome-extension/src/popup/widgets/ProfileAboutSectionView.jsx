@@ -2,7 +2,7 @@
 import React from 'react';
 import { OverlayTrigger } from "react-bootstrap";
 import Collapse from 'react-bootstrap/Collapse';
-import ProfileAboutBubbleChart from './charts/ProfileAboutBubbleChart';
+import ProfileAboutBubbleChart from './Charts/ProfileAboutBubbleChart';
 import { 
 	dbDataSanitizer,
 	setLocalProfiles
@@ -10,7 +10,7 @@ import {
 import eventBus from "../EventBus";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
+import ProfileSingleItemDonutChart from "./Charts/ProfileSingleItemDonutChart";
 import { AlertCircleIcon } from "./SVGs";
 import { db } from "../../db";
 

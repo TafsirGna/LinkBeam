@@ -242,35 +242,27 @@ function notifyUser(message, uuid = null){
 
 async function getPostFromPostUrl(url){
 
-    var htmlElId = url.slice(url.indexOf("urn:li:")).replaceAll("/", "");
-
-    var post = await db.feedPostViews
-                       .where({htmlElId: htmlElId})
+    const feedPostView = await db.feedPostViews
+                       .where({htmlElId: url.match(/urn:li:activity:\d+/g)[0]})
                        .first();
 
-    if (!post){
+    if (!feedPostView){
         return null;
     }
 
-    post = await db.feedPosts
-                   .where({id: post.feedPostId})
-                   .first();
+    var feedPost = await db.feedPosts
+                               .where({uniqueId: feedPostView.feedPostId})
+                               .first();
 
-    // post = post || {};
+    feedPost.reminder = await db.reminders
+                                 .where({objectId: feedPost.uniqueId})
+                                 .first();
 
-    post.reminder = await db.reminders
-                             .where({objectId: post.id})
-                             .first();
+    feedPost.viewsCount = await db.feedPostViews
+                                     .where({feedPostId: feedPost.uniqueId})
+                                     .count();
 
-    post.viewsCount = 0;
-
-    await db.feedPostViews
-             .where({feedPostId: post.id})
-             .each(postView => {
-                post.viewsCount++;
-             });
-
-    return post;
+    return feedPost;
 
 }
 

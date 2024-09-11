@@ -22,12 +22,12 @@
 
 /*import './ProfileView.css'*/
 import React from 'react';
-import CustomToast from "./toasts/CustomToast";
+import CustomToast from "./Toasts/CustomToast";
 import ProfileViewHeader from "./ProfileViewHeader";
 import ProfileViewBody from "./ProfileViewBody";
-import ReminderModal from "./modals/ReminderModal";
-import ProfileVisitsChartModal from "./modals/ProfileVisitsChartModal";
-import FolderPickModal from "./modals/FolderPickModal";
+import ReminderModal from "./Modals/ReminderModal";
+import ProfileVisitsChartModal from "./Modals/ProfileVisitsChartModal";
+import FolderPickModal from "./Modals/FolderPickModal";
 import { appParams } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";

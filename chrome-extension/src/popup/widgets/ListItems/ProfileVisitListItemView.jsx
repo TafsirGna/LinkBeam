@@ -1,18 +1,18 @@
-/*import './ProfileListItemView.css'*/
+/*import './ProfileVisitListItemView.css'*/
 import React from 'react';
-import default_user_icon from '../../assets/user_icons/default.png';
+import default_user_icon from '../../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   dbDataSanitizer,
   allUrlCombinationsOf,
-} from "../Local_library";
+} from "../../Local_library";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import { db } from "../../db";
+import { db } from "../../../db";
 import { 
   BookmarkIcon, 
-} from "./SVGs";
+} from "../SVGs";
 
-export default class ProfileListItemView extends React.Component{
+export default class ProfileVisitListItemView extends React.Component{
 
   constructor(props){
     super(props);

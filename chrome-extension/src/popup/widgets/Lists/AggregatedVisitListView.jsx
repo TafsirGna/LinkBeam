@@ -25,11 +25,11 @@ import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { 
   dbDataSanitizer, 
   groupVisitsByProfile,
-} from "../Local_library";
-import ProfileVisitListItemView from "./ProfileVisitListItemView";
-import FeedVisitListItemView from "./FeedVisitListItemView";
-import SeeMoreButtonView from "./SeeMoreButtonView";
-import sorry_icon from '../../assets/sorry_icon.png';
+} from "../../Local_library";
+import ProfileVisitListItemView from "../ListItems/ProfileVisitListItemView";
+import FeedVisitListItemView from "../ListItems/FeedVisitListItemView";
+import SeeMoreButtonView from "../SeeMoreButtonView";
+import sorry_icon from '../../../assets/sorry_icon.png';
 
 export default class AggregatedVisitListView extends React.Component{
 

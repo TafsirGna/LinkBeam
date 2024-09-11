@@ -28,8 +28,9 @@ import {
   appParams,
   dbData,
   setGlobalDataReminders,
+  highlightText,
 } from "./Local_library";
-import ReminderListView from "./widgets/ReminderListView";
+import ReminderListView from "./widgets/Lists/ReminderListView";
 import SearchInputView from "./widgets/SearchInputView";
 import { db } from "../db";
 import eventBus from "./EventBus";
@@ -40,6 +41,7 @@ export default class ReminderView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      searchText: null,
     };
     
   }
@@ -55,6 +57,32 @@ export default class ReminderView extends React.Component{
 
   }
 
+  onSearchTextChange = (data) => this.setState({searchText: data.searchText});
+
+  getReminders = () => this.props.globalData.reminderList?.filter(reminder => (!this.state.searchText && true)
+                                                                                || (this.state.searchText && (reminder.text.toLowerCase().includes(this.state.searchText.toLowerCase())
+                                                                                                                || (reminder.object.fullName || reminder.object.profile.name).toLowerCase().includes(this.state.searchText.toLowerCase()))))
+                                                          .map(reminder => {
+                                                            
+                                                            if (!this.state.searchText){
+                                                              return reminder;
+                                                            }
+
+                                                            var result = {...reminder, text: highlightText((` ${reminder.text}`).slice(1), this.state.searchText)};
+                                                            if (Object.hasOwn(result.object, "fullName")){
+                                                              result.object = {...result.object, fullName: highlightText((` ${result.object.fullName}`).slice(1), this.state.searchText)};
+                                                            }
+                                                            else{
+                                                              result.object = {...result.object, profile: {...result.object.profile, name: highlightText((` ${result.object.profile.name}`).slice(1), this.state.searchText)}};
+                                                            }
+
+                                                            return result;
+                                                          });
+
+  componentDidUpdate(prevProps, prevState){
+
+  }
+
   render(){
     return (
       <>
@@ -63,13 +91,10 @@ export default class ReminderView extends React.Component{
 
           <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.REMINDERS}/>
 
-          { (this.props.globalData.reminderList 
-                && (this.props.globalData.reminderList.list.length
-                    || (!this.props.globalData.reminderList.list.length 
-                          && this.props.globalData.reminderList.action == "search"))) 
-              && <SearchInputView 
-                    objectStoreName={dbData.objectStoreNames.REMINDERS}
-                    globalData={this.props.globalData}  /> } 
+          <SearchInputView 
+            objectStoreName={dbData.objectStoreNames.REMINDERS}
+            globalData={this.props.globalData}
+            searchTextChanged={(data) => this.onSearchTextChange(data)}  />
 
           <span class="handy-cursor border shadow rounded p-1">
             <a 
@@ -84,7 +109,7 @@ export default class ReminderView extends React.Component{
 
           <div class="mt-2">
             <ReminderListView 
-              objects={this.props.globalData.reminderList ? this.props.globalData.reminderList.list : null}  
+              objects={this.getReminders()}  
             />
           </div>
         </div>

@@ -23,10 +23,10 @@
 import React from 'react'
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import FeedMetricsLineChart from "../charts/FeedMetricsLineChart";
-import FeedPostCategoryDonutChart from "../charts/FeedPostCategoryDonutChart";
-import HashtagWordCloudChart from "../charts/HashtagWordCloudChart";
-import FeedProfileReactionsSubjectsBarChart from "../charts/FeedProfileReactionsSubjectsBarChart";
+import FeedMetricsLineChart from "../Charts/FeedMetricsLineChart";
+import FeedPostCategoryDonutChart from "../Charts/FeedPostCategoryDonutChart";
+import HashtagWordCloudChart from "../Charts/HashtagWordCloudChart";
+import FeedProfileReactionsSubjectsBarChart from "../Charts/FeedProfileReactionsSubjectsBarChart";
 import { v4 as uuidv4 } from 'uuid';
 import { 
   getFeedDashMetricValue,

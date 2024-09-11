@@ -879,7 +879,7 @@ export async function setGlobalDataReminders(db, eventBus){
   const reminders = await getReminders(db, "all");
 
   if (reminders){
-    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "display_all" }});
+    eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: reminders});
   }
 
 }
@@ -2142,11 +2142,9 @@ async function getReminders(db, criteria){
   try{
 
     if (criteria == "today"){
-
       reminders = await db.reminders
                           .filter(reminder => reminder.date == (new Date()).toISOString().split('T')[0] && reminder.active)
                           .toArray();
-
     }
     else if (criteria == "all"){
       reminders = await db.reminders.toArray();

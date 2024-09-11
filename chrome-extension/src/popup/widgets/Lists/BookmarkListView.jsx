@@ -1,6 +1,6 @@
 /*import './BookmarkListView.css'*/
 import React from 'react';
-import default_user_icon from '../../assets/user_icons/default.png';
+import default_user_icon from '../../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 
 export default class BookmarkListView extends React.Component{

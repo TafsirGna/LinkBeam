@@ -24,11 +24,11 @@ import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { dbDataSanitizer } from "../Local_library";
 import ProfileGanttChartWidget from "./ProfileGanttChartWidget";
-import ProfileSingleItemDonutChart from "./charts/ProfileSingleItemDonutChart";
-import JobTitlesBarChart from "./charts/JobTitlesBarChart";
+import ProfileSingleItemDonutChart from "./Charts/ProfileSingleItemDonutChart";
+import JobTitlesBarChart from "./Charts/JobTitlesBarChart";
 import eventBus from "../EventBus";
 import { BarChartIcon, AlertCircleIcon } from "./SVGs";
-import EdExpInfoModal from "./modals/EdExpInfoModal";
+import EdExpInfoModal from "./Modals/EdExpInfoModal";
 import sorry_icon from '../../assets/sorry_icon.png';
 import IncompleteSectionMessageView from "./IncompleteSectionMessageView";
 

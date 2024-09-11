@@ -30,14 +30,14 @@ import {
   nRange,
 } from "./Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
-import VisitsTimelineChart from "./widgets/charts/VisitsTimelineChart";
-import ExpEdStackBarChart from "./widgets/charts/ExpEdStackBarChart";
-import ProfilesGeoMapChart from "./widgets/charts/ProfilesGeoMapChart";
-import ProfilesNetworkMetricsBubbleChart from "./widgets/charts/ProfilesNetworkMetricsBubbleChart";
-import ProfileElementsPeriodShareBarChart from "./widgets/charts/ProfileElementsPeriodShareBarChart";
-import VisitsKeywordsBarChart from "./widgets/charts/VisitsKeywordsBarChart";
-import ProfilesGraphChart from "./widgets/charts/ProfilesGraphChart";
-import ProfileVisitsConnectedScatterPlot from "./widgets/charts/ProfileVisitsConnectedScatterPlot";
+import VisitsTimelineChart from "./widgets/Charts/VisitsTimelineChart";
+import ExpEdStackBarChart from "./widgets/Charts/ExpEdStackBarChart";
+import ProfilesGeoMapChart from "./widgets/Charts/ProfilesGeoMapChart";
+import ProfilesNetworkMetricsBubbleChart from "./widgets/Charts/ProfilesNetworkMetricsBubbleChart";
+import ProfileElementsPeriodShareBarChart from "./widgets/Charts/ProfileElementsPeriodShareBarChart";
+import VisitsKeywordsBarChart from "./widgets/Charts/VisitsKeywordsBarChart";
+import ProfilesGraphChart from "./widgets/Charts/ProfilesGraphChart";
+import ProfileVisitsConnectedScatterPlot from "./widgets/Charts/ProfileVisitsConnectedScatterPlot";
 import { db } from "../db";
 
 export default class ChartExpansionView extends React.Component{

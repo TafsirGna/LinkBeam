@@ -49,7 +49,7 @@ import Popover from 'react-bootstrap/Popover';
 import ImageLoader from "./widgets/ImageLoader";
 import Masonry from "react-responsive-masonry";
 import Carousel from 'react-bootstrap/Carousel';
-import ActivityListView from "./widgets/ActivityListView";
+import ActivityListView from "./widgets/Lists/ActivityListView";
 
 export default class FeedVisitDataView extends React.Component{
 

@@ -1,7 +1,7 @@
 // import '../assets/css/ProfileActivitySectionView.css';
 import React from 'react';
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
-import ProfilesGraphChart from "./charts/ProfilesGraphChart";
+import ProfilesGraphChart from "./Charts/ProfilesGraphChart";
 import default_user_icon from '../../assets/user_icons/default.png';
 import { 
   appParams, 

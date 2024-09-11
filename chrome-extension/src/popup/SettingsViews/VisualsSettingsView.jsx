@@ -22,7 +22,6 @@
 import React from 'react';
 import BackToPrev from "../widgets/BackToPrev";
 import PageTitleView from "../widgets/PageTitleView";
-import FolderListView from "../widgets/FolderListView";
 import { 
   saveCurrentPageTitle, 
   appParams,

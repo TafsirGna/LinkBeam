@@ -6,35 +6,35 @@ import {
   CheckIcon,
   PlusIcon,
   DeletionIcon,
-} from "./SVGs";
+} from "../SVGs";
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import FeedPostTrendLineChart from "./charts/FeedPostTrendLineChart";
-import ReminderModal from "./modals/ReminderModal";
-import FeedProfileDataModal from "./modals/FeedProfileDataModal";
-import eventBus from "../EventBus";
-import { db } from "../../db";
+import FeedPostTrendLineChart from "../Charts/FeedPostTrendLineChart";
+import ReminderModal from "../Modals/ReminderModal";
+import FeedProfileDataModal from "../Modals/FeedProfileDataModal";
+import eventBus from "../../EventBus";
+import { db } from "../../../db";
 import { 
   categoryVerbMap,
   appParams,
   secondsToHms,
   getPostMetricValue,
-} from "../Local_library";
-import default_user_icon from '../../assets/user_icons/default.png';
+} from "../../Local_library";
+import default_user_icon from '../../../assets/user_icons/default.png';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
-import share_icon from '../../assets/share_icon.png';
-import heart_icon from '../../assets/heart_icon.png';
-import party_popper_icon from '../../assets/party-popper_icon.png';
-import linkedin_icon from '../../assets/linkedin_icon.png';
-import like_icon from '../../assets/like_icon.png';
-import support_icon from '../../assets/support_icon.png';
-import contribution_icon from '../../assets/contribution_icon.png';
-import comment_icon from '../../assets/comment_icon.png';
-import insightful_icon from '../../assets/insightful_icon.png';
-import repost_icon from '../../assets/repost_icon.png';
-import suggestion_icon from '../../assets/suggestion_icon.png';
-import fun_icon from '../../assets/fun_icon.png';
+import share_icon from '../../../assets/share_icon.png';
+import heart_icon from '../../../assets/heart_icon.png';
+import party_popper_icon from '../../../assets/party-popper_icon.png';
+import linkedin_icon from '../../../assets/linkedin_icon.png';
+import like_icon from '../../../assets/like_icon.png';
+import support_icon from '../../../assets/support_icon.png';
+import contribution_icon from '../../../assets/contribution_icon.png';
+import comment_icon from '../../../assets/comment_icon.png';
+import insightful_icon from '../../../assets/insightful_icon.png';
+import repost_icon from '../../../assets/repost_icon.png';
+import suggestion_icon from '../../../assets/suggestion_icon.png';
+import fun_icon from '../../../assets/fun_icon.png';
 import { Tooltip } from "react-bootstrap";
 import Spinner from 'react-bootstrap/Spinner';
 import { liveQuery } from "dexie"; 
@@ -344,7 +344,7 @@ export default class PostViewListItemView extends React.Component{
         {/*Modal*/}
         <Modal 
           show={this.state.postTrendChartModalShow} 
-          onHide={this.handlePostModalClose}>
+          onHide={this.handlePostTrendChartModalClose}>
           <Modal.Header closeButton>
             <Modal.Title>Post</Modal.Title>
           </Modal.Header>
@@ -358,7 +358,7 @@ export default class PostViewListItemView extends React.Component{
 
           </Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" size="sm" onClick={this.handlePostModalClose} className="shadow">
+            <Button variant="secondary" size="sm" onClick={this.handlePostTrendChartModalClose} className="shadow">
               Close
             </Button>
           </Modal.Footer>

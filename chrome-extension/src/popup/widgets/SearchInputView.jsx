@@ -23,6 +23,7 @@
 /*import './SearchInputView.css'*/
 import React from 'react';
 import default_user_icon from '../../assets/user_icons/default.png';
+import linkedin_icon from '../../assets/linkedin_icon.png';
 import { SearchIcon } from './SVGs';
 import eventBus from "../EventBus";
 import { 
@@ -50,7 +51,6 @@ export default class SearchInputView extends React.Component{
     this.handleInputChange = this.handleInputChange.bind(this);
     this.searchPosts = this.searchPosts.bind(this);
     this.searchProfiles = this.searchProfiles.bind(this);
-    this.searchReminders = this.searchReminders.bind(this);
     this.highlightSearchText = this.highlightSearchText.bind(this);
 
   }
@@ -97,28 +97,8 @@ export default class SearchInputView extends React.Component{
           }
           break;
         }
-        case dbData.objectStoreNames.REMINDERS:{
-          if (this.props.globalData.reminderList && this.props.globalData.reminderList.action == "search"){
-            setGlobalDataReminders(db, eventBus);
-          }
-          break;
-        }
-        case "posts":{
-          this.props.searchTextChanged({searchText: this.state.text, results: []});
-          break;
-        }
-        case "media":{
-          this.props.searchTextChanged({searchText: this.state.text, results: []});
-          break;
-        }
-        case "feed_profiles":{
-          this.props.searchTextChanged({searchText: this.state.text, results: []});
-          break;
-        }
-
-        case "quotes":{
-          this.props.searchTextChanged({searchText: this.state.text, results: []});
-          break;
+        default:{
+          this.props.searchTextChanged({searchText: "", results: []});
         }
       }
 
@@ -132,10 +112,6 @@ export default class SearchInputView extends React.Component{
         this.searchProfiles()
         break;
       }
-      case dbData.objectStoreNames.REMINDERS:{
-        this.searchReminders();
-        break;
-      }
       case "posts":{
         this.searchPosts();
         break;
@@ -144,79 +120,10 @@ export default class SearchInputView extends React.Component{
         this.searchPosts("media_only");
         break;
       }
-      case "feed_profiles":{
+      default:{
         this.props.searchTextChanged({searchText: this.state.text, results: []});
-        break;
-      }
-      case "quotes":{
-        this.props.searchTextChanged({searchText: this.state.text, results: []});
-        break;
-      }
-    }
-
-  }
-
-  async searchReminders(){
-
-    var reminders = null;
-
-    try{
-
-      reminders = [];
-
-      for (var reminder of (await db.reminders.toArray())){
-
-        if (reminders.map(r => r.id).indexOf(reminder.id) != -1){
-          continue;
-        }
-
-        // first condition
-        if (reminder.text.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
-          await setReminderObject(db, reminder);
-          reminders.push(reminder);
-          continue;  
-        }
-
-        // second condition
-        await setReminderObject(db, reminder);
-        if (isLinkedinProfilePage(reminder.objectId)){
-
-          if (dbDataSanitizer.preSanitize(reminder.object.fullName).toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
-            reminders.push(reminder);
-          }
-
-        }
-        else{
-
-          const feedPost = reminder.object;
-          if (feedPost.author.name && feedPost.author.name.toLowerCase().indexOf(this.state.text.toLowerCase()) != -1){
-            reminders.push(reminder);
-          }
-
-        }
-
       }
 
-    }
-    catch(error){
-      console.error("Error : ", error);
-    }
-
-    if (reminders){
-
-      reminders.sort((a, b) => {
-        if (new Date(a.date) < new Date(b.date)){
-          return 1;
-        }
-        else if (new Date(a.date) > new Date(b.date)){
-          return -1;
-        }
-        else{
-          return 0;
-        }
-      });
-      
-      eventBus.dispatch(eventBus.SET_APP_GLOBAL_DATA, {property: "reminderList", value: {list: reminders, action: "search", text: this.state.text }});
     }
 
   }
@@ -243,28 +150,31 @@ export default class SearchInputView extends React.Component{
       var feedPostViews = [];
       for (const post of tmpPosts){
 
-        var lastView = await db.feedPostViews
-                                  .where({feedPostId: post.uniqueId})
-                                  .last();
-
+        var lastView = await db.feedPostViews.where({feedPostId: post.uniqueId}).last();
         if (!lastView){
           const feedPost = await db.feedPosts.where({linkedPostId: post.uniqueId}).first();
+          console.log("eeeeeeeeeeee : ", post);
           lastView = await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).last();
         }
+        lastView.profile = lastView.profileId
+                            ? await db.feedProfiles.where({uniqueId: lastView.profileId}).first()
+                            : null;
 
         feedPostViews.push(lastView);
 
-        posts.push({
-          author: post.profile,
-          url: post.htmlElId 
-                  ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.htmlElId}`
-                  : (lastView
-                      ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${lastView.htmlElId}`
-                      : null),
-          date: lastView.date,
-          text: post.innerContentHtml,
-          initiator: lastView.profile,
-        });
+        if (!selection){
+          posts.push({
+            author: post.profile,
+            url: post.htmlElId 
+                    ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${post.htmlElId}`
+                    : (lastView
+                        ? `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${lastView.htmlElId}`
+                        : null),
+            date: lastView.date,
+            text: post.innerContentHtml,
+            initiator: (lastView.profile || {name: "Feed", url: appParams.LINKEDIN_FEED_URL, picture: linkedin_icon}),
+          });
+        }
 
       }
 

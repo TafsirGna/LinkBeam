@@ -51,7 +51,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Colors } from 'chart.js';
-import ProfileListItemView from "../ProfileListItemView";
+import ProfileListItemView from "../ListItems/ProfileListItemView";
 
 ChartJS.register(
   CategoryScale,

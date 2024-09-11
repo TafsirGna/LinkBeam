@@ -19,11 +19,11 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './FolderView.css'*/
+/*import './FoldersView.css'*/
 import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import PageTitleView from "./widgets/PageTitleView";
-import ProfileListItemView from "./widgets/ProfileListItemView";
+import ProfileListItemView from "./widgets/ListItems/ProfileListItemView";
 import { 
   saveCurrentPageTitle, 
   appParams,
@@ -39,7 +39,7 @@ import {
 } from "./widgets/SVGs";
 import { liveQuery } from "dexie";
 
-export default class FolderView extends React.Component{
+export default class FoldersView extends React.Component{
 
   constructor(props){
     super(props);

@@ -38,16 +38,16 @@ import {
 } from "./SVGs";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ActivityListView from "./ActivityListView";
+import ActivityListView from "./Lists/ActivityListView";
 import { 
   OverlayTrigger, 
   Tooltip as ReactTooltip, 
   // Popover, 
 } from "react-bootstrap";
-import HashtagTimelineChart from "./charts/HashtagTimelineChart";
-import HashtagNetworkGraphChart from "./charts/HashtagNetworkGraphChart";
-import HashtagTangledTreeChart from "./charts/HashtagTangledTreeChart";
-import HashtagAnimatedTreeMapChart from "./charts/HashtagAnimatedTreeMapChart";
+import HashtagTimelineChart from "./Charts/HashtagTimelineChart";
+import HashtagNetworkGraphChart from "./Charts/HashtagNetworkGraphChart";
+import HashtagTangledTreeChart from "./Charts/HashtagTangledTreeChart";
+import HashtagAnimatedTreeMapChart from "./Charts/HashtagAnimatedTreeMapChart";
 import { db } from "../../db";
 
 export default class FeedDashHashtagsSectionView extends React.Component{

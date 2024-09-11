@@ -39,7 +39,7 @@ import 'chartjs-adapter-date-fns';
 import { Line, Bar, getElementAtEvent } from 'react-chartjs-2';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import ActivityListView from "../ActivityListView";
+import ActivityListView from "../Lists/ActivityListView";
 import {  
   getChartColors,
   dbDataSanitizer,
