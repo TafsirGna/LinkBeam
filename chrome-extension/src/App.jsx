@@ -58,6 +58,8 @@ import {
 } from "./popup/Local_library";
 import eventBus from "./popup/EventBus";
 
+const subscriptionProperties = ["settings", "keywordList", "profileStudios", "folderList", "tagList"];
+
 export default class App extends React.Component{
 
     constructor(props){
@@ -90,6 +92,9 @@ export default class App extends React.Component{
               return;
             }
 
+            this.listenToBusEvents();
+
+
 
 
 
@@ -115,7 +120,6 @@ export default class App extends React.Component{
 
 
 
-            this.listenToBusEvents();
 
             getTodayReminders(db, reminders => {
                 this.setState({globalData: {...this.state.globalData, todayReminderList: reminders}});
@@ -169,62 +173,16 @@ export default class App extends React.Component{
 
         eventBus.on(eventBus.SET_APP_SUBSCRIPTION, (data) => {
 
-          const subscription = data.value;
-
-          switch(data.property){
-
-            case "settings":{
-              this.settingsSubscription = subscription.subscribe(
+            this[`${data.property}Subscription`] = data.value.subscribe(
                 result => this.setState(prevState => {
                                           let globalData = Object.assign({}, prevState.globalData);
                                           globalData[data.property] = result;
                                           return { globalData };
                                         }),
                 error => this.setState({error})
-              );
-              break;
-            }
+            );
 
-            case "keywordList":{
-              this.keywordsSubscription = subscription.subscribe(
-                result => this.setState(prevState => {
-                                          let globalData = Object.assign({}, prevState.globalData);
-                                          globalData[data.property] = result;
-                                          return { globalData };
-                                        }),
-                error => this.setState({error})
-              );
-              break;
-            }
-
-            case "folderList":{
-              this.foldersSubscription = subscription.subscribe(
-                result => this.setState(prevState => {
-                                          let globalData = Object.assign({}, prevState.globalData);
-                                          globalData[data.property] = result;
-                                          return { globalData };
-                                        }),
-                error => this.setState({error})
-              );
-              break;
-            }
-
-            case "tagList":{
-              this.tagsSubscription = subscription.subscribe(
-                result => this.setState(prevState => {
-                                          let globalData = Object.assign({}, prevState.globalData);
-                                          globalData[data.property] = result;
-                                          return { globalData };
-                                        }),
-                error => this.setState({error})
-              );
-              break;
-            }
-
-          }
-
-        })
-
+        });
 
     }
 
@@ -235,25 +193,12 @@ export default class App extends React.Component{
         eventBus.remove(eventBus.SET_APP_GLOBAL_DATA);
 
         //disabling subscriptions
-        if (this.settingsSubscription) {
-          this.settingsSubscription.unsubscribe();
-          this.settingsSubscription = null;
-        }
-
-        if (this.keywordsSubscription) {
-          this.keywordsSubscription.unsubscribe();
-          this.keywordsSubscription = null;
-        }
-
-        if (this.tagsSubscription) {
-          this.tagsSubscription.unsubscribe();
-          this.tagsSubscription = null;
-        }
-
-        if (this.foldersSubscription) {
-          this.foldersSubscription.unsubscribe();
-          this.foldersSubscription = null;
-        }
+        subscriptionProperties.forEach(subscriptionProperty => {
+            if (this[`${subscriptionProperty}Subscription`]) {
+              this[`${subscriptionProperty}Subscription`].unsubscribe();
+              this[`${subscriptionProperty}Subscription`] = null;
+            }
+        });
 
     }
 

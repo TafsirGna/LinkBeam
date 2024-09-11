@@ -145,12 +145,14 @@ export default class AllPostsModal extends React.Component{
           <Modal.Body>
 
           	{ !this.state.feedPostViews 
-                && <div class="text-center"><div class="mb-5 mt-4"><div class="spinner-border text-primary" role="status">
-                      {/*<span class="visually-hidden">Loading...</span>*/}
+                && <div class="text-center">
+                    <div class="mb-5 mt-4">
+                      <div class="spinner-border text-primary" role="status">
+                        {/*<span class="visually-hidden">Loading...</span>*/}
+                      </div>
+                      <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
                     </div>
-                    <p><span class="badge text-bg-primary fst-italic shadow-sm">Loading...</span></p>
-                  </div>
-                </div>}
+                  </div>}
 
             { this.state.feedPostViews
         		    && <div>

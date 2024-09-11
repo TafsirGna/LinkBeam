@@ -850,6 +850,14 @@ export function setGlobalDataSettings(db, eventBus, liveQuery){
 
 }
 
+export function setGlobalDataProfileStudios(db, eventBus, liveQuery){
+
+  const observable = liveQuery(() => db.profileStudios.toArray());
+
+  eventBus.dispatch(eventBus.SET_APP_SUBSCRIPTION, {property: "profileStudios", value: observable});
+
+}
+
 export function setGlobalDataKeywords(db, eventBus, liveQuery){
 
   const observable = liveQuery(() => db.keywords.toArray());

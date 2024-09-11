@@ -24,41 +24,79 @@ import React from 'react';
 import BackToPrev from "./widgets/BackToPrev";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import PageTitleView from "./widgets/PageTitleView";
+import ProfileStudioView from "./widgets/ProfileStudioView";
+import ProfileStudiosListView from "./widgets/Lists/ProfileStudiosListView";
 import { 
   saveCurrentPageTitle, 
   appParams,
+  setGlobalDataProfileStudios,
 } from "./Local_library";
+import { db } from "../db";
+import eventBus from "./EventBus";
+import { liveQuery } from "dexie"; 
 
 export default class ProfileStudiosView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      action: null,
+      profileStudio: null,
     };
   }
 
   componentDidMount() {
 
-    saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_"));
+    this.setState({action: ((new URLSearchParams(window.location.search).get("action")) || "list")}, () => {
+      if (this.state.action == "list"){
+        saveCurrentPageTitle(appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_"));
+        setGlobalDataProfileStudios(db, eventBus, liveQuery);
+      }
+      else if (this.state.action == "show"){
+        const itemId = new URLSearchParams(window.location.search).get("itemId");
+        if (itemId){
+          (async () => {
+            this.setState({profileStudio: await db.profileStudios.where({uniqueId: itemId}).first()});
+          })();
+        }
+      }
+    });
 
   }
 
   render(){
     return (
       <>
-        <div class="p-3">
-          <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
+        {this.state.action == "list"
+            && <div class="p-3">
+                  <BackToPrev prevPageTitle={appParams.COMPONENT_CONTEXT_NAMES.HOME}/>
+        
+                  <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS}/>
+        
+                  <div class="clearfix mt-3">
+                    <a 
+                      class="rounded shadow-sm badge border text-primary float-end"
+                      target="_blank"
+                      href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}&action=new`}>
+                      New
+                    </a>
+                  </div>
+                  <div class="mt-2">            
+                    {/* Profile studios list view */}
+                    <ProfileStudiosListView 
+                      objects={this.props.globalData.profileStudios}  />
+        
+                  </div>
+                </div>}
 
-          <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS}/>
+        { this.state.action == "new"
+            && <ProfileStudioView/>}
 
-          <div class="mt-3">            
-            {/* Profile studios list view */}
+        { this.state.action == "show"
+            && this.state.profileStudio
+            && <ProfileStudioView
+                  object={this.state.profileStudio}/>}
 
-            <ProfileStudiosListView 
-              objects={this.props.globalData.profileStudios}  />
-
-          </div>
-        </div>
       </>
     );
   }

@@ -29,6 +29,7 @@ export default class ProfileStudiosListView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      
     };
   }
 
@@ -37,7 +38,6 @@ export default class ProfileStudiosListView extends React.Component{
   }
 
   componentDidUpdate(prevProps, prevState){
-
 
   }
 
