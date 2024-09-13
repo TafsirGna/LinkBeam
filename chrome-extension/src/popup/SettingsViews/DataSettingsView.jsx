@@ -31,6 +31,7 @@ import {
   removeObjectsId,
   allUrlCombinationsOf,
   getProfileDataFrom,
+  convertToCsvString,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
@@ -186,7 +187,7 @@ export default class DataSettingsView extends React.Component{
     }, appParams.TIMER_VALUE_1);
   }
 
-  async initDataExport(action){
+  async initDataExport(action, format){
 
     if (!confirm(`Do you confirm the ${action} of your data as specified ?`)){
       return;
@@ -270,10 +271,14 @@ export default class DataSettingsView extends React.Component{
 
     try {
   
-      const jsonData = JSON.stringify(dbData),
-            jsonDataBlob = new Blob([jsonData]);
-      const fileName = "LinkBeam_Data_" + action + "_" + (this.state.offCanvasFormSelectValue == "1" ? `${LuxonDateTime.now().toFormat("dd_MMM_yy")}` : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`) + ".json";
-      procExtractedData(jsonDataBlob, fileName, action, new JSZip());
+      const fileName = `LinkBeam_Data_${action}_${(this.state.offCanvasFormSelectValue == "1" 
+                                                    ? LuxonDateTime.now().toFormat("dd_MMM_yy") 
+                                                    : `${LuxonDateTime.fromISO(this.state.offCanvasFormStartDate).toFormat("dd_MMM_yy")}_to_${LuxonDateTime.fromISO(this.state.offCanvasFormEndDate).toFormat("dd_MMM_yy")}`)}.${format}`;
+      
+      const blob = format == "json" 
+                    ? new Blob([JSON.stringify(dbData)]) 
+                    : new Blob([convertToCsvString(dbData)], { type: 'text/csv' });
+      procExtractedData(blob, fileName, action, new JSZip());
 
       // updating the local lastDataBackupDate value
       chrome.storage.local.set({ lastDataBackupDate: new Date().toISOString() });
@@ -488,19 +493,19 @@ export default class DataSettingsView extends React.Component{
                         </div>}
                         { this.state.processingState.status == "NO" 
                             && <div>
-                                <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving");}}>Archive</button>
+                                <button type="button" class="shadow btn btn-sm mx-2 border border-secondary" onClick={() => {this.initDataExport("archiving", "json");}}>Archive</button>
                                 <div class="dropdown d-inline">
                                   <button type="button" class="dropdown-toggle shadow btn btn-primary btn-sm" data-bs-toggle="dropdown" aria-expanded="false">Export</button>
                                   <ul class="dropdown-menu shadow-lg">
                                     <li>
-                                      <a class="dropdown-item small" href="#" onClick={null}>
+                                      <a class="dropdown-item small" href="#" onClick={() => {this.initDataExport("export", "csv");}}>
                                         {/*<BarChartIcon
                                             size="15"
                                             className="me-2 text-muted"/>*/}
                                         Csv
                                         {/*<span class="badge text-bg-danger rounded-pill ms-1 px-1 shadow-sm">In test</span>*/}
                                       </a>
-                                      <a class="dropdown-item small" href="#" onClick={() => {this.initDataExport("export");}}>
+                                      <a class="dropdown-item small" href="#" onClick={() => {this.initDataExport("export", "json");}}>
                                         {/*<BarChartIcon
                                             size="15"
                                             className="me-2 text-muted"/>*/}

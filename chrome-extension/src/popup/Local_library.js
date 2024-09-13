@@ -450,6 +450,33 @@ export const procExtractedData = function(jsonDataBlob, fileName, action, zip){
 
 }
 
+export function convertToCsvString(dbData, fileName){
+
+  var csvRows = [];
+
+  for (const objectStoreName in dbData.objectStores){
+
+    switch(objectStoreName){
+      case "keywords":{
+        if (!dbData.objectStores[objectStoreName].length){
+          continue;
+        }
+        // headers
+        var keys = Object.keys(dbData.objectStores[objectStoreName][0]);
+        csvRows.push(keys.join(','));
+        // values
+        csvRows = csvRows.concat(dbData.objectStores[objectStoreName].map(item => keys.map(key => item[key]).join(',')));
+        // blank row
+        csvRows.push(Array.from({length: keys.length}).map(_ => "").join(','));
+        break;
+      }
+    }
+  }
+
+  return csvRows.join('\n');
+
+}
+
 export function isProfilePropertyLabelInList(name, list, type, stringSimilarity){
 
   if (type == "languages"){    
@@ -1106,7 +1133,7 @@ export async function addLinkedPostToList(feedPost, feedPosts, db, scope = "all"
 export async function checkForDbIncoherences(db){
 
   var found = false;
-  
+
   for (const table of db.tables){
     switch(table.name){
       case "feedPosts":{
