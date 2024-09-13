@@ -196,17 +196,8 @@ export default class FeedDashView extends React.Component{
 
   }
 
-  handleStartDateInputChange(event){
-
-    this.setState({startDate: event.target.value});
-
-  }
-
-  handleEndDateInputChange(event){
-
-    this.setState({endDate: event.target.value});
-
-  }
+  handleStartDateInputChange = (event) => this.setState({startDate: event.target.value});
+  handleEndDateInputChange = (event) => this.setState({endDate: event.target.value});
 
   toggleToastShow = (message = "") => {this.setState((prevState) => ({toastMessage: message, toastShow: !prevState.toastShow}));};
 

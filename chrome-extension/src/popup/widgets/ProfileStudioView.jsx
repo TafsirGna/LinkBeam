@@ -21,7 +21,12 @@
 
 /*import './ProfileStudioView.css'*/
 import React from 'react';
-import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
+import { 
+  OverlayTrigger, 
+  Tooltip, 
+  Popover, 
+  Offcanvas 
+} from "react-bootstrap";
 import app_logo from '../../assets/app_logo.png';
 import default_user_icon from '../../assets/user_icons/default.png';
 import PageTitleView from "./PageTitleView";
@@ -33,6 +38,9 @@ import { v4 as uuidv4 } from 'uuid';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import AllVisitedProfilesModal from "./Modals/AllVisitedProfilesModal";
+import { LayersIcon } from "./SVGs";
+import { DateTime as LuxonDateTime } from "luxon";
+import { liveQuery } from "dexie";
 
 export default class ProfileStudioView extends React.Component{
 
@@ -41,6 +49,8 @@ export default class ProfileStudioView extends React.Component{
     this.state = {
       profileStudio: null,
       allVisitedProfilesModalShow: false,
+      insightsOffCanvasShow: false,
+      uIRefresher: false, 
     };
 
     this.deleteStudio = this.deleteStudio.bind(this);
@@ -70,9 +80,19 @@ export default class ProfileStudioView extends React.Component{
         profileStudio = this.props.object;
       }
 
-      this.setState({profileStudio: profileStudio});
+      this.profileStudioSubscription = liveQuery(() => db.profileStudios
+                                                          .where({uniqueId: profileStudio.uniqueId})
+                                                          .first()).subscribe(
+        result => this.setState({profileStudio: result}),
+        error => this.setState({error})
+      );
 
     })();
+
+    // Every minute, the ui is refreshed
+    setInterval(() => {
+      this.setState({uIRefresher: !this.state.uIRefresher});
+    }, 10000);
 
   }
 
@@ -83,8 +103,22 @@ export default class ProfileStudioView extends React.Component{
     }
   }
 
+  componentWillUnmount(){
+    if (this.profileStudioSubscription) {
+      this.profileStudioSubscription.unsubscribe();
+      this.profileStudioSubscription = null;
+    }
+  }
+
   handleAllVisitedProfilesModalClose = () => this.setState({allVisitedProfilesModalShow: false});
   handleAllVisitedProfilesModalShow = () => this.setState({allVisitedProfilesModalShow: true});
+
+  handleInsightsOffCanvasClose = () => this.setState({insightsOffCanvasShow: false});
+  handleInsightsOffCanvasShow = () => this.setState({insightsOffCanvasShow: true});
+
+  handleNameInputChange = async (event) => await db.profileStudios.update(this.state.profileStudio.id, { name: event.target.value, updatedOn: new Date().toISOString() });
+
+  handleDescriptionInputChange = async (event) => await db.profileStudios.update(this.state.profileStudio.id, { description: event.target.value, updatedOn: new Date().toISOString() });
 
   render(){
     return (
@@ -103,11 +137,14 @@ export default class ProfileStudioView extends React.Component{
                   <div class="col-3">
 
                     <div class="p-2 border rounded shadow-sm">
-                      <Form.Floating className="mb-2 shadow-sm">
+                      <span class="badge bg-primary-subtle border border-primary-subtle text-primary-emphasis rounded-pill pb-0 fst-italic">Updated {LuxonDateTime.fromISO(this.state.profileStudio.updatedOn).toRelative()}</span>
+
+                      <Form.Floating className="my-2 shadow-sm">
                         <Form.Control
                           id="studioName"
                           type="text"
                           value={this.state.profileStudio.name}
+                          onChange={this.handleNameInputChange}
                         />
                         <label htmlFor="studioName">Name</label>
                       </Form.Floating>  
@@ -120,13 +157,14 @@ export default class ProfileStudioView extends React.Component{
                           as="textarea"
                           placeholder="Studio description here"
                           value={this.state.profileStudio.description}
+                          onChange={this.handleDescriptionInputChange}
                           style={{ height: '100px' }}
                         />
                       </FloatingLabel>
 
                       <button 
                         type="button" 
-                        class="btn btn-outline-danger mt-3 shadow-sm w-100"
+                        class="btn btn-outline-danger mt-3 shadow-sm w-100 btn-sm"
                         onClick={this.deleteStudio}>
                         Delete studio
                       </button>
@@ -157,10 +195,36 @@ export default class ProfileStudioView extends React.Component{
                       </OverlayTrigger>
                       <button 
                         type="button" 
-                        class="btn btn-light mx-1 border text-muted border-2 border-primary-subtle bg-white btn-sm"
+                        class="btn btn-outline-success mx-1 btn-sm"
                         onClick={this.handleAllVisitedProfilesModalShow}>
                         Add profile
                       </button>
+
+                      <div class="dropdown float-end m-3 mt-1 bd-gray">
+                        <div 
+                          class="dropdown-toggle handy-cursor" 
+                          data-bs-toggle="dropdown" 
+                          aria-expanded="false" 
+                          title="Actions">
+                          <LayersIcon 
+                            size="18" 
+                            className=""/>
+                        </div>
+                        <ul class="dropdown-menu shadow-lg">
+                          <li>
+                            <a 
+                              class="dropdown-item small" 
+                              href="#" 
+                              onClick={this.handleInsightsOffCanvasShow}
+                              title="Derive insights">
+                              {/*<BarChartIcon
+                                  size="15"
+                                  className="me-2 text-muted"/>*/}
+                              Insights
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
       
@@ -168,9 +232,23 @@ export default class ProfileStudioView extends React.Component{
 
         </div>
 
+        {/*All profiles Modal*/}
         <AllVisitedProfilesModal
           show={this.state.allVisitedProfilesModalShow}
           onHide={this.handleAllVisitedProfilesModalClose}/>
+
+        {/*Insights Offcanvas*/}
+        <Offcanvas 
+          show={this.state.insightsOffCanvasShow} 
+          onHide={this.handleInsightsOffCanvasClose}
+          placement="end">
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Insights</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            
+          </Offcanvas.Body>
+        </Offcanvas>
 
       </>
     );

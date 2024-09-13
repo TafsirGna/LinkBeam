@@ -63,7 +63,7 @@ export default class ProfileStudiosListItemView extends React.Component{
                     href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}&action=show&itemId=${this.props.object.uniqueId}`} 
                     target="_blank"
                     title="Click to see more">
-                    {this.props.object.name}
+                    {`${this.props.object.name} · `}
                   </a> 
                 </h6>
                 <small class="opacity-50 text-nowrap ms-auto">{LuxonDateTime.fromISO(this.props.object.updatedOn).toFormat("MM-dd-yyyy")}</small>
@@ -71,7 +71,7 @@ export default class ProfileStudiosListItemView extends React.Component{
               <p class="mb-0 opacity-75 small">{this.props.object.description}</p>
               <OverlayTrigger 
                 trigger="hover" 
-                placement="bottom" 
+                placement="right" 
                 overlay={ <Popover id="popover-basic">
                             <Popover.Body>
                               {!this.props.object.profiles.length 

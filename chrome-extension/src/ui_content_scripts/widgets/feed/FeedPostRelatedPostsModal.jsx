@@ -461,7 +461,9 @@ function PreviousPostsListView(props){
                                                         </div>
                                                     </div>
                                                     <div>
-                                                      <a href={object.url}>
+                                                      <a 
+                                                        href={object.url}
+                                                        target="_blank">
                                                         { (object.media && object.media[0]) 
                                                             && 
                                                               <ImageLoader

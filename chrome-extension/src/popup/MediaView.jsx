@@ -255,7 +255,7 @@ export default class MediaView extends React.Component{
                       searchTextChanged={(data) => this.onSearchTextChange(data)} />
                       { this.state.searchText 
                           && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                              {`${this.state.allObjects ? this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} results for '${this.state.searchText}'`}
+                              {`${this.state.allObjects ? this.state.allObjects.map(o => o.feedPosts.length).reduce((acc, a) => acc + a, 0) : 0} result(s) for '${this.state.searchText}'`}
                             </p>}
                   </div>
 

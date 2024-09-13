@@ -528,11 +528,7 @@ export default class DataSettingsView extends React.Component{
 
   }
 
-  handleOffCanvasFormStartDateInputChange(event) {
-
-    this.setState({offCanvasFormStartDate: event.target.value}); 
-
-  }
+  handleOffCanvasFormStartDateInputChange = (event) => this.setState({offCanvasFormStartDate: event.target.value}); 
 
   handleOffCanvasFormEndDateInputChange(event) {
 

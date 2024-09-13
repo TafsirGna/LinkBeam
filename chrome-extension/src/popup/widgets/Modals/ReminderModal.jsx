@@ -84,17 +84,9 @@ export default class ReminderModal extends React.Component{
 
   }
 
-  handleReminderTextAreaChange(event) {
+  handleReminderTextAreaChange = (event) => this.setState({reminder: {...this.state.reminder, text: event.target.value}}); 
 
-    this.setState({reminder: {...this.state.reminder, text: event.target.value}}); 
-
-  }
-
-  handleReminderDateInputChange(event) {
-
-    this.setState({reminder: {...this.state.reminder, date: event.target.value}}); 
-
-  }
+  handleReminderDateInputChange = (event) => this.setState({reminder: {...this.state.reminder, date: event.target.value}}); 
 
   render(){
     return (

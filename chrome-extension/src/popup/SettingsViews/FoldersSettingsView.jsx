@@ -146,9 +146,7 @@ export default class FolderSettingsView extends React.Component{
 
   }
 
-  handleFolderInputChange(event) {
-    this.setState({folder: event.target.value});
-  }
+  handleFolderInputChange = (event) => this.setState({folder: event.target.value});
 
   render(){
 

@@ -59,11 +59,7 @@ export default class SearchInputView extends React.Component{
 
   }
 
-  handleInputChange(event){
-
-  	this.setState({text: event.target.value});
-
-  }
+  handleInputChange = (event) => this.setState({text: event.target.value});
 
   componentDidUpdate(prevProps, prevState){
 

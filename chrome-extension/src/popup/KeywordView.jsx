@@ -169,9 +169,7 @@ export default class KeywordView extends React.Component{
 
   }
 
-  handleKeywordInputChange(event) {
-    this.setState({keyword: event.target.value});
-  }
+  handleKeywordInputChange = (event) => this.setState({keyword: event.target.value});
 
   render(){
 

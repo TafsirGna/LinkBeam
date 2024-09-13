@@ -102,29 +102,14 @@ export default class ActivityListView extends React.Component{
 
   }
 
-  handleOffCanvasClose = () => {
-    this.setState({selectedPost: null});
-  };
+  handleOffCanvasClose = () => this.setState({selectedPost: null});
+  handleOffCanvasShow = (post) => this.setState({selectedPost: post});
 
-  handleOffCanvasShow = (post) => {
-    this.setState({selectedPost: post});
-  };
+  handleFsImageModalClose = () => this.setState({fsImage: null});
+  handleFsImageModalShow = (image) => this.setState({fsImage: image});
 
-  handleFsImageModalClose = () => {
-    this.setState({fsImage: null});
-  };
-
-  handleFsImageModalShow = (image) => {
-    this.setState({fsImage: image});
-  };
-
-  handleImageSlideShowModalClose = () => {
-    this.setState({slideShowImages: null});
-  };
-
-  handleImageSlideShowModalShow = (images) => {
-    this.setState({slideShowImages: images});
-  };
+  handleImageSlideShowModalClose = () => this.setState({slideShowImages: null});
+  handleImageSlideShowModalShow = (images) => this.setState({slideShowImages: images});
 
   getPostsByProfile(){
 
@@ -179,9 +164,9 @@ export default class ActivityListView extends React.Component{
                       class="rounded-circle me-1" 
                       width="24" 
                       height="24" 
-                      src={ (object.initiator.picture || (object.author && object.author.picture)) || default_user_icon } 
+                      src={ ((object.initiator && object.initiator.picture) || (object.author && object.author.picture)) || linkedin_icon /*default_user_icon*/ } 
                       alt=""/>
-                    { (object.initiator.name || (object.author && object.author.name)) }
+                    { ((object.initiator && object.initiator.name) || (object.author && object.author.name)) }
                   </span>
                   { Object.hasOwn(object, "category")
                       && <OverlayTrigger

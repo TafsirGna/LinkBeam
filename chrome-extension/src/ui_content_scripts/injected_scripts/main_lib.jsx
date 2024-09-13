@@ -729,22 +729,6 @@ function getProfileAuthViewMainHtmlElements(){
 
 }
 
-export function getHtmlElImageSource(htmlElement){
-  return htmlElement && htmlElement.tagName == "IMG" ? htmlElement.src : null;
-}
-
-export function getHtmlElTextContent(htmlElement){
-  return htmlElement?.textContent;
-}
-
-export function getHtmlElInnerHTML(htmlElement){
-  return htmlElement?.innerHTML;
-}
-
-function getHtmlElHref(htmlElement){
-  return htmlElement?.href;
-}
-
 function getEntityHtmlElHref(htmlElement){
 
   if (!htmlElement){
@@ -763,9 +747,9 @@ export function getPostProfileData(htmlElement, profileType){
   }
 
   return {
-    name: getHtmlElTextContent(htmlElement.querySelector("[aria-hidden]")),
+    name: htmlElement.querySelector("[aria-hidden]")?.innerText,
     url: getEntityHtmlElHref(htmlElement.querySelector("a")),
-    picture: getHtmlElImageSource(htmlElement.querySelector("img")),
+    picture: htmlElement.querySelector("img")?.src,
   };
 }
 
@@ -862,9 +846,9 @@ export const DataExtractor = {
     function extractNotAuthData(){
 
       return {
-        name: getHtmlElTextContent(htmlElements.featured_experience.firstElementChild.querySelector(":nth-child(2)")),
-        picture: getHtmlElImageSource(htmlElements.featured_experience.firstElementChild.firstElementChild), 
-        url: getHtmlElHref(htmlElements.featured_experience.firstElementChild),
+        name: htmlElements.featured_experience.firstElementChild.querySelector(":nth-child(2)").innerText,
+        picture: htmlElements.featured_experience.firstElementChild.firstElementChild?.src, 
+        url: htmlElements.featured_experience.firstElementChild?.href,
       };
 
     }
@@ -872,8 +856,8 @@ export const DataExtractor = {
     function extractAuthData(){
 
       return {
-        name: htmlElements.featured_experience.textContent,
-        picture: getHtmlElImageSource(htmlElements.featured_experience.querySelector("img")), 
+        name: htmlElements.featured_experience.innerText,
+        picture: htmlElements.featured_experience.querySelector("img")?.src, 
         url: null,
       };
 
@@ -891,9 +875,9 @@ export const DataExtractor = {
     function extractNotAuthData(){
 
       return {
-        name: getHtmlElInnerHTML(htmlElements.featured_education.firstElementChild.querySelector(":nth-child(2)")),
-        picture: getHtmlElImageSource(htmlElements.featured_education.firstElementChild.firstElementChild),
-        url: getHtmlElHref(htmlElements.featured_education.firstElementChild),
+        name: htmlElements.featured_education.firstElementChild.querySelector(":nth-child(2)")?.innerText,
+        picture: htmlElements.featured_education.firstElementChild.firstElementChild?.src,
+        url: htmlElements.featured_education.firstElementChild?.href,
       };
 
     }
@@ -901,8 +885,8 @@ export const DataExtractor = {
     function extractAuthData(){
 
       return {
-        name: htmlElements.featured_education.textContent,
-        picture: getHtmlElImageSource(htmlElements.featured_education.querySelector("img")), 
+        name: htmlElements.featured_education.innerText,
+        picture: htmlElements.featured_education.querySelector("img")?.src, 
         url: null,
       };
 

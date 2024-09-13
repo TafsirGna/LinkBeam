@@ -152,9 +152,7 @@ export default class TagSettingsView extends React.Component{
 
   }
 
-  handleTagInputChange(event) {
-    this.setState({tag: event.target.value});
-  }
+  handleTagInputChange = (event) => this.setState({tag: event.target.value});
 
   render(){
 

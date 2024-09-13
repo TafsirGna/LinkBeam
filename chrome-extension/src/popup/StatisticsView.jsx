@@ -193,11 +193,7 @@ export default class StatisticsView extends React.Component{
 
   }
 
-  handleOffCanvasFormStartDateInputChange(event) {
-
-    this.setState({offCanvasFormStartDate: event.target.value}); 
-
-  }
+  handleOffCanvasFormStartDateInputChange = (event) => this.setState({offCanvasFormStartDate: event.target.value}); 
 
   handleOffCanvasFormEndDateInputChange(event) {
 

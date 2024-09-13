@@ -438,6 +438,10 @@ function contextMenuItem(menuItem, action){
                 return "Save as quote";
                 // break;
             }
+            case appParams.postsWithSameImageMenuActionId: {
+                return "Retrieve posts with same image";
+                // break;
+            }
         }
 
     }
@@ -453,7 +457,9 @@ function contextMenuItem(menuItem, action){
                     title: contextMenuItemLabel(appParams[`${menuItem}MenuActionId`]),
                     contexts: [ appParams[`${menuItem}MenuActionId`] == appParams.saveAsQuoteMenuActionId 
                                     ? "selection" 
-                                    : "all" ],
+                                    : (appParams[`${menuItem}MenuActionId`] == appParams.postsWithSameImageMenuActionId
+                                        ? "image" 
+                                        : "all") ],
                 };
 
                 chrome.contextMenus.create(menuCreationOptions);
@@ -475,6 +481,9 @@ function contextMenuItem(menuItem, action){
 
 function updateContextualMenuActions(url){
 
+    // // posts with same image menu action
+    // contextMenuItem("postsWithSameImage", "on");
+
     if (isUrlOfInterest(url)){
         // immersive mode menu action
         contextMenuItem("immersiveMode", "on");
@@ -483,6 +492,8 @@ function updateContextualMenuActions(url){
             contextMenuItem("browseFeedForMe", "off");
             // save as quote menu action
             contextMenuItem("saveAsQuote", "on");
+            // posts with same image menu action
+            contextMenuItem("postsWithSameImage", "on");
         }
         return;
     }
@@ -493,6 +504,8 @@ function updateContextualMenuActions(url){
     contextMenuItem("browseFeedForMe", "on");
     // save as quote menu action
     contextMenuItem("saveAsQuote", "off");
+    // posts with same image menu action
+    contextMenuItem("postsWithSameImage", "off");
 
 }
 
@@ -521,6 +534,16 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
             chrome.tabs.sendMessage(tab.id, {header: "CONTEXT_MENU_ITEM_CLICKED", data: {menuItemId: appParams.saveAsQuoteMenuActionId, args: {selectedText: clickData.selectionText}}}, (response) => {
                 console.log('Context menu item clicked signal sent', response);
             }); 
+            break;
+        }
+        case appParams.postsWithSameImageMenuActionId: {
+            (async () => {
+                await chrome.storage.session.set({ imageSrc: clickData.srcUrl });
+                chrome.tabs.create({
+                  active: false,
+                  url:  `/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.POSTS_WITH_SAME_IMAGE.replaceAll(" ", "_")}`,
+                }, null);
+            })();
             break;
         }
     }
@@ -885,16 +908,10 @@ async function recordFeedVisit(tabData){
     });
 
     function areFeedPostsTheSame(entry, newFeedPost){
-            return (newFeedPost.htmlElId && entry.htmlElId && newFeedPost.htmlElId == entry.htmlElId)
-                                                        || ((!newFeedPost.htmlElId || !entry.htmlElId) 
-                                                                && entry.profileId == newFeedPost.profileId
-                                                                && entry.text?.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20) == newFeedPost.text?.replaceAll("\n", "").replaceAll(/\s/g,"").slice(0, 20)
-                                                                    /*(() => {
-                                                                        const entryText = entry.text.replaceAll("\n", "").replaceAll(/\s/g,""),
-                                                                              postText = newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,"");
-                                                                        const minLength = Math.min(entryText.length, postText.length);
-                                                                        return entryText.slice(0, minLength) == postText.slice(0, 20);
-                                                                    })() == true*/);
+        return (newFeedPost.htmlElId && entry.htmlElId && newFeedPost.htmlElId == entry.htmlElId)
+                    || ((!newFeedPost.htmlElId || !entry.htmlElId) 
+                            && entry.profileId == newFeedPost.profileId 
+                            && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"") == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,""));
     }
 
     async function addFreshFeedVisit(params){
@@ -1429,11 +1446,14 @@ async function getPreviousRelatedPosts(payload){
 
     if (Object.hasOwn(payload, "url")){
 
-        const profileUrl = payload.url;
+        const feedProfile = await db.feedProfiles.where({url: payload.url}).first();
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.author.url == profileUrl && ((post.htmlElId && (post.htmlElId != payload.htmlElId)) || (!post.htmlElId && true)))
+                                  .filter(post => post.profileId == feedProfile.uniqueId 
+                                                    && ((post.htmlElId 
+                                                            && (post.htmlElId != payload.htmlElId)) 
+                                                        || (!post.htmlElId && true)))
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
@@ -1444,7 +1464,7 @@ async function getPreviousRelatedPosts(payload){
                 postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId}`;
             }
             else{
-                const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
+                const view = (await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).last());
                 if (view.htmlElId == payload.htmlElId){
                     continue;
                 }
@@ -1461,26 +1481,20 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                      .filter(view => view.initiator && view.initiator.url == profileUrl && view.htmlElId != payload.htmlElId)
+                                      .filter(view => view.profileId == feedProfile.uniqueId && view.htmlElId != payload.htmlElId)
                                       .offset(payload.offset)
                                       .limit(limit)
                                       .toArray();
     
-        var uids = [];
-        for (const feedPostView of feedPostViews){
+        for (const feedPostView of feedPostViews.filter((value, index, self) => self.findIndex(v => v.htmlElId == value.htmlElId) === index)){
 
-            if (uids.indexOf(feedPostView.htmlElId) != -1){
-                continue;
-            }
-
-            const feedPost = (await db.feedPosts.where({id: feedPostView.feedPostId}).first());
+            const feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
             posts.push({
                 text: feedPost.innerContentHtml,
                 url: `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPostView.htmlElId}`,
                 date: feedPostView.date,
                 media: feedPost.media,
             });
-            uids.push(feedPostView.htmlElId);
         }
 
     }
@@ -1491,7 +1505,9 @@ async function getPreviousRelatedPosts(payload){
         const feedPosts = await db.feedPosts
                                   .filter(post => {
                                     if (Object.hasOwn(payload, "text")){
-                                        return post.innerContentHtml && (stringSimilarity(payload.text, post.text) > .9) && ((post.htmlElId && post.htmlElId != payload.htmlElId) || (!post.htmlElId && true));
+                                        return post.text && payload.text 
+                                                && (stringSimilarity(payload.text, post.text) > .9) 
+                                                && ((post.htmlElId && post.htmlElId != payload.htmlElId) || (!post.htmlElId && true));
                                     }
                                     else if (Object.hasOwn(payload, "tag")){
                                         return post.references 
@@ -1510,7 +1526,7 @@ async function getPreviousRelatedPosts(payload){
                 postUrl = `${appParams.LINKEDIN_FEED_POST_ROOT_URL()}${feedPost.htmlElId}`;
             }
             else{
-                const view = (await db.feedPostViews.where({feedPostId: feedPost.id}).last());
+                const view = await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).last();
                 if (view.htmlElId == payload.htmlElId){
                     continue;
                 }

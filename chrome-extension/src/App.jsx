@@ -32,6 +32,7 @@ import TagSettingsView from "./popup/SettingsViews/TagSettingsView";
 import StatisticsView from "./popup/StatisticsView";
 import ProfileStudiosView from "./popup/ProfileStudiosView";
 import KeywordView from "./popup/KeywordView";
+import PostsWithSameImageView from "./popup/PostsWithSameImageView";
 import MainProfileView from "./popup/MainProfileView";
 import MyAccount from "./popup/MyAccount";
 import ReminderView from "./popup/ReminderView";
@@ -309,6 +310,10 @@ export default class App extends React.Component{
             {/*Saved quotes Page*/}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")
                 && <ProfileStudiosView globalData={this.state.globalData} />}
+
+            {/*Saved quotes Page*/}
+            { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.POSTS_WITH_SAME_IMAGE.replaceAll(" ", "_")
+                && <PostsWithSameImageView globalData={this.state.globalData} />}
 
           </>
         );

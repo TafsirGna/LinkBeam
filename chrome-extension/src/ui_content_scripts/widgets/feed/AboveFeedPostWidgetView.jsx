@@ -37,8 +37,6 @@ import{
   checkAndHighlightKeywordsInHtmlEl,
   extractPostDate,
   getFeedPostHtmlElement,
-  getHtmlElTextContent,
-  getHtmlElInnerHTML, 
   getPostProfileData,
 } from "../../injected_scripts/main_lib";
 import { 
@@ -261,7 +259,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
       post.initiator = getPostProfileData(postContainerHeaderElement, "initiator");
 
-      const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.textContent);
+      const headerText = dbDataSanitizer.preSanitize(postContainerHeaderElement.innerText);
       for (const category in categoryVerbMap){
 
         for (var lang in categoryVerbMap[category]){
@@ -322,7 +320,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       || !post.content.subPost.author.name
                       /*|| !post.content.subPost.author.picture*/
                       || !post.content.subPost.estimatedDate))){
-      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, getHtmlElTextContent(this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")), post.content.estimatedDate);
+      console.log("[[[[[[[[[[[[[[[[[[[[[[[ 2 : ", post.content.author.url, post.content.author.name, this.state.postHtmlElement.querySelector(".update-components-actor__sub-description-link .visually-hidden")?.innerText, post.content.estimatedDate);
       return false;
     }
 
@@ -344,7 +342,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
       return result;
     }
 
-    var postReactionsSectionHtmlElTextContent = getHtmlElTextContent(postReactionsSectionHtmlEl);
+    var postReactionsSectionHtmlElTextContent = postReactionsSectionHtmlEl?.textContent;
     var reactionsDataString = postReactionsSectionHtmlElTextContent.replaceAll("\n", "").match(/\s{2,}\d+([\s,]\d+)?\s{2,}/g)[0].replaceAll(/\s{2,}/g, "");
     result.reactions = Number(reactionsDataString.replaceAll(",", "").replaceAll(/\s/g, ""));
 
@@ -380,9 +378,9 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
     var result = {
       author: getPostProfileData(postHtmlEl, "author"),
-      text: getHtmlElTextContent(postContentHtmlEl),
-      innerHtml: getHtmlElInnerHTML(postContentHtmlEl),
-      estimatedDate: extractPostDate(getHtmlElTextContent(this.getEstimatedDateHtmlEl(postHtmlEl)), LuxonDateTime),
+      text: postContentHtmlEl?.innerText,
+      innerHtml: postContentHtmlEl?.innerHTML,
+      estimatedDate: extractPostDate(this.getEstimatedDateHtmlEl(postHtmlEl)?.innerText, LuxonDateTime),
       references: this.getPostReferenceArray(postContentHtmlEl),
       media: this.getPostMediaArray(postHtmlEl.querySelector(subPost ? ".update-components-mini-update-v2__reshared-content" : ".feed-shared-update-v2__content")),
     };
@@ -456,7 +454,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       return null;
     }
 
-    
     return Array.from(htmlElement.querySelectorAll("a[href]"))
                 .map(htmlEl => ({
                   url: htmlEl.getAttribute("href"),

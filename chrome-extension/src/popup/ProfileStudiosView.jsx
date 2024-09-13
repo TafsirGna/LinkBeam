@@ -75,10 +75,10 @@ export default class ProfileStudiosView extends React.Component{
         
                   <div class="clearfix mt-3">
                     <a 
-                      class="rounded shadow-sm badge border text-primary float-end"
+                      class="rounded shadow-sm badge border text-success float-end text-decoration-none pb-0 border-success"
                       target="_blank"
                       href={`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.PROFILE_STUDIOS.replaceAll(" ", "_")}&action=new`}>
-                      New
+                      Add studio
                     </a>
                   </div>
                   <div class="mt-2">            
