@@ -26,7 +26,6 @@ import { faker } from '@faker-js/faker';
 import { 
   getChartColors, 
   dbDataSanitizer,
-  getProfileDataFrom,
 } from "../../Local_library";
 import {
   Chart as ChartJS,

@@ -56,6 +56,7 @@ import {
   getTodayReminders,
   applyFontFamilySetting,
   setGlobalDataSettings,
+  checkForDbIncoherences,
 } from "./popup/Local_library";
 import eventBus from "./popup/EventBus";
 
@@ -95,32 +96,8 @@ export default class App extends React.Component{
 
             this.listenToBusEvents();
 
-
-
-
-
-            (async () => {
-                var found = false;
-                for (const feedPost of (await db.feedPosts.toArray())){
-                    if (!(await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).first())){
-
-                        if (!(await db.feedPosts.where({linkedPostId: feedPost.uniqueId}).first())){
-                            found = true;
-                            await db.feedPosts.delete(feedPost.id);
-                            console.log("----------- : ", feedPost);
-                        }
-                    }
-                }
-                if (found){
-                    alert("Incoherent posts in db");
-                }
-            })();
-
-
-
-
-
-
+            // checks for database incoherences
+            checkForDbIncoherences(db)
 
             getTodayReminders(db, reminders => {
                 this.setState({globalData: {...this.state.globalData, todayReminderList: reminders}});

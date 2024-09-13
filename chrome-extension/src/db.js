@@ -58,9 +58,10 @@ const version2Stores = {
   profileNotes: '++id, createdOn, section, url, &uniqueId',
   feedProfiles: '++id, name, &picture, &url, &uniqueId',
   profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId', // *profiles
-  // profileStudioNotes: '++id, uniqueId, createdOn, profileStudioId',
+  // profileStudioNotes: '++id, &uniqueId, createdOn, profileStudioId',
   // educationOrganizations: '++id, &url, &uniqueId',
   // experienceOrganizations: '++id, &url, &uniqueId',
+  
   // // // // postReactions: '++id, &uniqueId, createdOn, feedPostId',
 }
 

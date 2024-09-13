@@ -26,6 +26,7 @@ import Button from 'react-bootstrap/Button';
 import { AlertCircleIcon } from "../SVGs";
 import { 
   dbDataSanitizer,
+  getProfileDataFrom,
 } from "../../Local_library";
 import { db } from "../../../db";
 import SearchInputView from "../SearchInputView";
@@ -38,10 +39,16 @@ export default class AllVisitedProfilesModal extends React.Component{
     this.state = {
       processing: false,
       searchText: null,
+      allProfiles: null,
     };
+
+    this.setProfiles = this.setProfiles.bind(this);
+
   }
 
   componentDidMount() {
+
+    this.setProfiles();
 
   }
 
@@ -51,6 +58,21 @@ export default class AllVisitedProfilesModal extends React.Component{
 
   componentWillUnmount(){
     
+  }
+
+  async setProfiles(){
+
+    var allProfiles = [];
+    const visits = (await db.visits.filter(visit => Object.hasOwn(visit, "profileData"))
+                                 .toArray())
+                                 .filter((value, index, self) => self.findIndex(v => v.url == value.url) === index);
+
+    for (const visit of visits){
+      allProfiles.push(await getProfileDataFrom(db, visit.url));
+    }
+
+    this.setState({allProfiles: allProfiles});
+
   }
 
   onSearchTextChange = data => this.setState({

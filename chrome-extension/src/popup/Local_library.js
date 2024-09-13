@@ -1024,13 +1024,18 @@ export const getVisitMeanTime = feedPostViews => !getVisitCount(feedPostViews) ?
 
 export const isReferenceHashtag = reference => reference.text.startsWith("#") || reference.text.startsWith("hashtag#");
 
-export async function getProfileDataFrom(db, url, properties = null){
+export async function getProfileDataFrom(db, url, properties = null, limit = null){
 
-  const visits = await db.visits
+  var visits = await db.visits
                       .where("url")
                       .anyOf(allUrlCombinationsOf(url))
                       .reverse()
                       .sortBy("date");
+
+  if (limit){
+    const index = visits.findIndex(visit => visit.date.startsWith(limit))
+    visits = visits.slice(index);
+  }
 
   var profileData = {};
   var nullProperties = [];
@@ -1094,6 +1099,36 @@ export async function addLinkedPostToList(feedPost, feedPosts, db, scope = "all"
 
     feedPosts.push(linkedPost);
 
+  }
+
+}
+
+export async function checkForDbIncoherences(db){
+
+  var found = false;
+  
+  for (const table of db.tables){
+    switch(table.name){
+      case "feedPosts":{
+
+        for (const feedPost of (await db.feedPosts.toArray())){
+          if (!(await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).first())){
+
+              if (!(await db.feedPosts.where({linkedPostId: feedPost.uniqueId}).first())){
+                  found = true;
+                  await db.feedPosts.delete(feedPost.id);
+                  console.log("----------- : ", feedPost);
+              }
+          }
+        }
+
+        break;
+      }
+    }
+  }
+  
+  if (found){
+      alert("Incoherent posts in db");
   }
 
 }
