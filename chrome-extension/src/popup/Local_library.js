@@ -461,6 +461,8 @@ export function convertToCsvString(dbData, fileName){
         if (!dbData.objectStores[objectStoreName].length){
           continue;
         }
+
+        csvRows.push(objectStoreName);
         // headers
         var keys = Object.keys(dbData.objectStores[objectStoreName][0]);
         csvRows.push(keys.join(','));
@@ -544,7 +546,7 @@ export const performLanguageComparison = function(theProfile, langName, profileL
 
       if ((languageObject.name.toLowerCase().indexOf(langName.toLowerCase()) != -1 
                 || languageObject.name.toLowerCase().indexOf(altLanguages[langName.toLowerCase()]) != -1)
-          && results.map(e => e.url).indexOf(profile.url) == -1){
+          && results.findIndex(e => e.url == profile.url) == -1){
 
         results.push(profile);
 
@@ -763,7 +765,7 @@ export async function setLocalProfiles(db, eventBus/*, propertyList, callback = 
   await db.visits
           .filter(visit => Object.hasOwn(visit, "profileData"))
           .each(visit => {
-            if (profiles.map(p => p.url).indexOf(visit.url) == -1){
+            if (profiles.findIndex(p => p.url == visit.url) == -1){
               profiles.push({url: visit.url});
             }
           });
@@ -957,7 +959,7 @@ export async function setGlobalDataHomeAllVisitsList(db, eventBus, globalData){
 
       if (isLinkedinProfilePage(visit.url)){
 
-        const index = profiles.map(p => p.url).indexOf(visit.url);
+        const index = profiles.findIndex(p => p.url == visit.url);
         if (index != -1){
           visit.profileData = profiles[index].payload;
         }
@@ -1151,11 +1153,23 @@ export async function checkForDbIncoherences(db){
 
         break;
       }
+
+      case "visits":{
+
+        for (const visit of (await db.visits.toArray())){
+          if (!(await db.feedPostViews.where({visitId: visit.uniqueId}).first())){
+            found = true;
+            await db.visits.delete(visit.id);
+          }
+        }
+
+        break;
+      }
     }
   }
   
   if (found){
-      alert("Incoherent posts in db");
+      alert("Incoherent data in database found and fixed");
   }
 
 }

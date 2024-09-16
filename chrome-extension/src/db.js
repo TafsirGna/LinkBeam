@@ -42,7 +42,6 @@ const version1Stores = {
 db.version(1)
   .stores(version1Stores);
 
-
 // Defining database version 2 stores
 const version2Stores = {
   visits: '++id, url, date, &uniqueId',
@@ -50,17 +49,17 @@ const version2Stores = {
   reminders: '++id, &objectId, createdOn, active, date, &uniqueId',
   settings: '++id',
   bookmarks: '++id, &url, createdOn, &uniqueId',
-  feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId', // profileId
-  feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId', // profileId
+  feedPosts: '++id, &htmlElId, estimatedDate, linkedPostId, &uniqueId, profileId',
+  feedPostViews: '++id, feedPostId, htmlElId, date, visitId, category, &uniqueId, profileId',
   tags: '++id, &name, createdOn, &uniqueId', // *profiles
   folders: '++id, &name, createdOn, &uniqueId', // *profiles
-  quotes: '++id, createdOn, &uniqueId', // profileId
+  quotes: '++id, createdOn, &uniqueId, profileId',
   profileNotes: '++id, createdOn, section, url, &uniqueId',
   feedProfiles: '++id, name, &picture, &url, &uniqueId',
-  profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId', // *profiles
-  // profileStudioNotes: '++id, &uniqueId, createdOn, profileStudioId',
-  // educationOrganizations: '++id, &url, &uniqueId',
-  // experienceOrganizations: '++id, &url, &uniqueId',
+  profileStudios: '++id, &name, createdOn, updatedOn, &uniqueId, *profiles',
+  profileStudioNotes: '++id, &uniqueId, createdOn, profileStudioId',
+  educationOrganizations: '++id, &url, &uniqueId',
+  experienceOrganizations: '++id, &url, &uniqueId',
   
   // // // // postReactions: '++id, &uniqueId, createdOn, feedPostId',
 }

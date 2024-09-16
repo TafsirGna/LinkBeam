@@ -231,10 +231,10 @@ export default class ProfileViewHeader extends React.Component{
               placement="top"
               overlay={<ReactTooltip id="tooltip1">Warning!</ReactTooltip>}
             >
-              <span class="me-1 text-warning">
-                <AlertCircleIcon size="14" className="text-warning"/>
-              </span>
-            </OverlayTrigger>
+            <span class="me-1 text-warning">
+              <AlertCircleIcon size="14" className="text-warning"/>
+            </span>
+          </OverlayTrigger>
           <span>The data below are approximative. Always refer to linkedin for precision</span>
         </p>
         <div class="alert alert-info py-1 shadow-sm small text-muted mt-2" role="alert">

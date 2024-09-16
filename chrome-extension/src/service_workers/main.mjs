@@ -481,9 +481,6 @@ function contextMenuItem(menuItem, action){
 
 function updateContextualMenuActions(url){
 
-    // // posts with same image menu action
-    // contextMenuItem("postsWithSameImage", "on");
-
     if (isUrlOfInterest(url)){
         // immersive mode menu action
         contextMenuItem("immersiveMode", "on");
@@ -495,6 +492,12 @@ function updateContextualMenuActions(url){
             // posts with same image menu action
             contextMenuItem("postsWithSameImage", "on");
         }
+        return;
+    }
+
+    if (url.startsWith(chrome.runtime.getURL(app_logo_path).replace(app_logo_path, ""))){
+        // posts with same image menu action
+        contextMenuItem("postsWithSameImage", "on");
         return;
     }
     
@@ -778,10 +781,8 @@ async function recordFeedVisit(tabData){
         console.log("xxxxxxxxxxxxxxxxxx 0''' : ", extractedPostData);
 
         const profileId = await checkPostFeedProfile(extractedPostData.content.author);
-        console.log("xxxxxxxxxxxxxxxxxx 0-4 : ", profileId);
-        const dbFeedPost = await db.feedPosts
-                                   .filter(entry => areFeedPostsTheSame(entry, { htmlElId: newFeedPost.htmlElId, profileId: profileId }))
-                                   .first();
+        console.log("xxxxxxxxxxxxxxxxxx 0-4 : ", profileId, { ...newFeedPost, profileId: profileId });
+        const dbFeedPost = await retrieveSamePostAs({ ...newFeedPost, profileId: profileId });
 
         console.log("xxxxxxxxxxxxxxxxxx 1 : ", dbFeedPost);
 
@@ -907,11 +908,15 @@ async function recordFeedVisit(tabData){
 
     });
 
-    function areFeedPostsTheSame(entry, newFeedPost){
-        return (newFeedPost.htmlElId && entry.htmlElId && newFeedPost.htmlElId == entry.htmlElId)
-                    || ((!newFeedPost.htmlElId || !entry.htmlElId) 
-                            && entry.profileId == newFeedPost.profileId 
-                            && entry.text.replaceAll("\n", "").replaceAll(/\s/g,"") == newFeedPost.text.replaceAll("\n", "").replaceAll(/\s/g,""));
+    async function retrieveSamePostAs(post){
+
+        if (post.htmlElId){
+            return await db.feedPosts.where({htmlElId: post.htmlElId}).first();
+        }
+
+        return await db.feedPosts.where({profileId: post.profileId})
+                                 .and(entry => entry.text?.replaceAll("\n", "").replaceAll(/\s/g,"") == post.text?.replaceAll("\n", "").replaceAll(/\s/g,""))
+                                 .first();
     }
 
     async function addFreshFeedVisit(params){
@@ -950,10 +955,7 @@ async function recordFeedVisit(tabData){
             };
 
             const profileId = await checkPostFeedProfile(extractedPostData.content.subPost.author);
-            const dbSubPost = await db.feedPosts
-                                      .filter(entry => areFeedPostsTheSame(entry, { htmlElId: subPost.htmlElId, profileId: profileId }),
-                                        )
-                                      .first();
+            const dbSubPost = await retrieveSamePostAs({ ...subPost, profileId: profileId });
 
             if (dbSubPost){
 
@@ -1450,10 +1452,10 @@ async function getPreviousRelatedPosts(payload){
 
         // feed posts, this user authored
         const feedPosts = await db.feedPosts
-                                  .filter(post => post.profileId == feedProfile.uniqueId 
-                                                    && ((post.htmlElId 
-                                                            && (post.htmlElId != payload.htmlElId)) 
-                                                        || (!post.htmlElId && true)))
+                                  .where({profileId: feedProfile.uniqueId})
+                                  .and(post => (post.htmlElId 
+                                                        && (post.htmlElId != payload.htmlElId)) 
+                                                    || (!post.htmlElId && true))
                                   .offset(payload.offset)
                                   .limit(limit)
                                   .toArray();
@@ -1481,7 +1483,8 @@ async function getPreviousRelatedPosts(payload){
 
         // feed post views, this given user triggered the viewing
         const feedPostViews = await db.feedPostViews
-                                      .filter(view => view.profileId == feedProfile.uniqueId && view.htmlElId != payload.htmlElId)
+                                      .where({profileId: feedProfile.uniqueId})
+                                      .and(view => view.htmlElId != payload.htmlElId)
                                       .offset(payload.offset)
                                       .limit(limit)
                                       .toArray();
