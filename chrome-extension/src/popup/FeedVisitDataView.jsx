@@ -85,9 +85,16 @@ export default class FeedVisitDataView extends React.Component{
     }
 
     (async () => {
+
+      var feedPostViews = [];
+      for (var feedPostView of (await db.feedPostViews.where({visitId: visitId}).toArray())){
+        feedPostView.feedPost = await db.feedPosts.where({uniqueId: feedPostView.feedPostId}).first();
+        feedPostViews.push(feedPostView);
+      }
+
       this.setVisit({
         ...(await db.visits.where({uniqueId: visitId}).first()),
-        feedPostViews: (await db.feedPostViews.where({visitId: visitId}).toArray()),
+        feedPostViews: feedPostViews,
       });
     }).bind(this)();
 

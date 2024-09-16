@@ -256,11 +256,11 @@ export default class About extends React.Component{
       // Send message to the background
       this.setState({processing: true}, () => {
 
-        db.open().then((async function (db) {
+        db.open().then((async (db) => {
         
           // Database opened successfully
           // Initializing the db with settings data
-          const id = await db.settings.add({
+          await db.settings.add({
             notifications: true,
             lastDataResetDate: new Date().toISOString(),
             installedOn: new Date().toISOString(),
@@ -506,13 +506,11 @@ export default class About extends React.Component{
                                     </div>
                                   </div>}
 
-
-
                         </div>}
 
           </div>
 
-          <div class="mb-3 d-none">
+          <div class="d-none">
             <input class="form-control" type="file" id="formFile"/>
           </div>
 
@@ -525,9 +523,20 @@ export default class About extends React.Component{
 
 async function importFileData(fileData){
 
-  for (var i = fileData.dbVersion; i <= appParams.appDbVersion; i++){
-    convertToVersion(i);
-  }
+  db.open().then(async (db) => {
+
+    for (var i = fileData.dbVersion; i <= appParams.appDbVersion; i++){
+      convertToVersion(i);
+    }
+
+  }).catch ((err) => {
+
+    // Error occurred
+    const errorMessage = "Failed to initialized the app. Try again later!";
+    console.log(errorMessage);
+    throw errorMessage;
+  
+  });
 
   await saveConvertedData();
 

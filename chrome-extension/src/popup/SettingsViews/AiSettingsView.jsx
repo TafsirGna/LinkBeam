@@ -42,6 +42,7 @@ export default class AiSettingsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
+      formFileRef: React.createRef(),
     };
   }
 
@@ -53,6 +54,39 @@ export default class AiSettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
+  }
+
+  onModelActionSelection(action){
+
+    switch(action){
+
+      case "Import":{
+        this.state.formFileRef.current.click();
+        break;
+      }
+
+      case "Train":{
+        window.open(`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.MODELS_TRAINING.replaceAll(" ", "_")}`, '_blank');
+        break;
+      }
+
+      case "Download":{
+        break;
+      }
+
+      case "Reset":{
+        this.resetModels();
+        break;
+      }
+
+    }
+
+  }
+
+  resetModels(){
+    if (confirm("Do you confirm the reset of the pre-existing models ?")){
+
+    }
   }
 
   render(){
@@ -79,9 +113,9 @@ export default class AiSettingsView extends React.Component{
                       <span class="rounded shadow-sm badge border text-primary">Actions</span>
                     </div>
                     <ul class="dropdown-menu shadow-lg border">
-                      {["Import", "Train", "Download"].map((value) => (
+                      {["Import", "Train", "Download", "Reset"].map((value) => (
                             <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {}}>
+                              <a class="dropdown-item small" href="#" onClick={() => {this.onModelActionSelection(value)}}>
                                 {value}
                               </a>
                             </li>  
@@ -126,6 +160,11 @@ export default class AiSettingsView extends React.Component{
           </div>
 
         </div>
+
+        <div class="d-none">
+          <input class="form-control" type="file" ref={this.state.formFileRef}/>
+        </div>
+
       </>
     );
   }

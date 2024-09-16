@@ -30,6 +30,7 @@ import VisualsSettingsView from "./popup/SettingsViews/VisualsSettingsView";
 import AiSettingsView from "./popup/SettingsViews/AiSettingsView";
 import TagSettingsView from "./popup/SettingsViews/TagSettingsView";
 import StatisticsView from "./popup/StatisticsView";
+import ModelsTrainingView from "./popup/ModelsTrainingView";
 import ProfileStudiosView from "./popup/ProfileStudiosView";
 import KeywordView from "./popup/KeywordView";
 import PostsWithSameImageView from "./popup/PostsWithSameImageView";
@@ -291,6 +292,10 @@ export default class App extends React.Component{
             {/*Saved quotes Page*/}
             { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.POSTS_WITH_SAME_IMAGE.replaceAll(" ", "_")
                 && <PostsWithSameImageView globalData={this.state.globalData} />}
+
+            {/*Models training Page*/}
+            { this.state.currentPageTitle == appParams.COMPONENT_CONTEXT_NAMES.MODELS_TRAINING.replaceAll(" ", "_")
+                && <ModelsTrainingView globalData={this.state.globalData} />}
 
           </>
         );
