@@ -207,9 +207,9 @@ export default class PostsWithSameImageView extends React.Component{
                         </span>
                       </p> 
                     </div> }
-                <div class="clearfix mt-2">
+                {/*<div class="clearfix mt-2">
                   <span class="float-end small fst-italic text-muted">Powered by Resemble JS</span>
-                </div>
+                </div>*/}
             </div>
             { parseInt(this.getSearchPercentage()) != 0
                 && <div class="rounded border shadow-sm my-3 text-muted small py-1">

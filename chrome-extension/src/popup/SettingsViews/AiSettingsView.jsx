@@ -27,6 +27,7 @@ import {
   appParams,
   setGlobalDataSettings,
   saveSettingsPropertyValue,
+  createFeedBrowsingTriggerModel,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
@@ -36,6 +37,8 @@ import {
 } from  "../widgets/SVGs";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
+import * as tf from '@tensorflow/tfjs';
+import { Offcanvas } from "react-bootstrap";
 
 export default class AiSettingsView extends React.Component{
 
@@ -43,6 +46,8 @@ export default class AiSettingsView extends React.Component{
     super(props);
     this.state = {
       formFileRef: React.createRef(),
+      model: null,
+      modelSummaryOffCanvasShow: false,
     };
   }
 
@@ -54,13 +59,33 @@ export default class AiSettingsView extends React.Component{
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
 
+    // check a model already exists and create one if not
+    (async () => {
+
+      var model = null;
+      try{
+        model = await tf.loadLayersModel(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+      }
+      catch(error){
+        model = createFeedBrowsingTriggerModel(tf);
+      }
+
+      this.setState(
+        {model: model},
+        () => {
+          console.log("*** model loaded : ", this.state.model);
+        }
+      );
+    })();
+
   }
 
-  onModelActionSelection(action){
+  async onModelActionSelection(action){
 
     switch(action){
 
       case "Import":{
+        alert("You are about to download a model in two files: Json and bin consecutively.");
         this.state.formFileRef.current.click();
         break;
       }
@@ -71,6 +96,7 @@ export default class AiSettingsView extends React.Component{
       }
 
       case "Download":{
+        await this.state.model.save(`downloads://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
         break;
       }
 
@@ -85,8 +111,19 @@ export default class AiSettingsView extends React.Component{
 
   resetModels(){
     if (confirm("Do you confirm the reset of the pre-existing models ?")){
+      // resetting the model in charge of triggering the feed browsing
+      createFeedBrowsingTriggerModel(tf).save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+
+      // notifiy user of the save
 
     }
+  }
+
+  handleModelSummaryOffCanvasClose = () => {this.setState({modelSummaryOffCanvasShow: false})};
+  handleModelSummaryOffCanvasShow = () => {this.setState({modelSummaryOffCanvasShow: true})};
+
+  downloadModelFile(){
+    
   }
 
   render(){
@@ -98,72 +135,84 @@ export default class AiSettingsView extends React.Component{
 
           <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS}/>
 
-          <div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <CompassIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    'Browse feed for me' models
-                  </strong>
-                  <div class="dropdown">
-                    <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
-                      <span class="rounded shadow-sm badge border text-primary">Actions</span>
+          { this.state.model 
+              && <div>
+                    <div class="d-flex text-body-secondary pt-3">
+                      <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                        <div class="d-flex justify-content-between">
+                          <strong class="text-gray-dark">
+                            <CompassIcon
+                              size="15"
+                              className="me-2 text-muted"/>
+                            'Browse feed for me' models
+                          </strong>
+                          <div class="dropdown">
+                            <div data-bs-toggle="dropdown" aria-expanded="false" class="float-start py-0 handy-cursor">
+                              <span class="rounded shadow-sm badge border text-primary">Actions</span>
+                            </div>
+                            <ul class="dropdown-menu shadow-lg border">
+                              {["Import", "Train", "Download", "Reset"].map((value) => (
+                                    <li>
+                                      <a class="dropdown-item small" href="#" onClick={() => {this.onModelActionSelection(value)}}>
+                                        {value}
+                                      </a>
+                                    </li>  
+                                ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <ul class="dropdown-menu shadow-lg border">
-                      {["Import", "Train", "Download", "Reset"].map((value) => (
-                            <li>
-                              <a class="dropdown-item small" href="#" onClick={() => {this.onModelActionSelection(value)}}>
-                                {value}
-                              </a>
-                            </li>  
-                        ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <CompassIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Last trained on
-                  </strong>
-                  <span class="rounded shadow-sm badge border text-secondary">{this.props.globalData.settings?.modelLastTrainingDate || "Never"}</span>
-                </div>
-              </div>
-            </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <CompassIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    Model characterictics
-                  </strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="View characterictics"
-                    onClick={null}>
-                      View
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
+                    <div class="d-flex text-body-secondary pt-3">
+                      <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                        <div class="d-flex justify-content-between">
+                          <strong class="text-gray-dark">
+                            <CompassIcon
+                              size="15"
+                              className="me-2 text-muted"/>
+                            Last trained on
+                          </strong>
+                          <span class="rounded shadow-sm badge border text-secondary">{this.props.globalData.settings?.modelLastTrainingDate || "Never"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-flex text-body-secondary pt-3">
+                      <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                        <div class="d-flex justify-content-between">
+                          <strong class="text-gray-dark">
+                            <CompassIcon
+                              size="15"
+                              className="me-2 text-muted"/>
+                            Models details
+                          </strong>
+                          <a 
+                            href="#" 
+                            class="text-primary badge" 
+                            title="View details"
+                            onClick={this.handleModelSummaryOffCanvasShow}>
+                              View
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>}
 
         </div>
 
         <div class="d-none">
           <input class="form-control" type="file" ref={this.state.formFileRef}/>
         </div>
+
+        <Offcanvas show={this.state.modelSummaryOffCanvasShow} onHide={this.handleModelSummaryOffCanvasClose}>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>Models details</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+
+
+
+          </Offcanvas.Body>
+        </Offcanvas>
 
       </>
     );

@@ -276,6 +276,13 @@ export default class FeedDashView extends React.Component{
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time")}}>
+              <div class="card-body">
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{`${getVisitMeanTime(this.state.allPeriodFeedPostViews)} mins`}</h6>}
+                <p class="card-text mb-1">Mean time between visits</p>
+                <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
+              </div>
+            </div>
           </div>
 
           <div class="row mx-3 gap-2 d-flex">

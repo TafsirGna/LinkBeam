@@ -1122,6 +1122,7 @@ async function recordProfileVisit(tabData){
                 date: dateTime,
                 url: tabData.tabUrl,
                 timeCount: 1, 
+                uniqueId: uuidv4(),
             };
 
         if (profileVisits.length){

@@ -46,6 +46,8 @@ export const appParams = {
   extShadowHostId: "linkBeamExtensionMainRoot",
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
 
+  FEED_BROWSING_TRIGGER_MODEL_NAME: "feed_browsing_trigger_model",
+
   supportedTimeLocales: ["fr", "en-US"],
 
   LINKEDIN_ROOT_URL: "linkedin.com",
@@ -640,6 +642,17 @@ export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTim
 
   return recursiveCompute(refTime);
 
+}
+
+export function createFeedBrowsingTriggerModel(tf){
+
+  const model = tf.sequential();
+
+  model.add(tf.layers.dense({units : 1 , inputShape : [1]}));
+  model.compile({loss : "meanSquaredError" , optimizer : "sgd"});
+  model.summary();
+
+  return model;
 }
 
 // export const logInParseUser = async function(Parse, usernameValue, passwordValue, callback, errCallback = null) {
