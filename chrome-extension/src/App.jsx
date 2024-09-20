@@ -98,7 +98,7 @@ export default class App extends React.Component{
             this.listenToBusEvents();
 
             // checks for database incoherences
-            checkForDbIncoherences(db)
+            // checkForDbIncoherences(db);
 
             getTodayReminders(db, reminders => {
                 this.setState({globalData: {...this.state.globalData, todayReminderList: reminders}});

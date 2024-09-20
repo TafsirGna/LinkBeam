@@ -39,6 +39,8 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
 import Popover from 'react-bootstrap/Popover';
 import * as tf from '@tensorflow/tfjs';
 import { Offcanvas } from "react-bootstrap";
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 export default class AiSettingsView extends React.Component{
 
@@ -48,7 +50,15 @@ export default class AiSettingsView extends React.Component{
       formFileRef: React.createRef(),
       model: null,
       modelSummaryOffCanvasShow: false,
+      uploadedModelFiles: {
+        json: null,
+        weights: null,
+      },
+      userNotifModalBody: null,
+      userNotifModalShowContext: null,
     };
+
+    this.onFileInputChange = this.onFileInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -58,6 +68,8 @@ export default class AiSettingsView extends React.Component{
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
+
+    this.onFileInputChange();
 
     // check a model already exists and create one if not
     (async () => {
@@ -85,8 +97,8 @@ export default class AiSettingsView extends React.Component{
     switch(action){
 
       case "Import":{
-        alert("You are about to download a model in two files: Json and bin consecutively.");
-        this.state.formFileRef.current.click();
+        let modalBody = <span class="small">Please, select simultaneously the model's json and bin files from your computer.</span>;
+        this.handleUserNotifModalShow(modalBody, "model_import");
         break;
       }
 
@@ -115,15 +127,61 @@ export default class AiSettingsView extends React.Component{
       createFeedBrowsingTriggerModel(tf).save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
 
       // notifiy user of the save
-
+      alert("Model reset successfully!");
     }
   }
 
   handleModelSummaryOffCanvasClose = () => {this.setState({modelSummaryOffCanvasShow: false})};
   handleModelSummaryOffCanvasShow = () => {this.setState({modelSummaryOffCanvasShow: true})};
 
-  downloadModelFile(){
-    
+  handleUserNotifModalClose = (callback = null) => {
+    this.setState({userNotifModalBody: null}, () => {
+      if (callback){ callback(); }
+    });
+  };
+  handleUserNotifModalOkAction = () => {
+    this.handleUserNotifModalClose(() => {
+      if (this.state.userNotifModalShowContext == "model_import"){
+        this.state.formFileRef.current.click();
+      }
+    });
+  }
+  handleUserNotifModalShow = (modalBody, userNotifModalShowContext) => {this.setState({userNotifModalBody: modalBody, userNotifModalShowContext: userNotifModalShowContext})};
+
+  onFileInputChange(){
+
+    this.state.formFileRef.current.onchange = (async e => {
+
+      console.log("*** --- : ", e.target.files);
+
+      if (e.target.files.length != 2){
+        alert("You must select simultaneously the model's json and bin files to proceed.");
+        return;
+      }
+
+      if (!((e.target.files[0].name.endsWith(".json") && e.target.files[1].name.endsWith(".weights.bin"))
+                  || (e.target.files[0].name.endsWith(".weights.bin") || e.target.files[1].name.endsWith(".json")))){
+        alert("The uploaded files doesn't match the model's json and bin files.");
+        return;
+      }
+
+      try{
+        this.setState({model: await tf.loadLayersModel(tf.io.browserFiles([
+                                                                e.target.files[0].name.endsWith(".json") 
+                                                                  ? e.target.files[0]
+                                                                  : e.target.files[1], 
+                                                                e.target.files[0].name.endsWith(".weights.bin") 
+                                                                  ? e.target.files[0]
+                                                                  : e.target.files[1]
+                                                            ]))});
+      }
+      catch(error){
+        let errorMessage = "An error occured when uploaded the model. Please try again!";
+        console.error(errorMessage, error);
+        alert(errorMessage)
+      };
+
+    });
   }
 
   render(){
@@ -200,7 +258,11 @@ export default class AiSettingsView extends React.Component{
         </div>
 
         <div class="d-none">
-          <input class="form-control" type="file" ref={this.state.formFileRef}/>
+          <input 
+            class="form-control" 
+            type="file" 
+            ref={this.state.formFileRef}
+            multiple="multiple"/>
         </div>
 
         <Offcanvas show={this.state.modelSummaryOffCanvasShow} onHide={this.handleModelSummaryOffCanvasClose}>
@@ -209,10 +271,51 @@ export default class AiSettingsView extends React.Component{
           </Offcanvas.Header>
           <Offcanvas.Body>
 
-
+            { this.state.model
+                && <div>
+                      <table class="table">
+                          <thead>
+                            <tr>
+                              <th scope="col">Layer{/* (type)*/}</th>
+                              <th scope="col">Output shape</th>
+                              <th scope="col">Input shape</th>
+                              <th scope="col">Param #</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            { this.state.model.layers.map(layer => <tr>
+                                                                      <td>{layer.name}</td>
+                                                                      <td>{`[${JSON.stringify(layer.input.shape)}]`}</td>
+                                                                      <td>{JSON.stringify(layer.output.shape)}</td>
+                                                                      <td>{layer.trainableWeights.length + layer.nonTrainableWeights.length}</td>
+                                                                    </tr>)}
+                          </tbody>
+                        </table>
+            
+                        <p class="mb-1">Total params: {this.state.model.trainableWeights.length + this.state.model.nonTrainableWeights.length}</p>
+                        <p class="mb-1">Trainable params: {this.state.model.trainableWeights.length}</p>
+                        <p class="mb-1">Non-trainable params: {this.state.model.nonTrainableWeights.length}</p>
+                    </div>}
 
           </Offcanvas.Body>
         </Offcanvas>
+
+
+        <Modal show={this.state.userNotifModalBody} onHide={this.handleUserNotifModalClose}>
+          {/*<Modal.Header closeButton>
+            <Modal.Title>Notification</Modal.Title>
+          </Modal.Header>*/}
+          <Modal.Body>
+
+            { this.state.userNotifModalBody }
+
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" size="sm" onClick={this.handleUserNotifModalOkAction} className="shadow">
+              OK
+            </Button>
+          </Modal.Footer>
+        </Modal>
 
       </>
     );

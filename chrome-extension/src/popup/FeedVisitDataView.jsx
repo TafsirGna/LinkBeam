@@ -157,13 +157,13 @@ export default class FeedVisitDataView extends React.Component{
                             { LuxonDateTime.fromISO(this.state.visit.date).toFormat('MMMM dd yyyy, hh:mm a') } 
                             {" - "} 
                             {LuxonDateTime.fromMillis(Math.max(
-                                                                (LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60000)), 
+                                                                (LuxonDateTime.fromISO(this.state.visit.date).toMillis() + (getVisitsTotalTime(this.state.visit.feedPostViews) * 60000)), 
                                                                 LuxonDateTime.fromISO(this.state.visit.feedPostViews[this.state.visit.feedPostViews.length - 1].date)
                                                                              .toMillis()
                                                               ))
                                           .toFormat('MMMM dd yyyy, hh:mm a')}
                           </div> 
-                          <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews.filter(view => view.visitId == this.state.visit.uniqueId)) * 60)}</div>
+                          <div class="text-muted">{secondsToHms(getVisitsTotalTime(this.state.visit.feedPostViews) * 60)}</div>
                         </div>}
                   <div class="text-muted fst-italic">{this.state.visit.feedPostViews.length} posts</div>
                   { this.state.visit.automated

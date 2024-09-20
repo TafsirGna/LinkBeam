@@ -109,7 +109,7 @@ export default class FeedPostCategorySizeTrendChart extends React.Component{
 
 	}
 
-	async getMetricValue(objects, metric){
+	async getMetricValue(objects, metric, LuxonDateTime = null){
 
 		if (metric == "Post Count") {
      	return getFeedDashMetricValue(objects, metric); 

@@ -646,6 +646,8 @@ export const computePeriodTimeSpan = function(objects, periodLabel, LuxonDateTim
 
 export function createFeedBrowsingTriggerModel(tf){
 
+  console.log("Creating new model : ");
+
   const model = tf.sequential();
 
   model.add(tf.layers.dense({units : 1 , inputShape : [1]}));
@@ -1064,6 +1066,37 @@ export const getPostCount = feedPostViews => feedPostViews.map(view => view.html
 export const getVisitsTotalTime = feedPostViews => parseFloat((feedPostViews.map(view => view.timeCount).reduce((acc, a) => acc + a, 0) / 60).toFixed(2));
 export const getVisitCount = feedPostViews => feedPostViews.map(view => view.visitId).filter((value, index, self) => self.indexOf(value) === index).length;
 export const getVisitMeanTime = feedPostViews => !getVisitCount(feedPostViews) ? 0 : parseFloat((getVisitsTotalTime(feedPostViews) / getVisitCount(feedPostViews)).toFixed(2));
+export const getMeanTimeBetweenVisits = (feedPostViews, LuxonDateTime) => {
+
+  const visits = feedPostViews.filter((value, index, self) => self.findIndex(view => view.visitId == value.visitId) === index)
+                              .map(view => view.visit);
+
+  if ([0, 1].includes(visits.length)){
+    return undefined;
+  }
+
+  const offFeedTotalTime = visits.map((visit, index, self) => {
+
+                                  if (!index){ return null; }
+                                  
+                                  const previousVisit = self[index - 1];
+                                  const previousVisitFeedPostViews = feedPostViews.filter(view => view.visitId == previousVisit.uniqueId);
+                                  const previousVisitLastMomentTimestamp = Math.max(
+                                                                              (LuxonDateTime.fromISO(previousVisit.date).toMillis() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000)), 
+                                                                              LuxonDateTime.fromISO(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date)
+                                                                                           .toMillis()
+                                                                            );
+
+                                  const timeBetween = LuxonDateTime.fromISO(visit.date).toMillis() - previousVisitLastMomentTimestamp;
+                                  return (timeBetween < 0) ? 0 : parseFloat((timeBetween / 60000).toFixed(2));
+
+                                })
+                                .reduce((acc, a) => acc + a, 0);
+
+  return (offFeedTotalTime / (visits.length - 1)).toFixed(2);
+
+}
+
 
 export const isReferenceHashtag = reference => reference.text.startsWith("#") || reference.text.startsWith("hashtag#");
 
@@ -1839,7 +1872,7 @@ export const areProfileDataObjectsDifferent = {
 
 }
 
-export async function getPostMetricValue(postViews, metric){
+export async function getPostMetricValue(postViews, metric, LuxonDateTime = null){
 
   var value = 0;
   postViews.sort((a, b) => new Date(a.date) > new Date(b.date));
@@ -1869,7 +1902,7 @@ export async function getPostMetricValue(postViews, metric){
 
 }
 
-export function getFeedDashMetricValue(feedPostViews, metric){
+export function getFeedDashMetricValue(feedPostViews, metric, LuxonDateTime = null){
 
     var value = null;
     switch(metric){
@@ -1890,6 +1923,11 @@ export function getFeedDashMetricValue(feedPostViews, metric){
 
       case "Mean time": {
         value = getVisitMeanTime(feedPostViews); 
+        break;
+      }
+
+      case "Mean time off": {
+        value = getMeanTimeBetweenVisits(feedPostViews, LuxonDateTime); 
         break;
       }
     }
@@ -1943,7 +1981,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
 
       for (const label of labels){
         resData[metric].push(label in (data[dateString] || []) 
-                                      ? (await getMetricValue(data[dateString][label], metric))
+                                      ? (await getMetricValue(data[dateString][label], metric, LuxonDateTime))
                                       : 0);
       }
 
@@ -1973,7 +2011,7 @@ export async function getFeedLineChartsData(objects, rangeDates, getMetricValue,
             objects = objects.concat(data[label][hourString]);
           };
 
-          resData[metric].push((await getMetricValue(objects, metric)));
+          resData[metric].push((await getMetricValue(objects, metric, LuxonDateTime)));
 
         }
         else{

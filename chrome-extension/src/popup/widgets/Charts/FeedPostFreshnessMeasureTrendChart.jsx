@@ -111,7 +111,7 @@ export default class FeedPostFreshnessMeasureTrendChart extends React.Component{
 
 	}
 
-	async getMetricValue(objects, metric){
+	async getMetricValue(objects, metric, LuxonDateTime = null){
 
 		if (metric == "Post Count"){
 			// Unique visits ids

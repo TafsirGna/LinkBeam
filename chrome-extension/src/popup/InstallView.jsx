@@ -55,7 +55,7 @@ export default class About extends React.Component{
 
     this.resetDb = this.resetDb.bind(this);
     this.handleAlertViewShow = this.handleAlertViewShow.bind(this);
-    this.setFileInputChangeAction = this.setFileInputChangeAction.bind(this);
+    this.onFileInputChange = this.onFileInputChange.bind(this);
     this.onImportDataClicked = this.onImportDataClicked.bind(this);
     this.onNewInstanceClicked = this.onNewInstanceClicked.bind(this);
     this.clearFileInput = this.clearFileInput.bind(this);
@@ -90,7 +90,7 @@ export default class About extends React.Component{
             });
             return;
         }
-        this.setFileInputChangeAction();
+        this.onFileInputChange();
     }).bind(this));
 
   }
@@ -122,11 +122,11 @@ export default class About extends React.Component{
     newInput.className = oldInput.className; 
 
     oldInput.parentNode.replaceChild(newInput, oldInput); 
-    this.setFileInputChangeAction();
+    this.onFileInputChange();
 
   }
 
-  setFileInputChangeAction(){
+  onFileInputChange(){
 
     // listening for an input change event
     const formFileElement = document.getElementById("formFile");

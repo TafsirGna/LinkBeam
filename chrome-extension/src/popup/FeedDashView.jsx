@@ -36,7 +36,9 @@ import {
   getVisitsTotalTime,
   getFeedDashMetricValue,
   groupPeriodFeedPostViewsByHtmlElId,
+  getMeanTimeBetweenVisits,
 } from "./Local_library";
+import { DateTime as LuxonDateTime } from "luxon";
 import PageTitleView from "./widgets/PageTitleView";
 import Form from 'react-bootstrap/Form';
 import { db } from "../db";
@@ -206,7 +208,7 @@ export default class FeedDashView extends React.Component{
   }
 
   handlePostStackedBarChartModalClose = () => this.setState({postStackedBarChartModalShow: false});
-  handlePostStackedBarChartModalShow = () => this.setState({postStackedBarChartModalShow: true});
+  handlePostStackedBarChartModalShow = () => this.setState({postStackedBarChartModalShow: true})
 
   render(){
     return (
@@ -248,13 +250,13 @@ export default class FeedDashView extends React.Component{
           </div>
 
           <div class="row mx-2 mt-1">
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Total time")}}>
+            {/*<div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Total time")}}>
               <div class="card-body">
                 {this.state.allPeriodFeedPostViews && <h6 class="card-title text-primary-emphasis">~{`${getVisitsTotalTime(this.state.allPeriodFeedPostViews)} mins`}</h6>}
                 <p class="card-text mb-1">Total time spent</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
-            </div>
+            </div>*/}
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Visit Count")}}>
               <div class="card-body">
                 {this.state.allPeriodFeedPostViews && <h6 class="card-title text-danger-emphasis">{getVisitCount(this.state.allPeriodFeedPostViews)}</h6>}
@@ -276,9 +278,12 @@ export default class FeedDashView extends React.Component{
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>
             </div>
-            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time")}}>
+            <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time off")}}>
               <div class="card-body">
-                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{`${getVisitMeanTime(this.state.allPeriodFeedPostViews)} mins`}</h6>}
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{`${(() => {
+                  const meanTimeBetween = getMeanTimeBetweenVisits(this.state.allPeriodFeedPostViews, LuxonDateTime);
+                  return meanTimeBetween == undefined ? "undefined" : meanTimeBetween;
+                })()} mins`}</h6>}
                 <p class="card-text mb-1">Mean time between visits</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>

@@ -32,11 +32,13 @@ import {
   allUrlCombinationsOf,
   getProfileDataFrom,
   convertToCsvString,
+  checkForDbIncoherences,
 } from "../Local_library";
 import eventBus from "../EventBus";
 import { db } from "../../db";
 import { liveQuery } from "dexie";
 import Form from 'react-bootstrap/Form';
+import Spinner from 'react-bootstrap/Spinner';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import { 
   BookmarkIcon,
@@ -44,6 +46,7 @@ import {
   DeletionIcon,
   DownloadIcon,
   StorageIcon,
+  SearchIcon,
 } from  "../widgets/SVGs";
 import { DateTime as LuxonDateTime } from "luxon";
 import JSZip from "jszip";
@@ -79,6 +82,7 @@ export default class DataSettingsView extends React.Component{
       offCanvasFormEndDate: (new Date()).toISOString().split("T")[0],
       offCanvasFormSelectValue: "1",
       usageQuota: null,
+      checkingDbStatus: null,
     };
 
     this.deleteData = this.deleteData.bind(this);
@@ -86,6 +90,7 @@ export default class DataSettingsView extends React.Component{
     this.handleOffCanvasFormStartDateInputChange = this.handleOffCanvasFormStartDateInputChange.bind(this);
     this.handleOffCanvasFormEndDateInputChange = this.handleOffCanvasFormEndDateInputChange.bind(this);
     this.handleOffCanvasFormSelectInputChange = this.handleOffCanvasFormSelectInputChange.bind(this);
+    this.onDbCheckActionTriggered = this.onDbCheckActionTriggered.bind(this);
     this.initDataExport = this.initDataExport.bind(this);
 
   }
@@ -312,6 +317,21 @@ export default class DataSettingsView extends React.Component{
 
   }
 
+  onDbCheckActionTriggered(){
+
+    if (this.state.checkingDbStatus == "done"){
+      return;
+    }
+
+    this.setState({checkingDbStatus: "ongoing"}, async () => {
+
+      await checkForDbIncoherences(db);
+      this.setState({checkingDbStatus: "done"});
+
+    })
+
+  }
+
   render(){
 
     return(
@@ -354,6 +374,33 @@ export default class DataSettingsView extends React.Component{
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
+            <div class="d-flex text-body-secondary pt-3">
+              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                <div class="d-flex justify-content-between">
+                  <strong class="text-gray-dark">
+                    <SearchIcon
+                      size="15"
+                      className="me-2 text-muted"/>
+                    Check data in db
+                  </strong>
+
+                  { this.state.checkingDbStatus == "ongoing"
+                      && <Spinner animation="border" size="sm" /> }
+
+                  { (this.state.checkingDbStatus == null
+                        || this.state.checkingDbStatus == "done")
+                      && <a 
+                          href="#" 
+                          onClick={this.onDbCheckActionTriggered} 
+                          class={`text-${this.state.checkingDbStatus != "done" ? "primary" : "success"} badge`} 
+                          title="Check data">
+                          Check{this.state.checkingDbStatus == "done" && "ed"}
+                        </a> }
+
+                </div>
+                {/*<span class="d-block">@username</span>*/}
               </div>
             </div>
             <div class="d-flex text-body-secondary pt-3">
