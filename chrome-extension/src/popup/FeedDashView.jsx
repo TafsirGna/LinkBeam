@@ -37,6 +37,7 @@ import {
   getFeedDashMetricValue,
   groupPeriodFeedPostViewsByHtmlElId,
   getMeanTimeBetweenVisits,
+  secondsToHms,
 } from "./Local_library";
 import { DateTime as LuxonDateTime } from "luxon";
 import PageTitleView from "./widgets/PageTitleView";
@@ -280,10 +281,10 @@ export default class FeedDashView extends React.Component{
             </div>
             <div class="handy-cursor card mb-3 shadow small text-muted col mx-2 border border-1" onClick={() => {this.handleMetricLineChartModalShow("Mean time off")}}>
               <div class="card-body">
-                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{`${(() => {
+                {this.state.allPeriodFeedPostViews && <h6 class="card-title text-info-emphasis">~{(() => {
                   const meanTimeBetween = getMeanTimeBetweenVisits(this.state.allPeriodFeedPostViews, LuxonDateTime);
-                  return meanTimeBetween == undefined ? "undefined" : meanTimeBetween;
-                })()} mins`}</h6>}
+                  return meanTimeBetween == undefined ? "undefined" : /*`${meanTimeBetween} mins`*/ secondsToHms(meanTimeBetween * 60);
+                })()}</h6>}
                 <p class="card-text mb-1">Mean time between visits</p>
                 <div><span class="badge text-bg-secondary fst-italic shadow-sm">Show</span></div>
               </div>

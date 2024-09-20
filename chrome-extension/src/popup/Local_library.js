@@ -1077,21 +1077,24 @@ export const getMeanTimeBetweenVisits = (feedPostViews, LuxonDateTime) => {
 
   const offFeedTotalTime = visits.map((visit, index, self) => {
 
-                                  if (!index){ return null; }
+                                  if (!index){ 
+                                    return null; /*parseFloat((LuxonDateTime.fromISO(visit.date).toMillis() / 60000).toFixed(2))*/; 
+                                  }
                                   
                                   const previousVisit = self[index - 1];
                                   const previousVisitFeedPostViews = feedPostViews.filter(view => view.visitId == previousVisit.uniqueId);
-                                  const previousVisitLastMomentTimestamp = Math.max(
-                                                                              (LuxonDateTime.fromISO(previousVisit.date).toMillis() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000)), 
-                                                                              LuxonDateTime.fromISO(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date)
-                                                                                           .toMillis()
-                                                                            );
+                                  const timeBetween = LuxonDateTime.fromISO(visit.date).toMillis() - Math.max(
+                                                                                                        (LuxonDateTime.fromISO(previousVisit.date).toMillis() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000)), 
+                                                                                                        LuxonDateTime.fromISO(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date)
+                                                                                                                     .toMillis()
+                                                                                                      );
 
-                                  const timeBetween = LuxonDateTime.fromISO(visit.date).toMillis() - previousVisitLastMomentTimestamp;
                                   return (timeBetween < 0) ? 0 : parseFloat((timeBetween / 60000).toFixed(2));
 
                                 })
                                 .reduce((acc, a) => acc + a, 0);
+
+  // console.log("((((((((((((( : ", offFeedTotalTime, visits);
 
   return (offFeedTotalTime / (visits.length - 1)).toFixed(2);
 

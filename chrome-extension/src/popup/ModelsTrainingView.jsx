@@ -35,6 +35,7 @@ import { db } from "../db";
 import * as tf from '@tensorflow/tfjs';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class ModelsTrainingView extends React.Component{
 
@@ -117,26 +118,85 @@ export default class ModelsTrainingView extends React.Component{
       return;
     }
 
-    let inputData = [];
-    for (let visit of visits){
+    let inputData = [],
+        outputData = [];
+    for (let date of visits.filter((value, index, self) => self.findIndex(v => v.date.split("T")[0] == value.date.split("T")[0]) === index)
+                           .map(visit => visit.date.split("T")[0])){
 
-      let givenDayVisits = visits.filter(v => v.date.startsWith(visit.date.split("T")[0])),
-          visitIndex = givenDayVisits.findIndex(v => v.uniqueId == visit.uniqueId),
-          givenDayPreviousVisits = givenDayVisits.slice(0, visitIndex),
-          givenDayPreviousVisitsFeedPostViews = await db.feedPostViews.where("visitId").anyOf(givenDayPreviousVisits.map(v => v.uniqueId)).toArray();
-  
-      inputData.push([
-        visit.date.split("T")[1].match(/^\d{2}:\d{2}/g)[0], 
-        visitIndex + 1,
-        getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
-        getPostCount(givenDayPreviousVisitsFeedPostViews),
-      ]);
+      let visitGaps = [],
+          givenDayVisits = visits.filter(v => v.date.startsWith(date)),
+          givenDayVisitsFeedPostViews = await db.feedPostViews.where("visitId").anyOf(givenDayVisits.map(v => v.uniqueId)).toArray();
 
-      this.setState({currentStepProgressionStatus: ((inputData.length * 100) / visits.length).toFixed(1)});
+      let visitIndex = 0;
+      for (let visit of givenDayVisits){
+
+        let givenDayPreviousVisits = givenDayVisits.slice(0, visitIndex),
+            givenDayPreviousVisitsFeedPostViews = givenDayVisitsFeedPostViews.filter(view => givenDayPreviousVisits.map(v => v.uniqueId).includes(view.visitId)),
+            visitGap = null;
+
+        if (!visitIndex){
+          visitGap = parseFloat(
+                                ((LuxonDateTime.fromISO(visit.date).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toMillis() - LuxonDateTime.fromISO(visit.date).toMillis()) / 60000)
+                                  .toFixed(2)
+                    );
+          visitGaps.push([
+            LuxonDateTime.fromISO(visit.date).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toMillis(),
+            LuxonDateTime.fromISO(visit.date).toMillis()
+          ]);
+        }
+        else{
+          let previousVisit = givenDayPreviousVisits[givenDayPreviousVisits.length - 1],
+              previousVisitFeedPostViews = givenDayPreviousVisitsFeedPostViews.filter(view => view.visitId == previousVisit.uniqueId);
+          const previousVisitLastMoment =  Math.max(
+                                            (LuxonDateTime.fromISO(previousVisit.date).toMillis() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000)), 
+                                            LuxonDateTime.fromISO(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date)
+                                                         .toMillis()
+                                          );
+          visitGap = LuxonDateTime.fromISO(visit.date).toMillis() - previousVisitLastMoment;
+          visitGap = parseFloat((visitGap / 60000).toFixed(2));
+
+          if (visitGap > 0){
+            visitGaps.push([
+              previousVisitLastMoment,
+              LuxonDateTime.fromISO(visit.date).toMillis()
+            ]);
+          }
+
+          visitGap = visitGap >= 0 ? visitGap : 0;
+
+        }
+
+        // true occurrence
+        inputData.push([
+          visit.date.split("T")[1].match(/^\d{2}:\d{2}/g)[0], 
+          visitIndex + 1,
+          getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
+          getPostCount(givenDayPreviousVisitsFeedPostViews),
+          visitGap,
+        ]);
+        outputData.push(true);
+
+        let selectedVisitGap = 
+
+        // false occurrence
+        inputData.push([
+          visit.date.split("T")[1].match(/^\d{2}:\d{2}/g)[0], 
+          visitIndex + 1,
+          getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
+          getPostCount(givenDayPreviousVisitsFeedPostViews),
+          visitGap,
+        ]);
+        outputData.push(false);
+
+        this.setState({currentStepProgressionStatus: ((inputData.length * 100) / visits.length).toFixed(1)});
+        visitIndex++;
+
+      }
+
     }
 
     console.log("--- Training data : ", inputData);
-    // this.setState({trainingData: inputData});
+    this.setState({trainingData: inputData});
 
   }
 
