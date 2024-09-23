@@ -38,12 +38,25 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { DateTime as LuxonDateTime } from "luxon";
 
+function splitIntoEqualFolds(array, foldSize){
+
+  var folds = [],
+      offset = 0;
+
+  while (offset < array.length){
+    folds.push([...(array.slice(offset, (offset + foldSize)))]);
+    offset += foldSize;
+  }
+
+  return folds;
+
+}
+
 export default class ModelsTrainingView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
-      model: null,
       steps: ["Data preprocessing", "Training"],
       currentStepIndex: 0,
       trainingData: null,
@@ -52,6 +65,7 @@ export default class ModelsTrainingView extends React.Component{
       userNotifModalShowContext: null,
       modelTrainingLogs: [],
       tensorBoardData: null,
+      currentFoldIndex: null,
     };
 
     this.initDataPreProcessing = this.initDataPreProcessing.bind(this);
@@ -61,26 +75,8 @@ export default class ModelsTrainingView extends React.Component{
 
   componentDidMount(){
 
-    // check a model already exists and create one if not
-    (async () => {
-
-      var model = null;
-      try{
-        model = await tf.loadLayersModel(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
-      }
-      catch(error){
-        model = createFeedBrowsingTriggerModel(tf);
-      }
-
-      this.setState(
-        {model: model},
-        () => {
-          console.log("*** model loaded : ", this.state.model);
-          this.initDataPreProcessing();
-        }
-      );
-
-    })();
+    console.log("*** Bare model  : ", createFeedBrowsingTriggerModel(tf));
+    this.initDataPreProcessing();
 
   }
 
@@ -214,6 +210,9 @@ export default class ModelsTrainingView extends React.Component{
     console.log("--- Training data 2 : ", trainingData);
     this.setState({trainingData: trainingData});
 
+    // Setting the mins and maxes in the local storage for later inference
+    chrome.storage.local.set({ modelTrainingDataMins: mins, modelTrainingDataMaxes: maxes });
+
   }
 
   initTraining(){
@@ -221,6 +220,7 @@ export default class ModelsTrainingView extends React.Component{
     const epochCount = 100;
     var modelTrainingLogs = [...this.state.modelTrainingLogs],
         currentStepProgressionStatus = null,
+        currentFoldIndex = 1,
         tensorBoardData = {
           labels: Array.from({length: epochCount}).map((_, index) => `Epoch ${index + 1}`),
           datasets: [
@@ -241,6 +241,7 @@ export default class ModelsTrainingView extends React.Component{
         currentStepProgressionStatus: currentStepProgressionStatus,
         modelTrainingLogs: modelTrainingLogs,
         tensorBoardData: null,
+        currentFoldIndex: currentFoldIndex
       }, () => {
         this.setState({tensorBoardData: tensorBoardData});
       });
@@ -253,36 +254,82 @@ export default class ModelsTrainingView extends React.Component{
     function onEpochEnd(epoch, logs) {
 
       const consoleMessage = `Epoch: ${epoch + 1} Acc: ${logs.acc} Loss: ${logs.loss}`;
-      console.log(consoleMessage);
+      // console.log(consoleMessage);
 
       currentStepProgressionStatus = (((epoch + 1) * 100) / epochCount).toFixed(1);
-      modelTrainingLogs = modelTrainingLogs.concat([consoleMessage]);
+      modelTrainingLogs.push(consoleMessage);
       tensorBoardData.datasets[0].data.push(logs.acc);
       tensorBoardData.datasets[1].data.push(logs.loss);
+
+      if ((epoch + 1) == 100 && currentFoldIndex != 4){
+        tensorBoardData.datasets[0].data = [];
+        tensorBoardData.datasets[1].data = [];
+        modelTrainingLogs.push(`--- Fold Index : ${currentFoldIndex}`);
+      }
 
     }
     onEpochEnd = onEpochEnd.bind(this);
 
-    const trainingInputs = tf.tensor2d(this.state.trainingData.map(row => row.slice(1, 6))),
-          trainingLabels = tf.tensor2d(this.state.trainingData.map(row => row.slice(6)))/*,
-          testInputs = tf.tensor2d([-1.0, 0.0, 1.0, 2.0, 3.0, 4.0], [6,1]),
-          testLabels = tf.tensor2d([-1.0, 0.0, 1.0, 2.0, 3.0, 4.0], [6,1])*/;
+    // initiating cross-testing
+    const inputFolds = splitIntoEqualFolds(this.state.trainingData, parseInt(this.state.trainingData.length / 4));
+    var bestModelSoFar = null,
+        bestModelSoFarEvaluation = null;
 
-    // Train for 5 epochs with batch size of 32.
-    this.state.model.fit(trainingInputs, trainingLabels, {
-      epochs: epochCount,
-      batchSize: 32,
-      callbacks: {/*onBatchEnd*/ onEpochEnd}
-    }).then(info => {
+    // Train for n epochs with batch size of 32.
+    function train(){
 
-      console.log('Final accuracy', info.history.acc);
+      const trainingInputs = tf.tensor2d([...inputFolds].splice((currentFoldIndex - 1) , 1).reduce((acc, a) => acc.concat(a), []).map(row => row.slice(1, 6))),
+            trainingLabels = tf.tensor2d([...inputFolds].splice((currentFoldIndex - 1) , 1).reduce((acc, a) => acc.concat(a), []).map(row => row.slice(6))),
+            testInputs = tf.tensor2d(inputFolds[currentFoldIndex].map(row => row.slice(1, 6))),
+            testLabels = tf.tensor2d(inputFolds[currentFoldIndex].map(row => row.slice(6)));
 
-      let modalBody = "Model successfully training!";
-      this.handleUserNotifModalShow(modalBody, "training_ended");
+      var model = createFeedBrowsingTriggerModel(tf);
 
-      // this.state.model.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+      model.fit(trainingInputs, trainingLabels, {
+        epochs: epochCount,
+        batchSize: 32,
+        callbacks: {/*onBatchEnd*/ onEpochEnd}
+      }).then(info => {
 
-    });
+        // console.log('Final accuracy', info.history.acc);
+        var modelEvaluation = model.evaluate(testInputs, testLabels);
+        console.log("YYYYYYYYYYYYYYY : ", modelEvaluation);
+        modelEvaluation = parseFloat(modelEvaluation[0].arraySync().toFixed(2));
+
+        if (currentFoldIndex == 1){
+          bestModelSoFar = model;
+          bestModelSoFarEvaluation = modelEvaluation;
+        }
+        else{
+
+          if (modelEvaluation < bestModelSoFarEvaluation){
+            bestModelSoFar = model;
+            bestModelSoFarEvaluation = modelEvaluation;
+          }
+
+          if (currentFoldIndex == 4){
+
+            let modalBody = "Model successfully trained!";
+            this.handleUserNotifModalShow(modalBody, "training_ended");
+
+            // bestModelSoFar.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+            chrome.storage.local.set({ feedBrowsingTriggerModelLastTrainingDate: new Date().toISOString() });
+
+            return;
+          }
+
+        }        
+
+        currentFoldIndex++;
+
+        train();
+
+      });
+
+    }
+    train = train.bind(this);
+
+    train();
 
   }
 
@@ -296,23 +343,22 @@ export default class ModelsTrainingView extends React.Component{
             <PageTitleView pageTitle={appParams.COMPONENT_CONTEXT_NAMES.MODELS_TRAINING}/>
           </div>
 
-          { this.state.model
-              && <div class="offset-2 col-8 mt-4 row">
+          { <div class="offset-2 col-8 mt-4 row">
           
-                  <div class="rounded border shadow-sm text-center pt-3">
-                    { <div>
-                        <div class="progress my-3 col-6 mx-auto" style={{height: ".5em"}}  role="progressbar" aria-label="Animated striped example" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                          <div class={`progress-bar progress-bar-striped ${parseInt(this.state.currentStepProgressionStatus) != 100 && "progress-bar-animated"}`} style={{width: "100%"}}></div>
-                        </div>
-                        <p>
-                          <span>
-                            <span class="badge text-bg-primary fst-italic shadow-sm">
-                              {`${this.state.steps[this.state.currentStepIndex]} (${this.state.currentStepProgressionStatus} %) ...`}
-                            </span>
-                          </span>
-                        </p> 
-                      </div> }
-                  </div>
+              <div class="rounded border shadow-sm text-center pt-3">
+                { <div>
+                    <div class="progress my-3 col-6 mx-auto" style={{height: ".5em"}}  role="progressbar" aria-label="Animated striped example" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
+                      <div class={`progress-bar progress-bar-striped ${parseInt(this.state.currentStepProgressionStatus) != 100 && "progress-bar-animated"}`} style={{width: "100%"}}></div>
+                    </div>
+                    <p>
+                      <span>
+                        <span class="badge text-bg-primary fst-italic shadow-sm">
+                          {`${this.state.steps[this.state.currentStepIndex]} ${this.state.currentFoldIndex ? `Step ${this.state.currentFoldIndex}/4` : ""} (${this.state.currentStepProgressionStatus} %) ...`}
+                        </span>
+                      </span>
+                    </p> 
+                  </div> }
+              </div>
 
                   {/*Board*/}
                   { this.state.tensorBoardData 

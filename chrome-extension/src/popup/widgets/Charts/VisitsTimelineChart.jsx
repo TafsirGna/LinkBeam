@@ -247,7 +247,7 @@ export default class VisitsTimelineChart extends React.Component{
 
     if (elements.length){
     	console.log(elements, (elements[0]).index);
-      window.open(`/index.html?view=Calendar&dataType=ProfileVisits&currentDate=${this.state.givenDates[elements[0].index].toJSDate().toISOString()}`, '_blank');
+      window.open(`/index.html?view=Calendar&dataType=Visits&currentDate=${this.state.givenDates[elements[0].index].toJSDate().toISOString()}`, '_blank');
     }
 
   }

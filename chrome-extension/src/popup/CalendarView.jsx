@@ -53,7 +53,7 @@ export default class CalendarView extends React.Component{
     this.state = {
       monthVisitsList: null,
       monthReminderList: null,
-      selectedDate: (new Date()),
+      selectedDate: new Date(),
       activeStartDate: null,
       tabTitles: ["Visits", "Time Chart"],
       tabActiveKey: "",
@@ -118,8 +118,10 @@ export default class CalendarView extends React.Component{
 
     this.setState({processing: true}, async () => {
 
-      const startOfMonth = LuxonDateTime.fromJSDate(date).startOf('month').toJSDate();
-      const endOfMonth   = LuxonDateTime.fromJSDate(date).endOf('month').toJSDate();
+      console.log("555555555555555 0 : ", date);
+
+      const startOfMonth = LuxonDateTime.fromJSDate(date).startOf('month').toJSDate(),
+            endOfMonth = LuxonDateTime.fromJSDate(date).endOf('month').toJSDate();
 
       var monthList = null;
       switch(objectStoreName){
@@ -141,10 +143,14 @@ export default class CalendarView extends React.Component{
 
         case dbData.objectStoreNames.VISITS: {
 
+          console.log("555555555555555 1 : ", date);
+          console.log("555555555555555 2 : ", startOfMonth.toJSDate(), endOfMonth.toJSDate());
+
           monthList = await db.visits
                                .filter(visit => Object.hasOwn(visit, "profileData") && (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
                                .toArray();
 
+          console.log("555555555555555 3 : ", date);
           var profiles = [];
           for (var visit of monthList){
 
@@ -156,6 +162,7 @@ export default class CalendarView extends React.Component{
                                       })();
 
           }
+          console.log("555555555555555 4 : ", date);
 
           this.setState({monthVisitsList: groupObjectsByDate(monthList), processing: false});
 

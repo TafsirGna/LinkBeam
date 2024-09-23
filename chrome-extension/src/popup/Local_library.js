@@ -47,6 +47,7 @@ export const appParams = {
   FEED_POST_WIDGET_CLASS_NAME: "linkbeam_feed_post_widget_class_name",
 
   FEED_BROWSING_TRIGGER_MODEL_NAME: "feed_browsing_trigger_model",
+  MODEL_TRAINING_MIN_VISIT_COUNT: 20,
 
   supportedTimeLocales: ["fr", "en-US"],
 

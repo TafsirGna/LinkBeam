@@ -52,7 +52,7 @@ export default class SettingsView extends React.Component{
   constructor(props){
     super(props);
     this.state = {
-      
+      visitCount: null,
     };
 
   }
@@ -64,6 +64,10 @@ export default class SettingsView extends React.Component{
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
+
+    (async () => {
+      this.setState({visitCount: await db.visits.count()});
+    })();
 
   }
 
@@ -292,25 +296,27 @@ export default class SettingsView extends React.Component{
                 </div>
               </div>
             </div>
-            <div class="d-flex text-body-secondary pt-3">
-              <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
-                <div class="d-flex justify-content-between">
-                  <strong class="text-gray-dark">
-                    <BoltIcon
-                      size="15"
-                      className="me-2 text-muted"/>
-                    AI
-                  </strong>
-                  <a 
-                    href="#" 
-                    class="text-primary badge" 
-                    title="View visuals settings"
-                    onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS)}}>
-                      View
-                  </a>
-                </div>
-              </div>
-            </div>
+            { this.state.visitCount != null
+                && this.state.visitCount >= appParams.MODEL_TRAINING_MIN_VISIT_COUNT /* this is arbitrary but it's important to only show this menu if enough data have been gathered */
+                && <div class="d-flex text-body-secondary pt-3">
+                    <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                      <div class="d-flex justify-content-between">
+                        <strong class="text-gray-dark">
+                          <BoltIcon
+                            size="15"
+                            className="me-2 text-muted"/>
+                          AI
+                        </strong>
+                        <a 
+                          href="#" 
+                          class="text-primary badge" 
+                          title="View visuals settings"
+                          onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS)}}>
+                            View
+                        </a>
+                      </div>
+                    </div>
+                  </div>}
           </div>
         </div>
       </>

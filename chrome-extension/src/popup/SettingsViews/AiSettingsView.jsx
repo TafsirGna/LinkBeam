@@ -41,6 +41,7 @@ import * as tf from '@tensorflow/tfjs';
 import { Offcanvas } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import { DateTime as LuxonDateTime } from "luxon";
 
 export default class AiSettingsView extends React.Component{
 
@@ -56,6 +57,7 @@ export default class AiSettingsView extends React.Component{
       },
       userNotifModalBody: null,
       userNotifModalShowContext: null,
+      modelLastTrainingDate: null,
     };
 
     this.onFileInputChange = this.onFileInputChange.bind(this);
@@ -68,6 +70,10 @@ export default class AiSettingsView extends React.Component{
     if (!this.props.globalData.settings){
       setGlobalDataSettings(db, eventBus, liveQuery);
     }
+
+    (async () => {
+      this.setState({modelLastTrainingDate: (await chrome.storage.local.get(["feedBrowsingTriggerModelLastTrainingDate"])).feedBrowsingTriggerModelLastTrainingDate });
+    })();
 
     this.onFileInputChange();
 
@@ -230,7 +236,9 @@ export default class AiSettingsView extends React.Component{
                               className="me-2 text-muted"/>
                             Last trained on
                           </strong>
-                          <span class="rounded shadow-sm badge border text-secondary">{this.props.globalData.settings?.modelLastTrainingDate || "Never"}</span>
+                          <span class="rounded shadow-sm badge border text-secondary">
+                            {(this.state.modelLastTrainingDate && (LuxonDateTime.fromISO(this.state.modelLastTrainingDate).toRelative())) || "Never"}
+                          </span>
                         </div>
                       </div>
                     </div>
