@@ -377,6 +377,8 @@ export class ScriptAgentBase {
 // Function for sending the page data
 export function sendTabData(tabId, data, callback = null){
 
+  console.log('Sending extracted data sent', data);
+
   var pageUrl = window.location.href.split("?")[0];
   pageUrl = (isLinkedinFeed(pageUrl) || isLinkedinProfileSectionDetailsPage(pageUrl))
               ? pageUrl 

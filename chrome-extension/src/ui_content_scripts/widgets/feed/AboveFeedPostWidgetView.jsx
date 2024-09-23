@@ -136,19 +136,36 @@ export default class AboveFeedPostWidgetView extends React.Component{
 
   componentDidMount() {
 
-    this.setState({visitId: this.props.visitId});
+    if (isLinkedinFeedPostPage(window.location.href)){
+      this.setState({
+        impressionCount: this.props.postData.viewsCount,
+        reminder: this.props.postData.reminder || freshReminder(),
+      });
+
+      this.checkAndHighlightKeywordsInPost();
+      return;
+    }
+
+    // if it's the main feed, then
+    const postHtmlElement = getFeedPostHtmlElement(this.props.htmlElId).querySelector(".feed-shared-update-v2");
+
+    this.setState({
+        postHtmlElement: postHtmlElement,
+        visitId: this.props.visitId,
+        postHtmlElementVisible: isElVisible(postHtmlElement),
+      }, () => {
+        // Screen this post for all contained keywords
+        this.checkAndHighlightKeywordsInPost();
+      }
+    );
 
     eventBus.on(eventBus.ACTIVE_POST_CONTAINER_ELEMENT, (data) => {
-
-      this.setState({
-        postHtmlElementVisible: (this.props.htmlElId == data.htmlElId),
-      });
-      
+      this.setState({ postHtmlElementVisible: (this.props.htmlElId == data.htmlElId) });
     });
 
     chrome.storage.onChanged.addListener(((changes, namespace) => {
     
-      if (namespace != "session" || this.state.dbId == null){
+      if (namespace != "session" || !this.state.dbId){
         return;
       }
 
@@ -187,29 +204,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
       }
     });
 
-    if (isLinkedinFeedPostPage(window.location.href)){
-      this.setState({
-        impressionCount: this.props.postData.viewsCount,
-        reminder: this.props.postData.reminder ? this.props.postData.reminder : freshReminder(),
-      });
-
-      this.checkAndHighlightKeywordsInPost();
-
-      return;
-    }
-
-    // if it's the main feed, then
-    const postHtmlElement = getFeedPostHtmlElement(this.props.htmlElId).querySelector(".feed-shared-update-v2");
-
-    this.setState({postHtmlElement: postHtmlElement}, () => {
-      // Screen this post for all contained keywords
-      this.checkAndHighlightKeywordsInPost();
-    });
-
-    if (isElVisible(postHtmlElement)){
-      this.setState({postHtmlElementVisible: true});
-    }
-
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -235,10 +229,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   clearTimer(){
-
     clearInterval(this.state.timerInterval);
     this.setState({timerInterval: null});
-
   }
 
   extractSendPostObject(){
@@ -478,15 +470,11 @@ export default class AboveFeedPostWidgetView extends React.Component{
   }
 
   showFeedPostDataModal(){
-
     eventBus.dispatch(eventBus.SHOW_FEED_POST_DATA_MODAL, { htmlElId: this.props.htmlElId, from: window.location.href });
-
   }
 
   showFeedPostRelatedPostsModal(){
-    
     eventBus.dispatch(eventBus.SHOW_FEED_POST_RELATED_POSTS_MODAL, { extractedPostData: this.state.extractedPostData });
-
   }
 
   startListening(){

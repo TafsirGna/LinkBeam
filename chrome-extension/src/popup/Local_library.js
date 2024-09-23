@@ -650,8 +650,10 @@ export function createFeedBrowsingTriggerModel(tf){
 
   const model = tf.sequential();
 
-  model.add(tf.layers.dense({units : 1 , inputShape : [1]}));
-  model.compile({loss : "meanSquaredError" , optimizer : "sgd"});
+  model.add(tf.layers.dense({units : 50 , inputShape : [5], activation: 'relu'}));
+  model.add(tf.layers.dense({units : 50 , activation: 'relu'}));
+  model.add(tf.layers.dense({units : 1 , activation: 'sigmoid'}));
+  model.compile({loss : "binaryCrossentropy" , optimizer : "adam", metrics: ['accuracy']});
   model.summary();
 
   return model;

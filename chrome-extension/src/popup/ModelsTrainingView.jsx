@@ -24,6 +24,7 @@ import React from 'react';
 import app_logo from '../assets/app_logo.png';
 import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import PageTitleView from "./widgets/PageTitleView";
+import TensorBoardChart from "./widgets/Charts/TensorBoardChart";
 import { AlertCircleIcon } from "./widgets/SVGs";
 import { 
   appParams,
@@ -49,6 +50,8 @@ export default class ModelsTrainingView extends React.Component{
       currentStepProgressionStatus: 0,
       userNotifModalBody: null,
       userNotifModalShowContext: null,
+      modelTrainingLogs: [],
+      tensorBoardData: null,
     };
 
     this.initDataPreProcessing = this.initDataPreProcessing.bind(this);
@@ -118,13 +121,12 @@ export default class ModelsTrainingView extends React.Component{
       return;
     }
 
-    let inputData = [],
-        outputData = [];
+    let trainingData = [],
+        visitCount = 0;
     for (let date of visits.filter((value, index, self) => self.findIndex(v => v.date.split("T")[0] == value.date.split("T")[0]) === index)
                            .map(visit => visit.date.split("T")[0])){
 
-      let visitGaps = [],
-          givenDayVisits = visits.filter(v => v.date.startsWith(date)),
+      let givenDayVisits = visits.filter(v => v.date.startsWith(date)),
           givenDayVisitsFeedPostViews = await db.feedPostViews.where("visitId").anyOf(givenDayVisits.map(v => v.uniqueId)).toArray();
 
       let visitIndex = 0;
@@ -132,77 +134,156 @@ export default class ModelsTrainingView extends React.Component{
 
         let givenDayPreviousVisits = givenDayVisits.slice(0, visitIndex),
             givenDayPreviousVisitsFeedPostViews = givenDayVisitsFeedPostViews.filter(view => givenDayPreviousVisits.map(v => v.uniqueId).includes(view.visitId)),
-            visitGap = null;
+            visitGap = [0, parseInt(visit.date.slice(11, 13)) * 60 + parseInt(visit.date.slice(14, 16))];
 
-        if (!visitIndex){
-          visitGap = parseFloat(
-                                ((LuxonDateTime.fromISO(visit.date).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toMillis() - LuxonDateTime.fromISO(visit.date).toMillis()) / 60000)
-                                  .toFixed(2)
-                    );
-          visitGaps.push([
-            LuxonDateTime.fromISO(visit.date).set({hours: 0, minutes: 0, seconds: 0, milliseconds: 0}).toMillis(),
-            LuxonDateTime.fromISO(visit.date).toMillis()
-          ]);
-        }
-        else{
+        if (visitIndex){
+
           let previousVisit = givenDayPreviousVisits[givenDayPreviousVisits.length - 1],
               previousVisitFeedPostViews = givenDayPreviousVisitsFeedPostViews.filter(view => view.visitId == previousVisit.uniqueId);
           const previousVisitLastMoment =  Math.max(
-                                            (LuxonDateTime.fromISO(previousVisit.date).toMillis() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000)), 
-                                            LuxonDateTime.fromISO(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date)
-                                                         .toMillis()
+                                            new Date(previousVisit.date).valueOf() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000), 
+                                            new Date(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date).valueOf()
                                           );
-          visitGap = LuxonDateTime.fromISO(visit.date).toMillis() - previousVisitLastMoment;
-          visitGap = parseFloat((visitGap / 60000).toFixed(2));
-
-          if (visitGap > 0){
-            visitGaps.push([
-              previousVisitLastMoment,
-              LuxonDateTime.fromISO(visit.date).toMillis()
-            ]);
-          }
-
-          visitGap = visitGap >= 0 ? visitGap : 0;
+          visitGap[0] = parseInt(new Date(previousVisitLastMoment).toISOString().slice(11, 13)) * 60 + parseInt(new Date(previousVisitLastMoment).toISOString().slice(14, 16));
 
         }
 
+        let visitGapMeasure = visitGap[1] - visitGap[0];
+        visitGapMeasure = visitGapMeasure >= 0 ? visitGapMeasure : 0;
+
         // true occurrence
-        inputData.push([
-          visit.date.split("T")[1].match(/^\d{2}:\d{2}/g)[0], 
+        trainingData.push([
+          visit.date.slice(11, 16), 
+          parseInt(visit.date.slice(11, 13)) * 60 + parseInt(visit.date.slice(14, 16)), 
           visitIndex + 1,
           getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
           getPostCount(givenDayPreviousVisitsFeedPostViews),
-          visitGap,
+          visitGapMeasure,
+          1,
         ]);
-        outputData.push(true);
 
-        let selectedVisitGap = 
+        function convertToHoursMinutes(value){
+          return `${parseInt(value / 60) < 10 ? "0" : ""}${parseInt(value / 60)}:${(value % 60) < 10 ? "0" : ""}${value % 60}`;
+        }
 
         // false occurrence
-        inputData.push([
-          visit.date.split("T")[1].match(/^\d{2}:\d{2}/g)[0], 
-          visitIndex + 1,
-          getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
-          getPostCount(givenDayPreviousVisitsFeedPostViews),
-          visitGap,
-        ]);
-        outputData.push(false);
+        if (visitGapMeasure){
 
-        this.setState({currentStepProgressionStatus: ((inputData.length * 100) / visits.length).toFixed(1)});
+          let randomOffFeedTime = Math.floor(Math.random() * (visitGap[1] - visitGap[0]) ) + visitGap[0];
+          trainingData.push([
+            convertToHoursMinutes(randomOffFeedTime), 
+            randomOffFeedTime, 
+            visitIndex + 1,
+            getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
+            getPostCount(givenDayPreviousVisitsFeedPostViews),
+            (randomOffFeedTime - visitGap[0]),
+            0,
+          ]);
+
+        }
+
         visitIndex++;
+        visitCount++;
+        this.setState({currentStepProgressionStatus: ((visitCount * 100) / visits.length).toFixed(1)});
 
       }
 
     }
 
-    console.log("--- Training data : ", inputData);
-    this.setState({trainingData: inputData});
+    // Normalizing the training data through min max
+    console.log("--- Training data 1 : ", [...trainingData]);
+
+    // Getting min and max
+    const mins = Array.from({length: trainingData[0].length})
+                      .map((_, index) => [0, trainingData[0].length - 1].includes(index) 
+                                            ? null 
+                                            : Math.min(...trainingData.map(inputData => inputData[index]))),
+          maxes = Array.from({length: trainingData[0].length})
+                       .map((_, index) => [0, trainingData[0].length - 1].includes(index) 
+                                            ? null 
+                                            : Math.max(...trainingData.map(inputData => inputData[index])));
+
+    // Performing the scaling
+    trainingData.forEach((inputData, index0) => {
+      inputData.forEach((_, index1) => {
+        if ([0, trainingData[0].length - 1].includes(index1)) { return; }
+        trainingData[index0][index1] = parseFloat(((trainingData[index0][index1] - mins[index1]) / (maxes[index1] - mins[index1])).toFixed(2))
+      })
+    });
+
+    console.log("--- Training data 2 : ", trainingData);
+    this.setState({trainingData: trainingData});
 
   }
 
   initTraining(){
 
-    // this.state.model.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+    const epochCount = 100;
+    var modelTrainingLogs = [...this.state.modelTrainingLogs],
+        currentStepProgressionStatus = null,
+        tensorBoardData = {
+          labels: Array.from({length: epochCount}).map((_, index) => `Epoch ${index + 1}`),
+          datasets: [
+            {
+              label: "Accuracy",
+              data: [],
+            },
+            {
+              label: "Loss",
+              data: [],
+            }
+          ],
+        };
+
+    const interval = setInterval(() => {
+      if (parseInt(currentStepProgressionStatus) == 100) { clearInterval(interval); }
+      this.setState({
+        currentStepProgressionStatus: currentStepProgressionStatus,
+        modelTrainingLogs: modelTrainingLogs,
+        tensorBoardData: null,
+      }, () => {
+        this.setState({tensorBoardData: tensorBoardData});
+      });
+    }, 2000);
+
+    // function onBatchEnd(batch, logs) {
+    //   console.log('Accuracy', logs.acc);
+    // }
+
+    function onEpochEnd(epoch, logs) {
+
+      const consoleMessage = `Epoch: ${epoch + 1} Acc: ${logs.acc} Loss: ${logs.loss}`;
+      console.log(consoleMessage);
+
+      currentStepProgressionStatus = (((epoch + 1) * 100) / epochCount).toFixed(1);
+      modelTrainingLogs = modelTrainingLogs.concat([consoleMessage]);
+      tensorBoardData.datasets[0].data.push(logs.acc);
+      tensorBoardData.datasets[1].data.push(logs.loss);
+
+    }
+    onEpochEnd = onEpochEnd.bind(this);
+
+    const trainingInputs = tf.tensor2d(this.state.trainingData.map(row => row.slice(1, 6))),
+          trainingLabels = tf.tensor2d(this.state.trainingData.map(row => row.slice(6)))/*,
+          testInputs = tf.tensor2d([-1.0, 0.0, 1.0, 2.0, 3.0, 4.0], [6,1]),
+          testLabels = tf.tensor2d([-1.0, 0.0, 1.0, 2.0, 3.0, 4.0], [6,1])*/;
+
+    // Train for 5 epochs with batch size of 32.
+    this.state.model.fit(trainingInputs, trainingLabels, {
+      epochs: epochCount,
+      batchSize: 32,
+      callbacks: {/*onBatchEnd*/ onEpochEnd}
+    }).then(info => {
+
+      console.log('Final accuracy', info.history.acc);
+
+      let modalBody = "Model successfully training!";
+      this.handleUserNotifModalShow(modalBody, "training_ended");
+
+      // this.state.model.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+
+    });
+
   }
 
   render(){
@@ -221,7 +302,7 @@ export default class ModelsTrainingView extends React.Component{
                   <div class="rounded border shadow-sm text-center pt-3">
                     { <div>
                         <div class="progress my-3 col-6 mx-auto" style={{height: ".5em"}}  role="progressbar" aria-label="Animated striped example" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100">
-                          <div class="progress-bar progress-bar-striped progress-bar-animated" style={{width: "100%"}}></div>
+                          <div class={`progress-bar progress-bar-striped ${parseInt(this.state.currentStepProgressionStatus) != 100 && "progress-bar-animated"}`} style={{width: "100%"}}></div>
                         </div>
                         <p>
                           <span>
@@ -231,6 +312,25 @@ export default class ModelsTrainingView extends React.Component{
                           </span>
                         </p> 
                       </div> }
+                  </div>
+
+                  {/*Board*/}
+                  { this.state.tensorBoardData 
+                      && <div class="px-0">
+                            <p class="text-decoration-underline fw-bold mb-1 mt-3 small ps-1">Board</p>
+                            <div class="rounded border shadow-sm p-2">
+                              <TensorBoardChart
+                                data={this.state.tensorBoardData}/>
+                            </div>
+                          </div>}
+
+                  {/*Logs*/}
+                  <p class="text-decoration-underline fw-bold mb-1 mt-3 small ps-1">Logs</p>
+                  <div class=/*bg-dark text-white*/"rounded border shadow-sm p-2 small vertical-scrollable" style={{maxHeight: "20em"}}>
+                    { this.state.modelTrainingLogs.length == 0
+                        && <p class="mb-1">model_training$</p> }
+                    { this.state.modelTrainingLogs.length != 0
+                        && this.state.modelTrainingLogs.map(log => <p class="mb-1">model_training$ {log}</p>) }
                   </div>
       
                 </div> }

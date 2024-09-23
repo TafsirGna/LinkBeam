@@ -234,7 +234,7 @@ export default class HomeView extends React.Component{
 
     var totalTime = 0; // in minutes
     for (const visit of visits){
-      totalTime += Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.id}).toArray());
+      totalTime += Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.uniqueId}).toArray());
     }
 
     const maxTimeValue = this.fromMaxTimeThresholdToNumeric();

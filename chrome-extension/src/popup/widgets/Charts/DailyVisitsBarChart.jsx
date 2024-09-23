@@ -102,7 +102,7 @@ export default class DailyVisitsBarChart extends React.Component{
     var results = [];
     for (const visit of this.props.objects){
       const index = results.findIndex(r => r.url == visit.url),
-            time = Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.id}).toArray());
+            time = Object.hasOwn(visit, "profileData") ? (visit.timeCount / 60) : getVisitsTotalTime(await db.feedPostViews.where({visitId: visit.uniqueId}).toArray());
 
       if (index != -1){
         results[index].time += time;

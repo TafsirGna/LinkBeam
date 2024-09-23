@@ -100,7 +100,7 @@ export default class FeedPageScriptAgent extends ScriptAgentBase {
 																				}))
 																			 .toSorted((a, b) => (b.exposurePercentage - a.exposurePercentage));
 
-		console.log("<<<<<<<<<<<<<<<<<<<< : ", this.activePostContainerElementId, postContainerElementsExposurePercentage[0].htmlElId, postContainerElementsExposurePercentage);
+		// console.log("<<<<<<<<<<<<<<<<<<<< : ", this.activePostContainerElementId, postContainerElementsExposurePercentage[0].htmlElId, postContainerElementsExposurePercentage);
 
 		if (this.activePostContainerElementId != postContainerElementsExposurePercentage[0].htmlElId){
 

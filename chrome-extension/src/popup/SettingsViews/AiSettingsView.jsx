@@ -287,14 +287,14 @@ export default class AiSettingsView extends React.Component{
                                                                       <td>{layer.name}</td>
                                                                       <td>{`[${JSON.stringify(layer.input.shape)}]`}</td>
                                                                       <td>{JSON.stringify(layer.output.shape)}</td>
-                                                                      <td>{layer.trainableWeights.length + layer.nonTrainableWeights.length}</td>
+                                                                      <td>{layer.weights.map(weight => weight.shape.reduce((acc, a) => acc * a, 1)).reduce((acc, a) => acc + a, 0)}</td>
                                                                     </tr>)}
                           </tbody>
                         </table>
             
-                        <p class="mb-1">Total params: {this.state.model.trainableWeights.length + this.state.model.nonTrainableWeights.length}</p>
-                        <p class="mb-1">Trainable params: {this.state.model.trainableWeights.length}</p>
-                        <p class="mb-1">Non-trainable params: {this.state.model.nonTrainableWeights.length}</p>
+                        <p class="mb-1">Total params: {this.state.model.weights.map(weight => weight.shape.reduce((acc, a) => acc * a, 1)).reduce((acc, a) => acc + a, 0)}</p>
+                        <p class="mb-1">Trainable params: {this.state.model.trainableWeights.map(weight => weight.shape.reduce((acc, a) => acc * a, 1)).reduce((acc, a) => acc + a, 0)}</p>
+                        <p class="mb-1">Non-trainable params: {this.state.model.nonTrainableWeights.map(weight => weight.shape.reduce((acc, a) => acc * a, 1)).reduce((acc, a) => acc + a, 0)}</p>
                     </div>}
 
           </Offcanvas.Body>

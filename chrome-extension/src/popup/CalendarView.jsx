@@ -127,13 +127,11 @@ export default class CalendarView extends React.Component{
         case dbData.objectStoreNames.REMINDERS: {
 
           monthList = await db.reminders
-                                           .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
-                                           .toArray();
+                             .filter(reminder => (startOfMonth <= new Date(reminder.createdOn) && new Date(reminder.createdOn) <= endOfMonth))
+                             .toArray();
 
           await Promise.all (monthList.map (async reminder => {
-
             await setReminderObject(db, reminder);
-
           }));
 
           this.setState({monthReminderList: groupObjectsByDate(monthList), processing: false});
@@ -144,24 +142,18 @@ export default class CalendarView extends React.Component{
         case dbData.objectStoreNames.VISITS: {
 
           monthList = await db.visits
-                               .filter(visit => (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
+                               .filter(visit => Object.hasOwn(visit, "profileData") && (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
                                .toArray();
 
           var profiles = [];
           for (var visit of monthList){
 
-            if (!Object.hasOwn(visit, "profileData")){
-              continue;
-            }
-
-            const index = profiles.map(p => p.url).indexOf(visit.url);
-            if (index != -1){
-              visit.profileData = profiles[index];
-            }
-            else{
-              visit.profileData = await getProfileDataFrom(db, visit.url);
-              profiles.push(visit.profileData);
-            }
+            visit.profileData = profiles.filter(p => p.url == visit.url)[0]
+                                  || await (async () => {
+                                          const profileData = await getProfileDataFrom(db, visit.url);
+                                          profiles.push(profileData);
+                                          return profileData
+                                      })();
 
           }
 
