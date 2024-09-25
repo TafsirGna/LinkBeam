@@ -1216,7 +1216,7 @@ export async function checkForDbIncoherences(db){
         case "visits":{
 
           for (const visit of (await db.visits.toArray())){
-            if (!(await db.feedPostViews.where({visitId: visit.uniqueId}).first())){
+            if (!Object.hasOwn(visit, "profileData") && !(await db.feedPostViews.where({visitId: visit.uniqueId}).first())){
               found = true;
               await db.visits.delete(visit.id);
             }

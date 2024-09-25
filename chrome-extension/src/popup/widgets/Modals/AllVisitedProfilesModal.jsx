@@ -64,8 +64,8 @@ export default class AllVisitedProfilesModal extends React.Component{
 
     var allProfiles = [];
     const visits = (await db.visits.filter(visit => Object.hasOwn(visit, "profileData"))
-                                 .toArray())
-                                 .filter((value, index, self) => self.findIndex(v => v.url == value.url) === index);
+                                   .toArray())
+                      .filter((value, index, self) => self.findIndex(v => v.url == value.url) === index);
 
     for (const visit of visits){
       allProfiles.push(await getProfileDataFrom(db, visit.url));

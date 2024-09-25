@@ -291,16 +291,17 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                         Tags
                                       </a>
                                   </li>
-                                  {/*<li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
-                                      <a 
-                                        class={ this.state.viewIndex == 3
-                                                  ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
-                                                  :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
-                                        >
-                                        Copycats
-                                        <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{this.state.tabsData[3].items.length}+</span>
-                                      </a>
-                                  </li>*/}
+                                  <li class="me-2 handy-cursor" onClick={() => {this.setViewIndex(3)}}>
+                                    <a 
+                                      class={ this.state.viewIndex == 3
+                                                ? "inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg active dark:text-blue-500 dark:border-blue-500"
+                                                :  "inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" }  
+                                      >
+                                      Copycats
+                                      { this.state.tabsData[3].items
+                                          && <span class="bg-indigo-100 text-indigo-800 text-base font-medium mx-2 px-2.5 py-0.5 rounded-full dark:bg-indigo-900 dark:text-indigo-300">{this.state.tabsData[3].items.length}+</span>}
+                                    </a>
+                                  </li>
 
 
                               </ul>
@@ -320,7 +321,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
             
                                                                     { this.state.tabsData[this.state.viewIndex].items.length == 0
                                                                         && <AlertWidget
-                                                                              text="Nothing to show."
+                                                                              text="Nothing to show here."
                                                                               variant="yellow"
                                                                               className="mt-5"/>}
             
@@ -332,7 +333,7 @@ export default class FeedPostRelatedPostsModal extends React.Component{
                                                                               onTagSelected={this.onTagSelected}/>}
                                                                   </div> }     
                                                             </div> }
-                                                  </div>) }
+                                                      </div>) }
 
                         </div>}
 
@@ -438,7 +439,7 @@ function PreviousPostsListView(props){
 
                 if (!items || !items.length){
                   return <AlertWidget
-                          text="Nothing to show."
+                          text="Nothing to show here."
                           variant="yellow"
                           className="mt-5"/>;
                 }

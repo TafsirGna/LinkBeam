@@ -321,8 +321,15 @@ async function tryFeedBrowsingTriggerModelInference(model) {
 
     console.log("Prediction 2 : ", localItems, inputData, inputData.slice(1));
 
-    const prediction = model.predict(tf.tensor2d(inputData.slice(1), [inputData.slice(1).length, 1]));
-    console.log("Prediction 3 : ", prediction);
+    const prediction = model.predict(tf.tensor2d(inputData.slice(1), [1, inputData.slice(1).length]));
+    console.log("Prediction 3 : ", prediction.arraySync());
+
+    if (prediction.arraySync()[0] > .5){
+        // TODO Notify before starting the automated session
+        // check first if i'm not already browsing linkedin feed
+        startAutomatedSession();
+    }
+    
 
 }
 
@@ -610,13 +617,7 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
         }
         case appParams.browseFeedForMeMenuActionId: {
             // Opening a new tab in a new window
-            chrome.windows.create({
-                // focused: false,
-                url: `${appParams.LINKEDIN_FEED_URL()}?automated=true`,
-            }, () => {
-                // notify the user of the start of the automatic feed scrolling session
-                notifyUser(`Starting an automatic feed session !`);
-            });
+            startAutomatedSession();
             break;
         }
         case appParams.saveAsQuoteMenuActionId: {
@@ -637,6 +638,18 @@ chrome.contextMenus.onClicked.addListener((clickData, tab) => {
         }
     }
 })
+
+function startAutomatedSession(){
+
+    chrome.windows.create({
+        // focused: false,
+        url: `${appParams.LINKEDIN_FEED_URL()}?automated=true`,
+    }, () => {
+        // notify the user of the start of the automatic feed scrolling session
+        notifyUser(`Starting an automatic feed session !`);
+    });
+
+}
 
 async function setPostsRankingInSession(){
 
