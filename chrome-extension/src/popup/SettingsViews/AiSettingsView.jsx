@@ -98,27 +98,27 @@ export default class AiSettingsView extends React.Component{
 
   }
 
-  async onModelActionSelection(action){
+  async onModelActionSelection(actionIndex){
 
-    switch(action){
+    switch(actionIndex){
 
-      case "Import":{
+      case 0:{
         let modalBody = <span class="small">Please, select simultaneously the model's json and bin files from your computer.</span>;
         this.handleUserNotifModalShow(modalBody, "model_import");
         break;
       }
 
-      case "Train":{
+      case 1:{
         window.open(`/index.html?view=${appParams.COMPONENT_CONTEXT_NAMES.MODELS_TRAINING.replaceAll(" ", "_")}`, '_blank');
         break;
       }
 
-      case "Download":{
+      case 2:{
         await this.state.model.save(`downloads://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
         break;
       }
 
-      case "Reset":{
+      case 3:{
         this.resetModels();
         break;
       }
@@ -133,7 +133,9 @@ export default class AiSettingsView extends React.Component{
       createFeedBrowsingTriggerModel(tf).save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
 
       // notifiy user of the save
-      alert("Model reset successfully!");
+      // alert("Model reset successfully!");
+      let modalBody = <span class="small">Model successfully reset!</span>;
+      this.handleUserNotifModalShow(modalBody, "model_reset");
     }
   }
 
@@ -215,9 +217,9 @@ export default class AiSettingsView extends React.Component{
                               <span class="rounded shadow-sm badge border text-primary">Actions</span>
                             </div>
                             <ul class="dropdown-menu shadow-lg border">
-                              {["Import", "Train", "Download", "Reset"].map((value) => (
+                              {["Import", "Train/Retrain", "Download", "Reset"].map((value, index) => (
                                     <li>
-                                      <a class="dropdown-item small" href="#" onClick={() => {this.onModelActionSelection(value)}}>
+                                      <a class="dropdown-item small" href="#" onClick={() => {this.onModelActionSelection(index)}}>
                                         {value}
                                       </a>
                                     </li>  
@@ -234,7 +236,7 @@ export default class AiSettingsView extends React.Component{
                             <CompassIcon
                               size="15"
                               className="me-2 text-muted"/>
-                            Last trained on
+                            Last trained
                           </strong>
                           <span class="rounded shadow-sm badge border text-secondary">
                             {(this.state.modelLastTrainingDate && (LuxonDateTime.fromISO(this.state.modelLastTrainingDate).toRelative())) || "Never"}

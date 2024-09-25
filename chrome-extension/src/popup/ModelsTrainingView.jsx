@@ -130,7 +130,8 @@ export default class ModelsTrainingView extends React.Component{
 
         let givenDayPreviousVisits = givenDayVisits.slice(0, visitIndex),
             givenDayPreviousVisitsFeedPostViews = givenDayVisitsFeedPostViews.filter(view => givenDayPreviousVisits.map(v => v.uniqueId).includes(view.visitId)),
-            visitGap = [0, parseInt(visit.date.slice(11, 13)) * 60 + parseInt(visit.date.slice(14, 16))];
+            currentTimeMinutes = parseInt(visit.date.slice(11, 13)) * 60 + parseInt(visit.date.slice(14, 16)),
+            visitGap = [0, currentTimeMinutes];
 
         if (visitIndex){
 
@@ -150,7 +151,7 @@ export default class ModelsTrainingView extends React.Component{
         // true occurrence
         trainingData.push([
           visit.date.slice(11, 16), 
-          parseInt(visit.date.slice(11, 13)) * 60 + parseInt(visit.date.slice(14, 16)), 
+          currentTimeMinutes, 
           visitIndex + 1,
           getVisitsTotalTime(givenDayPreviousVisitsFeedPostViews),
           getPostCount(givenDayPreviousVisitsFeedPostViews),
@@ -278,10 +279,14 @@ export default class ModelsTrainingView extends React.Component{
     // Train for n epochs with batch size of 32.
     function train(){
 
-      const trainingInputs = tf.tensor2d([...inputFolds].splice((currentFoldIndex - 1) , 1).reduce((acc, a) => acc.concat(a), []).map(row => row.slice(1, 6))),
-            trainingLabels = tf.tensor2d([...inputFolds].splice((currentFoldIndex - 1) , 1).reduce((acc, a) => acc.concat(a), []).map(row => row.slice(6))),
-            testInputs = tf.tensor2d(inputFolds[currentFoldIndex].map(row => row.slice(1, 6))),
-            testLabels = tf.tensor2d(inputFolds[currentFoldIndex].map(row => row.slice(6)));
+      var trainingInputs = [...inputFolds];
+      trainingInputs.splice((currentFoldIndex - 1) , 1);
+      trainingInputs = trainingInputs.reduce((acc, a) => acc.concat(a), []);
+
+      var trainingLabels = tf.tensor2d(trainingInputs.map(row => row.slice(6))),
+          testInputs = tf.tensor2d(inputFolds[currentFoldIndex - 1].map(row => row.slice(1, 6))),
+          testLabels = tf.tensor2d(inputFolds[currentFoldIndex - 1].map(row => row.slice(6)));
+      trainingInputs = tf.tensor2d(trainingInputs.map(row => row.slice(1, 6)));
 
       var model = createFeedBrowsingTriggerModel(tf);
 
@@ -293,7 +298,6 @@ export default class ModelsTrainingView extends React.Component{
 
         // console.log('Final accuracy', info.history.acc);
         var modelEvaluation = model.evaluate(testInputs, testLabels);
-        console.log("YYYYYYYYYYYYYYY : ", modelEvaluation);
         modelEvaluation = parseFloat(modelEvaluation[0].arraySync().toFixed(2));
 
         if (currentFoldIndex == 1){
@@ -312,7 +316,7 @@ export default class ModelsTrainingView extends React.Component{
             let modalBody = "Model successfully trained!";
             this.handleUserNotifModalShow(modalBody, "training_ended");
 
-            // bestModelSoFar.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+            bestModelSoFar.save(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
             chrome.storage.local.set({ feedBrowsingTriggerModelLastTrainingDate: new Date().toISOString() });
 
             return;

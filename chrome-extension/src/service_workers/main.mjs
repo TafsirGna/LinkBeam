@@ -40,11 +40,13 @@ import {
     isReferenceHashtag,
     getHashtagText,
     allUrlCombinationsOf,
+    getPostCount,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
 import Dexie from 'dexie';
 // import { DateTime as LuxonDateTime } from "luxon";
+import * as tf from '@tensorflow/tfjs';
 
 const app_logo_path = "/assets/app_logo.png";
 
@@ -223,11 +225,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 );
 
-function notifyUser(message, uuid = null){
-    
-    if (!uuid){
-        uuid = uuidv4();
+async function notifyUser(message, uuid = null){
+
+    const settings = await getAppSettingsObject();
+
+    if (!settings.notifications){
+        return;
     }
+    
+    uuid ||= uuidv4();
 
     chrome.notifications.create(uuid, {
       title: 'Linkbeam',
@@ -237,6 +243,86 @@ function notifyUser(message, uuid = null){
     });
 
     return uuid;
+
+}
+
+loadFeedBrowsingTriggerModel();
+
+async function loadFeedBrowsingTriggerModel(){
+
+    var model = null;
+    console.log("ZZZZZZZZZZZZ 1 : ", model);
+
+    try{
+        
+        model = await tf.loadLayersModel(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
+        console.log("ZZZZZZZZZZZZ 2 : ", model);
+
+        if ((await chrome.storage.session.get(["feedBrowsingTriggerModelTimer"])).feedBrowsingTriggerModelTimer){
+            return;
+        }
+
+        console.log("ZZZZZZZZZZZZ 3 : ", model);
+
+        // In 30 mins, it's gonna try an inference
+        const timer = setInterval(() => {
+            console.log("ZZZZZZZZZZZZ 4 : ", model);
+            tryFeedBrowsingTriggerModelInference(model);
+        }, 180000);
+
+        chrome.storage.session.set({ feedBrowsingTriggerModelTimer: timer });
+
+    }
+    catch(error){
+        console.error("An error occured when loading the model ", error);
+        return;
+    }
+
+}
+
+async function tryFeedBrowsingTriggerModelInference(model) {
+
+    console.log("Prediction 1 : ", model);
+
+    const currentDate = new Date();
+    const todayVisits = await db.visits.filter(visit => !Object.hasOwn(visit, "profileData") && visit.date.startsWith(currentDate.toISOString().slice(0, 10)))
+                                       .toArray();
+    const todayFeedPostViews = await db.feedPostViews.filter(feedPostView => feedPostView.date.startsWith(currentDate.toISOString().slice(0, 10)))
+                                                     .toArray();
+    const currentTimeMinutes = currentDate.getHours() * 60 + currentDate.getMinutes();
+    var previousVisitLastMoment = 0;
+
+    if (todayVisits.length){
+        var previousVisit = todayVisits[todayVisits.length - 1],
+            previousVisitFeedPostViews = todayFeedPostViews.filter(view => view.visitId == previousVisit.uniqueId);
+
+        previousVisitLastMoment = Math.max(
+                                    new Date(previousVisit.date).valueOf() + (getVisitsTotalTime(previousVisitFeedPostViews) * 60000), 
+                                    new Date(previousVisitFeedPostViews[previousVisitFeedPostViews.length - 1].date).valueOf()
+                                  );
+        previousVisitLastMoment = parseInt(new Date(previousVisitLastMoment).toISOString().slice(11, 13)) * 60 + parseInt(new Date(previousVisitLastMoment).toISOString().slice(14, 16));
+    }
+
+    var inputData = [
+        null,
+        currentTimeMinutes,
+        todayVisits.length + 1,
+        getVisitsTotalTime(todayFeedPostViews),
+        getPostCount(todayFeedPostViews),
+        (currentTimeMinutes - previousVisitLastMoment),
+    ];
+
+    // Normalize this input
+    const localItems = await chrome.storage.local.get(["modelTrainingDataMins", "modelTrainingDataMaxes"]);
+    inputData = inputData.map((input, index) => {
+        if (index == 0) { return input; }
+        return parseFloat(((input - localItems.modelTrainingDataMins[index]) / (localItems.modelTrainingDataMaxes[index] - localItems.modelTrainingDataMins[index])).toFixed(2));
+    });
+
+    console.log("Prediction 2 : ", localItems, inputData, inputData.slice(1));
+
+    const prediction = model.predict(tf.tensor2d(inputData.slice(1), [inputData.slice(1).length, 1]));
+    console.log("Prediction 3 : ", prediction);
 
 }
 

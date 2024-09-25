@@ -143,14 +143,10 @@ export default class CalendarView extends React.Component{
 
         case dbData.objectStoreNames.VISITS: {
 
-          console.log("555555555555555 1 : ", date);
-          console.log("555555555555555 2 : ", startOfMonth.toJSDate(), endOfMonth.toJSDate());
-
           monthList = await db.visits
                                .filter(visit => Object.hasOwn(visit, "profileData") && (startOfMonth <= new Date(visit.date) && new Date(visit.date) <= endOfMonth))
                                .toArray();
 
-          console.log("555555555555555 3 : ", date);
           var profiles = [];
           for (var visit of monthList){
 
@@ -162,7 +158,6 @@ export default class CalendarView extends React.Component{
                                       })();
 
           }
-          console.log("555555555555555 4 : ", date);
 
           this.setState({monthVisitsList: groupObjectsByDate(monthList), processing: false});
 

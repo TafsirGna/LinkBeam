@@ -460,11 +460,14 @@ export function convertToCsvString(dbData, fileName){
 
   for (const objectStoreName in dbData.objectStores){
 
+    if (!dbData.objectStores[objectStoreName].length){
+      csvRows.push(objectStoreName);
+      csvRows.push("");
+      continue;
+    }
+
     switch(objectStoreName){
       case "keywords":{
-        if (!dbData.objectStores[objectStoreName].length){
-          continue;
-        }
 
         csvRows.push(objectStoreName);
         // headers
@@ -475,6 +478,7 @@ export function convertToCsvString(dbData, fileName){
         // blank row
         csvRows.push(Array.from({length: keys.length}).map(_ => "").join(','));
         break;
+
       }
     }
   }
@@ -1187,42 +1191,49 @@ export async function addLinkedPostToList(feedPost, feedPosts, db, scope = "all"
 
 export async function checkForDbIncoherences(db){
 
-  var found = false;
+  try{
 
-  for (const table of db.tables){
-    switch(table.name){
-      case "feedPosts":{
+    var found = false;
 
-        for (const feedPost of (await db.feedPosts.toArray())){
-          if (!(await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).first())){
+    for (const table of db.tables){
+      switch(table.name){
+        case "feedPosts":{
 
-              if (!(await db.feedPosts.where({linkedPostId: feedPost.uniqueId}).first())){
-                  found = true;
-                  await db.feedPosts.delete(feedPost.id);
-                  console.log("----------- : ", feedPost);
-              }
+          for (const feedPost of (await db.feedPosts.toArray())){
+            if (!(await db.feedPostViews.where({feedPostId: feedPost.uniqueId}).first())){
+
+                if (!(await db.feedPosts.where({linkedPostId: feedPost.uniqueId}).first())){
+                    found = true;
+                    await db.feedPosts.delete(feedPost.id);
+                    console.log("----------- : ", feedPost);
+                }
+            }
           }
+
+          break;
         }
 
-        break;
-      }
+        case "visits":{
 
-      case "visits":{
-
-        for (const visit of (await db.visits.toArray())){
-          if (!(await db.feedPostViews.where({visitId: visit.uniqueId}).first())){
-            found = true;
-            await db.visits.delete(visit.id);
+          for (const visit of (await db.visits.toArray())){
+            if (!(await db.feedPostViews.where({visitId: visit.uniqueId}).first())){
+              found = true;
+              await db.visits.delete(visit.id);
+            }
           }
-        }
 
-        break;
+          break;
+        }
       }
     }
+    
+    if (found){
+        alert("Incoherent data in database found and fixed");
+    }
+
   }
-  
-  if (found){
-      alert("Incoherent data in database found and fixed");
+  catch(error){
+    alert("An error occured when checking the database for incoherences.");
   }
 
 }
