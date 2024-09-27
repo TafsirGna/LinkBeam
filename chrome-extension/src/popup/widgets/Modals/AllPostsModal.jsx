@@ -222,11 +222,12 @@ export default class AllPostsModal extends React.Component{
                                     && Object.entries(groupPeriodFeedPostViewsByHtmlElId(this.state.feedPostViews
                                                                                                    .filter(feedPostView => (this.state.searchText && this.containsSearchText(feedPostView))
                                                                                                                               || (!this.state.searchText && true))))
-                                                                                          .map((([_, feedPostViews]) => <PostViewListItemView 
-                                                                                                                            startDate={this.props.startDate}
-                                                                                                                            endDate={this.props.endDate}
-                                                                                                                            objects={feedPostViews}
-                                                                                                                            globalData={this.props.globalData}/>))}
+                                             .map(([_, feedPostViews]) => <PostViewListItemView 
+                                                                            startDate={this.props.startDate}
+                                                                            endDate={this.props.endDate}
+                                                                            objects={feedPostViews}
+                                                                            allPeriodFeedPostViews={this.state.feedPostViews}
+                                                                            globalData={this.props.globalData}/>)}
     			                  	</div>}
 
             		   </div>}      

@@ -147,12 +147,11 @@ export default class PostViewListItemView extends React.Component{
     var count = 0;
     if (this.state.feedPostViews[0].category){
       count = (await db.feedPostViews
-                       .filter(feedPostView => feedPostView.category
-                                              && feedPostView.category == this.state.feedPostViews[0].category
-                                              && ((this.state.feedPostViews[0].profile && feedPostView.profileId == this.state.feedPostViews[0].profileId)
-                                                    || !this.state.feedPostViews[0].profile))
+                       .filter(feedPostView => feedPostView.category == this.state.feedPostViews[0].category
+                                                && ((this.state.feedPostViews[0].profileId && feedPostView.profileId == this.state.feedPostViews[0].profileId)
+                                                      || (!this.state.feedPostViews[0].profileId && true)))
                        .toArray())
-                .filter((value, index, self) => self.findIndex(post => post.id == value.id) === index)
+                .filter((value, index, self) => self.findIndex(view => view.htmlElId == value.htmlElId) === index)
                 .length;
     }
     else{
@@ -372,7 +371,7 @@ export default class PostViewListItemView extends React.Component{
 
         <FeedProfileDataModal
           profile={this.state.selectedFeedProfile}
-          objects={this.state.feedPostViews}
+          objects={this.props.allPeriodFeedPostViews}
           onHide={this.handleFeedProfileDataModalClose}
           globalData={this.props.globalData}/>
 

@@ -376,15 +376,16 @@ export default class FeedDashView extends React.Component{
           
                           { this.state.allPeriodFeedPostViews.length != 0
                               && <div>
-                                  { Object.entries(groupPeriodFeedPostViewsByHtmlElId(this.state.allPeriodFeedPostViews)).map((([_, feedPostViews], index) => {
-                                    return index < 3 
-                                            ? <PostViewListItemView  
-                                                startDate={this.state.startDate}
-                                                endDate={this.state.endDate}
-                                                objects={feedPostViews}
-                                                globalData={this.props.globalData}/>
-                                            : null;
-                                  }))}
+                                  { Object.entries(groupPeriodFeedPostViewsByHtmlElId(this.state.allPeriodFeedPostViews)).map(([_, feedPostViews], index) => {
+                                                                                                                                                                return index < 3 
+                                                                                                                                                                        ? <PostViewListItemView  
+                                                                                                                                                                            startDate={this.state.startDate}
+                                                                                                                                                                            endDate={this.state.endDate}
+                                                                                                                                                                            objects={feedPostViews}
+                                                                                                                                                                            allPeriodFeedPostViews={this.state.allPeriodFeedPostViews}
+                                                                                                                                                                            globalData={this.props.globalData}/>
+                                                                                                                                                                        : null;
+                                                                                                                                                              })}
                                   <small class="d-block text-end mt-3 fst-italic">
                                     <a href="#" onClick={this.handleAllPostsModalShow}>All posts</a>
                                   </small>

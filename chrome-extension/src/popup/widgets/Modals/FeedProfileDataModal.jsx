@@ -82,8 +82,8 @@ export default class FeedProfileDataModal extends React.Component{
       return null;
     }
 
-    this.setState({feedPostViews: this.props.objects.filter(feedPostView => (feedPostView.profile && feedPostView.profile.uniqueId == this.props.profile.uniqueId)
-                                                                              || feedPostView.feedPost.profile.uniqueId == this.props.profile.uniqueId)});
+    this.setState({feedPostViews: this.props.objects.filter(feedPostView => (feedPostView.profile?.uniqueId == this.props.profile.uniqueId)
+                                                                              || (feedPostView.feedPost.profile.uniqueId == this.props.profile.uniqueId))});
 
     // setting bookmark property value
     const profileBookmarkStatusObservable = liveQuery(() => db.bookmarks.where({url: this.props.profile.url}).first());
