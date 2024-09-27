@@ -687,35 +687,46 @@ function startAutomatedSession(){
 
 }
 
-async function setPostsRankingInSession(){
+async function updatePostsPopularityRankingSessionArray(uniqueId, popularity){
 
-    var sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
-    if (sessionItem.rankedPostsByPopularity){
-        return;
-    }
+    async function getNewSessionRankingArray(){
 
-    var results = [];
-    for (const feedPost of (await db.feedPosts.toArray())){
+        var rankedPostsByPopularity = [];
+        await db.feedPosts.filter(p => true)
+                          .each(p => {
+                            rankedPostsByPopularity.push({id: p.uniqueId});
+                          });
 
-        const lastView = await db.feedPostViews
-                                 .where({feedPostId: feedPost.uniqueId})
-                                 .last();
+        var index = 0;
+        for (const object of rankedPostsByPopularity){
 
-        if (!lastView){ // a linked post
-            continue;
+            const lastView = await db.feedPostViews
+                                     .where({feedPostId: object.id})
+                                     .last();
+
+            if (!lastView){ // a linked post
+                continue;
+            }
+
+            rankedPostsByPopularity[index].popularity = popularityValue(lastView);
+            index++;
+
         }
 
-        results.push({id: feedPost.uniqueId, popularity: popularityValue(lastView)});
+        return rankedPostsByPopularity;
 
     }
 
-    results.sort(function(a, b) { return b.popularity - a.popularity; });
+    var rankedPostsByPopularity = (await chrome.storage.session.get(["rankedPostsByPopularity"])).rankedPostsByPopularity
+                                    || await getNewSessionRankingArray();
 
-    await chrome.storage.session.set({ rankedPostsByPopularity: results }).then(function(){
-        console.log("--- rankedPostsByPopularity set ", results);
+    rankedPostsByPopularity = [{id: uniqueId, popularity: popularity}, ...rankedPostsByPopularity]
+                                 .filter((value, index, self) => self.findIndex(v => v.id == value.id) === index)
+                                 .toSorted(function(a, b) { return b.popularity - a.popularity; });
+
+    await chrome.storage.session.set({ rankedPostsByPopularity: rankedPostsByPopularity }).then(function(){
+        console.log("--- rankedPostsByPopularity set ", rankedPostsByPopularity);
     });
-
-    return results;
 
 }
 
@@ -854,14 +865,14 @@ async function recordFeedVisit(tabData){
 
     const dateTime = new Date().toISOString();
 
-    var sessionItem = await chrome.storage.session.get(["myTabs"]);
-    sessionItem.myTabs[tabData.tabId].visits = sessionItem.myTabs[tabData.tabId].visits || [];
-    const visitIndex = sessionItem.myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
+    var myTabs = (await chrome.storage.session.get(["myTabs"])).myTabs;
+    myTabs[tabData.tabId].visits = myTabs[tabData.tabId].visits || [];
+    const visitIndex = myTabs[tabData.tabId].visits.findIndex(v => v.url == tabData.tabUrl);
     var visitId = null;
 
     if (visitIndex == -1){
         visitId = await addFreshFeedVisit({ automated: tabData.extractedData.fromAutomatedVisit });
-        sessionItem.myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl});
+        myTabs[tabData.tabId].visits.push({id: visitId, url: tabData.tabUrl});
 
         chrome.tabs.sendMessage(tabData.tabId, {
                 header: messageMeta.header.CS_SETUP_DATA, 
@@ -871,10 +882,9 @@ async function recordFeedVisit(tabData){
                 console.log('visitId sent', response, visitId);
             }
         );
-
     }
     else{
-        visitId = sessionItem.myTabs[tabData.tabId].visits[visitIndex].id;
+        visitId = myTabs[tabData.tabId].visits[visitIndex].id;
     }
 
     console.log("xxxxxxxxxxxxxxxxxx 0 : ", visitId);
@@ -972,31 +982,31 @@ async function recordFeedVisit(tabData){
             // saving the post view
             await db.feedPostViews.add(postView);
 
-            sessionItem.myTabs[tabData.tabId].badgeText = sessionItem.myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(sessionItem.myTabs[tabData.tabId].badgeText) + 1).toString();
+            myTabs[tabData.tabId].badgeText = myTabs[tabData.tabId].badgeText == "!" ? "1" : (parseInt(myTabs[tabData.tabId].badgeText) + 1).toString();
+
+            updatePostsPopularityRankingSessionArray(postView.feedPostId, popularityValue(extractedPostData.content));
             
         }
 
         console.log("xxxxxxxxxxxxxxxxxx 7 : ", postView);
 
-        chrome.storage.session.set({ myTabs: sessionItem.myTabs }).then(() => {
-            chrome.action.setBadgeText({text: sessionItem.myTabs[tabData.tabId].badgeText});
+        chrome.storage.session.set({ myTabs: myTabs }).then(() => {
+            chrome.action.setBadgeText({text: myTabs[tabData.tabId].badgeText});
             // console.log("Value was set");
         });
 
+        extractedPostData.visitId = visit.uniqueId;
+        extractedPostData.dbId = (dbFeedPost || newFeedPost).uniqueId;
         extractedPostData.reminder = await db.reminders
-                                 .where({objectId: (dbFeedPost || newFeedPost).uniqueId})
-                                 .first();
+                                             .where({objectId: extractedPostData.dbId})
+                                             .first();
         if (extractedPostData.reminder){
             extractedPostData.reminder.htmlElId = extractedPostData.id;
         }
 
         console.log("xxxxxxxxxxxxxxxxxx 8 : ", postView);
 
-        extractedPostData.viewsCount = 0;
-        extractedPostData.timeCount = 0;
-        extractedPostData.dbId = (dbFeedPost || newFeedPost).uniqueId;
-        extractedPostData.visitId = visit.uniqueId;
-
+        /*Post bookmarks*/
         var urls = allUrlCombinationsOf(extractedPostData.content.author.url);
         urls = extractedPostData.content.subPost ? urls.concat(allUrlCombinationsOf(extractedPostData.content.subPost.author.url)) : urls;
         urls = (extractedPostData.initiator && extractedPostData.initiator.url) ? urls.concat(allUrlCombinationsOf(extractedPostData.initiator.url)) : urls;
@@ -1005,37 +1015,15 @@ async function recordFeedVisit(tabData){
                                                .anyOf(urls)
                                                .first();
 
+        /*View count and time count*/
+        extractedPostData.viewsCount = 0;
+        extractedPostData.timeCount = 0;
         await db.feedPostViews
-                 .where({feedPostId: (dbFeedPost || newFeedPost).uniqueId})
+                 .where({feedPostId: extractedPostData.dbId})
                  .each(postView => {
                     extractedPostData.viewsCount++;
                     extractedPostData.timeCount += postView.timeCount;
                  });
-
-        // update the rankedPostsByPopularity session variable
-        sessionItem = await chrome.storage.session.get(["rankedPostsByPopularity"]);
-        sessionItem.rankedPostsByPopularity = sessionItem.rankedPostsByPopularity || await setPostsRankingInSession();
-
-        const index = sessionItem.rankedPostsByPopularity.findIndex(p => p.id == (dbFeedPost || newFeedPost).uniqueId);
-        if (index != -1){
-            extractedPostData.rank = {
-                index1: index + 1, 
-                count: sessionItem.rankedPostsByPopularity.length,
-                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
-            };
-        }
-        else{
-            sessionItem.rankedPostsByPopularity.push({id: (dbFeedPost || newFeedPost).uniqueId, popularity: popularityValue(extractedPostData)});
-            sessionItem.rankedPostsByPopularity.sort(function(a, b){ return b.popularity - a.popularity; });
-            extractedPostData.rank = {
-                index1: sessionItem.rankedPostsByPopularity.findIndex(p => p.id == (dbFeedPost || newFeedPost).uniqueId) + 1,
-                count: sessionItem.rankedPostsByPopularity.length,
-                topValue: sessionItem.rankedPostsByPopularity[0].popularity,
-            };
-            await chrome.storage.session.set({ rankedPostsByPopularity: sessionItem.rankedPostsByPopularity }).then(function(){
-                // console.log("--- rankedPostsByPopularity set ", sessionItem.rankedPostsByPopularity);
-            });
-        }
 
         chrome.tabs.sendMessage(tabData.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: "read", objectStoreName: "feedPosts", objects: [extractedPostData]}}, (response) => {
             console.log('post data response sent', [extractedPostData], response);

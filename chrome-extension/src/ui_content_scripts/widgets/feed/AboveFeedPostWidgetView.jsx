@@ -152,7 +152,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
     this.setState({
         postHtmlElement: postHtmlElement,
         visitId: this.props.visitId,
-        postHtmlElementVisible: isElVisible(postHtmlElement),
+        postHtmlElementVisible: true,
       }, () => {
         // Screen this post for all contained keywords
         this.checkAndHighlightKeywordsInPost();
@@ -179,7 +179,6 @@ export default class AboveFeedPostWidgetView extends React.Component{
           popularityRank: { 
             index1: newValue.findIndex(o => o.id == this.state.dbId) + 1, 
             count: newValue.length, 
-            topValue: newValue[0].popularity,
           },
         });
 
@@ -559,11 +558,25 @@ export default class AboveFeedPostWidgetView extends React.Component{
                   }
 
                   if (Object.hasOwn(post, "dbId")){
-                    this.setState({dbId: post.dbId});
-                  }
+                    this.setState({dbId: post.dbId}, () => {
 
-                  if (Object.hasOwn(post, "rank")){
-                    this.setState({popularityRank: post.rank});
+                      const timer = setInterval(async () => {
+                                              if (this.state.popularityRank){
+                                                clearInterval(timer);
+                                                return;
+                                              }
+                      
+                                              const rankedPostsByPopularity = (await chrome.storage.session.get(["rankedPostsByPopularity"])).rankedPostsByPopularity;
+                                              if (!rankedPostsByPopularity) { return; }
+                                              this.setState({
+                                                popularityRank: { 
+                                                  index1: rankedPostsByPopularity.findIndex(o => o.id == this.state.dbId) + 1, 
+                                                  count: rankedPostsByPopularity.length, 
+                                                },
+                                              });
+                                            }, 2000);
+
+                    });
                   }
 
                   if (Object.hasOwn(post, "visitId")){
@@ -749,7 +762,7 @@ export default class AboveFeedPostWidgetView extends React.Component{
                       { this.state.popularityRank
                           && <div class="flex items-center mx-2" title={`#${this.state.popularityRank.index1} out of ${this.state.popularityRank.count}`}>
                                 { Array.from({length: 5}).map((_, item) => (<svg 
-                                                                              class={`w-4 h-4 ${/*(popularityValue(this.state.extractedPostData.content) / this.state.popularityRank.topValue)*/ (1 - (this.state.popularityRank.index1 / this.state.popularityRank.count)) >= ((item + 1) * 0.25) ? "text-yellow-300" : "text-gray-300 dark:text-gray-500"} ms-1`} 
+                                                                              class={`w-4 h-4 ${(1 - (this.state.popularityRank.index1 / this.state.popularityRank.count)) >= ((item + 1) * 0.25) ? "text-yellow-300" : "text-gray-300 dark:text-gray-500"} ms-1`} 
                                                                               aria-hidden="true" 
                                                                               xmlns="http://www.w3.org/2000/svg" 
                                                                               fill="currentColor" 
