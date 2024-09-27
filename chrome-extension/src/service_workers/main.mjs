@@ -251,24 +251,20 @@ loadFeedBrowsingTriggerModel();
 async function loadFeedBrowsingTriggerModel(){
 
     var model = null;
-    console.log("ZZZZZZZZZZZZ 1 : ", model);
 
     try{
         
         model = await tf.loadLayersModel(`indexeddb://${appParams.FEED_BROWSING_TRIGGER_MODEL_NAME}`);
-        console.log("ZZZZZZZZZZZZ 2 : ", model);
 
         if ((await chrome.storage.session.get(["feedBrowsingTriggerModelTimer"])).feedBrowsingTriggerModelTimer){
             return;
         }
 
-        console.log("ZZZZZZZZZZZZ 3 : ", model);
-
-        // In 30 mins, it's gonna try an inference
+        // In 20 mins, it's gonna try an inference
+        console.log("Starting the model trigger timeout");
         const timer = setInterval(() => {
-            console.log("ZZZZZZZZZZZZ 4 : ", model);
             tryFeedBrowsingTriggerModelInference(model);
-        }, 180000);
+        }, 1200000);
 
         chrome.storage.session.set({ feedBrowsingTriggerModelTimer: timer });
 
@@ -281,8 +277,6 @@ async function loadFeedBrowsingTriggerModel(){
 }
 
 async function tryFeedBrowsingTriggerModelInference(model) {
-
-    console.log("Prediction 1 : ", model);
 
     const currentDate = new Date();
     const todayVisits = await db.visits.filter(visit => !Object.hasOwn(visit, "profileData") && visit.date.startsWith(currentDate.toISOString().slice(0, 10)))
@@ -319,15 +313,57 @@ async function tryFeedBrowsingTriggerModelInference(model) {
         return parseFloat(((input - localItems.modelTrainingDataMins[index]) / (localItems.modelTrainingDataMaxes[index] - localItems.modelTrainingDataMins[index])).toFixed(2));
     });
 
-    console.log("Prediction 2 : ", localItems, inputData, inputData.slice(1));
-
     const prediction = model.predict(tf.tensor2d(inputData.slice(1), [1, inputData.slice(1).length]));
     console.log("Prediction 3 : ", prediction.arraySync());
 
     if (prediction.arraySync()[0] > .5){
-        // TODO Notify before starting the automated session
+
+        const settings = await getAppSettingsObject();
+        if (!settings.notifications){
+            return;
+        }
+
         // check first if i'm not already browsing linkedin feed
-        startAutomatedSession();
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+
+            if (!tabs[0] || (tabs[0] && isLinkedinFeed(tabs[0].url))){
+                return;
+            }
+
+            // Notify before starting the automated session
+            const uuid = uuidv4();
+            chrome.notifications.create(uuid, {
+                title: 'Linkbeam',
+                message: "About to start an automated feed session",
+                iconUrl: chrome.runtime.getURL(app_logo_path),
+                type: 'basic',
+                buttons: [{
+                    title: "Cancel",
+                    // iconUrl: "/path/to/yesIcon.png",
+                }]
+            });
+
+            var cancelled = false;
+
+            chrome.notifications.onClosed.addListener((notificationId, byUser) => {
+                if (notificationId == uuid){
+                    if (cancelled){
+                        return;
+                    }
+                    startAutomatedSession();
+                }
+            });
+
+            chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+                if (notificationId == uuid){
+                    if (buttonIndex == 0){
+                        cancelled = true;
+                    }
+                }
+            });
+
+        });
+
     }
     
 

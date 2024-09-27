@@ -90,11 +90,13 @@ export default class ProfileStudiosView extends React.Component{
                 </div>}
 
         { this.state.action == "new"
-            && <ProfileStudioView/>}
+            && <ProfileStudioView
+                  globalData={this.props.globalData}/>}
 
         { this.state.action == "show"
             && this.state.profileStudio
             && <ProfileStudioView
+                  globalData={this.props.globalData}
                   object={this.state.profileStudio}/>}
 
       </>

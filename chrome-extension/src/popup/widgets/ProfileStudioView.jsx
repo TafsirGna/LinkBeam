@@ -32,15 +32,23 @@ import default_user_icon from '../../assets/user_icons/default.png';
 import PageTitleView from "./PageTitleView";
 import { 
   appParams,
+  getProfileDataFrom,
 } from "../Local_library";
 import { db } from "../../db";
 import { v4 as uuidv4 } from 'uuid';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import AllVisitedProfilesModal from "./Modals/AllVisitedProfilesModal";
-import { LayersIcon } from "./SVGs";
+import { 
+  LayersIcon,
+  DeletionIcon,
+} from "./SVGs";
 import { DateTime as LuxonDateTime } from "luxon";
 import { liveQuery } from "dexie";
+import CustomToast from "./Toasts/CustomToast";
+
+var studioFullProfiles = [];
+const insightOffcanvasMenuItems = ["Insights", "Chatbot"];
 
 export default class ProfileStudioView extends React.Component{
 
@@ -51,9 +59,16 @@ export default class ProfileStudioView extends React.Component{
       allVisitedProfilesModalShow: false,
       insightsOffCanvasShow: false,
       uIRefresher: false, 
+      toastMessage: "",
+      toastShow: false,
+      studioProfilesButtonRef: React.createRef(),
+      insightOffcanvasViewIndex: 0,
     };
 
     this.deleteStudio = this.deleteStudio.bind(this);
+    this.addProfileToStudio = this.addProfileToStudio.bind(this);
+    this.removeProfileFromStudio = this.removeProfileFromStudio.bind(this);
+    this.setProfileStudio = this.setProfileStudio.bind(this);
   }
 
   componentDidMount() {
@@ -83,7 +98,7 @@ export default class ProfileStudioView extends React.Component{
       this.profileStudioSubscription = liveQuery(() => db.profileStudios
                                                           .where({uniqueId: profileStudio.uniqueId})
                                                           .first()).subscribe(
-        result => this.setState({profileStudio: result}),
+        result => this.setProfileStudio(result),
         error => this.setState({error})
       );
 
@@ -93,6 +108,18 @@ export default class ProfileStudioView extends React.Component{
     setInterval(() => {
       this.setState({uIRefresher: !this.state.uIRefresher});
     }, 10000);
+
+  }
+
+  async setProfileStudio(profileStudio){
+
+    for (const profileUrl of profileStudio.profiles){
+      if (!(studioFullProfiles.filter(p => p.url == profileUrl)[0])){
+        studioFullProfiles.push(await getProfileDataFrom(db, profileUrl));
+      }
+    }
+
+    this.setState({profileStudio: profileStudio});
 
   }
 
@@ -119,6 +146,27 @@ export default class ProfileStudioView extends React.Component{
   handleNameInputChange = async (event) => await db.profileStudios.update(this.state.profileStudio.id, { name: event.target.value, updatedOn: new Date().toISOString() });
 
   handleDescriptionInputChange = async (event) => await db.profileStudios.update(this.state.profileStudio.id, { description: event.target.value, updatedOn: new Date().toISOString() });
+
+  async addProfileToStudio(profile){
+    if (!(studioFullProfiles.filter(p => p.url == profile.url)[0])){
+      studioFullProfiles = [...studioFullProfiles, await getProfileDataFrom(db, profile.url)].filter((value, index, self) => self.findIndex(v => v.url == value.url) === index);
+    }
+    await db.profileStudios.update(this.state.profileStudio.id, { 
+                                                                  profiles: ([...this.state.profileStudio.profiles, profile.url]).filter((value, index, self) => self.indexOf(value) === index),
+                                                                  updatedOn: new Date().toISOString(),
+                                                                }
+    );
+    this.toggleToastShow("Profile added !", true);
+  }
+
+  async removeProfileFromStudio(profile){
+    var profiles = this.state.profileStudio.profiles;
+    profiles.splice(profiles.indexOf(profile.url), 1);
+    await db.profileStudios.update(this.state.profileStudio.id, { profiles: profiles, updatedOn: new Date().toISOString() });
+    this.toggleToastShow("Profile removed !", true);
+  }
+
+  toggleToastShow = (message = "", show = null) => {this.setState((prevState) => ({toastMessage: message, toastShow: (show || !prevState.toastShow)}));};
 
   render(){
     return (
@@ -176,22 +224,44 @@ export default class ProfileStudioView extends React.Component{
                       <OverlayTrigger 
                         trigger="click" 
                         placement="left" 
+                        onToggle={(show) => {
+                          if (show){
+                            setTimeout(() => {
+                              this.state.studioProfilesButtonRef.current.click();
+                            }, 10000);
+                          }
+                        }}
                         overlay={ <Popover 
                                     id="popover-basic"
                                     className="shadow">
                                     <Popover.Body>
                                       {!this.state.profileStudio.profiles.length 
                                           && <p class="my-0">No profiles</p>}
-                                      {this.state.profileStudio.profiles.map(profile => <div class="">
-                                                                                          <img src={profile.avatar || default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0 me-2"/>
-                                                                                          <span>
-                                                                                            {profile.fullName}
-                                                                                          </span>
-                                                                                        </div>)}
+                                      {this.state.profileStudio.profiles.map(profileUrl => {
+                                                                                            const profile = studioFullProfiles.filter(p => p.url == profileUrl)[0];
+                                                                                            return <div class="">
+                                                                                                      <img src={profile.avatar || default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0 me-2"/>
+                                                                                                      <span>
+                                                                                                        {profile.fullName}
+                                                                                                      </span>
+                                                                                                      <span
+                                                                                                        className="mx-2 text-danger handy-cursor"
+                                                                                                        title="Remove from studio"
+                                                                                                        onClick={() => this.removeProfileFromStudio(profile)}>
+                                                                                                        <DeletionIcon
+                                                                                                          size="15"/>
+                                                                                                      </span>
+                                                                                                    </div>
+                                                                                          })}
                                     </Popover.Body>
                                   </Popover>}
                         >
-                        <button type="button" class="btn btn-light mx-1 text-muted btn-sm">{this.state.profileStudio.profiles.length}+ profiles</button>
+                        <button 
+                          type="button" 
+                          class="btn btn-light mx-1 text-muted btn-sm"
+                          ref={this.state.studioProfilesButtonRef}>
+                          {this.state.profileStudio.profiles.length}+ profile{this.state.profileStudio.profiles.length > 1 ? "s" : ""}
+                        </button>
                       </OverlayTrigger>
                       <button 
                         type="button" 
@@ -235,7 +305,10 @@ export default class ProfileStudioView extends React.Component{
         {/*All profiles Modal*/}
         <AllVisitedProfilesModal
           show={this.state.allVisitedProfilesModalShow}
-          onHide={this.handleAllVisitedProfilesModalClose}/>
+          onHide={this.handleAllVisitedProfilesModalClose}
+          onProfileItemClick={this.addProfileToStudio}
+          itemViewTitle="Click to add to studio"
+          hiddenProfiles={this.state.profileStudio?.profiles}/>
 
         {/*Insights Offcanvas*/}
         <Offcanvas 
@@ -246,9 +319,26 @@ export default class ProfileStudioView extends React.Component{
             <Offcanvas.Title>Insights</Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
+
+            <ul class="nav nav-underline small ms-2">
+              { insightOffcanvasMenuItems.map((label, index ) => <li class="nav-item" onClick={/*() => {this.setViewIndex(0)}*/ null}>
+                                                                <a class={`nav-link ${this.state.insightOffcanvasViewIndex == index ? "active" : ""}`} aria-current="page" href="#">
+                                                                  {label}
+                                                                </a>
+                                                              </li>)}
+              
+            </ul>
+
+            {insightOffcanvasMenuItems.map((label, index) => <div></div>)}
             
           </Offcanvas.Body>
         </Offcanvas>
+
+        <CustomToast 
+          globalData={this.props.globalData}
+          message={this.state.toastMessage} 
+          show={this.state.toastShow} 
+          onClose={this.toggleToastShow}/>
 
       </>
     );

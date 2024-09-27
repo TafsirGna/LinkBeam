@@ -25,19 +25,33 @@ import default_user_icon from '../../../assets/user_icons/default.png';
 import { DateTime as LuxonDateTime } from "luxon";
 import { 
   appParams,
+  getProfileDataFrom,
 } from "../../Local_library";
 import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
+import { db } from "../../../db";
 
 export default class ProfileStudiosListItemView extends React.Component{
 
   constructor(props){
     super(props);
     this.state = {
+      studioFullProfiles: null,
     };
+
+    this.setStudioFullProfiles = this.setStudioFullProfiles.bind(this);
   }
 
   componentDidMount() {
+    this.setStudioFullProfiles();
+  }
 
+  async setStudioFullProfiles(){
+    var studioFullProfiles = [];
+    for (var profileUrl of this.props.object.profiles){
+      studioFullProfiles.push(await getProfileDataFrom(db, profileUrl));
+    }
+
+    this.setState({studioFullProfiles: studioFullProfiles});
   }
 
   componentDidUpdate(prevProps, prevState){
@@ -76,7 +90,7 @@ export default class ProfileStudiosListItemView extends React.Component{
                             <Popover.Body>
                               {!this.props.object.profiles.length 
                                   && <p class="my-0">No profiles</p>}
-                              {this.props.object.profiles.map(profile => <div class="">
+                              {this.state.studioFullProfiles?.map(profile => <div class="">
                                                                                   <img src={profile.avatar || default_user_icon} alt="twbs" width="40" height="40" class="shadow rounded-circle flex-shrink-0 me-2"/>
                                                                                   <span>
                                                                                     {profile.fullName}
@@ -87,7 +101,7 @@ export default class ProfileStudiosListItemView extends React.Component{
                 >
                 <p 
                   class="shadow-sm fst-italic opacity-50 mb-0 badge bg-light-subtle text-light-emphasis rounded-pill border border-warning">
-                  {`${this.props.object.profiles.length} profiles`}
+                  {`${this.props.object.profiles.length} profile${this.props.object.profiles.length > 1 ? "s" : ""}`}
                 </p>
               </OverlayTrigger>
             </div>

@@ -193,7 +193,7 @@ export default class FeedDashView extends React.Component{
 
     }
 
-    console.log("cccccccccccc : ", allPeriodFeedPostViews);
+    // console.log("cccccccccccc : ", allPeriodFeedPostViews);
 
     this.setState({allPeriodFeedPostViews: allPeriodFeedPostViews});
 

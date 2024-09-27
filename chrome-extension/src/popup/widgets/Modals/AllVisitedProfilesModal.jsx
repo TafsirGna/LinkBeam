@@ -84,8 +84,12 @@ export default class AllVisitedProfilesModal extends React.Component{
                                                 }, 1000);
                                               });
 
-  getProfiles = () => this.state.allProfiles.filter(profile => (this.state.searchText && profile.fullName.toLowerCase().includes(this.state.searchText.toLowerCase()))
-                                                                  || (!this.state.searchText && true))
+  getProfiles = () => this.state.allProfiles.filter(profile => ((this.state.searchText && profile.fullName.toLowerCase().includes(this.state.searchText.toLowerCase()))
+                                                                    || (!this.state.searchText && true))
+                                                                  && ((this.props.hiddenProfiles && !this.props.hiddenProfiles.includes(profile.url))
+                                                                        || (!this.props.hiddenProfiles && true)))
+
+
 
   render(){
     return (
@@ -128,7 +132,7 @@ export default class AllVisitedProfilesModal extends React.Component{
                                     searchTextChanged={data => this.onSearchTextChange(data)}/>
                                     { this.state.searchText 
                                         && <p class="fst-italic small text-muted border rounded p-1 fw-light mx-1">
-                                            {`${this.getProfiles().length} results for '${this.state.searchText}'`}
+                                            {`${this.getProfiles().length} result${this.getProfiles().length > 1 ? "s" : ""} for '${this.state.searchText}'`}
                                           </p> }
                                 </div>
 
@@ -143,8 +147,13 @@ export default class AllVisitedProfilesModal extends React.Component{
                                       </div> }
 
       			                    { !this.state.processing
-                                    && this.getProfiles().map(profile => <ProfileListItemView 
-                                                                            profile={profile}/>)}
+                                    &&  <div class="list-group m-1 shadow-sm small"> 
+                                          {this.getProfiles().map(profile => <ProfileListItemView 
+                                                                                profile={profile}
+                                                                                onClick={() => {this.props.onProfileItemClick(profile)}}
+                                                                                title={this.props.itemViewTitle}/>)}
+                                        </div>}
+
     			                  	</div>}
 
             		   </div>}      

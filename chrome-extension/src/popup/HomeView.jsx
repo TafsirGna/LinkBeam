@@ -60,6 +60,7 @@ export default class HomeView extends React.Component{
       outdatedProfiles: null,
       timeCountSubscriptionResults: {"0": 0, "1": 0},
       reminderOfDataBackup: false,
+      modelTrainingAlert: false,
     };
 
     // Binding all the needed functions
@@ -71,6 +72,7 @@ export default class HomeView extends React.Component{
     this.setTimeCountSubscriptionResults = this.setTimeCountSubscriptionResults.bind(this);
     this.addTimeCountSubscription = this.addTimeCountSubscription.bind(this);
     this.fromMaxTimeThresholdToNumeric = this.fromMaxTimeThresholdToNumeric.bind(this);
+    this.checkLastModelTrainingDate = this.checkLastModelTrainingDate.bind(this);
     this.getTimeCount = this.getTimeCount.bind(this);
 
   }
@@ -97,7 +99,8 @@ export default class HomeView extends React.Component{
       this.checkLastDataBackupDate();
 
     }
-    
+
+    this.checkLastModelTrainingDate();    
     
   }
 
@@ -115,6 +118,29 @@ export default class HomeView extends React.Component{
           || (localItems.lastDataBackupDate && LuxonDateTime.now().diff(LuxonDateTime.fromISO(localItems.lastDataBackupDate), "days").days >= dataBackupReminderFrequency)){
       this.setState({reminderOfDataBackup: true});
       return;
+    }
+
+  }
+
+  async checkLastModelTrainingDate(){
+
+    const lastModelTrainingDate = (await chrome.storage.local.get(["feedBrowsingTriggerModelLastTrainingDate"])).feedBrowsingTriggerModelLastTrainingDate;
+    var visitCount = null;
+    if (!lastModelTrainingDate){
+      visitCount = await db.visits.filter(visit => !Object.hasOwn(visit, "profileData")).count();
+      if (visitCount >= appParams.MODEL_TRAINING_MIN_VISIT_COUNT){
+        this.setState({modelTrainingAlert: true});
+      }
+      return;
+    }
+
+    if (LuxonDateTime.now().diff(LuxonDateTime.fromISO(lastModelTrainingDate), "days").days >= 2){
+      visitCount = await db.visits.filter(visit => !Object.hasOwn(visit, "profileData")
+                                                      && new Date(visit.date) > new Date(lastModelTrainingDate))
+                                  .count();
+      if (visitCount > 0){
+        this.setState({modelTrainingAlert: true});
+      }
     }
 
   }
@@ -417,6 +443,7 @@ export default class HomeView extends React.Component{
               previousDaySavedTime: this.state.previousDaySavedTime,
               outdatedProfiles: this.state.outdatedProfiles,
               reminderOfDataBackup: this.state.reminderOfDataBackup,
+              modelTrainingAlert: this.state.modelTrainingAlert,
             }}
             />
         </div>

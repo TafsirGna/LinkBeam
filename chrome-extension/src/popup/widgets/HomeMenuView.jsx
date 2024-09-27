@@ -130,6 +130,17 @@ export default class HomeMenu extends React.Component{
                                       </a>
                                     </li>}
 
+                              { this.props.args.modelTrainingAlert
+                                  && <li>
+                                      <a 
+                                        class="dropdown-item small" 
+                                        onClick={() => {switchToView(eventBus, appParams.COMPONENT_CONTEXT_NAMES.AI_SETTINGS)}} 
+                                        title="Click to see more"
+                                        href="#">
+                                        Model Training alert
+                                      </a>
+                                    </li>}
+
                             </ul>
                           </div>}
 

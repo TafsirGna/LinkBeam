@@ -203,6 +203,7 @@ export default class AiSettingsView extends React.Component{
 
           { this.state.model 
               && <div>
+                  <div>
                     <div class="d-flex text-body-secondary pt-3">
                       <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
                         <div class="d-flex justify-content-between">
@@ -263,7 +264,15 @@ export default class AiSettingsView extends React.Component{
                         </div>
                       </div>
                     </div>
-                  </div>}
+                  </div>
+
+                  { this.props.globalData.settings
+                      && !this.props.globalData.settings.notifications
+                      && <div class="small text-muted mt-3 p-2 border rounded shadow border-2 border-warning fst-italic">
+                        The 'Enable popup notifications' setting must be on for an optimum experience with these functionalities.
+                      </div>}
+
+                </div>}
 
         </div>
 

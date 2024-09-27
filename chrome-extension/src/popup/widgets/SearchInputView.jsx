@@ -322,6 +322,10 @@ export default class SearchInputView extends React.Component{
         label = "quote";
         break;
       }
+      case "visited_profiles":{
+        label = "profile";
+        break;
+      }
     }
 
     return `Search a ${label} ...`;
