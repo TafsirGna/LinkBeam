@@ -26,6 +26,7 @@ export async function buildProfileObject(profileUrl){
 
   profile.bookmark = await db.bookmarks.where({url: profileUrl}).first();
   profile.reminder = await db.reminders.where({objectId: profileUrl}).first();
+  profile.notes = await db.profileNotes.where({url: profileUrl}).toArray();
 
   return profile;
 

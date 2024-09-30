@@ -41,6 +41,7 @@ import {
     getHashtagText,
     allUrlCombinationsOf,
     getPostCount,
+    postInteractionsSet,
 } from "../popup/Local_library";
 import { v4 as uuidv4 } from 'uuid';
 import { stringSimilarity } from "string-similarity-js";
@@ -246,7 +247,9 @@ async function notifyUser(message, uuid = null){
 
 }
 
-loadFeedBrowsingTriggerModel();
+chrome.runtime.onStartup.addListener(() => {
+    loadFeedBrowsingTriggerModel();
+})
 
 async function loadFeedBrowsingTriggerModel(){
 
@@ -260,11 +263,11 @@ async function loadFeedBrowsingTriggerModel(){
             return;
         }
 
-        // In 20 mins, it's gonna try an inference
+        // In 10 mins, it's gonna try an inference
         console.log("Starting the model trigger timeout");
         const timer = setInterval(() => {
             tryFeedBrowsingTriggerModelInference(model);
-        }, 1200000);
+        }, 600000);
 
         chrome.storage.session.set({ feedBrowsingTriggerModelTimer: timer });
 
@@ -365,6 +368,9 @@ async function tryFeedBrowsingTriggerModelInference(model) {
         });
 
     }
+
+    // Saving this inference attempt in a local storage
+    chrome.storage.local.set({ lastFeedBrowsingModelInference: { dateTime: new Date().toISOString(), value: prediction.arraySync()[0] } });
     
 
 }
@@ -1209,6 +1215,7 @@ async function recordProfileVisit(tabData){
 
     chrome.storage.session.set({ myTabs: sessionItem.myTabs });
 
+    profileData.notes = await db.profileNotes.where({url: tabData.tabUrl}).toArray();
     chrome.tabs.sendMessage(tabData.tabId, {header: "SAVED_PROFILE_OBJECT", data: profileData}, (response) => {
         console.log('profile data response sent', response, profileData);
     }); 
@@ -1455,6 +1462,10 @@ async function processMessageEvent(message, sender, sendResponse){
                     result = await crudFeedPostViews(message.data.action, message.data.props);
                     break;
                 }
+                case "profileNotes":{
+                    result = await crudProfileNotes(message.data.action, message.data.object);
+                    break;
+                }
             }
 
             chrome.tabs.sendMessage(message.data.tabId, {header: messageMeta.header.CRUD_OBJECT_RESPONSE, data: {action: message.data.action, objectStoreName: message.data.objectStoreName, object: result}}, (response) => {
@@ -1464,7 +1475,31 @@ async function processMessageEvent(message, sender, sendResponse){
             break;
         }
 
+        case messageMeta.header.INTERACTION_DATA_SAVE_REQUEST:{
+            // acknowledge receipt
+            sendResponse({
+                status: "ACK"
+            });
+            
+            // Saving feed post interaction
+            saveFeedPostInteraction(message.data);
+            
+            break;
+        }
+
     }
+}
+
+async function saveFeedPostInteraction(messageData){
+
+    var update = {}
+    update[messageData.actionType] = true;
+
+    await db.feedPostViews.where({feedPostId: messageData.postId, visitId: messageData.visitId})
+                          .modify(update);
+
+    // console.log("Post interaction saved ! ", await db.feedPostViews.where({feedPostId: messageData.postId, visitId: messageData.visitId}).first());
+
 }
 
 async function incProfileVisitTimeCount(tabData){
@@ -1743,6 +1778,70 @@ async function deleteReminder(reminder){
                 .delete(reminder.id);
 
         return reminder.htmlElId;
+
+    }
+    catch(error){
+        console.error("Error : ", error);
+    } 
+
+    return null;
+
+}
+
+async function crudProfileNotes(action, profileNote){
+    
+    var result = null;
+    switch(action){
+
+        case "add":{
+            result = await saveProfileNote(profileNote);
+            break;
+        }
+
+        case "delete":{
+            result = await deleteProfileNote(profileNote);
+            break;
+        }
+    }
+
+    return result;
+
+}
+
+async function saveProfileNote(profileNote){
+
+    profileNote = {
+        createdOn: new Date().toISOString(),
+        uniqueId: uuidv4(),
+        // text: message.data.note,
+        ...profileNote,
+    }
+
+    try{
+        
+        await db.profileNotes
+                .add(profileNote)
+                .then(id => profileNote.id = id);
+
+        return profileNote;
+
+    }
+    catch(error){
+        console.error("Error : ", error);
+    } 
+
+    return null;
+
+}
+
+async function deleteProfileNote(profileNote){
+
+    try{
+
+        await db.profileNotes
+                .delete(profileNote.id);
+
+        return profileNote;
 
     }
     catch(error){

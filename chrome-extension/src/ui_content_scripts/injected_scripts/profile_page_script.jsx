@@ -28,9 +28,8 @@ import {
 } from "./main_lib";
 import styles from "../styles.min.css";
 import ReactDOM from 'react-dom/client';
-import AboutDataChartWidget from "../widgets/profile/AboutDataChartWidget";
-import EducationDataChartWidget from "../widgets/profile/EducationDataChartWidget";
-import ExperienceDataChartWidget from "../widgets/profile/ExperienceDataChartWidget";
+import AboutDataModal from "../widgets/profile/AboutDataModal";
+import GenericSectionDataModal from "../widgets/profile/GenericSectionDataModal";
 import React from 'react';
 import elevator_tone from "../../assets/audio/elevator-tone.mp3";
 import {
@@ -131,21 +130,16 @@ export default class ProfilePageScriptAgent extends ScriptAgentBase {
                     <style type="text/css">{styles}</style>
 
                     { htmlElementTitle == "about" 
-                        && <AboutDataChartWidget
+                        && <AboutDataModal
                             appSettings={props.appSettings}
                             tabId={props.tabId}
                             profileData={this.profileData}/>}
 
-                    { htmlElementTitle == "education" 
-                        && <EducationDataChartWidget
+                    { ["education", "experience", "certifications"].includes(htmlElementTitle) 
+                        && <GenericSectionDataModal
                             appSettings={props.appSettings}
                             tabId={props.tabId}
-                            profileData={this.profileData}/>}
-
-                    { htmlElementTitle == "experience" 
-                        && <ExperienceDataChartWidget
-                            appSettings={props.appSettings}
-                            tabId={props.tabId}
+                            sectionName="Education"
                             profileData={this.profileData}/>}
 
                   </React.StrictMode>

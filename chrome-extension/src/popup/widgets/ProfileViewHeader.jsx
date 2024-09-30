@@ -28,6 +28,7 @@ import {
   ReminderIcon,
   KeyIcon,
   TagIcon,
+  PaperClipIcon,
 } from "./SVGs";
 import { db } from "../../db";
 import { DateTime as LuxonDateTime } from "luxon";
@@ -357,6 +358,18 @@ export default class ProfileViewHeader extends React.Component{
                         </span>
                       </OverlayTrigger>
                     </span>}
+                { this.props.profile.notes.length != 0 
+                    && <span>
+                        ·
+                        <OverlayTrigger
+                          placement="bottom"
+                          overlay={<ReactTooltip id="tooltip1">Some profile notes</ReactTooltip>}
+                        >
+                          <span onClick={null}>
+                            <PaperClipIcon size="24" className="mx-2 handy-cursor"/>
+                          </span>
+                        </OverlayTrigger>
+                      </span>}
             </p>
           </div>
         </div>

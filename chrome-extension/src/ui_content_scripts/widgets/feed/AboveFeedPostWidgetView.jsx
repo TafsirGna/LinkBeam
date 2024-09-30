@@ -31,6 +31,7 @@ import {
   popularityValue,
   isLinkedinProfilePage,
   dbDataSanitizer,
+  postInteractionsSet,
 } from "../../../popup/Local_library";
 import{
   sendTabData,
@@ -131,6 +132,10 @@ export default class AboveFeedPostWidgetView extends React.Component{
     this.extractSendPostObject = this.extractSendPostObject.bind(this);
     this.clearTimer = this.clearTimer.bind(this);
     this.checkAndHighlightKeywordsInPost = this.checkAndHighlightKeywordsInPost.bind(this);
+    this.launchInteractionTracker = this.launchInteractionTracker.bind(this);
+    this.sendInteractionData = this.sendInteractionData.bind(this);
+
+    this.trackedInteractions = [];
     
   }
 
@@ -156,6 +161,8 @@ export default class AboveFeedPostWidgetView extends React.Component{
       }, () => {
         // Screen this post for all contained keywords
         this.checkAndHighlightKeywordsInPost();
+
+        this.launchInteractionTracker();
       }
     );
 
@@ -230,6 +237,89 @@ export default class AboveFeedPostWidgetView extends React.Component{
   clearTimer(){
     clearInterval(this.state.timerInterval);
     this.setState({timerInterval: null});
+  }
+
+  launchInteractionTracker(){
+
+    // Tracking the 'see more' button click
+    this.state.postHtmlElement.querySelector("button.see-more")?.addEventListener("click", (function(){
+          this.sendInteractionData(postInteractionsSet.SEE_MORE_BUTTON_CLICKED);
+        }).bind(this));
+
+    // Tracking the 'media' click
+    this.state.postHtmlElement.querySelector("video")?.addEventListener("play", (function(){
+          this.sendInteractionData(postInteractionsSet.MEDIA_CLICKED);
+        }).bind(this));
+
+    // Tracking pictures click
+    Array.from(this.state.postHtmlElement.querySelectorAll(".update-components-mini-update-v2__reshared-content img, .feed-shared-update-v2__content img"))
+         .forEach((htmlEl, index) => {
+            htmlEl.addEventListener("click", (function(){
+                          this.sendInteractionData(postInteractionsSet.MEDIA_CLICKED);
+                        }).bind(this));
+         });
+
+    // Tracking the 'react' button click
+    this.state.postHtmlElement.querySelector(".social-details-social-counts__reactions-count")?.parentNode.addEventListener("click", (function(){
+          this.sendInteractionData(postInteractionsSet.REACTIONS_LINK_CLICKED);
+        }).bind(this));
+
+    // Tracking the 'comments' and 'reposts' links click
+    Array.from(this.state.postHtmlElement.querySelectorAll("button.social-details-social-counts__link"))
+         .forEach(htmlEl => {
+            htmlEl.addEventListener("click", (function(){
+                          const actionType = Object.values(termLanguageVariants["comment"]).filter(value => htmlEl.innerText.includes(value))[0]
+                                                  ? postInteractionsSet.COMMENTS_LINK_CLICKED 
+                                                  : postInteractionsSet.REPOSTS_LINK_CLICKED;
+                          this.sendInteractionData(actionType);
+                        }).bind(this));
+         });
+
+
+    // Tracking the "react", "comment", "repost", "send" actions click
+    Array.from(this.state.postHtmlElement.querySelector(".feed-shared-social-action-bar").children)
+         .forEach((htmlEl, index) => {
+            htmlEl.addEventListener("click", (function(){
+            
+                          var actionType = null;
+                          switch(index){
+                            case 0:{
+                              actionType = postInteractionsSet.REACT_ACTION_BUTTON_CLICKED;
+                              break;
+                            }
+                            case 1:{
+                              actionType = postInteractionsSet.COMMENT_ACTION_BUTTON_CLICKED;
+                              break;
+                            }
+                            case 2:{
+                              actionType = postInteractionsSet.REPOST_ACTION_BUTTON_CLICKED;
+                              break;
+                            }
+                            case 3:{
+                              actionType = postInteractionsSet.SEND_ACTION_BUTTON_CLICKED;
+                              break;
+                            }
+                          }
+                          this.sendInteractionData(actionType);
+            
+                        }).bind(this));
+         });
+
+  }
+
+  sendInteractionData(actionType, actionValue = null){
+
+    if (!this.state.dbId){
+      return;
+    }
+
+    if (!this.trackedInteractions.includes(actionType)){
+      chrome.runtime.sendMessage({header: messageMeta.header.INTERACTION_DATA_SAVE_REQUEST, data: {visitId: this.state.visitId, postId: this.state.dbId, actionType: actionType, actionValue: actionValue }}, (response) => {
+        this.trackedInteractions.push(actionType);
+        console.log('interaction data sent ', actionType, actionValue, response, this.trackedInteractions);
+      });
+    }
+
   }
 
   extractSendPostObject(){

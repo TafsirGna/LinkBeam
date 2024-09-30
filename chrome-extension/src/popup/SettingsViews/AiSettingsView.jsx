@@ -35,8 +35,7 @@ import { liveQuery } from "dexie";
 import { 
   CompassIcon,
 } from  "../widgets/SVGs";
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
-import Popover from 'react-bootstrap/Popover';
+import { OverlayTrigger, Tooltip, Popover } from "react-bootstrap";
 import * as tf from '@tensorflow/tfjs';
 import { Offcanvas } from "react-bootstrap";
 import Modal from 'react-bootstrap/Modal';
@@ -58,6 +57,7 @@ export default class AiSettingsView extends React.Component{
       userNotifModalBody: null,
       userNotifModalShowContext: null,
       modelLastTrainingDate: null,
+      lastFeedBrowsingModelInference: null,
     };
 
     this.onFileInputChange = this.onFileInputChange.bind(this);
@@ -72,7 +72,10 @@ export default class AiSettingsView extends React.Component{
     }
 
     (async () => {
-      this.setState({modelLastTrainingDate: (await chrome.storage.local.get(["feedBrowsingTriggerModelLastTrainingDate"])).feedBrowsingTriggerModelLastTrainingDate });
+      this.setState({
+        modelLastTrainingDate: (await chrome.storage.local.get(["feedBrowsingTriggerModelLastTrainingDate"])).feedBrowsingTriggerModelLastTrainingDate, 
+        lastFeedBrowsingModelInference: (await chrome.storage.local.get(["lastFeedBrowsingModelInference"])).lastFeedBrowsingModelInference,
+      });
     })();
 
     this.onFileInputChange();
@@ -264,6 +267,26 @@ export default class AiSettingsView extends React.Component{
                         </div>
                       </div>
                     </div>
+                    { this.state.lastFeedBrowsingModelInference
+                        && <div class="d-flex text-body-secondary pt-3">
+                            <div class="pb-2 mb-0 small lh-sm border-bottom w-100">
+                              <div class="d-flex justify-content-between">
+                                <strong class="text-gray-dark">
+                                  <CompassIcon
+                                    size="15"
+                                    className="me-2 text-muted"/>
+                                  Last model inference
+                                </strong>
+                                <OverlayTrigger
+                                  placement="top"
+                                  overlay={<Tooltip id="tooltip1">{`${(this.state.lastFeedBrowsingModelInference.value > .5) ? "Positive" : "Negative"} inference outcome on ${LuxonDateTime.fromISO(this.state.lastFeedBrowsingModelInference.dateTime).toFormat("MM/dd/yyyy hh:mm a")}`}</Tooltip>}>
+                                    <span class="rounded shadow-sm badge border text-secondary">
+                                      {`${LuxonDateTime.fromISO(this.state.lastFeedBrowsingModelInference.dateTime).toRelative()} (${(this.state.lastFeedBrowsingModelInference.value > .5) ? 1 : 0})`}
+                                    </span>
+                                  </OverlayTrigger>
+                              </div>
+                            </div>
+                          </div>}
                   </div>
 
                   { this.props.globalData.settings

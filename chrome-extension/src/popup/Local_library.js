@@ -179,7 +179,20 @@ export const messageMeta = {
     CRUD_OBJECT: "CRUD_OBJECT",
     CRUD_OBJECT_RESPONSE: "CRUD_OBJECT_RESPONSE",
     FEED_POST_TIME_UPDATE: "FEED_POST_TIME_UPDATE",
+    INTERACTION_DATA_SAVE_REQUEST: "INTERACTION_DATA_SAVE_REQUEST",
   }
+}
+
+export const postInteractionsSet = {
+  SEE_MORE_BUTTON_CLICKED: "seeMoreButtonClicked",
+  COMMENTS_LINK_CLICKED: "commentsLinkClicked",
+  REACTIONS_LINK_CLICKED: "reactionsLinkClicked",
+  REPOSTS_LINK_CLICKED: "repostsLinkClicked",
+  COMMENT_ACTION_BUTTON_CLICKED: "commentActionButtonClicked",
+  SEND_ACTION_BUTTON_CLICKED: "sendActionButtonClicked",
+  REPOST_ACTION_BUTTON_CLICKED: "repostActionButtonClicked",
+  REACT_ACTION_BUTTON_CLICKED: "reactActionButtonClicked",
+  MEDIA_CLICKED: "mediaClicked",
 }
 
 export const switchToView = (eventBus, pageTitle) => {

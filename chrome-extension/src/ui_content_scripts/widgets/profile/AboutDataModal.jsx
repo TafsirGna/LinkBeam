@@ -19,7 +19,7 @@
     Home: https://github.com/TafsirGna/LinkBeam
 */
 
-/*import './AboutDataChartWidget.css'*/
+/*import './AboutDataModal.css'*/
 import React from 'react';
 import { 
     appParams,
@@ -30,7 +30,7 @@ import ExtensionMarkerView from "./ExtensionMarkerView";
 import ProfileAboutBubbleChart from '../../../popup/widgets/Charts/ProfileAboutBubbleChart';
 import { DataApproximationAlert } from "../../injected_scripts/main_lib";
 
-export default class AboutDataChartWidget extends React.Component{
+export default class AboutDataModal extends React.Component{
 
     constructor(props){
         super(props);
